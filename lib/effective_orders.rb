@@ -18,4 +18,7 @@ module EffectiveOrders
     raise ActiveResource::UnauthorizedAccess.new('') unless (controller || self).instance_exec(controller, action, resource, &EffectiveOrders.authorization_method)
     true
   end
+
+  class SoldOutException < Exception; end
+
 end

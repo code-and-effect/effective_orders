@@ -15,7 +15,7 @@ module EffectiveOrders
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_orders.active_record' do |app|
       ActiveSupport.on_load :active_record do
-        #ActiveRecord::Base.extend(ActsAsAssetBox::ActiveRecord)
+        ActiveRecord::Base.extend(ActsAsPurchasable::ActiveRecord)
       end
     end
 

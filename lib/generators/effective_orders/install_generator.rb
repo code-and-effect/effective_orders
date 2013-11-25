@@ -28,6 +28,10 @@ module EffectiveOrders
         migration_template '../../../db/migrate/01_create_effective_orders.rb.erb', 'db/migrate/create_effective_orders.rb'
       end
 
+      def setup_routes
+        inject_into_file "config/routes.rb", "\n  mount EffectiveOrders::Engine => '/', :as => 'effective_orders'", :after => /root (:?)to.*/
+      end
+
       def show_readme
         readme "README" if behavior == :invoke
       end
