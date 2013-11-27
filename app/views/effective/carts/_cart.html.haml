@@ -28,7 +28,7 @@
               = "#{item.quantity}x"
             = item.title
           %td= number_to_currency(item.price)
-          %td= link_to 'Remove', EffectiveOrders::Engine.routes.url_helpers.remove_from_cart_path(item), :data => {:confirm => 'Are you sure? This cannot be undone!'}, :method => :delete
+          %td= link_to_remove_from_cart(item)
 
-  %h4= link_to 'Proceed to Checkout', EffectiveOrders::Engine.routes.url_helpers.new_order_path, :class => 'btn pull-right'
-  %h4= link_to 'Empty Cart', EffectiveOrders::Engine.routes.url_helpers.cart_path, :class => 'btn', :data => {:confirm => 'Are you sure? This cannot be undone!'}, :method => :delete
+  %h4= link_to_checkout :class => 'btn pull-right'
+  %h4= link_to_empty_cart

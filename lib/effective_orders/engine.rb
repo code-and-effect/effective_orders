@@ -9,6 +9,7 @@ module EffectiveOrders
     initializer 'effective_orders.action_controller' do |app|
       ActiveSupport.on_load :action_controller do
         helper EffectiveOrdersHelper
+        helper EffectiveCartsHelper
       end
     end
 

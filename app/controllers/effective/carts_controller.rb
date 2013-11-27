@@ -1,6 +1,6 @@
 module Effective
   class CartsController < ApplicationController
-    include EffectiveOrdersHelper
+    include EffectiveCartsHelper
 
     skip_authorization_check if defined?(CanCan)
 

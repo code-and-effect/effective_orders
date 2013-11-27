@@ -35,6 +35,7 @@ module Effective
     def remove(obj)
       (cart_items.find(cart_item) || cart_item).try(:destroy)
     end
+    alias_method :remove_from_cart, :remove
 
     def includes?(item)
       find(item).present?

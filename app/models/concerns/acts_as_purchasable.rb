@@ -70,8 +70,7 @@ module ActsAsPurchasable
   end
 
   def sold_out?
-    return false if quantity_enabled == false
-    quantity_remaining == 0
+    quantity_enabled? ? (quantity_remaining == 0) : false
   end
 
   def purchased(order = nil)
