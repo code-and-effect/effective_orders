@@ -1,6 +1,6 @@
 class CreateEffectiveOrders < ActiveRecord::Migration
   def self.up
-    create_table <%= @orders_table_name %> do |t|
+    create_table :orders do |t|
       t.integer   :user_id
       t.string    :purchase_state
       t.datetime  :purchased_at
@@ -11,10 +11,10 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_index <%= @orders_table_name %>, :user_id
+    add_index :orders, :user_id
 
 
-    create_table <%= @order_items_table_name %> do |t|
+    create_table :order_items do |t|
       t.integer   :order_id
       t.string    :purchasable_type
       t.integer   :purchasable_id
@@ -30,20 +30,20 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_index <%= @order_items_table_name %>, :order_id
-    add_index <%= @order_items_table_name %>, :purchasable_id
-    add_index <%= @order_items_table_name %>, [:purchasable_type, :purchasable_id]
+    add_index :order_items, :order_id
+    add_index :order_items, :purchasable_id
+    add_index :order_items, [:purchasable_type, :purchasable_id]
 
 
-    create_table <%= @carts_table_name %> do |t|
+    create_table :carts do |t|
       t.integer   :user_id
       t.timestamps
     end
 
-    add_index <%= @carts_table_name %>, :user_id
+    add_index :carts, :user_id
 
 
-    create_table <%= @cart_items_table_name %> do |t|
+    create_table :cart_items do |t|
       t.integer   :cart_id
       t.string    :purchasable_type
       t.integer   :purchasable_id
@@ -53,15 +53,15 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_index <%= @cart_items_table_name %>, :cart_id
-    add_index <%= @cart_items_table_name %>, :purchasable_id
-    add_index <%= @cart_items_table_name %>, [:purchasable_type, :purchasable_id]
+    add_index :cart_items, :cart_id
+    add_index :cart_items, :purchasable_id
+    add_index :cart_items, [:purchasable_type, :purchasable_id]
   end
 
   def self.down
-    drop_table <%= @orders_table_name %>
-    drop_table <%= @order_items_table_name %>
-    drop_table <%= @carts_table_name %>
-    drop_table <%= @cart_items_table_name %>
+    drop_table :orders
+    drop_table :order_items
+    drop_table :carts
+    drop_table :cart_items
   end
 end

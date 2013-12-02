@@ -27,10 +27,10 @@ module ActsAsPurchasable
     has_many :order_items, :as => :purchasable
     has_many :cart_items, :as => :purchasable, :dependent => :delete_all
 
-    validates_with SoldOutValidator, :on => :create
+    validates_with Effective::SoldOutValidator, :on => :create
 
     validates :price, :presence => true, :numericality => true
-    validates :tax_exempt, :boolean => true
+    validates :tax_exempt, :inclusion => {:in => [true, false]}
 
     # These are breaking on the check for quanitty_enabled?.  More research is due
     validates :quantity_purchased, :numericality => {:allow_nil => true}, :if => proc { |purchasable| (purchasable.quantity_enabled? rescue false) }

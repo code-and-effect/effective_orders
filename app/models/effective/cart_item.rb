@@ -10,6 +10,8 @@ module Effective
       timestamps
     end
 
+    validates_presence_of :purchasable
+
     delegate :title, :price, :tax_exempt, :quickbooks_item_name, :to => :purchasable
 
     default_scope order(:updated_at)

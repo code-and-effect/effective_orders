@@ -3,7 +3,6 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../dummy/config/environment", __FILE__)
 
 require 'rspec/rails'
-require 'rspec/autorun'
 require 'factory_girl_rails'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
@@ -16,7 +15,6 @@ RSpec.configure do |config|
   Rails.logger.level = 4    # Output only minimal stuff to test.log
 
   config.use_transactional_fixtures = true   # Make this false to once again use DatabaseCleaner
-  config.infer_base_class_for_anonymous_controllers = false
   config.order = 'random'
 end
 
@@ -32,3 +30,11 @@ end
 # Forces all threads to share the same connection. This works on
 # Capybara because it starts the web server in a thread.
 ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
+
+
+# To set up this gem for testing:
+# spec/dummy> ln -s ../../spec spec
+#
+# spec/dummy> rails generate effective_orders:install
+# spec/dummy> rake db:migrate
+# spec/dummy> rake db:test:prepare

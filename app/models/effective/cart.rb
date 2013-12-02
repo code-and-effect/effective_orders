@@ -1,7 +1,5 @@
 module Effective
   class Cart < ActiveRecord::Base
-    include ActiveModel::ForbiddenAttributesProtection
-
     self.table_name = EffectiveOrders.carts_table_name.to_s
 
     has_many :cart_items, :dependent => :delete_all

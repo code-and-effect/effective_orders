@@ -1,28 +1,66 @@
 require 'factory_girl'
 
 FactoryGirl.define do
-  factory :asset, :class => Effective::Asset do
-    user_id 1
-
-    sequence(:title) { |n| "Title #{n}" }
-    content_type 'image/jpg'
-    processed true
-
-    sequence(:upload_file) { |n| "http://#{EffectiveAssets.aws_bucket}.s3.amazonaws.com/uploads/asset#{n}.jpg"}
-    sequence(:data) { |n| "asset#{n}.jpg" }
-
-    data_size 123456
-    width 600
-    height 480
-    versions_info Hash.new(:thumb => {:data_size => 123456, :width => 128, :height => 128}, :main => {:data_size => 123456, :width => 400, :height => 400})
+  factory :address, :class => Effective::Address do
+    category 'billing'
+    full_name 'Peter Pan'
+    sequence(:address1) { |n| "1234#{n} Fake Street" }
+    city 'San Antonio'
+    state_code 'TX'
+    country_code 'US'
+    postal_code '92387'
   end
 
-  # factory :attachment do
-  #   association :asset
-  #   association :attachable, :factory => :user
+  factory :product do # This only exists in the dummy/ app
+    sequence(:title) { |n| "Product #{n}"}
 
-  #   position 0
-  #   box 'featured_images'
-  # end
+    price 10.00
+    tax_exempt false
+  end
+
+  factory :cart, :class => Effective::Cart do
+    user_id 1
+
+    before(:create) do |cart|
+      3.times { cart.cart_items << FactoryGirl.create(:cart_item, :cart => cart) }
+    end
+  end
+
+  factory :cart_item, :class => Effective::CartItem do
+    association :purchasable, :factory => :product
+    association :cart, :factory => :cart
+
+    quantity 1
+  end
+
+  factory :order, :class => Effective::Order do
+    user_id 1
+
+    before(:create) do |order|
+      order.billing_address = FactoryGirl.build(:address, :addressable => order)
+
+      3.times { order.order_items << FactoryGirl.create(:order_item, :order => order) }
+    end
+  end
+
+  factory :order_item, :class => Effective::OrderItem do
+    association :purchasable, :factory => :product
+    association :order, :factory => :order
+
+    sequence(:title) { |n| "Order Item #{n}" }
+    sequence(:quickbooks_item_name) { |n| "Order Item #{n} QB Item Name" }
+    quantity 1
+    price 10.00
+    tax_exempt false
+    tax_rate 0.05
+  end
+
+  factory :purchased_order, :parent => :order do
+    after(:create) { |order| order.purchased! }
+  end
+
+  factory :declined_order, :parent => :order do
+    after(:create) { |order| order.declined! }
+  end
 
 end

@@ -1,7 +1,11 @@
+require 'effective_addresses'
 require "effective_orders/engine"
 require 'migrant'     # Required for rspec to run properly
 
 module EffectiveOrders
+  PURCHASED = 'purchased'
+  DECLINED = 'declined'
+
   # The following are all valid config keys
   mattr_accessor :orders_table_name
   mattr_accessor :order_items_table_name
@@ -20,5 +24,7 @@ module EffectiveOrders
   end
 
   class SoldOutException < Exception; end
+  class AlreadyPurchasedException < Exception; end
+  class AlreadyDeclinedException < Exception; end
 
 end

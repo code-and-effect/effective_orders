@@ -11,53 +11,83 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130530172203) do
+ActiveRecord::Schema.define(:version => 3) do
 
-  create_table "assets", :force => true do |t|
-    t.string   "title"
-    t.text     "description"
-    t.string   "tags"
+  create_table "addresses", :force => true do |t|
+    t.string   "addressable_type"
+    t.integer  "addressable_id"
+    t.string   "category",         :limit => 64
+    t.string   "full_name"
+    t.string   "address1"
+    t.string   "address2"
+    t.string   "city"
+    t.string   "state_code"
+    t.string   "country_code"
+    t.string   "postal_code"
+    t.datetime "updated_at"
+    t.datetime "created_at"
+  end
+
+  add_index "addresses", ["addressable_id"], :name => "index_addresses_on_addressable_id"
+  add_index "addresses", ["addressable_type", "addressable_id"], :name => "index_addresses_on_addressable_type_and_addressable_id"
+
+  create_table "cart_items", :force => true do |t|
+    t.integer  "cart_id"
+    t.string   "purchasable_type"
+    t.integer  "purchasable_id"
+    t.integer  "quantity"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+  end
+
+  add_index "cart_items", ["cart_id"], :name => "index_cart_items_on_cart_id"
+  add_index "cart_items", ["purchasable_id"], :name => "index_cart_items_on_purchasable_id"
+  add_index "cart_items", ["purchasable_type", "purchasable_id"], :name => "index_cart_items_on_purchasable_type_and_purchasable_id"
+
+  create_table "carts", :force => true do |t|
     t.integer  "user_id"
-    t.string   "content_type"
-    t.string   "upload_file"
-    t.string   "data"
-    t.boolean  "processed",     :default => false
-    t.integer  "data_size"
-    t.integer  "height"
-    t.integer  "width"
-    t.text     "versions_info"
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
-  add_index "assets", ["content_type"], :name => "index_assets_on_content_type"
+  add_index "carts", ["user_id"], :name => "index_carts_on_user_id"
 
-  create_table "attachments", :force => true do |t|
-    t.integer "asset_id"
-    t.string  "attachable_type"
-    t.integer "attachable_id"
-    t.integer "position"
-    t.string  "box"
+  create_table "order_items", :force => true do |t|
+    t.integer  "order_id"
+    t.string   "purchasable_type"
+    t.integer  "purchasable_id"
+    t.string   "title"
+    t.integer  "quantity"
+    t.decimal  "price",                :precision => 8, :scale => 2, :default => 0.0
+    t.boolean  "tax_exempt"
+    t.decimal  "tax_rate",             :precision => 5, :scale => 3, :default => 0.0
+    t.string   "quickbooks_item_name"
+    t.datetime "created_at",                                                          :null => false
+    t.datetime "updated_at",                                                          :null => false
   end
 
-  add_index "attachments", ["asset_id"], :name => "index_attachments_on_asset_id"
-  add_index "attachments", ["attachable_id"], :name => "index_attachments_on_attachable_id"
-  add_index "attachments", ["attachable_type", "attachable_id"], :name => "index_attachments_on_attachable_type_and_attachable_id"
+  add_index "order_items", ["order_id"], :name => "index_order_items_on_order_id"
+  add_index "order_items", ["purchasable_id"], :name => "index_order_items_on_purchasable_id"
+  add_index "order_items", ["purchasable_type", "purchasable_id"], :name => "index_order_items_on_purchasable_type_and_purchasable_id"
 
-  create_table "delayed_jobs", :force => true do |t|
-    t.integer  "priority",   :default => 0
-    t.integer  "attempts",   :default => 0
-    t.text     "handler"
-    t.text     "last_error"
-    t.datetime "run_at"
-    t.datetime "locked_at"
-    t.datetime "failed_at"
-    t.string   "locked_by"
-    t.string   "queue"
-    t.datetime "created_at",                :null => false
-    t.datetime "updated_at",                :null => false
+  create_table "orders", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "purchase_state"
+    t.datetime "purchased_at"
+    t.text     "payment"
+    t.text     "details"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
   end
 
-  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
+  add_index "orders", ["user_id"], :name => "index_orders_on_user_id"
+
+  create_table "products", :force => true do |t|
+    t.string   "title"
+    t.decimal  "price",      :precision => 8, :scale => 2, :default => 0.0
+    t.boolean  "tax_exempt"
+    t.datetime "created_at",                                                :null => false
+    t.datetime "updated_at",                                                :null => false
+  end
 
 end
