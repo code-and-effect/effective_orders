@@ -16,7 +16,8 @@ module Effective
       timestamps
     end
 
-    delegate :purchased, :declined, :to => :purchasable
+    delegate :purchased?, :declined?, :to => :order
+    delegate :purchased, :declined, :to => :purchasable # Callbacks
 
     def subtotal
       price * quantity

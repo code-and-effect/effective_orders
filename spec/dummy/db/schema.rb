@@ -84,10 +84,11 @@ ActiveRecord::Schema.define(:version => 3) do
 
   create_table "products", :force => true do |t|
     t.string   "title"
-    t.decimal  "price",      :precision => 8, :scale => 2, :default => 0.0
+    t.decimal  "price",                :precision => 8, :scale => 2, :default => 0.0
     t.boolean  "tax_exempt"
-    t.datetime "created_at",                                                :null => false
-    t.datetime "updated_at",                                                :null => false
+    t.string   "quickbooks_item_name"
+    t.datetime "created_at",                                                          :null => false
+    t.datetime "updated_at",                                                          :null => false
   end
 
 end

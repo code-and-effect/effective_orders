@@ -2,8 +2,6 @@ module Effective
   class CartsController < ApplicationController
     include EffectiveCartsHelper
 
-    skip_authorization_check if defined?(CanCan)
-
     def show
       @cart = current_cart
       EffectiveOrders.authorized?(self, :read, @cart)

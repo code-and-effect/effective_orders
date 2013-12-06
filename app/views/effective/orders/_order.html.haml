@@ -1,0 +1,45 @@
+- if order.persisted?
+  %p Order ID: #{order.id}
+
+  - if order.purchased?
+    %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
+
+  - if order.billing_address.present? || order.shipping_address.present?
+    %table.table
+      %thead
+        %tr
+          - if order.billing_address.present?
+            %th Billing Address
+          - if order.shipping_address.present?
+            %th Shipping Address
+      %tbody
+        %tr
+          - if order.billing_address.present?
+            %td= render order.billing_address
+          - if order.shipping_address.present?
+            %td= render order.shipping_address
+
+%table.table
+  %thead
+    %tr
+      %th Item
+      %th Price
+  %tbody
+    - order.order_items.each do |item|
+      %tr
+        %td
+          - if item.quantity > 1
+            = "#{item.quantity}x "
+          = item.title
+        %td= number_to_currency(item.price)
+  %tfoot
+    %tr
+      %th Subtotal
+      %td= number_to_currency(order.subtotal)
+    %tr
+      %th Tax
+      %td= number_to_currency(order.tax)
+    %tr
+      %th Total (CAN)
+      %td= number_to_currency(order.total)
+

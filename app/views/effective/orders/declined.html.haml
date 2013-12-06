@@ -1,0 +1,8 @@
+%h1 There was an error purchasing an order.
+
+= render @order
+
+%p Your cart has been restored.
+
+= link_to 'Home', root_url, :class => 'btn btn-primary'
+= link_to_current_cart, :class => 'btn'

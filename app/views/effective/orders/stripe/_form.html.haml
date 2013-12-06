@@ -1,0 +1,28 @@
+%h2 Payment
+
+= javascript_include_tag "https://js.stripe.com/v2/"
+:javascript
+  Stripe.setPublishableKey('#{EffectiveOrders.stripe[:publishable_key]}');
+
+#effective-orders-new-customer-form{:style => ('display: none;' if @order.customer.stripe_customer.present?)}
+  = simple_form_for Effective::StripeCharge.new(), :url => '/' do |f|
+    = f.input :number, :label => 'Credit Card Number', :required => true
+    = f.input :cvc, :label => 'CVC', :required => true
+    = f.input :exp_month, :as => :select, :collection =>[['01 - January','01'],['02 - February','02'],['03 - March','03'],['04 - April','04'],['05 - May','05'],['06 - June','06'],['07 - July','07'],['08 - August','08'],['09 - September','09'],['10 - October','10'],['11 - November','11'],['12 - December','12']], :required => true, :prompt => 'Select Month...'
+    = f.input :exp_year, :as => :select, :collection => ((Time.zone.now.year..Time.zone.now.year+8).map { |year| [year, year-2000]}), :require => true, :prompt => 'Select Year...'
+    = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'
+
+#effective-orders-existing-customer-form{:style => ('display: none;' if @order.customer.stripe_customer.blank?)}
+  %p Charge the credit card you used last time:
+  %p= @order.customer.stripe_active_card
+  %p= link_to 'Enter new credit card', '#', :class => 'enter-new-credit-card'
+
+  = simple_form_for @stripe_charge || Effective::StripeCharge.new(@order), :url => effective_orders.stripe_charges_path, :method => :post, :html => {:id => 'effective_stripe_charge_form'} do |f|
+    = f.input :effective_order_id, :as => :hidden
+    = f.input :token, :as => :hidden
+    = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'
+
+%span{:id => 'effective-orders-ajax-status'}
+  - if @stripe_charge.present? && @stripe_charge.errors[:base].present?
+    %i.icon-exclamation-sign
+    = @stripe_charge.errors[:base].first

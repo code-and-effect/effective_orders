@@ -1,0 +1,5 @@
+= form_tag(EffectiveOrders.paypal[:paypal_url], :method => 'post') do
+  = hidden_field_tag :cmd, '_s-xclick'
+  = hidden_field_tag :encrypted, paypal_encrypted_payload(@order)
+
+  %p= submit_tag 'Checkout through PayPal', :class => 'btn btn-primary'

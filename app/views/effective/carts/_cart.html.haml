@@ -7,28 +7,28 @@
 
 - else
   %table.table
-    %tfoot
-      %tr
-        %td Subtotal:
-        %td= number_to_currency(cart.subtotal)
-        %td
-      %tr
-        %td Tax:
-        %td= number_to_currency(cart.tax)
-        %td
-      %tr
-        %td Total (CAD$):
-        %td= number_to_currency(cart.total)
-        %td
     %tbody
       - cart.cart_items.each do |item|
         %tr
           %td
             - if item.quantity > 1
-              = "#{item.quantity}x"
+              = "#{item.quantity}x "
             = item.title
           %td= number_to_currency(item.price)
           %td= link_to_remove_from_cart(item)
+    %tfoot
+      %tr
+        %th Subtotal
+        %td= number_to_currency(cart.subtotal)
+        %td
+      %tr
+        %th Tax
+        %td= number_to_currency(cart.tax)
+        %td
+      %tr
+        %th Total
+        %td= number_to_currency(cart.total)
+        %td
 
   %h4= link_to_checkout :class => 'btn pull-right'
   %h4= link_to_empty_cart

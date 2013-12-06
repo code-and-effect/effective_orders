@@ -56,6 +56,16 @@ class CreateEffectiveOrders < ActiveRecord::Migration
     add_index :cart_items, :cart_id
     add_index :cart_items, :purchasable_id
     add_index :cart_items, [:purchasable_type, :purchasable_id]
+
+    create_table :customers do |t|
+      t.integer   :user_id
+      t.string    :stripe_customer
+      t.string    :stripe_active_card
+
+      t.timestamps
+    end
+
+    add_index :customers, :user_id
   end
 
   def self.down
@@ -63,5 +73,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration
     drop_table :order_items
     drop_table :carts
     drop_table :cart_items
+    drop_table :customers
   end
 end

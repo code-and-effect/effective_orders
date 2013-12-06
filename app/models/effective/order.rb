@@ -2,7 +2,8 @@ module Effective
   class Order < ActiveRecord::Base
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
-    acts_as_addressable :require_billing => true
+    acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
+    attr_accessor :save_billing_address, :save_shipping_address # Save these addresses to the user if selected
 
     belongs_to :user
     has_many :order_items
@@ -45,6 +46,10 @@ module Effective
       end
     end
 
+    def customer
+      @customer ||= Effective::Customer.for_user(user)
+    end
+
     def total
       order_items.collect(&:total).sum
     end
@@ -57,7 +62,7 @@ module Effective
       order_items.collect(&:tax).sum
     end
 
-    def purchased!(payment_details = nil)
+    def purchase!(payment_details = nil)
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
 
       Order.transaction do
@@ -74,7 +79,7 @@ module Effective
       end
     end
 
-    def declined!(payment_details = nil)
+    def decline!(payment_details = nil)
       raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if self.declined?
 
       Order.transaction do

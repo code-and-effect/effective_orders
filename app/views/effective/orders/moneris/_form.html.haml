@@ -1,0 +1,30 @@
+= form_tag(EffectiveOrders.moneris[:hpp_url], :method => 'post') do
+  = hidden_field_tag(:ps_store_id, EffectiveOrders.moneris[:ps_store_id])
+  = hidden_field_tag(:hpp_key, EffectiveOrders.moneris[:hpp_key])
+  = hidden_field_tag(:charge_total, '%.2f' % @order.total)
+  = hidden_field_tag(:rvar_authenticity_token, form_authenticity_token)
+
+  = hidden_field_tag(:cust_id, @order.user.id)
+  = hidden_field_tag(:order_id, "order#{@order.id+EffectiveOrders.moneris[:order_nudge].to_i}")
+  = hidden_field_tag(:lang, "en-ca")
+  = hidden_field_tag(:gst, '%.2f' % @order.tax)
+  = hidden_field_tag(:email, @order.user.try(:email))
+
+  - @order.order_items.each_with_index do |item, x|
+    = hidden_field_tag("id#{x}", x)
+    = hidden_field_tag("description#{x}", item.title)
+    = hidden_field_tag("quantity#{x}", item.quantity)
+    = hidden_field_tag("price#{x}", '%.2f' % item.price)
+    = hidden_field_tag("subtotal#{x}", '%.2f' % item.subtotal)
+
+  - if @order.billing_address.present?
+    - address = @order.billing_address
+    = hidden_field_tag(:bill_first_name, address.first_name)
+    = hidden_field_tag(:bill_last_name, address.last_name)
+    = hidden_field_tag(:bill_address_one, address.address1)
+    = hidden_field_tag(:bill_city, address.city)
+    = hidden_field_tag(:bill_state_or_province, address.state)
+    = hidden_field_tag(:bill_postal_code, address.postal_code)
+    = hidden_field_tag(:bill_country, address.country)
+
+  %p= submit_tag 'Checkout through Moneris', :class => 'btn btn-primary'

@@ -16,6 +16,7 @@ FactoryGirl.define do
 
     price 10.00
     tax_exempt false
+    quickbooks_item_name "Quickbooks Item Name"
   end
 
   factory :cart, :class => Effective::Cart do
@@ -56,11 +57,11 @@ FactoryGirl.define do
   end
 
   factory :purchased_order, :parent => :order do
-    after(:create) { |order| order.purchased! }
+    after(:create) { |order| order.purchase! }
   end
 
   factory :declined_order, :parent => :order do
-    after(:create) { |order| order.declined! }
+    after(:create) { |order| order.decline! }
   end
 
 end

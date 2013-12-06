@@ -1,15 +1,5 @@
-# ActsAsPurchasable
-
 module ActsAsPurchasable
   extend ActiveSupport::Concern
-
-  PURCHASED = "success"
-  DECLINED = "failed"
-  ABANDONED = "abandoned"
-  QBPENDING = "Waiting on payment before Quickbooks sync"
-  QBSUCCESS = "Successfully synched with Quickbooks"
-  QBFAILED = "Encountered errors during last Quickbooks sync."
-  QBTOBESYNCHED = "Ready to be synched with Quickbooks"
 
   module ActiveRecord
     def acts_as_purchasable(*options)
@@ -51,6 +41,10 @@ module ActsAsPurchasable
 
   def tax_exempt
     self[:tax_exempt] || false
+  end
+
+  def quickbooks_item_name
+    self[:quickbooks_item_name] || ''
   end
 
   def purchased?

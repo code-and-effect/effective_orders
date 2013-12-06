@@ -1,0 +1,24 @@
+%h1 New Order
+
+%p All transactions are processed on a third-party secure payment page. When you confirm the order you will be moved off this website to complete your transaction.
+
+= render @order
+= link_to_current_cart :label => 'Change Items'
+
+= simple_form_for @order, :url => EffectiveOrders::Engine.routes.url_helpers.orders_path, :html => {:class => 'form-vertical' } do |f|
+  - if @order.errors[:order_items].present?
+    %p.inline-errors= @order.errors[:order_items].first
+
+  - if EffectiveOrders.require_billing_address
+    %h3 Billing Address
+    = effective_address_fields(f, :billing_address)
+    - if @order.save_billing_address != nil
+      = f.input :save_billing_address, :as => :boolean, :label => 'Save as my default Billing Address'
+
+  - if EffectiveOrders.require_shipping_address
+    %h3 Shipping Address
+    = effective_address_fields(f, :shipping_address)
+    - if @order.save_shipping_address != nil
+      = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
+
+  = f.submit 'Save and Continue', :class => 'btn btn-primary pull-right', 'data-disable-with' => 'Saving...'
