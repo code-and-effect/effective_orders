@@ -10,6 +10,7 @@ module EffectiveOrders
       ActiveSupport.on_load :action_controller do
         helper EffectiveOrdersHelper
         helper EffectiveCartsHelper
+        helper EffectivePaypalHelper
       end
     end
 
