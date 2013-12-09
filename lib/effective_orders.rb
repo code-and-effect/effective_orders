@@ -21,6 +21,7 @@ module EffectiveOrders
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
   mattr_accessor :stripe_enabled
+  mattr_accessor :stripe_connect_enabled
 
   # These are hashes of configs
   mattr_accessor :paypal

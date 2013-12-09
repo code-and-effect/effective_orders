@@ -66,18 +66,21 @@ EffectiveOrders.setup do |config|
 
   # Stripe configuration
   config.stripe_enabled = false
+  config.stripe_connect_enabled = false # https://stripe.com/docs/connect
 
   if Rails.env.production?
     config.stripe = {
       :secret_key => '',
       :publishable_key => '',
-      :currency => 'usd'
+      :currency => 'usd',
+      :connect_client_id => ''
     }
   else
     config.stripe = {
       :secret_key => '',
       :publishable_key => '',
-      :currency => 'usd'
+      :currency => 'usd',
+      :connect_client_id => ''
     }
   end
 

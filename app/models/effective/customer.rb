@@ -8,6 +8,8 @@ module Effective
       stripe_customer         :string  # cus_xja7acoa03
       stripe_active_card      :string  # **** **** **** 4242 Visa 05/12
 
+      stripe_connect_access_token :string  # If using StripeConnect and this user is a Seller
+
       timestamps
     end
 
