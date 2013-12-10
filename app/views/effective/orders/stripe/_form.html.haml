@@ -22,8 +22,7 @@
     = f.input :token, :as => :hidden
     = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'
 
-%span{:id => 'effective-orders-ajax-status'}
+#effective-orders-ajax-status
   - if @stripe_charge.present? && @stripe_charge.errors[:base].present?
     %i.icon-exclamation-sign
     = @stripe_charge.errors[:base].first
-%br

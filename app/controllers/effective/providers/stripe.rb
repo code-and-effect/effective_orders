@@ -32,9 +32,9 @@ module Effective
 
         Effective::Order.transaction do
           begin
-            stripe_customer = find_or_create_stripe_customer(charge.order.customer, charge.token)
+            buyer = find_or_create_stripe_customer(charge.order.customer, charge.token)
 
-            return ::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :customer => stripe_customer.id, :card => stripe_customer.default_card)
+            return ::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :customer => buyer.id, :card => buyer.default_card)
           rescue => e
             charge.errors.add(:base, "Unable to checkout order with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\".")
             raise ActiveRecord::Rollback

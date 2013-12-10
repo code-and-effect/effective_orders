@@ -14,7 +14,7 @@
             - if item.quantity > 1
               = "#{item.quantity}x "
             = item.title
-          %td= number_to_currency(item.price)
+          %td= number_to_currency(item.subtotal)
           %td= link_to_remove_from_cart(item)
     %tfoot
       %tr
