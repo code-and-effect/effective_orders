@@ -15,7 +15,7 @@ module Effective
 
     attr_accessor :token, :order, :effective_order_id # These are the actual values we receive and need to validate.
 
-    validates_presence_of :token, :if => Proc.new { |stripe_charge| stripe_charge.order.customer.stripe_customer.blank? rescue true }
+    validates_presence_of :token, :if => Proc.new { |stripe_charge| stripe_charge.order.customer.stripe_active_card.blank? rescue true }
 
     def initialize(params = {})
       if params.kind_of?(Effective::Order)

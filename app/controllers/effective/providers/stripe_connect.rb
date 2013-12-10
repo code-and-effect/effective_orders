@@ -1,5 +1,3 @@
-require 'stripe'
-
 module Effective
   module Providers
     module StripeConnect
@@ -34,7 +32,7 @@ module Effective
       private
 
       def request_access_token(code)
-        stripe_response = `curl -F client_secret='#{EffectiveOrders.stripe[:secret_key]}' -F code='#{code}' -F grant_type='authorization_code' #{EffectiveOrders.stripe[:connect_access_token_url]}`
+        stripe_response = `curl -F client_secret='#{EffectiveOrders.stripe[:secret_key]}' -F code='#{code}' -F grant_type='authorization_code' #{EffectiveStripeHelper::STRIPE_CONNECT_TOKEN_URL}`
         JSON.parse(stripe_response) rescue {}
       end
 

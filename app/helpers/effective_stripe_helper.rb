@@ -1,14 +1,16 @@
 module EffectiveStripeHelper
+
+  STRIPE_CONNECT_AUTHORIZE_URL = 'https://connect.stripe.com/oauth/authorize'
+  STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
+
   def is_stripe_connect_seller?(user)
     Effective::Customer.is_stripe_connect_seller?(user)
   end
 
   def link_to_new_stripe_connect_customer(opts = {})
     client_id = EffectiveOrders.stripe[:connect_client_id]
-    connect_authorize_url = EffectiveOrders.stripe[:connect_authorize_url]
 
     raise ArgumentError.new('effective_orders config: stripe.connect_client_id has not been set') unless client_id.present?
-    raise ArgumentError.new('effective_orders config: stripe.connect_authorize_url has not been set') unless connect_authorize_url.present?
 
     authorize_params = {
       :response_type => :code,
@@ -20,7 +22,7 @@ module EffectiveStripeHelper
       }.to_json
     }
 
-    authorize_url = connect_authorize_url.chomp('/') + '?' + authorize_params.to_query
+    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL.chomp('/') + '?' + authorize_params.to_query
 
     options = {}.merge(opts)
     link_to image_tag('/assets/effective_orders/stripe_connect.png'), authorize_url, options
