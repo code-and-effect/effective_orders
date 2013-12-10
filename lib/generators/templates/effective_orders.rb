@@ -73,6 +73,7 @@ EffectiveOrders.setup do |config|
       :secret_key => '',
       :publishable_key => '',
       :currency => 'usd',
+      :connect_authorize_url => 'https://connect.stripe.com/oauth/authorize',
       :connect_client_id => ''
     }
   else
@@ -80,6 +81,8 @@ EffectiveOrders.setup do |config|
       :secret_key => '',
       :publishable_key => '',
       :currency => 'usd',
+      :connect_authorize_url => 'https://connect.stripe.com/oauth/authorize',
+      :connect_access_token_url=> 'https://connect.stripe.com/oauth/token',
       :connect_client_id => ''
     }
   end

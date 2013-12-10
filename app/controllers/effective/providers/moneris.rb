@@ -4,7 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        prepend_before_filter :find_authenticity_token, :only => [:moneris_postback]
+        prepend_before_filter :find_authenticity_token_from_moneris, :only => [:moneris_postback]
       end
 
       def moneris_postback
@@ -35,7 +35,7 @@ module Effective
         `curl -F ps_store_id='#{EffectiveOrders.moneris[:ps_store_id]}' -F hpp_key='#{EffectiveOrders.moneris[:hpp_key]}' -F transactionKey='#{verify_key}' --referer #{effective_orders.orders_url} #{EffectiveOrders.moneris[:verify_url]}`
       end
 
-      def find_authenticity_token
+      def find_authenticity_token_from_moneris
         params[:authenticity_token] = params.delete(:rvar_authenticity_token)
       end
 

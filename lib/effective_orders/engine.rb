@@ -11,6 +11,7 @@ module EffectiveOrders
         helper EffectiveOrdersHelper
         helper EffectiveCartsHelper
         helper EffectivePaypalHelper
+        helper EffectiveStripeHelper
       end
     end
 

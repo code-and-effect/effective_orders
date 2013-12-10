@@ -100,7 +100,7 @@ Website URL:  root_url
 Development:
 
 client_id: given by stripe, we need to record this.
-redirect_uri:
+redirect_uri: stripe_connect_redirect_uri_url  # http://www.example.com/effective/orders/stripe_connect_redirect_uri
 webhook_uri:
 
 And add these values to the app/config/effective_orders.rb initializer:

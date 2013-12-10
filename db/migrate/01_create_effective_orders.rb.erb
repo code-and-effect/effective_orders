@@ -60,6 +60,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.integer   :user_id
       t.string    :stripe_customer
       t.string    :stripe_active_card
+      t.string    :stripe_connect_access_token
 
       t.timestamps
     end

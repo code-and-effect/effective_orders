@@ -5,6 +5,7 @@ module Effective
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Stripe if EffectiveOrders.stripe_enabled
+    include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
 
     before_filter :authenticate_user!, :except => [:paypal_postback]
 

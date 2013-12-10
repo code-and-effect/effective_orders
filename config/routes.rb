@@ -1,6 +1,5 @@
 EffectiveOrders::Engine.routes.draw do
   scope '/effective', :module => 'effective' do
-    resources :orders#, :only => [:new, :create, :index]
 
     match 'orders/:id/purchased', :to => 'orders#purchased', :as => 'order_purchased', :via => :get
     match 'orders/:id/declined', :to => 'orders#declined', :as => 'order_declined', :via => :get
@@ -17,9 +16,17 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/stripe_charge', :to => 'orders#stripe_charge', :as => 'stripe_charges', :via => :post
     end
 
+    if EffectiveOrders.stripe_connect_enabled
+      match 'orders/stripe_connect_redirect_uri', :to => 'orders#stripe_connect_redirect_uri', :as => 'stripe_connect_redirect_uri', :via => :get
+    end
+
     unless Rails.env.production?
       match 'orders/:id/pretend_purchase', :to => 'orders#pretend_purchase', :as => 'pretend_purchase', :via => [:get, :post]
     end
+
+    # This must be below the other routes defined above.
+
+    resources :orders#, :only => [:new, :create, :index]
 
     match 'cart', :to => 'carts#show', :as => 'cart', :via => :get
     match 'cart', :to => 'carts#destroy', :via => :delete
