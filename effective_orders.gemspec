@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency "haml"
   s.add_dependency "migrant"
   s.add_dependency "simple_form"
-  s.add_dependency "effective_addresses", '>= 0.2.0'
+  s.add_dependency "effective_addresses"
   s.add_dependency "stripe"
 
   s.add_development_dependency "factory_girl_rails"
