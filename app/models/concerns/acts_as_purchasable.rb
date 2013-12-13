@@ -47,6 +47,10 @@ module ActsAsPurchasable
     self[:quickbooks_item_name] || ''
   end
 
+  def seller
+    raise ArgumentException('acts_as_purchasable object requires the seller be defined to return the User selling this item.  This is only used for StripeConnect.')
+  end
+
   def purchased?
     #self.purchase_state == ActsAsPurchasable::PURCHASED
   end

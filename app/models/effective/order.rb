@@ -46,8 +46,8 @@ module Effective
       end
     end
 
-    def customer
-      @customer ||= Effective::Customer.for_user(user)
+    def buyer
+      @buyer ||= Effective::Customer.for_user(user)
     end
 
     def total

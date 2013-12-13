@@ -18,7 +18,7 @@ module Effective
         if @stripe_charge.save && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(response.try(:to_hash) || 'purchased via Stripe') # orders_controller#order_purchased
         else
-          @order.customer.reload
+          @order.buyer.reload
           render :action => :create
         end
       end
@@ -28,13 +28,37 @@ module Effective
       def process_stripe_charge(charge)
         ::Stripe.api_key = EffectiveOrders.stripe[:secret_key]
 
-        amount = (charge.order.total * 100.0).to_i # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
-
         Effective::Order.transaction do
           begin
-            buyer = find_or_create_stripe_customer(charge.order.customer, charge.token)
+            buyer = find_or_create_stripe_customer(charge.order.buyer, charge.token)
 
-            return ::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :customer => buyer.id, :card => buyer.default_card)
+            if EffectiveOrders.stripe_connect_enabled
+              # Go through and create Stripe::Tokens for each seller
+              items = charge.order.order_items.group_by(&:seller)
+              results = {}
+
+              # We do all these Tokens first, so if one throws an exception no charges are made
+              items.each do |seller, _|
+                seller.token = ::Stripe::Token.create({:customer => buyer.id}, seller.stripe_connect_access_token)
+              end
+
+              # Make one charge per seller, for all his order_items
+              items.each do |seller, order_items|
+                amount = (order_items.sum(&:total) * 100.0).to_i
+                description = "Charge for Order ##{charge.order.id} with OrderItems #{order_items.map(&:id).join(', ')}"
+
+                results[seller] = ::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :card => seller.token.id, :description => description)
+              end
+
+              return results
+            else
+              # This is a regular Stripe Charge for the full amount of the order
+
+              amount = (charge.order.total * 100.0).to_i # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
+              description = "Charge for Order ##{charge.order.id}"
+
+              return ::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :customer => buyer.id, :card => buyer.default_card, :description => description)
+            end
           rescue => e
             charge.errors.add(:base, "Unable to checkout order with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\".")
             raise ActiveRecord::Rollback

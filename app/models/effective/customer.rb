@@ -2,6 +2,8 @@ module Effective
   class Customer < ActiveRecord::Base
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
+    attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
+
     belongs_to :user
 
     structure do

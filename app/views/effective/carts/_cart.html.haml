@@ -7,6 +7,11 @@
 
 - else
   %table.table
+    %thead
+      %tr
+        %th Item
+        %th Price
+        %th
     %tbody
       - cart.cart_items.each do |item|
         %tr

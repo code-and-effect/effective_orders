@@ -30,5 +30,13 @@ module Effective
     def total
       subtotal + tax
     end
+
+    # This is going to return an Effective::Customer object that matches the purchasable.user
+    # And is the Customer representing who is selling the product
+    # This is really only used for StripeConnect
+    def seller
+      @seller ||= Effective::Customer.for_user(purchasable.try(:seller))
+    end
+
   end
 end
