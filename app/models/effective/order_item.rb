@@ -4,6 +4,7 @@ module Effective
 
     belongs_to :order
     belongs_to :purchasable, :polymorphic => true
+    belongs_to :seller, :class_name => 'User'
 
     structure do
       title                 :string, :validates => [:presence]
@@ -16,8 +17,13 @@ module Effective
       timestamps
     end
 
+    validates_presence_of :seller_id, :if => Proc.new { |order_item| EffectiveOrders.stripe_connect_enabled }
+
     delegate :purchased?, :declined?, :to => :order
     delegate :purchased, :declined, :to => :purchasable # Callbacks
+
+    scope :sold, -> { joins(:order).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}) }
+    scope :sold_by, lambda { |user| sold().where(:seller_id => user.try(:id)) }
 
     def subtotal
       price * quantity

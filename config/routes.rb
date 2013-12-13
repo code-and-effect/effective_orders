@@ -3,6 +3,8 @@ EffectiveOrders::Engine.routes.draw do
 
     match 'orders/:id/purchased', :to => 'orders#purchased', :as => 'order_purchased', :via => :get
     match 'orders/:id/declined', :to => 'orders#declined', :as => 'order_declined', :via => :get
+    match 'orders/my_purchases', :to => 'orders#my_purchases', :as => 'my_purchases', :via => :get
+    match 'orders/my_sales', :to => 'orders#my_sales', :as => 'my_sales', :via => :get
 
     if EffectiveOrders.paypal_enabled
       match 'orders/paypal_postback', :to => 'orders#paypal_postback', :as => 'paypal_postback', :via => :post
@@ -26,7 +28,7 @@ EffectiveOrders::Engine.routes.draw do
 
     # This must be below the other routes defined above.
 
-    resources :orders#, :only => [:new, :create, :index]
+    resources :orders, :only => [:new, :create, :show]
 
     match 'cart', :to => 'carts#show', :as => 'cart', :via => :get
     match 'cart', :to => 'carts#destroy', :via => :delete

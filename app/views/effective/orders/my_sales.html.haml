@@ -1,0 +1,28 @@
+%h3 Sale History
+
+%table.table
+  %thead
+    %tr
+      %th Product
+      %th Order
+      %th Buyer
+      %th Date of Sale
+      %th Description
+  %tbody
+    - (@order_items || {}).group_by(&:purchasable).each do |purchasable, order_items|
+      - order_items.each_with_index do |order_item, x|
+        %tr
+          - if x == 0
+            %td{:rowspan => order_items.size}
+              = link_to purchasable.title, acts_as_purchasable_path(purchasable)
+
+          %td= "##{order_item.order.id}"
+          %td= order_item.order.try(:user).try(:to_s)
+          %td= order_item.order.purchased_at.strftime("%d-%b-%Y %H:%M")
+          %td= order_item_summary(order_item)
+
+- unless @orders_items.present?
+  %p You have no sales
+
+%h4= link_to 'Back', :back, :class => 'btn'
+

@@ -13,9 +13,9 @@ module ActsAsPurchasable
     define_callbacks :purchased
     define_callbacks :declined
 
-    has_many :orders, :through => :order_items
-    has_many :order_items, :as => :purchasable
-    has_many :cart_items, :as => :purchasable, :dependent => :delete_all
+    has_many :orders, :through => :order_items, :class_name => 'Effective::Order'
+    has_many :order_items, :as => :purchasable, :class_name => 'Effective::OrderItem'
+    has_many :cart_items, :as => :purchasable, :dependent => :delete_all, :class_name => 'Effective::CartItem'
 
     validates_with Effective::SoldOutValidator, :on => :create
 
@@ -25,12 +25,21 @@ module ActsAsPurchasable
     # These are breaking on the check for quanitty_enabled?.  More research is due
     validates :quantity_purchased, :numericality => {:allow_nil => true}, :if => proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
     validates :quantity_max, :numericality => {:allow_nil => true}, :if => proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
+
+    scope :purchased, -> { joins(:order_items).joins(:orders).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}).uniq }
+    scope :purchased_by, lambda { |user| joins(:order_items).joins(:orders).where(:orders => {:user_id => user.try(:id), :purchase_state => EffectiveOrders::PURCHASED}).uniq }
+    scope :sold, -> { purchased() }
+    scope :sold_by, lambda { |user| joins(:order_items).joins(:orders).where(:order_items => {:seller_id => user.try(:id)}).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}).uniq }
   end
 
   module ClassMethods
   end
 
   # Regular instance methods
+  def is_effectively_purchasable?
+    true
+  end
+
   def price
     self[:price] || 0.00
   end
@@ -48,15 +57,13 @@ module ActsAsPurchasable
   end
 
   def seller
-    raise ArgumentException('acts_as_purchasable object requires the seller be defined to return the User selling this item.  This is only used for StripeConnect.')
+    if EffectiveOrders.stripe_connect_enabled
+      raise 'acts_as_purchasable object requires the seller be defined to return the User selling this item.  This is only a requirement when using StripeConnect.'
+    end
   end
 
   def purchased?
-    #self.purchase_state == ActsAsPurchasable::PURCHASED
-  end
-
-  def declined?
-    #self.purchase_state == ActsAsPurchasable::DECLINED
+    orders.any? { |order| order.purchased? }
   end
 
   def quantity_enabled?
@@ -93,10 +100,6 @@ module ActsAsPurchasable
     end
 
     self.save
-  end
-
-  def is_effectively_purchasable?
-    true
   end
 
 end

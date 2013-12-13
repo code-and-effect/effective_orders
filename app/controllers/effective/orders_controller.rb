@@ -53,21 +53,33 @@ module Effective
       end
     end
 
-    def index
-      @orders = Order.where(:user_id => current_user.id)
-      EffectiveOrders.authorized?(self, :read, @orders)
-    end
-
     def show
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :read, @order)
     end
 
+    # Basically an index page.
+    # Purchases is an Order History page.  List of purchased orders
+    def my_purchases
+      @orders = Order.purchased_by(current_user)
+
+      EffectiveOrders.authorized?(self, :index, Effective::Order)
+    end
+
+    # Sales is a list of what products beign sold by me have been purchased
+    def my_sales
+      @order_items = OrderItem.sold_by(current_user)
+
+      EffectiveOrders.authorized?(self, :index, Effective::OrderItem)
+    end
+
+    # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
     def purchased # Thank You!
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :read, @order)
     end
 
+    # An error has occurred, please try again
     def declined # An error occurred!
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :read, @order)

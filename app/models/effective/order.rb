@@ -5,7 +5,7 @@ module Effective
     acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
     attr_accessor :save_billing_address, :save_shipping_address # Save these addresses to the user if selected
 
-    belongs_to :user
+    belongs_to :user  # This is the user who purchased the order
     has_many :order_items
 
     structure do
@@ -25,6 +25,9 @@ module Effective
 
     default_scope includes(:order_items => :purchasable).order('created_at DESC')
 
+    scope :purchased, -> { where(:purchase_state => EffectiveOrders::PURCHASED) }
+    scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }
+
     def initialize(cart = {})
       if cart.kind_of?(Effective::Cart)
         super() # Call super with no arguments
@@ -38,7 +41,8 @@ module Effective
             :tax_rate => item.tax_rate,
             :quickbooks_item_name => item.quickbooks_item_name,
             :purchasable_id => item.purchasable_id,
-            :purchasable_type => item.purchasable_type
+            :purchasable_type => item.purchasable_type,
+            :seller_id => item.purchasable.try(:seller).try(:id)
           )
         end
       else
@@ -60,6 +64,10 @@ module Effective
 
     def tax
       order_items.collect(&:tax).sum
+    end
+
+    def num_items
+      order_items.sum(&:quantity)
     end
 
     def purchase!(payment_details = nil)

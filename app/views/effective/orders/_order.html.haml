@@ -1,5 +1,5 @@
 - if order.persisted?
-  %p Order ID: #{order.id}
+  %p Order ID: ##{order.id}
 
   - if order.purchased?
     %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
