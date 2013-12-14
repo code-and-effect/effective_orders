@@ -27,6 +27,7 @@ module Effective
 
     scope :purchased, -> { where(:purchase_state => EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }
+    scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
 
     def initialize(cart = {})
       if cart.kind_of?(Effective::Cart)
