@@ -1,8 +1,9 @@
-%h3 Shopping Cart
+%h2 Shopping Cart
 
 - if cart.empty?
   %p Your cart is empty.
 
+  %hr
   %h4= link_to 'Home', root_url, :class => 'btn'
 
 - else
@@ -35,5 +36,6 @@
         %td= number_to_currency(cart.total)
         %td
 
-  %h4= link_to_checkout :class => 'btn pull-right'
+  %hr
+  %h4= link_to_checkout :class => 'btn btn-primary pull-right'
   %h4= link_to_empty_cart

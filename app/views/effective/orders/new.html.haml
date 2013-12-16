@@ -1,4 +1,4 @@
-%h1 Checkout
+%h2 Checkout
 
 %p All transactions are processed on a third-party secure payment page. When you confirm the order you will be moved off this website to complete your transaction.
 
@@ -21,4 +21,5 @@
     - if @order.save_shipping_address != nil
       = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
 
+  %hr
   = f.submit 'Save and Continue', :class => 'btn btn-primary pull-right', 'data-disable-with' => 'Saving...'
