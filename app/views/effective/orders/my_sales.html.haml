@@ -21,6 +21,6 @@
           %td= order_item.order.purchased_at.strftime("%d-%b-%Y %H:%M")
           %td= order_item_summary(order_item)
 
-- unless @orders_items.present?
+- unless @order_items.present?
   %p You have no sales
 

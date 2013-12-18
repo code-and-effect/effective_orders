@@ -1,4 +1,6 @@
 if defined?(ActiveAdmin)
+  require 'csv'
+
   ActiveAdmin.register Effective::Order do
     menu :label => "Orders", :if => proc { EffectiveOrders.authorized?(controller, :manage, Effective::Order.new()) rescue false }
 
@@ -27,11 +29,11 @@ if defined?(ActiveAdmin)
 
     index :download_links => false do
       column 'Order', :sortable => :id do |order| link_to "##{order.id}", admin_effective_order_path(order) end
-      column :user
+      column 'Buyer', :sortable => :user_id do |order| link_to order.user, admin_user_path(order.user) end
       column 'Summary' do |order| order_summary(order) end
       column do |order|
         output = link_to('View', admin_effective_order_path(order), :class => 'member_link view_link')
-        output += link_to('Resend Receipt', resend_receipt_admin_effective_order_path(order), :class => 'member_link') if order.purchased?
+        output += link_to('Resend Buyer Receipt', resend_receipt_admin_effective_order_path(order), :class => 'member_link') if order.purchased?
         output.html_safe
       end
     end
@@ -41,13 +43,18 @@ if defined?(ActiveAdmin)
     end
 
     action_item :only => :show do
-      link_to("Resend Receipt", resend_receipt_admin_effective_order_path(effective_order))
+      link_to('Resend Buyer Receipt', resend_receipt_admin_effective_order_path(effective_order))
     end
 
     member_action :resend_receipt do
       @order = Effective::Order.find(params[:id])
-      #DelayedJob.new.send_email('successful_order_to_user', @order)
-      flash[:notice] = "Successfully resent the order receipt to #{@order.user.email}"
+
+      if (Effective::OrdersMailer.order_receipt_to_buyer(@order).deliver rescue false)
+        flash[:notice] = "Successfully resent order receipt to #{@order.user.email}"
+      else
+        flash[:alert] = "Unable to send order receipt"
+      end
+
       redirect_to admin_effective_orders_path
     end
 
@@ -62,7 +69,7 @@ if defined?(ActiveAdmin)
       col_headers << "Tax"
       col_headers << "Total"
 
-      csv_string = FasterCSV.generate do |csv|
+      csv_string = CSV.generate do |csv|
         csv << col_headers
 
         @orders.each do |order|

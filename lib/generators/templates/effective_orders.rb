@@ -9,14 +9,27 @@ EffectiveOrders.setup do |config|
   config.customers_table_name = :customers
 
   # Authorization Method
-  config.authorization_method = Proc.new { |controller, action, resource| can?(action, resource) }
+  config.authorization_method = Proc.new { |controller, action, resource| can?(action, resource) } # CanCan gem
 
-  # Require these addresses when creating a new Order.  Works with effective_addresses
+  # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.require_billing_address = true
   config.require_shipping_address = false
 
   # For use with development testing, pass the order ID plus this to the processor
   config.order_id_nudge = 0
+
+  # Tax Calculation Method
+  config.tax_rate_method = Proc.new { |acts_as_purchasable_obj| 0.05 } # Regardless of the object, charge 5% tax (GST)
+
+  # Mailer Settings
+  config.mailer = {
+    :send_order_receipt_to_admin => true,
+    :send_order_receipt_to_buyer => true,
+    :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
+    :admin_email => 'admin@example.com',
+    :default_from => 'info@example.com',
+    :subject_prefix => '[example]'
+  }
 
   # Moneris configuration
   config.moneris_enabled = false

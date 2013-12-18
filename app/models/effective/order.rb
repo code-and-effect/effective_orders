@@ -6,10 +6,9 @@ module Effective
     attr_accessor :save_billing_address, :save_shipping_address # Save these addresses to the user if selected
 
     belongs_to :user  # This is the user who purchased the order
-    has_many :order_items
+    has_many :order_items, :inverse_of => :order
 
     structure do
-      details         :text   # This is a log of order details and changes
       payment         :text   # serialized hash, see below
       purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED]}]
       purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchase_state == EffectiveOrders::PURCHASED}}]
@@ -21,7 +20,7 @@ module Effective
     validates_presence_of :user_id
     validates_presence_of :order_items, :message => 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
 
-    store :payment # ActiveRecord::Store to serialize a Hash and store the results of payment
+    serialize :payment, Hash
 
     default_scope includes(:order_items => :purchasable).order('created_at DESC')
 
@@ -43,7 +42,7 @@ module Effective
             :quickbooks_item_name => item.quickbooks_item_name,
             :purchasable_id => item.purchasable_id,
             :purchasable_type => item.purchasable_type,
-            :seller_id => item.purchasable.try(:seller).try(:id)
+            :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
           )
         end
       else
@@ -83,9 +82,21 @@ module Effective
 
         self.save!
 
-        #DelayedJob.new.send_email('successful_order_to_user', self) if SiteConfiguration.email_receipt_to_user_on_successful_order?
-        #DelayedJob.new.send_email('successful_order_to_admin', self) if SiteConfiguration.email_receipt_to_admin_on_successful_order?
+        if EffectiveOrders.mailer[:send_order_receipt_to_admin]
+          OrdersMailer.order_receipt_to_admin(self).deliver rescue false
+        end
+
+        if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+          OrdersMailer.order_receipt_to_buyer(self).deliver rescue false
+        end
+
+        if EffectiveOrders.mailer[:send_order_receipt_to_seller] && self.purchased?(:stripe_connect)
+          self.order_items.group_by(&:seller).each do |seller, order_items|
+            OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false
+          end
+        end
       end
+
     end
 
     def decline!(payment_details = nil)
@@ -101,8 +112,25 @@ module Effective
       end
     end
 
-    def purchased?
-      purchase_state == EffectiveOrders::PURCHASED
+    def purchased?(provider = nil)
+      return false if (purchase_state != EffectiveOrders::PURCHASED)
+
+      begin
+        case provider
+        when nil
+          true
+        when :stripe_connect
+          payment.keys.first.kind_of?(Numeric) && payment[payment.keys.first].key?('object') && payment[payment.keys.first]['object'] == 'charge'
+        when :stripe
+          payment.key?('object') && payment['object'] == 'charge'
+        when :moneris
+        when :paypal
+        else
+          false
+        end
+      rescue => e
+        false
+      end
     end
 
     def declined?

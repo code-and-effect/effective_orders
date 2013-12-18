@@ -25,7 +25,11 @@ module Effective
     end
 
     def tax_rate
-      0.05   # this is the entry point for all tax stuff.  Right now we're hardcording it.
+      @tax_rate ||= (
+        self.instance_exec(purchasable, &EffectiveOrders.tax_rate_method).to_f.tap do |rate|
+          raise ArgumentError.new("expected EffectiveOrders.tax_rate_method to return a value between 0 and 1. Received #{rate}. Please return 0.05 for 5% tax.") if (rate > 1.0 || rate < 0.0)
+        end
+      )
     end
 
     def total

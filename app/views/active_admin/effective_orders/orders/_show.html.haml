@@ -1,1 +1,77 @@
-%h1 Showing an order
+.panel
+  %h3= "Order ##{order.id} Details"
+  .panel_contents
+    .attributes_table
+      %table
+        %tbody
+          %tr
+            %th order
+            %td= "##{order.id}"
+          %tr
+            %th buyer
+            %td= link_to order.user, admin_user_path(order.user)
+          %tr
+            %th purchase state
+            %td= order.purchase_state
+          - if order.purchased?
+            %tr
+              %th purchased
+              %td= order.purchased_at.strftime("%d-%b-%Y %H:%M")
+          - if order.billing_address.present?
+            %tr
+              %th billing address
+              %td= order.billing_address.to_html
+          - if order.shipping_address.present?
+            %tr
+              %th shipping address
+              %td= order.shipping_address.to_html
+
+.panel
+  %h3 Order Items
+  .panel_contents
+    .attributes_table
+      - has_seller = order.purchased?(:stripe_connect)
+      %table.table
+        %thead
+          %tr
+            %th Items
+            %th Price
+            - if has_seller
+              %th Seller
+        %tbody
+          - order.order_items.each do |item|
+            %tr
+              %td
+                - if item.quantity > 1
+                  = "#{item.quantity}x "
+                = item.title
+              %td= number_to_currency(item.subtotal)
+              - if has_seller
+                %td= link_to item.seller.user, admin_user_path(item.seller.user)
+        %tfoot
+          %tr
+            %th Subtotal
+            %td= number_to_currency(order.subtotal)
+          %tr
+            %th Tax
+            %td= number_to_currency(order.tax)
+          %tr
+            %th Total
+            %td= number_to_currency(order.total)
+
+- if order.payment.present?
+  .panel
+    %h3 Payment
+    .panel_contents
+      .attributes_table
+        %table
+          %tbody
+            %tr
+              - if order.payment.kind_of?(Hash)
+                - order.payment.each do |k, v|
+                  %th= k
+                  %td= v
+              - else
+                %th
+                %td= order.payment
+

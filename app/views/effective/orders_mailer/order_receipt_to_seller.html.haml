@@ -1,0 +1,30 @@
+!!!
+%html
+  %head
+    %meta{:content => 'text/html; charset=UTF-8', 'http-equiv' => "Content-Type"}
+  %body
+    %p= @subject
+
+    %table.table
+      %thead
+        %tr
+          %th Item
+          %th Price
+      %tbody
+        - @order_items.each do |item|
+          %tr
+            %td
+              - if item.quantity > 1
+                = "#{item.quantity}x "
+              = item.title
+            %td= number_to_currency(item.subtotal)
+      %tfoot
+        %tr
+          %th Subtotal
+          %td= number_to_currency(@order_items.sum(&:subtotal))
+        %tr
+          %th Tax
+          %td= number_to_currency(@order_items.sum(&:tax))
+        %tr
+          %th Total
+          %td= number_to_currency(@order_items.sum(&:total))

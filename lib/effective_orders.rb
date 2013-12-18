@@ -14,9 +14,11 @@ module EffectiveOrders
   mattr_accessor :customers_table_name
 
   mattr_accessor :authorization_method
+  mattr_accessor :tax_rate_method
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
+  mattr_accessor :order_id_nudge
 
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
@@ -24,11 +26,10 @@ module EffectiveOrders
   mattr_accessor :stripe_connect_enabled
 
   # These are hashes of configs
+  mattr_accessor :mailer
   mattr_accessor :paypal
   mattr_accessor :moneris
   mattr_accessor :stripe
-
-  mattr_accessor :order_id_nudge
 
   def self.setup
     yield self

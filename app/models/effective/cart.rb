@@ -40,7 +40,7 @@ module Effective
     end
 
     def find(item)
-      cart_items.find { |cart_item| cart_item == item || cart_item.purchasable == item }
+      cart_items.to_a.find { |cart_item| cart_item == item || cart_item.purchasable == item }
     end
 
     def size
