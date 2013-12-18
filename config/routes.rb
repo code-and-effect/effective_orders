@@ -1,5 +1,5 @@
 EffectiveOrders::Engine.routes.draw do
-  scope '/effective', :module => 'effective' do
+  scope :module => 'effective' do
 
     match 'orders/:id/purchased', :to => 'orders#purchased', :as => 'order_purchased', :via => :get
     match 'orders/:id/declined', :to => 'orders#declined', :as => 'order_declined', :via => :get
