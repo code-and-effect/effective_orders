@@ -4,7 +4,8 @@
   %p Your cart is empty.
 
   %hr
-  %h4= link_to 'Home', root_url, :class => 'btn'
+  = link_to 'Home', root_url, :class => 'btn'
+  = link_to 'Order History', effective_orders.my_purchases_path, :class => 'btn'
 
 - else
   %table.table
@@ -37,5 +38,6 @@
         %td
 
   %hr
-  %h4= link_to_checkout :class => 'btn btn-primary pull-right'
-  %h4= link_to_empty_cart
+  = link_to_checkout :class => 'btn btn-primary pull-right'
+  = link_to_empty_cart
+  = link_to 'Order History', effective_orders.my_purchases_path, :class => 'btn'

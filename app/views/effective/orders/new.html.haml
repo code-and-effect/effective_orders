@@ -5,7 +5,7 @@
 = render @order
 = link_to_current_cart :label => 'Change Items'
 
-= simple_form_for @order, :url => EffectiveOrders::Engine.routes.url_helpers.orders_path, :html => {:class => 'form-vertical' } do |f|
+= simple_form_for @order, :url => effective_orders.orders_path, :html => {:class => 'form-vertical' } do |f|
   - if @order.errors[:order_items].present?
     %p.inline-errors= @order.errors[:order_items].first
 
@@ -22,4 +22,4 @@
       = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
 
   %hr
-  = f.submit 'Save and Continue', :class => 'btn btn-primary pull-right', 'data-disable-with' => 'Saving...'
+  = f.submit 'Continue Checkout', :class => 'btn btn-primary pull-right', 'data-disable-with' => 'Continuing...'
