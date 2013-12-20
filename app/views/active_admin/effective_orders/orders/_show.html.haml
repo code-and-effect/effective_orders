@@ -64,14 +64,7 @@
     %h3 Payment
     .panel_contents
       .attributes_table
-        %table
-          %tbody
-            %tr
-              - if order.payment.kind_of?(Hash)
-                - order.payment.each do |k, v|
-                  %th= k
-                  %td= v
-              - else
-                %th
-                %td= order.payment
+        = order_payment_to_html(order) rescue order.payment
+
+
 

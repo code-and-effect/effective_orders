@@ -24,4 +24,25 @@ module EffectiveOrdersHelper
     polymorphic_path(purchasable)
   end
 
+  def order_payment_to_html(order)
+    payment = order.payment
+
+    if order.purchased?(:stripe_connect) && order.payment.kind_of?(Hash)
+      payment = Hash[
+        order.payment.map do |seller_id, v|
+          user = Effective::Customer.for_user(seller_id).user
+          [link_to(user, admin_user_path(user)), order.payment[seller_id]]
+        end
+      ]
+
+    end
+
+    content_tag(:pre) do
+      raw JSON.pretty_generate(payment).html_safe
+        .gsub('\"', '')
+        .gsub("[\n\n    ]", '[]')
+        .gsub("{\n    }", '{}')
+    end
+  end
+
 end

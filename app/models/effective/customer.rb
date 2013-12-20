@@ -21,7 +21,7 @@ module Effective
     class << self
       def for_user(user)
         if user.present?
-          Effective::Customer.where(:user_id => user.try(:id)).first_or_create
+          Effective::Customer.where(:user_id => (user.try(:id) rescue user.to_i)).first_or_create
         end
       end
 

@@ -39,9 +39,7 @@ module Effective
 
               # We do all these Tokens first, so if one throws an exception no charges are made
               items.each do |seller, _|
-                Rails.logger.info "BEFORE TOKEN"
                 seller.token = ::Stripe::Token.create({:customer => buyer.id}, seller.stripe_connect_access_token)
-                Rails.logger.info "AFTER TOKEN"
               end
 
               # Make one charge per seller, for all his order_items
