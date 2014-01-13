@@ -30,8 +30,11 @@ module EffectiveOrdersHelper
     if order.purchased?(:stripe_connect) && order.payment.kind_of?(Hash)
       payment = Hash[
         order.payment.map do |seller_id, v|
-          user = Effective::Customer.for_user(seller_id).user
-          [link_to(user, admin_user_path(user)), order.payment[seller_id]]
+          if (user = Effective::Customer.find(seller_id).try(:user))
+            [link_to(user, admin_user_path(user)), order.payment[seller_id]]
+          else
+            [seller_id, order.payment[seller_id]]
+          end
         end
       ]
 

@@ -20,9 +20,12 @@
             %td= render order.shipping_address
 
 %table.table
+  - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
   %thead
     %tr
       %th Item
+      - if include_download_column
+        %th Download
       %th Price
   %tbody
     - order.order_items.each do |item|
@@ -31,15 +34,21 @@
           - if item.quantity > 1
             = "#{item.quantity}x "
           = item.title
+        - if include_download_column
+          %td
+            - if item.purchased_download_url.present?
+              = link_to 'download', item.purchased_download_url
+            - else
+              = '-'
         %td= number_to_currency(item.subtotal)
   %tfoot
     %tr
-      %th Subtotal
+      %th{:colspan => (include_download_column ? 2 : 1)} Subtotal
       %td= number_to_currency(order.subtotal)
     %tr
-      %th Tax
+      %th{:colspan => (include_download_column ? 2 : 1)} Tax
       %td= number_to_currency(order.tax)
     %tr
-      %th Total (CAN)
+      %th{:colspan => (include_download_column ? 2 : 1)} Total
       %td= number_to_currency(order.total)
 

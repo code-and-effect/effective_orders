@@ -20,6 +20,7 @@ module Effective
     validates_presence_of :seller_id, :if => Proc.new { |order_item| EffectiveOrders.stripe_connect_enabled }
 
     delegate :purchased?, :declined?, :to => :order
+    delegate :purchased_download_url, :to => :purchasable
     delegate :purchased, :declined, :to => :purchasable # Callbacks
 
     scope :sold, -> { joins(:order).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}) }

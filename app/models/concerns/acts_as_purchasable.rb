@@ -106,5 +106,9 @@ module ActsAsPurchasable
     self.save
   end
 
+  def purchased_download_url
+    false
+  end
+
 end
 
