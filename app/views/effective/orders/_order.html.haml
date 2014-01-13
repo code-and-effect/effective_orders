@@ -1,54 +1,55 @@
-- if order.persisted?
-  %p Order ID: ##{order.id}
+.effective_order
+  - if order.persisted?
+    %p Order ID: ##{order.id}
 
-  - if order.purchased?
-    %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
+    - if order.purchased?
+      %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
 
-  - if order.billing_address.present? || order.shipping_address.present?
-    %table.table
-      %thead
-        %tr
-          - if order.billing_address.present?
-            %th Billing Address
-          - if order.shipping_address.present?
-            %th Shipping Address
-      %tbody
-        %tr
-          - if order.billing_address.present?
-            %td= render order.billing_address
-          - if order.shipping_address.present?
-            %td= render order.shipping_address
+    - if order.billing_address.present? || order.shipping_address.present?
+      %table.table
+        %thead
+          %tr
+            - if order.billing_address.present?
+              %th Billing Address
+            - if order.shipping_address.present?
+              %th Shipping Address
+        %tbody
+          %tr
+            - if order.billing_address.present?
+              %td= render order.billing_address
+            - if order.shipping_address.present?
+              %td= render order.shipping_address
 
-%table.table
-  - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
-  %thead
-    %tr
-      %th Item
-      - if include_download_column
-        %th Download
-      %th Price
-  %tbody
-    - order.order_items.each do |item|
+  %table.table
+    - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
+    %thead
       %tr
-        %td
-          - if item.quantity > 1
-            = "#{item.quantity}x "
-          = item.title
+        %th Item
         - if include_download_column
+          %th Download
+        %th Price
+    %tbody
+      - order.order_items.each do |item|
+        %tr
           %td
-            - if item.purchased_download_url.present?
-              = link_to 'download', item.purchased_download_url
-            - else
-              = '-'
-        %td= number_to_currency(item.subtotal)
-  %tfoot
-    %tr
-      %th{:colspan => (include_download_column ? 2 : 1)} Subtotal
-      %td= number_to_currency(order.subtotal)
-    %tr
-      %th{:colspan => (include_download_column ? 2 : 1)} Tax
-      %td= number_to_currency(order.tax)
-    %tr
-      %th{:colspan => (include_download_column ? 2 : 1)} Total
-      %td= number_to_currency(order.total)
+            - if item.quantity > 1
+              = "#{item.quantity}x "
+            = item.title
+          - if include_download_column
+            %td
+              - if item.purchased_download_url.present?
+                = link_to 'download', item.purchased_download_url
+              - else
+                = '-'
+          %td= number_to_currency(item.subtotal)
+    %tfoot
+      %tr
+        %th{:colspan => (include_download_column ? 2 : 1)} Subtotal
+        %td= number_to_currency(order.subtotal)
+      %tr
+        %th{:colspan => (include_download_column ? 2 : 1)} Tax
+        %td= number_to_currency(order.tax)
+      %tr
+        %th{:colspan => (include_download_column ? 2 : 1)} Total
+        %td= number_to_currency(order.total)
 
