@@ -14,7 +14,7 @@ module Effective
 
     delegate :title, :price, :tax_exempt, :quickbooks_item_name, :to => :purchasable
 
-    default_scope order(:updated_at)
+    default_scope -> { order(:updated_at) }
 
     def subtotal
       price * quantity

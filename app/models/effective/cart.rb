@@ -10,7 +10,7 @@ module Effective
       timestamps
     end
 
-    default_scope includes(:cart_items => :purchasable)
+    default_scope -> { includes(:cart_items => :purchasable) }
 
     def add(item, quantity = 1)
       raise ArgumentError.new('expecting an acts_as_purchasable object') unless item.respond_to?(:is_effectively_purchasable?)

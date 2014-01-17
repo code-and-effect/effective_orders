@@ -22,7 +22,7 @@ module Effective
 
     serialize :payment, Hash
 
-    default_scope includes(:user).includes(:order_items => :purchasable).order('created_at DESC')
+    default_scope -> { includes(:user).includes(:order_items => :purchasable).order('created_at DESC') }
 
     scope :purchased, -> { where(:purchase_state => EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }

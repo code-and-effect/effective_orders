@@ -4,6 +4,8 @@ A full solution for payments in a Rails3 application.
 
 Handles Carts, Orders, and taking payment through Moneris, PayPal and Stripe.
 
+Rails 3.2.x and Rails 4
+
 ## Getting Started
 
 Add to your Gemfile:
