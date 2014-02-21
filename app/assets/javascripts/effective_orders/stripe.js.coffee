@@ -21,8 +21,8 @@ $(document).on 'click', "#effective-orders-new-customer-form form input[type='su
   Stripe.createToken({
     number: form.find('input#effective_stripe_charge_number').val(),
     cvc: form.find('input#effective_stripe_charge_cvc').val(),
-    exp_month: form.find('select#effective_stripe_charge_exp_month option:selected').val(),
-    exp_year: form.find('select#effective_stripe_charge_exp_year option:selected').val()
+    exp_month: form.find('input#effective_stripe_charge_exp_month').val(),
+    exp_year: form.find('input#effective_stripe_charge_exp_year').val()
   }, stripeResponseHandler)
 
   false
