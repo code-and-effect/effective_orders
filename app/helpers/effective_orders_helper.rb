@@ -37,7 +37,6 @@ module EffectiveOrdersHelper
           end
         end
       ]
-
     end
 
     content_tag(:pre) do

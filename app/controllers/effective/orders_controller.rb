@@ -88,7 +88,7 @@ module Effective
     def pretend_purchase
       unless Rails.env.production?
         @order = Order.find(params[:id])
-        EffectiveOrders.authorized?(self, :read, @orders)
+        EffectiveOrders.authorized?(self, :read, @order)
         order_purchased('for pretend')
       end
     end
