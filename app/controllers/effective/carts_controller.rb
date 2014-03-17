@@ -4,6 +4,7 @@ module Effective
 
     def show
       @cart = current_cart
+      @page_title ||= 'Shopping Cart'
       EffectiveOrders.authorized?(self, :read, @cart)
     end
 

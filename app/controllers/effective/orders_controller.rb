@@ -8,6 +8,7 @@ module Effective
     include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
 
     before_filter :authenticate_user!, :except => [:paypal_postback]
+    before_filter :set_page_title
 
     # This is the entry point for the "Checkout" buttons
     def new
@@ -124,5 +125,17 @@ module Effective
         params[:effective_order]
       end
     end
+
+    def set_page_title
+      @page_title ||= case params[:action]
+        when 'my_purchases' ; 'Order History'
+        when 'my_sales'     ; 'Sales History'
+        when 'purchased'    ; 'Thank You'
+        when 'declined'     ; 'Unable to process payment'
+        when 'show'         ; 'Order Receipt'
+        else 'Checkout' 
+      end
+    end
+
   end
 end
