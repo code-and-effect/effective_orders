@@ -2,8 +2,11 @@
 
 %p All transactions are processed on a third-party secure payment page. When you confirm the order you will be moved off this website to complete your transaction.
 
-= render @order
-= link_to_current_cart :label => 'Change Items'
+%br
+
+.effective-order
+  = render :partial => 'order_items', :locals => {:order => @order}
+  = link_to_current_cart :label => 'Change Items'
 
 = simple_form_for @order, :url => effective_orders.orders_path, :html => {:class => 'form-vertical' } do |f|
   - if @order.errors[:order_items].present?

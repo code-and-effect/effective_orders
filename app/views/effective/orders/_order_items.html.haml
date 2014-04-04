@@ -1,0 +1,32 @@
+%table.table
+  - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
+  %thead
+    %tr
+      %th.quantity Quantity
+      %th Item
+      - if include_download_column
+        %th.download Download
+      %th.price Price
+  %tbody
+    - order.order_items.each do |item|
+      %tr
+        %td.quantity= item.quantity
+        %td= item.title
+        - if include_download_column
+          %td.download
+            - if item.purchased? && item.purchased_download_url.present?
+              = link_to 'download', item.purchased_download_url
+            - else
+              = '-'
+        %td.price= number_to_currency(item.subtotal)
+  %tfoot
+    %tr
+      %th{:colspan => (include_download_column ? 3 : 2)} Subtotal
+      %td.price= number_to_currency(order.subtotal)
+    %tr
+      %th{:colspan => (include_download_column ? 3 : 2)} Tax
+      %td.price= number_to_currency(order.tax)
+    %tr
+      %th{:colspan => (include_download_column ? 3 : 2)} Total Due
+      %td.price= number_to_currency(order.total)
+

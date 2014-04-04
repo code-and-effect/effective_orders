@@ -1,0 +1,26 @@
+.effective-order {
+  .col50 {
+    float: left;
+    width: 50%;
+  }
+
+  .table {
+    clear: both;
+
+    tfoot {
+      > tr:first-child {
+        border-top: 20px solid transparent;
+      }
+
+      th {
+        border: none;
+        text-align: right;
+        padding-right: 65px;
+      }
+      
+      .actions { border: none; }
+    }
+
+    .price { text-align: right; }
+  }
+}

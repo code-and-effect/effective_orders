@@ -8,34 +8,35 @@
   = link_to 'Order History', effective_orders.my_purchases_path, :class => 'btn'
 
 - else
+%p Your cart has #{cart.cart_items.length} items.
+.effective-order
   %table.table
     %thead
       %tr
+        %th.quantity Quantity
         %th Item
-        %th Price
-        %th
+        %th.price Price
+        %th.actions
     %tbody
       - cart.cart_items.each do |item|
         %tr
-          %td
-            - if item.quantity > 1
-              = "#{item.quantity}x "
-            = item.title
-          %td= number_to_currency(item.subtotal)
-          %td= link_to_remove_from_cart(item)
+          %td.quantity= item.quantity
+          %td= item.title
+          %td.price= number_to_currency(item.subtotal)
+          %td.actions= link_to_remove_from_cart(item)
     %tfoot
       %tr
-        %th Subtotal
-        %td= number_to_currency(cart.subtotal)
-        %td
+        %th{:colspan => 2} Subtotal
+        %td.price= number_to_currency(cart.subtotal)
+        %td.actions
       %tr
-        %th Tax
-        %td= number_to_currency(cart.tax)
-        %td
+        %th{:colspan => 2} Tax
+        %td.price= number_to_currency(cart.tax)
+        %td.actions
       %tr
-        %th Total
-        %td= number_to_currency(cart.total)
-        %td
+        %th{:colspan => 2} Total Due
+        %td.price= number_to_currency(cart.total)
+        %td.actions
 
   %hr
   = link_to_checkout :class => 'btn btn-primary pull-right'

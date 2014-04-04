@@ -1,0 +1,18 @@
+%h3 Acme Industries Inc.
+.col50
+  %p= mail_to 'info@acmeindustries.com'
+  %p
+    1234 Fake Street
+    %br
+    Edmonton, AB, T5H 4A5
+    %br
+    %small Customize me by overriding '/app/views/effective/orders/_order_header.html.haml'
+
+.col50
+  - if order.persisted?
+    %p Order ID: ##{order.id}
+
+  - if order.purchased?
+    %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
+  - else
+    %p Date: #{Time.zone.now.strftime("%b %d, %Y")}
