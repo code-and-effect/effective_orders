@@ -46,8 +46,15 @@ module Effective
               items.each do |seller, order_items|
                 amount = (order_items.sum(&:total) * 100.0).to_i
                 description = "Charge for Order ##{charge.order.id} with OrderItems #{order_items.map(&:id).join(', ')}"
+                application_fee = (order_items.sum(&:stripe_connect_application_fee) * 100.0).to_i
 
-                results[seller.id] = JSON.parse(::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :card => seller.token.id, :description => description).to_json)
+                results[seller.id] = JSON.parse(::Stripe::Charge.create(
+                  :amount => amount, 
+                  :currency => EffectiveOrders.stripe[:currency], 
+                  :card => seller.token.id, 
+                  :description => description,
+                  :application_fee => application_fee
+                ).to_json)
               end
 
               return results
@@ -57,7 +64,13 @@ module Effective
               amount = (charge.order.total * 100.0).to_i # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
               description = "Charge for Order ##{charge.order.id}"
 
-              return JSON.parse(::Stripe::Charge.create(:amount => amount, :currency => EffectiveOrders.stripe[:currency], :customer => buyer.id, :card => buyer.default_card, :description => description).to_json)
+              return JSON.parse(::Stripe::Charge.create(
+                  :amount => amount, 
+                  :currency => EffectiveOrders.stripe[:currency], 
+                  :customer => buyer.id, 
+                  :card => buyer.default_card, 
+                  :description => description
+                ).to_json)
             end
           rescue => e
             charge.errors.add(:base, "Unable to checkout order with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\".")

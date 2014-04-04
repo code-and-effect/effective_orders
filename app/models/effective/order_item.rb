@@ -45,5 +45,12 @@ module Effective
       @seller ||= Effective::Customer.for_user(purchasable.try(:seller))
     end
 
+    def stripe_connect_application_fee
+      @stripe_connect_application_fee ||= (
+        self.instance_exec(self, &EffectiveOrders.stripe_connect_application_fee_method).to_f.tap do |fee|
+          raise ArgumentError.new("expected EffectiveOrders.stripe_connect_application_fee_method to return a value between 0 and the order_item total (#{self.total}).  Received #{fee}.") if (fee > total || fee < 0.0)
+        end
+      )
+    end
   end
 end
