@@ -22,9 +22,11 @@ module EffectiveOrders
 
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
-  mattr_accessor :stripe_enabled
 
   # application fee  is required if stripe_connect_enabled is true
+  mattr_accessor :stripe_enabled
+
+  mattr_accessor :stripe_subscriptions_enabled
   mattr_accessor :stripe_connect_enabled
   mattr_accessor :stripe_connect_application_fee_method
 

@@ -26,11 +26,12 @@ module Effective
       private
 
       def process_stripe_charge(charge)
-        ::Stripe.api_key = EffectiveOrders.stripe[:secret_key]
-
         Effective::Order.transaction do
           begin
-            buyer = find_or_create_stripe_customer(charge.order.buyer, charge.token)
+            customer = Customer.for_user(charge.order.user)
+            customer.update_card(charge.token) if charge.token.present?
+
+            buyer = customer.stripe_customer
 
             if EffectiveOrders.stripe_connect_enabled
               # Go through and create Stripe::Tokens for each seller
@@ -79,32 +80,6 @@ module Effective
         end
 
         false
-      end
-
-      def find_or_create_stripe_customer(customer, token)
-        stripe_customer = (
-          if customer.stripe_customer.present?
-            ::Stripe::Customer.retrieve(customer.stripe_customer)
-          else
-            ::Stripe::Customer.create(:email => customer.user.email, :description => customer.user.id.to_s)
-          end
-        )
-
-        if token.present? # Oh, so they want to use a new credit card...
-          stripe_customer.card = token  # This sets the default_card to the new card
-
-          if stripe_customer.save && stripe_customer.default_card.present?
-            card = stripe_customer.cards.retrieve(stripe_customer.default_card)
-
-            customer.stripe_customer = stripe_customer.id
-            customer.stripe_active_card = "**** **** **** #{card.last4} #{card.type} #{card.exp_month}/#{card.exp_year}"
-            customer.save!
-          else
-            raise Exception.new('unable to update stripe customer with new card')
-          end
-        end
-
-        stripe_customer
       end
 
       # StrongParameters

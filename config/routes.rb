@@ -18,6 +18,10 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/stripe_charge', :to => 'orders#stripe_charge', :as => 'stripe_charges', :via => :post
     end
 
+    if EffectiveOrders.stripe_subscriptions_enabled
+      resources :subscriptions
+    end
+
     if EffectiveOrders.stripe_connect_enabled
       match 'orders/stripe_connect_redirect_uri', :to => 'orders#stripe_connect_redirect_uri', :as => 'stripe_connect_redirect_uri', :via => :get
     end

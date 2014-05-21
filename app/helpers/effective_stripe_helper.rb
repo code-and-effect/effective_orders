@@ -4,7 +4,7 @@ module EffectiveStripeHelper
   STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
 
   def is_stripe_connect_seller?(user)
-    Effective::Customer.is_stripe_connect_seller?(user)
+    Effective::Customer.for_user(user).try(:is_stripe_connect_seller?) == true
   end
 
   def link_to_new_stripe_connect_customer(opts = {})
@@ -27,5 +27,25 @@ module EffectiveStripeHelper
     options = {}.merge(opts)
     link_to image_tag('/assets/effective_orders/stripe_connect.png'), authorize_url, options
   end
+
+  ### Subscriptions Helpers
+  def stripe_plans_collection(plans)
+    (plans || []).map { |plan| ["#{plan.name} - #{stripe_plan_amount_description(plan)}", plan.id, {'data-amount' => plan.amount}] }
+  end
+
+  def stripe_plan_amount_description(plan)
+    occurrence = case plan.interval
+      when 'weekly'   ; '/week'
+      when 'monthly'  ; '/month'
+      when 'yearly'   ; '/year'
+      when 'week'     ; plan.interval_count == 1 ? '/week' : " every #{plan.interval_count} weeks"
+      when 'month'    ; plan.interval_count == 1 ? '/month' : " every #{plan.interval_count} months"
+      when 'year'     ; plan.interval_count == 1 ? '/year' : " every #{plan.interval_count} years"
+      else            ; plan.interval
+    end
+
+    "#{number_to_currency(plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}"
+  end
+
 
 end

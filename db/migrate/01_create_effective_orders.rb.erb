@@ -58,9 +58,10 @@ class CreateEffectiveOrders < ActiveRecord::Migration
 
     create_table <%= @customers_table_name %> do |t|
       t.integer   :user_id
-      t.string    :stripe_customer
+      t.string    :stripe_customer_id
       t.string    :stripe_active_card
       t.string    :stripe_connect_access_token
+      t.text      :stripe_plans
 
       t.timestamps
     end

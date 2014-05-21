@@ -7,16 +7,25 @@ module Effective
     belongs_to :user
 
     structure do
-      stripe_customer         :string  # cus_xja7acoa03
+      stripe_customer_id      :string  # cus_xja7acoa03
       stripe_active_card      :string  # **** **** **** 4242 Visa 05/12
+      stripe_plans            :text # ['Basic', 'Advanced'] a serialized Array of Plans
 
-      stripe_connect_access_token :string  # If using StripeConnect and this user is a Seller
+      stripe_connect_access_token :string  # If using StripeConnect and this user is a connected Seller
 
       timestamps
     end
 
+    serialize :stripe_plans, Array
+
     validates_presence_of :user
     validates_uniqueness_of :user_id  # Only 1 customer per user may exist
+
+    validate do
+      (stripe_plans || []).each do |plan|
+        self.errors.add(:stripe_plans, "already subscribed to #{plan}") if stripe_plans.count(plan) > 1
+      end
+    end
 
     class << self
       def for_user(user)
@@ -24,11 +33,36 @@ module Effective
           Effective::Customer.where(:user_id => (user.try(:id) rescue user.to_i)).first_or_create
         end
       end
-
-      def is_stripe_connect_seller?(user)
-        for_user(user).stripe_connect_access_token.present?
-      end
-
     end
+
+    def stripe_customer
+      @stripe_customer ||= if stripe_customer_id.present?
+        ::Stripe::Customer.retrieve(stripe_customer_id)
+      else
+        ::Stripe::Customer.create(:email => user.email, :description => user.id.to_s).tap do |stripe_customer|
+          self.update_attributes(:stripe_customer_id => stripe_customer.id)
+        end
+      end
+    end
+
+    def update_card!(token)
+      if token.present? # Oh, so they want to use a new credit card...
+        stripe_customer.card = token  # This sets the default_card to the new card
+
+        if stripe_customer.save && stripe_customer.default_card.present?
+          card = stripe_customer.cards.retrieve(stripe_customer.default_card)
+
+          self.stripe_active_card = "**** **** **** #{card.last4} #{card.type} #{card.exp_month}/#{card.exp_year}"
+          self.save!
+        else
+          raise Exception.new('unable to update stripe customer with new card')
+        end
+      end
+    end
+
+    def is_stripe_connect_seller?
+      stripe_connect_access_token.present?
+    end
+
   end
 end

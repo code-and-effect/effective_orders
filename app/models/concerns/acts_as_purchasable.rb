@@ -106,6 +106,7 @@ module ActsAsPurchasable
     self.save
   end
 
+  # Override me if this is a digital purchase.
   def purchased_download_url
     false
   end
