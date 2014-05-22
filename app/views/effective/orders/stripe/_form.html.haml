@@ -1,31 +1,8 @@
-%h2 Payment
+= javascript_include_tag "https://checkout.stripe.com/checkout.js"
 
-= javascript_include_tag "https://js.stripe.com/v2/"
-:javascript
-  Stripe.setPublishableKey('#{EffectiveOrders.stripe[:publishable_key]}');
-
-#effective-orders-new-customer-form{:style => ('display: none;' if @order.buyer.stripe_active_card.present?)}
-  = simple_form_for @stripe_charge || Effective::StripeCharge.new(), :url => '/' do |f|
-    = f.input :number, :label => 'Credit Card Number', :required => true, :input_html => { :class => 'order-card' }
-    #effective-orders-card-meta
-      = f.input :exp_month, :label => 'Expires', :as => :string, :required => true, :input_html => { :class => 'card-month', :placeholder => 'MM', :maxlength => '2' }
-      %span.expires-sep /
-      = f.input :exp_year, :label => false, :as => :string, :required => true, :input_html => { :class => 'card-year', :placeholder => 'YY', :maxlength => '2' }
-      = f.input :cvc, :label => 'CVC', :required => true, :input_html => { :maxlength => '3', :class => 'card-ccv'}
-    = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'
-
-#effective-orders-existing-customer-form{:style => ('display: none;' if @order.buyer.stripe_active_card.blank?)}
-  %p Charge the credit card you used last time:
-  %p= @order.buyer.stripe_active_card
-  %p= link_to 'Enter new credit card', '#', :class => 'enter-new-credit-card'
-
-  = simple_form_for Effective::StripeCharge.new(@order), :url => effective_orders.stripe_charges_path, :method => :post, :html => {:id => 'effective_stripe_charge_form'} do |f|
+#effective-orders-new-charge-form{:data => {'stripe-publishable-key' => EffectiveOrders.stripe[:publishable_key], 'site-title' => EffectiveOrders.stripe[:site_title], 'site-image' => EffectiveOrders.stripe[:site_image], 'user-email' => current_user.try(:email), 'amount' => (@order.total * 100), 'description' => "#{@order.num_items} items (#{number_to_currency(@order.total)})"}}
+  = simple_form_for @stripe_charge || Effective::StripeCharge.new(@order), :url => effective_orders.stripe_charges_path, :html => {:class => 'form-horizontal' } do |f|
     = f.input :effective_order_id, :as => :hidden
     = f.input :token, :as => :hidden
     = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'
 
-#effective-orders-ajax-status
-  - if @stripe_charge.try(:errors).try(:present?)
-    %i.icon-exclamation-sign
-    = @stripe_charge.errors.full_messages.join(', ')
-%br

@@ -89,6 +89,7 @@ EffectiveOrders.setup do |config|
       :publishable_key => '',
       :currency => 'usd',
       :site_title => 'My Site',
+      :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
       :connect_client_id => ''
     }
   else
@@ -97,6 +98,7 @@ EffectiveOrders.setup do |config|
       :publishable_key => '',
       :currency => 'usd',
       :site_title => 'My Development Site',  # Displalyed on the Embedded Stripe Form
+      :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
       :connect_client_id => ''
     }
   end
