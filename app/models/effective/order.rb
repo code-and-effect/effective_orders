@@ -50,10 +50,6 @@ module Effective
       end
     end
 
-    # def buyer
-    #   @buyer ||= Effective::Customer.for_user(user)
-    # end
-
     def total
       order_items.collect(&:total).sum
     end

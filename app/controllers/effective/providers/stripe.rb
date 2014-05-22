@@ -15,13 +15,10 @@ module Effective
 
         EffectiveOrders.authorized?(self, :create, @order)
 
-        binding.pry
-
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(response) # orders_controller#order_purchased
         else
           flash[:error] = @stripe_charge.errors.full_messages.join(',')
-          binding.pry
           render :action => :create
         end
       end
