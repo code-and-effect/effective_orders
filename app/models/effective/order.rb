@@ -71,7 +71,7 @@ module Effective
 
       Order.transaction do
         self.purchase_state = EffectiveOrders::PURCHASED
-        self.purchased_at = Time.now
+        self.purchased_at = Time.zone.now
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
         order_items.each { |item| item.purchased(self) }

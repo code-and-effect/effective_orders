@@ -4,7 +4,6 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/:id/purchased', :to => 'orders#purchased', :as => 'order_purchased', :via => :get
     match 'orders/:id/declined', :to => 'orders#declined', :as => 'order_declined', :via => :get
     match 'orders/my_purchases', :to => 'orders#my_purchases', :as => 'my_purchases', :via => :get
-    match 'orders/my_sales', :to => 'orders#my_sales', :as => 'my_sales', :via => :get
 
     if EffectiveOrders.paypal_enabled
       match 'orders/paypal_postback', :to => 'orders#paypal_postback', :as => 'paypal_postback', :via => :post
@@ -19,11 +18,12 @@ EffectiveOrders::Engine.routes.draw do
     end
 
     if EffectiveOrders.stripe_subscriptions_enabled
-      resources :subscriptions
+      resources :subscriptions, :only => [:index, :show, :new, :create]
     end
 
     if EffectiveOrders.stripe_connect_enabled
       match 'orders/stripe_connect_redirect_uri', :to => 'orders#stripe_connect_redirect_uri', :as => 'stripe_connect_redirect_uri', :via => :get
+      match 'orders/my_sales', :to => 'orders#my_sales', :as => 'my_sales', :via => :get
     end
 
     unless Rails.env.production?

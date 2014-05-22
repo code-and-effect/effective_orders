@@ -22,7 +22,7 @@ module Effective
         flash[:success] = "Successfully created subscription"
         redirect_to effective_orders.subscriptions_path
       else
-        @plans = stripe_plans_for(@customer)
+        @plans = available_stripe_plans_for(@customer)
         flash[:error] ||= 'Unable to process payment.  Please try again.'
         render :action => :new
       end
