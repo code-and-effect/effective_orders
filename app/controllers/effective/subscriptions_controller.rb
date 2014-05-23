@@ -23,7 +23,7 @@ module Effective
       end
     end
 
-    # This is kind of a 'My Subscriptions' page
+    # This is a 'My Subscriptions' page
     def index
       @page_title ||= 'My Subscriptions'
 
@@ -32,15 +32,31 @@ module Effective
       EffectiveOrders.authorized?(self, :read, Effective::StripeSubscription.new())
     end
 
+    def show
+      @plan = @customer.stripe_plans.find { |plan| plan.id == params[:id] }
+      raise ActiveRecord::RecordNotFound unless @plan.present?
+
+      @subscription = @customer.stripe_customer.subscriptions.all.find { |subscription| subscription.plan.id == @plan.id }
+      raise ActiveRecord::RecordNotFound unless @subscription.present?
+
+      EffectiveOrders.authorized?(self, :read, Effective::StripeSubscription.new())
+
+      @invoices = @customer.stripe_customer.invoices.all.select do |invoice| 
+        invoice.lines.any? { |line| line.id == @subscription.id }
+      end
+    end
+
     def destroy
       @plan = @customer.stripe_plans.find { |plan| plan.id == params[:id] }
 
+      raise ActiveRecord::RecordNotFound unless @plan.present?
       EffectiveOrders.authorized?(self, :destroy, Effective::StripeSubscription.new())
 
-      @subscription = @customer.stripe_customer.subscriptions.all
-        .find { |subscription| subscription.plan.id == @plan.id } if @plan.present?
+      @subscription = @customer.stripe_customer.subscriptions.all.find { |subscription| subscription.plan.id == @plan.id }
 
-      if @plan.present? && @subscription.present?
+      binding.pry
+
+      if @subscription.present?
         begin
           @subscription.delete()
           @customer.plans.delete(@plan.id)
@@ -50,7 +66,6 @@ module Effective
           flash[:error] = "Unable to unsubscribe.  Message: \"#{e.message}\"."
         end
       else
-        flash[:error] = "Unable to find plan #{params[:id]}" unless @plan.present?
         flash[:error] = "Unable to find stripe subscription for #{params[:id]}" unless @subscription.present?
       end
 
