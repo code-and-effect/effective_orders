@@ -1,0 +1,16 @@
+%h2 My Subscriptions
+
+- if @plans.present?
+  %p You have the following subscriptions:
+  %ul
+    - @plans.each do |plan|
+      %li
+        = stripe_plan_description(plan)
+        = '('
+        = link_to 'details', effective_orders.subscription_path(plan.id)
+        = '-'
+        = link_to 'unsubscribe', effective_orders.subscription_path(plan.id), :data => {:method => :delete, :confirm => 'This will cancel your subscription. Are you sure? This cannot be undone.'}
+        = ')'
+- else
+  %p You have no subscriptions
+  %p= link_to 'New Subscription', effective_orders.new_subscription_path

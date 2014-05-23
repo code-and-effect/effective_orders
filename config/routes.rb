@@ -18,7 +18,7 @@ EffectiveOrders::Engine.routes.draw do
     end
 
     if EffectiveOrders.stripe_subscriptions_enabled
-      resources :subscriptions, :only => [:index, :show, :new, :create]
+      resources :subscriptions, :only => [:index, :show, :new, :create, :destroy]
     end
 
     if EffectiveOrders.stripe_connect_enabled
