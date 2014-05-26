@@ -14,6 +14,8 @@ module Effective
       @subscription = StripeSubscription.new(subscription_params)
       @page_title ||= 'New Subscription'
 
+      EffectiveOrders.authorized?(self, :create, @subscription)
+
       if @subscription.valid? && create_stripe_subscription(@customer, @subscription)
         flash[:success] = "Successfully created subscription"
         redirect_to effective_orders.subscriptions_path
