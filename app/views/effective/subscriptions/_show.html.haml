@@ -10,7 +10,7 @@
   %tbody
     %tr
       %th Started
-      %td= Time.at(@subscription.start).strftime("%d-%b-%Y")
+      %td= Time.zone.at(@subscription.start).strftime("%d-%b-%Y")
     - if @subscription.discount.present?
       %tr
         %th Coupon
@@ -20,10 +20,10 @@
       %td= @subscription.status
     %tr
       %th Current Period Start
-      %td= Time.at(@subscription.current_period_start).strftime("%d-%b-%Y")
+      %td= Time.zone.at(@subscription.current_period_start).strftime("%d-%b-%Y")
     %tr
       %th Current Period End
-      %td= Time.at(@subscription.current_period_end).strftime("%d-%b-%Y")
+      %td= Time.zone.at(@subscription.current_period_end).strftime("%d-%b-%Y")
 
 %h3= "#{@plan.interval.chomp('ly')}ly Invoices"
 
@@ -37,12 +37,12 @@
   %tbody
     - @invoices.each do |invoice|
       %tr
-        %td= Time.at(invoice.date).strftime("%d-%b-%Y")
+        %td= Time.zone.at(invoice.date).strftime("%d-%b-%Y")
         %td= invoice.id
         %td
-          = Time.at(invoice.lines.first.period.start).strftime("%d-%b-%Y")
+          = Time.zone.at(invoice.lines.first.period.start).strftime("%d-%b-%Y")
           to
-          = Time.at(invoice.lines.first.period.end).strftime("%d-%b-%Y")
+          = Time.zone.at(invoice.lines.first.period.end).strftime("%d-%b-%Y")
         %td= number_to_currency(invoice.total / 100.0)
 
 %h3 Cancel Subscription

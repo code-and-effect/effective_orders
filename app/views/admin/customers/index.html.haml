@@ -3,7 +3,7 @@
 - unless @datatable.collection.length > 0
   %p 
     There are no customers
-- else
+- elsif @datatable
   = render_datatable @datatable
 
 %hr

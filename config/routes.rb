@@ -39,6 +39,8 @@ EffectiveOrders::Engine.routes.draw do
     # If you Tweak this route, please update EffectiveOrdersHelper too
     match 'cart/:purchasable_type/:purchasable_id', :to => 'carts#add_to_cart', :via => [:get, :post], :as => 'add_to_cart'
     match 'cart/:id', :to => 'carts#remove_from_cart', :via => [:delete], :as => 'remove_from_cart'
+
+    match 'webhooks/stripe', :to => 'webhooks#stripe', :via => [:post, :put]
   end
 
   if defined?(EffectiveDatatables)

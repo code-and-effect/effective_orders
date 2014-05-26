@@ -4,10 +4,10 @@ module Admin
     layout 'admin' if -> { view_context.template_exists?('admin') }
     
     def index
-      @datatable = ::Effective::Datatables::Customers.new()
+      @datatable = ::Effective::Datatables::Customers.new() if defined?(EffectiveDatatables)
       @page_title = 'Customers'
 
-      authorize! :index, Effective::Customer
+      EffectiveOrders.authorized?(self, :manage, Effective::Customer)
     end
 
   end
