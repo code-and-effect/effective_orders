@@ -40,4 +40,11 @@ EffectiveOrders::Engine.routes.draw do
     match 'cart/:purchasable_type/:purchasable_id', :to => 'carts#add_to_cart', :via => [:get, :post], :as => 'add_to_cart'
     match 'cart/:id', :to => 'carts#remove_from_cart', :via => [:delete], :as => 'remove_from_cart'
   end
+
+  if defined?(EffectiveDatatables)
+    namespace :admin do
+      resources :customers, :only => [:index]
+    end
+  end
+
 end

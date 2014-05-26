@@ -7,7 +7,7 @@ module Effective
     include ActiveModel::Validations
     include ActiveRecord::Reflection
     
-    attr_accessor :plan, :token # For our form
+    attr_accessor :plan, :token, :coupon # For our form
 
     validates_presence_of :plan, :token
 

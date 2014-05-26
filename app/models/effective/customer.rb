@@ -27,6 +27,8 @@ module Effective
       end
     end
 
+    scope :customers, -> { where("#{EffectiveOrders.customers_table_name.to_s}.stripe_customer_id IS NOT NULL") }
+
     class << self
       def for_user(user)
         if user.present?

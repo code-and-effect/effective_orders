@@ -18,7 +18,7 @@ module Effective
         flash[:success] = "Successfully created subscription"
         redirect_to effective_orders.subscriptions_path
       else
-        flash[:error] ||= 'Unable to process payment.  Please try again.'
+        flash[:error] ||= 'Unable to start subscription.  Please try again.'
         render :action => :new
       end
     end
@@ -44,6 +44,8 @@ module Effective
       @invoices = @customer.stripe_customer.invoices.all.select do |invoice| 
         invoice.lines.any? { |line| line.id == @subscription.id }
       end
+
+      @page_title ||= "#{@plan.name} Subscription Details"
     end
 
     def destroy
@@ -53,8 +55,6 @@ module Effective
       EffectiveOrders.authorized?(self, :destroy, Effective::StripeSubscription.new())
 
       @subscription = @customer.stripe_customer.subscriptions.all.find { |subscription| subscription.plan.id == @plan.id }
-
-      binding.pry
 
       if @subscription.present?
         begin
@@ -79,9 +79,14 @@ module Effective
         begin
           customer.plans << subscription.plan
           customer.update_card!(subscription.token)
-          customer.stripe_customer.subscriptions.create({:plan => subscription.plan})
+          if subscription.coupon.present?
+            customer.stripe_customer.subscriptions.create({:plan => subscription.plan, :coupon => subscription.coupon})
+          else
+            customer.stripe_customer.subscriptions.create({:plan => subscription.plan})
+          end
         rescue => e
           subscription.errors.add(:plan, customer.errors[:plans].first) if customer.errors[:plans].present?
+          subscription.errors.add(:coupon, e.message) if e.message.downcase.include?('coupon')
           flash[:error] = "Unable to checkout with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\"."
           raise ActiveRecord::Rollback
         end
@@ -97,7 +102,7 @@ module Effective
     # StrongParameters
     def subscription_params
       begin
-        params.require(:effective_stripe_subscription).permit(:plan, :token)
+        params.require(:effective_stripe_subscription).permit(:plan, :token, :coupon)
       rescue => e
         params[:effective_stripe_subscription]
       end

@@ -1,0 +1,2 @@
+- if customer.stripe_customer_id.present?
+  = link_to 'Manage', "https://manage.stripe.com/customers/#{customer.stripe_customer_id}"

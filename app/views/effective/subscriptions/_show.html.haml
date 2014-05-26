@@ -5,11 +5,16 @@
 
 %p= stripe_plan_description(@plan)
 
+- Rails.logger.info @subscription
 %table.table
   %tbody
     %tr
       %th Started
       %td= Time.at(@subscription.start).strftime("%d-%b-%Y")
+    - if @subscription.discount.present?
+      %tr
+        %th Coupon
+        %td= stripe_coupon_description(@subscription.discount.coupon)
     %tr
       %th Status
       %td= @subscription.status

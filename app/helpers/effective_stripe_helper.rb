@@ -47,5 +47,16 @@ module EffectiveStripeHelper
     "#{plan.name} - #{number_to_currency(plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}"
   end
 
+  def stripe_coupon_description(coupon)
+    amount = coupon.amount_off.present? ? number_to_currency(coupon.amount_off / 100.0) : "#{coupon.percent_off}%"
+
+    if coupon.duration_in_months.present?
+      "#{coupon.id} - #{amount} off for #{coupon.duration_in_months} months"
+    else
+      "#{coupon.id} - #{amount} off #{coupon.duration}"
+    end
+  end
+
+
 
 end
