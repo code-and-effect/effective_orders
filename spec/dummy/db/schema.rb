@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 3) do
+ActiveRecord::Schema.define(:version => 4) do
 
   create_table "addresses", :force => true do |t|
     t.string   "addressable_type"
@@ -51,6 +51,16 @@ ActiveRecord::Schema.define(:version => 3) do
   end
 
   add_index "carts", ["user_id"], :name => "index_carts_on_user_id"
+
+  create_table "customers", force: true do |t|
+    t.integer  "user_id"
+    t.string   "stripe_customer_id"
+    t.string   "stripe_active_card"
+    t.string   "stripe_connect_access_token"
+    t.text     "plans"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "order_items", :force => true do |t|
     t.integer  "order_id"
