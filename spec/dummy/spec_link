@@ -1,3 +1,0 @@
-You may have to link this to ../../spec
-
-spec/dummy > ln -s ../../spec spec
