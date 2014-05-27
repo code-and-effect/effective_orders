@@ -54,6 +54,7 @@ ActiveRecord::Schema.define(:version => 3) do
 
   create_table "order_items", :force => true do |t|
     t.integer  "order_id"
+    t.integer  "seller_id"
     t.string   "purchasable_type"
     t.integer  "purchasable_id"
     t.string   "title"
@@ -89,6 +90,27 @@ ActiveRecord::Schema.define(:version => 3) do
     t.string   "quickbooks_item_name"
     t.datetime "created_at",                                                          :null => false
     t.datetime "updated_at",                                                          :null => false
+  end
+
+  create_table "users", force: true do |t|
+    t.string   "encrypted_password"
+    t.string   "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "confirmation_sent_at"
+    t.datetime "confirmed_at"
+    t.string   "confirmation_token"
+    t.string   "unconfirmed_email"
+    t.integer  "sign_in_count",          default: 0
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string   "current_sign_in_ip"
+    t.string   "last_sign_in_ip"
+    t.string   "email"
+    t.integer  "roles_mask",             default: 0
+    t.boolean  "archived",               default: false
+    t.datetime "updated_at"
+    t.datetime "created_at"
   end
 
 end

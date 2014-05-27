@@ -6,16 +6,15 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.datetime  :purchased_at
 
       t.text      :payment
-      t.text      :details
 
       t.timestamps
     end
 
     add_index :orders, :user_id
 
-
     create_table :order_items do |t|
       t.integer   :order_id
+      t.integer   :seller_id
       t.string    :purchasable_type
       t.integer   :purchasable_id
 
@@ -59,8 +58,10 @@ class CreateEffectiveOrders < ActiveRecord::Migration
 
     create_table :customers do |t|
       t.integer   :user_id
-      t.string    :stripe_customer
+      t.string    :stripe_customer_id
       t.string    :stripe_active_card
+      t.string    :stripe_connect_access_token
+      t.text      :plans
 
       t.timestamps
     end
