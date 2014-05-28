@@ -23,14 +23,14 @@ module EffectiveCartsHelper
   end
 
   def link_to_current_cart(opts = {})
-    options = {:id => 'current_cart'}.merge(opts)
+    options = {:id => 'current_cart', :rel => :nofollow}.merge(opts)
     link_to (options.delete(:label) || "Cart (#{current_cart.size})"), effective_orders.cart_path, options
   end
 
   def link_to_add_to_cart(purchasable, opts = {})
     raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.respond_to?(:is_effectively_purchasable?)
 
-    options = {:class => 'btn'}.merge(opts)
+    options = {:class => 'btn', :rel => :nofollow}.merge(opts)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')
 
     link_to (options.delete(:label) || 'Add to Cart'), effective_orders.add_to_cart_path(:purchasable_type => purchasable.class.name, :purchasable_id => purchasable.id.to_i), options
@@ -40,6 +40,7 @@ module EffectiveCartsHelper
     raise ArgumentError.new('expecting an Effective::CartItem object') unless cart_item.kind_of?(Effective::CartItem)
 
     options = {
+      :rel => :nofollow,
       :data => {:confirm => 'Are you sure? This cannot be undone!'},
       :method => :delete
     }.merge(opts)
@@ -50,6 +51,7 @@ module EffectiveCartsHelper
 
   def link_to_empty_cart(opts = {})
     options = {
+      :rel => :nofollow,
       :class => 'btn',
       :data => {:confirm => 'This will clear your entire cart.  Are you sure?  This cannot be undone!'},
       :method => :delete
@@ -60,7 +62,7 @@ module EffectiveCartsHelper
   end
 
   def link_to_checkout(opts = {})
-    options = {:class => 'btn'}.merge(opts)
+    options = {:class => 'btn', :rel => :nofollow}.merge(opts)
     options[:class] = ((options[:class] || '') + ' btn-checkout')
 
     link_to (options.delete(:label) || 'Proceed to Checkout'), effective_orders.new_order_path, options
