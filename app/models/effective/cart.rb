@@ -2,11 +2,10 @@ module Effective
   class Cart < ActiveRecord::Base
     self.table_name = EffectiveOrders.carts_table_name.to_s
 
+    belongs_to :user    # This is optional.  We want to let non-logged-in people have carts too
     has_many :cart_items, :dependent => :delete_all
 
     structure do
-      user_id       :integer  # This is optional.  We want to let non-logged-in people have carts too
-
       timestamps
     end
 

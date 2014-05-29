@@ -19,8 +19,16 @@ FactoryGirl.define do
     quickbooks_item_name "Quickbooks Item Name"
   end
 
+  factory :user do # This only exists in the dummy/ app
+    sequence(:email) {|n| "user_#{n}@effective_orders.test"}
+
+    password '12345678'
+
+    after(:build) { |user| user.skip_confirmation! if user.respond_to?(:skip_confirmation!) }
+  end
+
   factory :cart, :class => Effective::Cart do
-    user_id 1
+    association :user
 
     before(:create) do |cart|
       3.times { cart.cart_items << FactoryGirl.create(:cart_item, :cart => cart) }
@@ -35,7 +43,7 @@ FactoryGirl.define do
   end
 
   factory :order, :class => Effective::Order do
-    user_id 1
+    association :user
 
     before(:create) do |order|
       order.billing_address = FactoryGirl.build(:address, :addressable => order)

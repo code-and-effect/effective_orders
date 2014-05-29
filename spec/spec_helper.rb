@@ -13,6 +13,8 @@ Dir[Rails.root.join("../../spec/support/**/*.rb")].each {|f| require f }
 RSpec.configure do |config|
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
+  config.include Devise::TestHelpers, :type => :controller
+
   Rails.logger.level = 4    # Output only minimal stuff to test.log
 
   config.use_transactional_fixtures = true   # Make this false to once again use DatabaseCleaner

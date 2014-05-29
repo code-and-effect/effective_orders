@@ -4,8 +4,9 @@ module EffectiveCartsHelper
       if (user = (current_user rescue nil)).present? # This protects me against Devise not being installed
         Effective::Cart.where(:user_id => user.id).first_or_create.tap do |user_cart|
           if session[:cart].present?
-            if (session_cart = Effective::Cart.where(:id => session[:cart]).first).present?
+            if (session_cart = Effective::Cart.where('user_id IS NULL').where(:id => session[:cart]).first).present?
               session_cart.cart_items.update_all(:cart_id => user_cart.id)
+              session_cart.destroy
               user_cart.reload
             end
 
@@ -13,7 +14,7 @@ module EffectiveCartsHelper
           end
         end
       elsif session[:cart].present?
-        Effective::Cart.where(:id => session[:cart]).first_or_create
+        Effective::Cart.where('user_id IS NULL').where(:id => session[:cart]).first_or_create
       else
         cart = Effective::Cart.create!
         session[:cart] = cart.id
