@@ -19,7 +19,7 @@ module Effective
         flash[:alert] = 'Unable to destroy cart:' + e.message
       end
 
-      redirect_to :back
+      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
     end
 
     def add_to_cart
@@ -38,7 +38,7 @@ module Effective
         flash[:alert] = 'Unable to add item to cart: ' + e.message
       end
 
-      redirect_to :back
+      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
     end
 
     def remove_from_cart
@@ -52,7 +52,7 @@ module Effective
         flash[:alert] = 'Unable to remove item from cart: ' + e.message
       end
 
-      redirect_to :back
+      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
     end
 
     private
