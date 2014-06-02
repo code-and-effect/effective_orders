@@ -7,6 +7,8 @@ module Effective
     include Providers::Stripe if EffectiveOrders.stripe_enabled
     include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
 
+    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
+
     before_filter :authenticate_user!, :except => [:paypal_postback]
     before_filter :set_page_title
 

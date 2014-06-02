@@ -1,1 +1,16 @@
-= render :partial => '_index'
+%h2 My Subscriptions
+
+- if @subscriptions.present?
+  %p You have the following subscriptions:
+  %ul
+    - @subscriptions.each do |subscription|
+      %li
+        = subscription.title
+        = '('
+        = link_to 'details', effective_orders.subscription_path(subscription.stripe_plan_id)
+        = '-'
+        = link_to 'unsubscribe', effective_orders.subscription_path(subscription.stripe_plan_id), :data => {:method => :delete, :confirm => 'This will cancel your subscription. Are you sure? This cannot be undone.'}
+        = ')'
+- else
+  %p You have no subscriptions
+  %p= link_to 'New Subscription', effective_orders.new_subscription_path

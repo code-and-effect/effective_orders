@@ -11,12 +11,11 @@
     %tbody
       %tr
         %td
-          = order.user.to_s
+          = "#{order.user.to_s} (#{mail_to order.user.email})".html_safe
           %br
-          = mail_to order.user.email
-        - if order.billing_address.present?
-          = render order.billing_address
+          - if order.billing_address.present?
+            = render order.billing_address
         - if order.shipping_address.present?
-          %td= render order.billing_address
+          %td= render order.shipping_address
 
   = render :partial => 'order_items', :locals => {:order => order}

@@ -1,0 +1,5 @@
+%h2 New Subscription
+
+= simple_form_for @subscription, :url => effective_orders.subscriptions_path, :html => { :class => 'form-horizontal' } do |f|
+  = f.input :plan, :as => :select, :collection => stripe_plans_collection(@plans), :include_blank => false
+  = f.submit 'Add to Cart', :class => 'btn btn-primary'

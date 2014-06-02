@@ -4,25 +4,26 @@
 
 %br
 
+
 .effective-order
-  = render :partial => 'order_items', :locals => {:order => @order}
-  = link_to_current_cart :label => 'Change Items'
+  = simple_form_for @order, :url => effective_orders.orders_path, :html => {:class => 'form-horizontal' } do |f|
+    = render :partial => 'order_items', :locals => {:order => @order}
+    = link_to_current_cart :label => 'Change Items'
 
-= simple_form_for @order, :url => effective_orders.orders_path, :html => {:class => 'form-vertical' } do |f|
-  - if @order.errors[:order_items].present?
-    %p.inline-errors= @order.errors[:order_items].first
+    - if @order.errors[:order_items].present?
+      %p.inline-errors= @order.errors[:order_items].first
 
-  - if EffectiveOrders.require_billing_address
-    %h3 Billing Address
-    = effective_address_fields(f, :billing_address)
-    - if @order.save_billing_address != nil
-      = f.input :save_billing_address, :as => :boolean, :label => 'Save as my default Billing Address'
+    - if EffectiveOrders.require_billing_address
+      %h3 Billing Address
+      = effective_address_fields(f, :billing_address)
+      - if @order.save_billing_address != nil
+        = f.input :save_billing_address, :as => :boolean, :label => 'Save as my default Billing Address'
 
-  - if EffectiveOrders.require_shipping_address
-    %h3 Shipping Address
-    = effective_address_fields(f, :shipping_address)
-    - if @order.save_shipping_address != nil
-      = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
+    - if EffectiveOrders.require_shipping_address
+      %h3 Shipping Address
+      = effective_address_fields(f, :shipping_address)
+      - if @order.save_shipping_address != nil
+        = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
 
-  %hr
-  = f.submit 'Continue Checkout', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'
+    %hr
+    = f.submit 'Continue Checkout', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'

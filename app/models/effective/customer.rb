@@ -5,27 +5,18 @@ module Effective
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
     belongs_to :user
+    has_many :subscriptions
 
     structure do
       stripe_customer_id            :string  # cus_xja7acoa03
       stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
       stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
 
-      plans                         :text # ['Basic', 'Advanced'] a serialized Array of Plans. These match the Stripe::Plan.id
-
       timestamps
     end
 
-    serialize :plans, Array
-
     validates_presence_of :user
     validates_uniqueness_of :user_id  # Only 1 customer per user may exist
-
-    validate do
-      (plans || []).each do |plan|
-        self.errors.add(:plans, "already subscribed to #{plan}") if plans.count(plan) > 1
-      end
-    end
 
     scope :customers, -> { where("#{EffectiveOrders.customers_table_name.to_s}.stripe_customer_id IS NOT NULL") }
 
@@ -64,20 +55,6 @@ module Effective
 
     def is_stripe_connect_seller?
       stripe_connect_access_token.present?
-    end
-
-    def available_stripe_plans
-      stripe_plan_objs.reject { |plan| plans.include?(plan.id) }
-    end
-
-    def stripe_plans
-      stripe_plan_objs.select { |plan| plans.include?(plan.id) }
-    end
-
-    private
-
-    def stripe_plan_objs
-      @stripe_plans ||= Stripe::Plan.all
     end
 
   end

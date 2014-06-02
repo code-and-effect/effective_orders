@@ -54,7 +54,7 @@ module Effective
                     :card => seller.token.id,
                     :description => description,
                     :application_fee => application_fee
-                  }, 
+                  },
                   seller.stripe_connect_access_token
                 ).to_json)
               end

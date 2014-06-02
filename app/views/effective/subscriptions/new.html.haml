@@ -1,3 +1,6 @@
 %h2 New Subscription
 
-= render :partial => 'form', :locals => {:subscription => @subscription, :plans => @plans}
+= simple_form_for @subscription, :url => effective_orders.subscriptions_path, :method => :post, :html => { :class => 'form-horizontal' } do |f|
+  = f.input :stripe_plan_id, :as => :select, :collection => stripe_plans_collection(@plans), :include_blank => false, :label => 'Plan'
+  = f.input :stripe_coupon_id, :placeholder => 'Coupon Code', :label => 'Coupon'
+  = f.submit 'Add to Cart', :class => 'btn btn-primary'

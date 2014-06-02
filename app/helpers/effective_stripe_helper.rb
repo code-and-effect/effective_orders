@@ -44,7 +44,7 @@ module EffectiveStripeHelper
       else            ; plan.interval
     end
 
-    "#{plan.name} - #{number_to_currency(plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}"
+    "#{plan.name} - #{ActionController::Base.helpers.number_to_currency(plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}"
   end
 
   def stripe_coupon_description(coupon)

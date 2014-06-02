@@ -7,6 +7,7 @@ EffectiveOrders.setup do |config|
   config.carts_table_name = :carts
   config.cart_items_table_name = :cart_items
   config.customers_table_name = :customers
+  config.subscriptions_table_name = :subscriptions
 
   # Authorization Method
   config.authorization_method = Proc.new { |controller, action, resource| can?(action, resource) } # CanCan gem
@@ -15,11 +16,23 @@ EffectiveOrders.setup do |config|
   config.require_billing_address = true
   config.require_shipping_address = false
 
-  # For use with development testing, pass the order ID plus this to the processor
+  # For use with development testing, pass the order ID plus this to the payment processor
   config.order_id_nudge = 0
 
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable_obj| 0.05 } # Regardless of the object, charge 5% tax (GST)
+
+  # Layout Settings
+  # config.layout = 'application'   # All EffectiveOrders controllers will use this layout
+
+  # Configure the Layout per controller, or all at once
+  config.layout = {
+    :carts => 'application',
+    :orders => 'application',
+    :subscriptions => 'application',
+    :admin_customers => 'application'
+  }
+
 
   # Mailer Settings
   config.mailer = {
