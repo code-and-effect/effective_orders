@@ -23,8 +23,6 @@ module Effective
     validates_presence_of :seller_id, :if => Proc.new { |order_item| EffectiveOrders.stripe_connect_enabled }
 
     delegate :purchased_download_url, :to => :purchasable
-    delegate :stripe_coupon_id, :stripe_coupon_id=, :to => :purchasable
-
     delegate :purchased?, :declined?, :to => :order
     delegate :purchased, :declined, :to => :purchasable # Callbacks
 
@@ -48,10 +46,6 @@ module Effective
     # This is really only used for StripeConnect
     def seller
       @seller ||= Effective::Customer.for_user(purchasable.try(:seller))
-    end
-
-    def is_effective_stripe_subscription?
-      purchasable.kind_of?(Effective::Subscription)
     end
 
     def stripe_connect_application_fee

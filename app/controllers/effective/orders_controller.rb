@@ -41,14 +41,14 @@ module Effective
 
       # Passing the order_item_attributes as acts_as_nested creates a new object instead of updating the temporary one.
       # So we have to manually assign some atts
-      # Expecting something like "effective_order"=>{"order_items_attributes"=>{"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFFasdf", "id"=>"2"}}}
+      # Expecting something like "effective_order"=>{"order_items_attributes"=>{"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
       @order.attributes = order_params.except(:order_items_attributes)
 
       (order_params[:order_items_attributes] || {}).each do |_, atts|
-        order_item = @order.order_items.find { |oi| oi.purchasable.class == atts[:class] && oi.purchasable.id == atts[:id] }
+        order_item = @order.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
 
-        if (order_item = @order.order_items[index.to_i])
-          order_item.attributes = atts
+        if order_item
+          order_item.purchasable.attributes = atts.except(:id, :class)
           order_item.title = order_item.purchasable.title  # Recalculate the Title and Price, as we may have just added a coupon code
           order_item.price = order_item.purchasable.price
         end
@@ -137,7 +137,7 @@ module Effective
           :save_billing_address, :save_shipping_address, :stripe_token,
           :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
-          :order_items_attributes => [:stripe_coupon_id]
+          :order_items_attributes => [:stripe_coupon_id, :class, :id]
         )
       rescue => e
         params[:effective_order] || {}

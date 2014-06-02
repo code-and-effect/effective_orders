@@ -1,0 +1,7 @@
+.effective-stripe-subscription
+  = form.simple_fields_for :order_items, subscription do |fa|
+    = fa.input_field :class, :as => :hidden
+    - if subscription.stripe_coupon_id.blank? || subscription.errors[:stripe_coupon_id].present?
+      = fa.input :stripe_coupon_id, :label => 'Coupon&nbsp;Code'.html_safe, :placeholder => 'Enter Coupon Code'
+    - else
+      = fa.input :stripe_coupon_id, :as => :hidden, :label => 'Coupon&nbsp;Code'.html_safe, :placeholder => 'Enter Coupon Code'

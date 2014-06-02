@@ -23,4 +23,13 @@
 
     .price { text-align: right; }
   }
+
+  .effective-stripe-subscription {
+    input { 
+      margin-top: 5px;
+      width: 30%; 
+      min-width: 200px; 
+    }
+  }
+
 }

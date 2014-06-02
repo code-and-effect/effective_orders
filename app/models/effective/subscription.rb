@@ -27,13 +27,17 @@ module Effective
     end
 
     def stripe_plan_id=(plan_id)
-      self[:stripe_plan_id] = plan_id
-      assign_price_and_title()
+      unless self[:stripe_plan_id] == plan_id
+        self[:stripe_plan_id] = plan_id
+        assign_price_and_title()
+      end
     end
 
     def stripe_coupon_id=(coupon_id)
-      self[:stripe_coupon_id] = coupon_id
-      assign_price_and_title()
+      unless self[:stripe_coupon_id] == coupon_id
+        self[:stripe_coupon_id] = coupon_id
+        assign_price_and_title()
+      end
     end
 
     def stripe_plan
