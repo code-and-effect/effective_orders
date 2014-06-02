@@ -22,7 +22,7 @@
         - cart.cart_items.each do |item|
           %tr
             %td.quantity= item.quantity
-            %td= item.title
+            %td= item.title.html_safe
             %td.price= number_to_currency(item.subtotal)
             %td.actions= link_to_remove_from_cart(item)
       %tfoot

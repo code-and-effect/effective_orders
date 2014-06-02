@@ -4,10 +4,9 @@
 
 %br
 
-
 .effective-order
   = simple_form_for @order, :url => effective_orders.orders_path, :html => {:class => 'form-horizontal' } do |f|
-    = render :partial => 'order_items', :locals => {:order => @order}
+    = render :partial => 'order_items', :locals => {:order => @order, :form => f}
     = link_to_current_cart :label => 'Change Items'
 
     - if @order.errors[:order_items].present?

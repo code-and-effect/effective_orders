@@ -5,7 +5,6 @@ module Effective
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
 
     acts_as_purchasable
-
     belongs_to :customer
 
     structure do
@@ -23,18 +22,18 @@ module Effective
     validates_uniqueness_of :customer_id, :scope => [:stripe_plan_id] # Can only be on each plan once.
 
     before_validation do
-      if stripe_coupon_id.present? && stripe_coupon.blank?
-        self.errors.add(:stripe_coupon_id, "is an invalid Coupon")
-      end
+      self.errors.add(:stripe_plan_id, "is an invalid Plan") if stripe_plan_id.present? && stripe_plan.blank?
+      self.errors.add(:stripe_coupon_id, "is an invalid Coupon") if stripe_coupon_id.present? && stripe_coupon.blank?
+    end
 
-      if stripe_plan_id.present?
-        if stripe_plan.blank?
-          self.errors.add(:stripe_plan_id, "is an invalid Plan")
-        else
-          self.title = stripe_plan_description(stripe_plan)
-          self.price = (stripe_plan.amount / 100.0)
-        end
-      end
+    def stripe_plan_id=(plan_id)
+      self[:stripe_plan_id] = plan_id
+      assign_price_and_title()
+    end
+
+    def stripe_coupon_id=(coupon_id)
+      self[:stripe_coupon_id] = coupon_id
+      assign_price_and_title()
     end
 
     def stripe_plan
@@ -46,6 +45,28 @@ module Effective
     def stripe_coupon
       if stripe_coupon_id.present?
         @stripe_coupon ||= (Stripe::Coupon.retrieve(stripe_coupon_id) rescue nil)
+      end
+    end
+
+    private
+
+    def assign_price_and_title
+      if stripe_plan
+        if stripe_coupon
+          self.price = (price_with_coupon(stripe_plan.amount, stripe_coupon) / 100.0)
+          self.title = stripe_plan_description(stripe_plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
+        else
+          self.title = stripe_plan_description(stripe_plan)
+          self.price = (stripe_plan.amount / 100.0)
+        end
+      end
+    end
+
+    def price_with_coupon(amount, coupon)
+      if coupon.percent_off.present?
+        amount * (coupon.percent_off / 100.0)
+      else
+        [0, amount - coupon.amount_off].max
       end
     end
 

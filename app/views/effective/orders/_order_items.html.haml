@@ -8,10 +8,17 @@
         %th.download Download
       %th.price Price
   %tbody
-    - order.order_items.each do |item|
+    - order.order_items.each_with_index do |item, index|
       %tr
         %td.quantity= item.quantity
-        %td= item.title
+        %td
+          = item.title.html_safe
+          - if order.new_record? && item.is_effective_stripe_subscription? && (item.purchasable.stripe_coupon_id.blank? || item.purchasable.errors[:stripe_coupon_id].present?)
+            %br
+              = form.simple_fields_for :order_items, item.purchasable do |fa|
+                = fa.input :class, :as => :hidden
+                = fa.input :stripe_coupon_id, :label => 'Coupon Code'
+
         - if include_download_column
           %td.download
             - if item.purchased? && item.purchased_download_url.present?
