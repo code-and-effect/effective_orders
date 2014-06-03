@@ -32,46 +32,9 @@ module Effective
             buyer.update_card!(charge.token)
 
             if EffectiveOrders.stripe_connect_enabled
-              # Go through and create Stripe::Tokens for each seller
-              items = charge.order.order_items.group_by(&:seller)
-              results = {}
-
-              # We do all these Tokens first, so if one throws an exception no charges are made
-              items.each do |seller, _|
-                seller.token = ::Stripe::Token.create({:customer => buyer.stripe_customer.id}, seller.stripe_connect_access_token)
-              end
-
-              # Make one charge per seller, for all his order_items
-              items.each do |seller, order_items|
-                amount = (order_items.sum(&:total) * 100.0).to_i
-                description = "Charge for Order ##{charge.order.id} with OrderItems ##{order_items.map(&:id).join(', #')}"
-                application_fee = (order_items.sum(&:stripe_connect_application_fee) * 100.0).to_i
-
-                results[seller.id] = JSON.parse(::Stripe::Charge.create(
-                  {
-                    :amount => amount, 
-                    :currency => EffectiveOrders.stripe[:currency], 
-                    :card => seller.token.id,
-                    :description => description,
-                    :application_fee => application_fee
-                  },
-                  seller.stripe_connect_access_token
-                ).to_json)
-              end
-
-              return results
+              return charge_with_stripe_connect(charge, buyer)
             else
-              # This is a regular Stripe Charge for the full amount of the order
-
-              amount = (charge.order.total * 100.0).to_i # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
-              description = "Charge for Order ##{charge.order.id}"
-
-              return JSON.parse(::Stripe::Charge.create(
-                  :amount => amount, 
-                  :currency => EffectiveOrders.stripe[:currency], 
-                  :customer => buyer.stripe_customer.id, 
-                  :description => description
-                ).to_json)
+              return charge_with_stripe(charge, buyer)
             end
           rescue => e
             charge.errors.add(:base, "Unable to process order with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\".")
@@ -80,6 +43,72 @@ module Effective
         end
 
         false
+      end
+
+      def charge_with_stripe(charge, buyer)
+        results = {:subscriptions => {}, :charge => nil}
+
+        # Process subscriptions.
+        charge.subscriptions.each do |subscription|
+          next if subscription.stripe_plan_id.blank?
+
+          stripe_subscription = if subscription.stripe_coupon_id.present?
+            buyer.stripe_customer.subscriptions.create({:plan => subscription.stripe_plan_id, :coupon => subscription.stripe_coupon_id})
+          else
+            buyer.stripe_customer.subscriptions.create({:plan => subscription.stripe_plan.id})
+          end
+
+          subscription.stripe_subscription_id = stripe_subscription.id
+          subscription.save!
+
+          results[:subscriptions][subscription.stripe_plan_id] = JSON.parse(stripe_subscription.to_json)
+        end
+
+        # Process regular order_items.
+        amount = (charge.order_items.collect(&:total).sum * 100.0).to_i  # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
+        description = "Charge for Order ##{charge.order.id}"
+
+        if amount > 0
+          results[:charge] = JSON.parse(::Stripe::Charge.create(
+            :amount => amount, 
+            :currency => EffectiveOrders.stripe[:currency], 
+            :customer => buyer.stripe_customer.id, 
+            :description => description
+          ).to_json)
+        end
+
+        results
+      end
+
+      def charge_with_stripe_connect(charge, buyer)
+        # Go through and create Stripe::Tokens for each seller
+        items = charge.order_items.group_by(&:seller)
+        results = {}
+
+        # We do all these Tokens first, so if one throws an exception no charges are made
+        items.each do |seller, _|
+          seller.token = ::Stripe::Token.create({:customer => buyer.stripe_customer.id}, seller.stripe_connect_access_token)
+        end
+
+        # Make one charge per seller, for all his order_items
+        items.each do |seller, order_items|
+          amount = (order_items.sum(&:total) * 100.0).to_i
+          description = "Charge for Order ##{charge.order.id} with OrderItems ##{order_items.map(&:id).join(', #')}"
+          application_fee = (order_items.sum(&:stripe_connect_application_fee) * 100.0).to_i
+
+          results[seller.id] = JSON.parse(::Stripe::Charge.create(
+            {
+              :amount => amount, 
+              :currency => EffectiveOrders.stripe[:currency], 
+              :card => seller.token.id,
+              :description => description,
+              :application_fee => application_fee
+            },
+            seller.stripe_connect_access_token
+          ).to_json)
+        end
+
+        results
       end
 
       # StrongParameters

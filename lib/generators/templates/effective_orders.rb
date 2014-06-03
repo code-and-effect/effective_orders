@@ -20,7 +20,7 @@ EffectiveOrders.setup do |config|
   config.order_id_nudge = 0
 
   # Tax Calculation Method
-  config.tax_rate_method = Proc.new { |acts_as_purchasable_obj| 0.05 } # Regardless of the object, charge 5% tax (GST)
+  config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
 
   # Layout Settings
   # config.layout = 'application'   # All EffectiveOrders controllers will use this layout

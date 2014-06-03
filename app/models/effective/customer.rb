@@ -5,7 +5,7 @@ module Effective
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
     belongs_to :user
-    has_many :subscriptions
+    has_many :subscriptions, :inverse_of => :customer
 
     structure do
       stripe_customer_id            :string  # cus_xja7acoa03

@@ -22,5 +22,13 @@ module Effective
       false
     end
 
+    def order_items
+      order.order_items.reject { |order_item| order_item.purchasable.kind_of?(Effective::Subscription) }
+    end
+
+    def subscriptions
+      order.order_items.select { |order_item| order_item.purchasable.kind_of?(Effective::Subscription) }.map(&:purchasable)
+    end
+
   end
 end

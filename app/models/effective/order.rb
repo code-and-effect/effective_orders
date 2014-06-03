@@ -29,24 +29,50 @@ module Effective
     scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
 
     def initialize(cart = {})
-      if cart.kind_of?(Effective::Cart)
-        super() # Call super with no arguments
+      super() # Call super with no arguments
 
-        cart.cart_items.each do |item|
-          self.order_items.build(
-            :title => item.title,
-            :quantity => item.quantity,
-            :price => item.price,
-            :tax_exempt => item.tax_exempt,
-            :tax_rate => item.tax_rate,
-            :quickbooks_item_name => item.quickbooks_item_name,
-            :purchasable_id => item.purchasable_id,
-            :purchasable_type => item.purchasable_type,
-            :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
-          )
-        end
+      if cart.kind_of?(Effective::Cart)
+        cart_items = cart.cart_items
+      elsif cart.present? == false
+        cart_items = []
       else
-        super # Call super as normal
+        purchasables = [cart].flatten
+
+        if purchasables.all? { |purchasable| purchasable.respond_to?(:is_effectively_purchasable?) }
+          cart_items = purchasables.map do |purchasable|
+            CartItem.new(:quantity => 1).tap { |cart_item| cart_item.purchasable = purchasable }
+          end
+        else
+          throw ArgumentError.new("Order.new() expects an Effective::Cart, a single acts_as_purchasable item, or an array of acts_as_purchasable items")
+        end
+      end
+
+      cart_items.each do |item|
+        self.order_items.build(
+          :title => item.title,
+          :quantity => item.quantity,
+          :price => item.price,
+          :tax_exempt => item.tax_exempt,
+          :tax_rate => item.tax_rate,
+          :quickbooks_item_name => item.quickbooks_item_name,
+          :purchasable_id => item.purchasable_id,
+          :purchasable_type => item.purchasable_type,
+          :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
+        )
+      end
+    end
+
+    def user=(user)
+      super
+
+      if user.respond_to?(:billing_address)
+        self.billing_address = user.billing_address
+        self.save_billing_address = true
+      end
+
+      if user.respond_to?(:shipping_address)
+        self.shipping_address = user.shipping_address
+        self.save_shipping_address = true
       end
     end
 
@@ -91,8 +117,11 @@ module Effective
             OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false
           end
         end
+
+        return true
       end
 
+      false
     end
 
     def decline!(payment_details = nil)

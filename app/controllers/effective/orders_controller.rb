@@ -23,16 +23,6 @@ module Effective
         flash[:alert] = 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
         redirect_to effective_orders.cart_path
       end
-
-      if current_user.respond_to?(:billing_address)
-        @order.billing_address = current_user.billing_address
-        @order.save_billing_address = true
-      end
-
-      if current_user.respond_to?(:shipping_address)
-        @order.shipping_address = current_user.shipping_address
-        @order.save_shipping_address = true
-      end
     end
 
     def create

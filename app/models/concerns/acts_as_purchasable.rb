@@ -30,6 +30,8 @@ module ActsAsPurchasable
     scope :purchased_by, lambda { |user| joins(:order_items).joins(:orders).where(:orders => {:user_id => user.try(:id), :purchase_state => EffectiveOrders::PURCHASED}).uniq }
     scope :sold, -> { purchased() }
     scope :sold_by, lambda { |user| joins(:order_items).joins(:orders).where(:order_items => {:seller_id => user.try(:id)}).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}).uniq }
+
+    scope :not_purchased, -> { where('id NOT IN (?)', purchased.map(&:id)) }
   end
 
   module ClassMethods
@@ -52,14 +54,22 @@ module ActsAsPurchasable
     self[:tax_exempt] || false
   end
 
-  def quickbooks_item_name
-    self[:quickbooks_item_name] || ''
+  def tax_rate
+    @tax_rate ||= (
+      self.instance_exec(self, &EffectiveOrders.tax_rate_method).to_f.tap do |rate|
+        raise ArgumentError.new("expected EffectiveOrders.tax_rate_method to return a value between 0 and 1. Received #{rate}. Please return 0.05 for 5% tax.") if (rate > 1.0 || rate < 0.0)
+      end
+    )
   end
 
   def seller
     if EffectiveOrders.stripe_connect_enabled
       raise 'acts_as_purchasable object requires the seller be defined to return the User selling this item.  This is only a requirement when using StripeConnect.'
     end
+  end
+
+  def quickbooks_item_name
+    self[:quickbooks_item_name] || ''
   end
 
   def purchased?

@@ -6,7 +6,7 @@ module Effective
     def stripe
       (head(:ok) and return) if (params[:livemode] == false && Rails.env.production?) || params[:object] != 'event' || params[:id].blank?
 
-      # Request the actual event from Stripe
+      # Dont trust the POST, and instead request the actual event from Stripe
       event = Stripe::Event.retrieve(params[:id]) rescue (head(:ok) and return)
 
       Effective::Customer.transaction do
@@ -33,7 +33,7 @@ module Effective
       user = ::User.where(:email => stripe_customer.email).first
 
       if user.present?
-        customer = Effective::Customer.where(:user_id => user.id).first_or_create
+        customer = Effective::Customer.for_user(user)  # This is a first_or_create
         customer.stripe_customer_id = stripe_customer.id
         customer.save!
       end
@@ -53,9 +53,19 @@ module Effective
       stripe_subscription = event.data.object
       customer = Effective::Customer.where(:stripe_customer_id => stripe_subscription.customer).first
 
-      if customer.present? && customer.plans.include?(stripe_subscription.plan.id) == false
-        customer.plans << stripe_subscription.plan.id
-        customer.save!
+      if customer.present?
+        subscription = customer.subscriptions.where(:stripe_plan_id => stripe_subscription.plan.id).first_or_initialize
+
+        subscription.stripe_subscription_id = stripe_subscription.id
+        subscription.stripe_plan_id = stripe_subscription.plan.id
+        subscription.stripe_coupon_id = stripe_subscription.discount.coupon.id if stripe_subscription.discount.present?
+
+        subscription.save!
+
+        # Now we have to purchase it
+        order = Effective::Order.new(subscription)
+        order.user = customer.user
+        order.purchase!("via Stripe webhook #{event.id}")
       end
     end
 
@@ -64,8 +74,7 @@ module Effective
       customer = Effective::Customer.where(:stripe_customer_id => stripe_subscription.customer).first
 
       if customer.present?
-        customer.plans.delete(stripe_subscription.plan.id)
-        customer.save!
+        customer.subscriptions.find { |subscription| subscription.stripe_plan_id == stripe_subscription.plan.id }.try(:destroy)
       end
     end
 

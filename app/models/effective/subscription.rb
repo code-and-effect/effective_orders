@@ -5,11 +5,12 @@ module Effective
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
 
     acts_as_purchasable
+
     belongs_to :customer
 
     structure do
       stripe_plan_id          :string, :validates => [:presence]  # This will be 'Weekly' or something like that
-      stripe_subscription_id  :string#, :validates => [:presence]
+      stripe_subscription_id  :string
       stripe_coupon_id        :string
 
       title                   :string, :validates => [:presence]
@@ -18,12 +19,18 @@ module Effective
       timestamps
     end
 
+    delegate :user, :user_id, :to => :customer
+
     validates_presence_of :customer
     validates_uniqueness_of :customer_id, :scope => [:stripe_plan_id] # Can only be on each plan once.
 
     before_validation do
       self.errors.add(:stripe_plan_id, "is an invalid Plan") if stripe_plan_id.present? && stripe_plan.blank?
       self.errors.add(:stripe_coupon_id, "is an invalid Coupon") if stripe_coupon_id.present? && stripe_coupon.blank?
+    end
+
+    def tax_exempt
+      true
     end
 
     def stripe_plan_id=(plan_id)
@@ -52,6 +59,12 @@ module Effective
       end
     end
 
+    def stripe_subscription
+      if stripe_subscription_id.present?
+        @stripe_subscription ||= (customer.stripe_customer.subscriptions.retrieve(stripe_subscription_id) rescue nil)
+      end
+    end
+
     private
 
     def assign_price_and_title
@@ -68,7 +81,7 @@ module Effective
 
     def price_with_coupon(amount, coupon)
       if coupon.percent_off.present?
-        amount * (coupon.percent_off / 100.0)
+        (amount * (coupon.percent_off.to_i / 100.0)).floor
       else
         [0, amount - coupon.amount_off].max
       end

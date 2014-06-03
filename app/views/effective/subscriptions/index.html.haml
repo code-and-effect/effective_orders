@@ -5,7 +5,7 @@
   %ul
     - @subscriptions.each do |subscription|
       %li
-        = subscription.title
+        = subscription.title.html_safe
         = '('
         = link_to 'details', effective_orders.subscription_path(subscription.stripe_plan_id)
         = '-'

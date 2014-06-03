@@ -18,7 +18,7 @@
 
         - if include_download_column
           %td.download
-            - if item.purchased? && item.purchased_download_url.present?
+            - if item.purchased? && (item.purchased_download_url rescue nil).present?
               = link_to 'download', item.purchased_download_url
             - else
               = '-'
