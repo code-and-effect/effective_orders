@@ -33,7 +33,6 @@ EffectiveOrders.setup do |config|
     :admin_customers => 'application'
   }
 
-
   # Mailer Settings
   config.mailer = {
     :send_order_receipt_to_admin => true,
@@ -110,7 +109,7 @@ EffectiveOrders.setup do |config|
       :secret_key => '',
       :publishable_key => '',
       :currency => 'usd',
-      :site_title => 'My Development Site',  # Displalyed on the Embedded Stripe Form
+      :site_title => 'My Development Site',  # Displayed on the Embedded Stripe Form
       :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
       :connect_client_id => ''
     }

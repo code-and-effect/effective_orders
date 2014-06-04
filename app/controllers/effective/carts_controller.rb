@@ -6,13 +6,13 @@ module Effective
     def show
       @cart = current_cart
       @page_title ||= 'Shopping Cart'
-      EffectiveOrders.authorized?(self, :read, @cart)
+      EffectiveOrders.authorized?(self, :show, @cart)
     end
 
     def destroy
       @cart = current_cart
 
-      EffectiveOrders.authorized?(self, :update, @cart)
+      EffectiveOrders.authorized?(self, :destroy, @cart)
 
       if @cart.destroy
         flash[:notice] = 'Successfully emptied cart'

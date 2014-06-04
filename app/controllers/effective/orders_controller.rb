@@ -17,7 +17,7 @@ module Effective
       @order ||= Order.new(current_cart)
       @order.user = current_user
 
-      EffectiveOrders.authorized?(self, :create, @order)
+      EffectiveOrders.authorized?(self, :new, @order)
 
       unless @order.order_items.present?
         flash[:alert] = 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
@@ -63,7 +63,7 @@ module Effective
 
     def show
       @order = Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :read, @order)
+      EffectiveOrders.authorized?(self, :show, @order)
     end
 
     # Basically an index page.
@@ -78,25 +78,25 @@ module Effective
     def my_sales
       @order_items = OrderItem.sold_by(current_user)
 
-      EffectiveOrders.authorized?(self, :index, Effective::OrderItem)
+      EffectiveOrders.authorized?(self, :index, Effective::Order)
     end
 
     # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
     def purchased # Thank You!
       @order = Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :read, @order)
+      EffectiveOrders.authorized?(self, :show, @order)
     end
 
     # An error has occurred, please try again
     def declined # An error occurred!
       @order = Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :read, @order)
+      EffectiveOrders.authorized?(self, :show, @order)
     end
 
     def pretend_purchase
       unless Rails.env.production?
         @order = Order.find(params[:id])
-        EffectiveOrders.authorized?(self, :read, @order)
+        EffectiveOrders.authorized?(self, :update, @order)
         order_purchased('for pretend')
       end
     end

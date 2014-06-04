@@ -5,7 +5,10 @@ module EffectiveOrdersHelper
     content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
-          "#{item.quantity}x #{item.title} for #{number_to_currency(item.price)}"
+          title = item.title.split('<br>')
+          "#{item.quantity}x #{title.first} for #{number_to_currency(item.price)}".tap do |output|
+            title[1..-1].each { |line| output << "<br>#{line}" }
+          end.html_safe
         end
       end.join().html_safe
     end

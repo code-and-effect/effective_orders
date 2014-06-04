@@ -11,7 +11,10 @@
     %tbody
       %tr
         %td
-          = "#{order.user.to_s} (#{mail_to order.user.email})".html_safe
+          - if order.user.to_s.present?
+            = "#{order.user.to_s} (#{mail_to order.user.email})".html_safe
+          - else
+            = mail_to order.user.email
           %br
           - if order.billing_address.present?
             = render order.billing_address

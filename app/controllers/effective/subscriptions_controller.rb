@@ -14,7 +14,7 @@ module Effective
 
       @subscriptions = @customer.subscriptions.purchased
 
-      EffectiveOrders.authorized?(self, :read, Effective::Subscription.new())
+      EffectiveOrders.authorized?(self, :index, Effective::Subscription)
     end
 
     def new
@@ -56,7 +56,7 @@ module Effective
       @stripe_subscription = @subscription.try(:stripe_subscription)
       raise ActiveRecord::RecordNotFound unless @subscription.present? && @stripe_subscription.present?
 
-      EffectiveOrders.authorized?(self, :read, @subscription)
+      EffectiveOrders.authorized?(self, :show, @subscription)
 
       @invoices = @customer.stripe_customer.invoices.all.select do |invoice| 
         invoice.lines.any? { |line| line.id == @stripe_subscription.id }

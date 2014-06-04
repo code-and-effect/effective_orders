@@ -1,6 +1,7 @@
 module Effective
   class WebhooksController < ApplicationController
     protect_from_forgery :except => [:stripe]
+    skip_authorization_check if defined?(CanCan)
 
     # Webhook from stripe
     def stripe

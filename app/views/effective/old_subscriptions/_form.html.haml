@@ -1,8 +1,0 @@
-= javascript_include_tag "https://checkout.stripe.com/checkout.js"
-
-#effective-orders-new-subscription-form{:data => {'stripe-publishable-key' => EffectiveOrders.stripe[:publishable_key], 'site-title' => EffectiveOrders.stripe[:site_title], 'site-image' => EffectiveOrders.stripe[:site_image], 'user-email' => current_user.try(:email)}}
-  = simple_form_for @subscription, :url => effective_orders.subscriptions_path, :html => {:class => 'form-horizontal' } do |f|
-    = f.input :token, :as => :hidden
-    = f.input :plan, :as => :select, :collection => stripe_plans_collection(@customer.available_stripe_plans), :include_blank => false
-    = f.input :coupon, :prompt => 'Enter Coupon Code'
-    = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'

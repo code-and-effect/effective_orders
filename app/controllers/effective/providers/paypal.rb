@@ -10,7 +10,7 @@ module Effective
       def paypal_postback
         @order ||= Effective::Order.where(:id => params[:invoice].to_i - EffectiveOrders.order_nudge_id.to_i).first
 
-        EffectiveOrders.authorized?(self, :create, @order)
+        EffectiveOrders.authorized?(self, :update, @order)
 
         if @order.present?
           if params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret]

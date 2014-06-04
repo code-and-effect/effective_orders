@@ -10,7 +10,7 @@ module Effective
       def moneris_postback
         @order ||= Effective::Order.find((params[:response_order_id].gsub('order', '').to_i rescue 0) - EffectiveOrders.order_nudge_id.to_i)
 
-        EffectiveOrders.authorized?(self, :create, @order)
+        EffectiveOrders.authorized?(self, :update, @order)
 
         if params[:result].to_s == '1' && params[:transactionKey].present?
           verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey]))

@@ -1,8 +1,10 @@
 # Effective Orders
 
-A full solution for payments in a Rails3 application.
+A full solution for payments in a Rails3/4 application.
 
 Handles Carts, Orders, and taking payment through Moneris, PayPal and Stripe.
+
+Also works with Stripe Connect (for a digital marketplace type app) and Stripe Subscriptions
 
 Rails 3.2.x and Rails 4
 
@@ -35,6 +37,17 @@ Then migrate the database:
 ```ruby
 rake db:migrate
 ```
+
+### Permissions
+
+Using CanCan
+
+```ruby
+can [:manage], Effective::Cart, :user_id => user.id
+can [:manage], Effective::Order, :user_id => user.id # Orders cannot be deleted
+can [:manage], Effective::Subscription, :user_id => user.id
+```
+    
 
 ### Carts
 
@@ -116,6 +129,13 @@ config.stripe = {
 }
 ```
 
+### Stripe Subscriptions
+
+Subscriptions and Stripe Connect do not currently work together.
+
+Register an additional Webhook, to accept Stripe subscription creation events from Stripe
+
+root_url/webhooks/stripe
 
 
 ## License
@@ -131,5 +151,5 @@ The test suite for this gem is unfortunately not yet complete.
 Run tests by:
 
 ```ruby
-rake spec
+guard
 ```
