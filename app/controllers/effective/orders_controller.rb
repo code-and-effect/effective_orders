@@ -130,7 +130,7 @@ module Effective
     def order_params
       begin
         params.require(:effective_order).permit(
-          :save_billing_address, :save_shipping_address, :stripe_token,
+          :save_billing_address, :save_shipping_address,
           :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :order_items_attributes => [:stripe_coupon_id, :class, :id]
