@@ -50,9 +50,9 @@ module Effective
         begin
           @order.save!
 
-          if @order.save_billing_address || @order.save_shipping_address
-            @order.user.billing_address = @order.billing_address if @order.save_billing_address
-            @order.user.shipping_address = @order.shipping_address if @order.save_shipping_address
+          if order_params[:save_billing_address] || order_params[:save_shipping_address]
+            @order.user.billing_address = @order.billing_address if order_params[:save_billing_address]
+            @order.user.shipping_address = @order.shipping_address if order_params[:save_shipping_address]
 
             @order.user.save!
           end
