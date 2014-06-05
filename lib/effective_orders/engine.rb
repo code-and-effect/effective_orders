@@ -10,8 +10,8 @@ module EffectiveOrders
       ActiveSupport.on_load :action_controller do
         helper EffectiveOrdersHelper
         helper EffectiveCartsHelper
-        helper EffectivePaypalHelper
-        helper EffectiveStripeHelper
+        helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
+        helper EffectiveStripeHelper if EffectiveOrders.stripe_enabled
       end
     end
 

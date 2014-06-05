@@ -27,6 +27,10 @@ FactoryGirl.define do
     after(:build) { |user| user.skip_confirmation! if user.respond_to?(:skip_confirmation!) }
   end
 
+  factory :customer, :class => Effective::Customer do
+    association :user
+  end
+
   factory :cart, :class => Effective::Cart do
     association :user
 
@@ -47,6 +51,7 @@ FactoryGirl.define do
 
     before(:create) do |order|
       order.billing_address = FactoryGirl.build(:address, :addressable => order)
+      order.shipping_address = FactoryGirl.build(:address, :addressable => order)
 
       3.times { order.order_items << FactoryGirl.create(:order_item, :order => order) }
     end
