@@ -46,19 +46,25 @@ module Effective
 
       EffectiveOrders.authorized?(self, :create, @order)
 
-      if @order.save
-        if @order.save_billing_address || @order.save_shipping_address
-          begin
+      Effective::Order.transaction do
+        begin
+          @order.save!
+
+          if @order.save_billing_address || @order.save_shipping_address
             @order.user.billing_address = @order.billing_address if @order.save_billing_address
             @order.user.shipping_address = @order.shipping_address if @order.save_shipping_address
-          rescue => e ; end
-          @order.user.save
-        end
 
-        order_purchased('zero-dollar order') if @order.total == 0.00
-      else
-        render :action => :new
+            @order.user.save!
+          end
+
+          @order.total == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
+          return
+        rescue => e
+          raise ActiveRecord::Rollback
+        end
       end
+
+      render :action => :new
     end
 
     def show
