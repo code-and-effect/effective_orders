@@ -14,10 +14,9 @@ module Effective
 
         if @order.present?
           if params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret]
-            @order.purchased(params)
-            @order.user.cart.try(:destroy)
+            order_purchased(params)
           else
-            @order.declined(params)
+            order_declined(params)
           end
         end
 
