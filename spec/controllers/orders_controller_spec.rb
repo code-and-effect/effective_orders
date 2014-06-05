@@ -101,6 +101,21 @@ describe Effective::OrdersController do
 
       assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
       assigns(:order).user.shipping_address.address1.should eq shipping_atts['address1']
+
+      response.should render_template(:create)
+    end
+
+    it 'is invalid when passed an invalid address' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address => shipping_atts.tap { |x| x[:address1] = nil }, :save_shipping_address => true,
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq false
+      assigns(:order).errors[:addresses].present?.should eq true
+      assigns(:order).errors[:shipping_address].present?.should eq true
+
+      response.should render_template(:new)
     end
 
     it 'prevents the order from proceeding when missing a required address' do
@@ -110,6 +125,56 @@ describe Effective::OrdersController do
       assigns(:order).errors[:shipping_address].present?.should eq true
 
       response.should render_template(:new)
+    end
+  end
+
+  describe '#create with a Stripe Subscription object' do
+    let(:cart_with_subscription) { FactoryGirl.create(:cart_with_subscription) }
+    let(:subscription) { cart_with_subscription.cart_items.find { |obj| obj.purchasable.kind_of?(Effective::Subscription)}.purchasable }
+
+    let(:valid_order_with_new_subscription_coupon_attributes) do
+      valid_order_attributes.tap { |x| x[:effective_order]['order_items_attributes'] = {'0' => {"class"=>"Effective::Subscription", "stripe_coupon_id"=>"#{::Stripe::Coupon.create().id}", 'id' => "#{subscription.id}"}} }
+    end
+
+    before do 
+      StripeMock.start
+      sign_in cart_with_subscription.user
+    end
+
+    after { StripeMock.stop }
+
+    it 'has an OrderItem that is a Subscription' do
+      post :create, valid_order_attributes
+      assigns(:order).persisted?.should eq true
+
+      subscription = assigns(:order).order_items.find { |obj| obj.purchasable.kind_of?(Effective::Subscription) }
+      subscription.present?.should eq true
+    end
+
+    it 'does not alter the subscription.stripe_coupon_id' do
+      post :create, valid_order_attributes
+      assigns(:order).persisted?.should eq true
+
+      order_subscription = assigns(:order).order_items.find { |obj| obj.purchasable.kind_of?(Effective::Subscription) }.purchasable
+      order_subscription.stripe_coupon_id.should eq subscription.stripe_coupon_id
+    end
+
+    it 'updates the subscription.stripe_coupon_id when passed' do
+      post :create, valid_order_with_new_subscription_coupon_attributes
+      assigns(:order).persisted?.should eq true
+
+      order_subscription = assigns(:order).order_items.find { |obj| obj.purchasable.kind_of?(Effective::Subscription) }.purchasable
+      order_subscription.stripe_coupon_id.should_not eq subscription.stripe_coupon_id
+    end
+
+    it 'is invalid when passed an invalid coupon code' do
+      invalid_coupon_atts = valid_order_with_new_subscription_coupon_attributes.tap { |x| x[:effective_order]['order_items_attributes']['0']['stripe_coupon_id'] = 'SOMETHING INVALID' }
+
+      post :create, invalid_coupon_atts
+
+      assigns(:order).errors['order_items.purchasable'].present?.should eq true
+      assigns(:order).errors['order_items.purchasable.stripe_coupon_id'].present?.should eq true
+      assigns(:order).persisted?.should eq false
     end
   end
 
@@ -136,8 +201,6 @@ describe Effective::OrdersController do
       post :create, valid_order_attributes
       response.should redirect_to "/orders/#{assigns(:order).id}/purchased"
     end
-
-
   end
 
 

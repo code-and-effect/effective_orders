@@ -58,6 +58,15 @@ FactoryGirl.define do
     quantity 1
   end
 
+  factory :cart_with_subscription, :class => Effective::Cart do
+    association :user
+
+    before(:create) do |cart|
+      cart.cart_items << FactoryGirl.create(:cart_item, :cart => cart)
+      cart.cart_items << FactoryGirl.create(:cart_item, :cart => cart, :purchasable => FactoryGirl.create(:subscription))
+    end
+  end
+
   factory :order, :class => Effective::Order do
     association :user
 
