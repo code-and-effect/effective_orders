@@ -57,7 +57,6 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string   "stripe_customer_id"
     t.string   "stripe_active_card"
     t.string   "stripe_connect_access_token"
-    t.text     "plans"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -100,6 +99,17 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string   "quickbooks_item_name"
     t.datetime "created_at",                                                          :null => false
     t.datetime "updated_at",                                                          :null => false
+  end
+
+  create_table "subscriptions", force: true do |t|
+    t.integer  "customer_id"
+    t.string   "stripe_plan_id"
+    t.string   "stripe_subscription_id"
+    t.string   "stripe_coupon_id"
+    t.string   "title"
+    t.decimal  "price",                  precision: 8, scale: 2, default: 0.0
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "users", force: true do |t|

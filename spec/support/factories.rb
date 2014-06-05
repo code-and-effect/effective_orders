@@ -12,7 +12,7 @@ FactoryGirl.define do
   end
 
   factory :product do # This only exists in the dummy/ app
-    sequence(:title) { |n| "Product #{n}"}
+    sequence(:title) { |n| "Product #{n}" }
 
     price 10.00
     tax_exempt false
@@ -29,6 +29,18 @@ FactoryGirl.define do
 
   factory :customer, :class => Effective::Customer do
     association :user
+  end
+
+  factory :subscription, :class => Effective::Subscription do
+    association :customer
+
+    before(:create) do |subscription|
+      stripe_plan = Stripe::Plan.create()
+      stripe_coupon = Stripe::Coupon.create()
+
+      subscription.stripe_plan_id = stripe_plan.id
+      subscription.stripe_coupon_id = stripe_coupon.id
+    end
   end
 
   factory :cart, :class => Effective::Cart do

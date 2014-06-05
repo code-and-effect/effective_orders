@@ -48,7 +48,6 @@ describe Effective::OrdersController do
     end
   end
 
-
   # "effective_order"=> {
   #   "order_items_attributes"=> {
   #     "0"=> {
@@ -113,17 +112,6 @@ describe Effective::OrdersController do
       response.should render_template(:new)
     end
   end
-
-# "effective_order"=> {
-#   "order_items_attributes"=> {
-#     "0"=> {
-#       "class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}},
-#   "billing_address"=>{"address1"=>"1234 Fake street", "address2"=>"", "city"=>"Edmonton", "country_code"=>"KH", "state_code"=>"1", "postal_code"=>"T5T2T1"}, 
-#   "save_billing_address"=>"1", 
-#   "shipping_address"=>{"address1"=>"123 Shipping street", "address2"=>"", "city"=>"Edmonton", "country_code"=>"KH", "state_code"=>"10", "postal_code"=>"t5t2t1"}, 
-#   "save_shipping_address"=>"1"}, 
-#   "commit"=>"Continue Checkout"
-# }
 
   describe '#order_purchased (with a free order)' do
     before(:each) do
