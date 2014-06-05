@@ -20,7 +20,7 @@ FactoryGirl.define do
   end
 
   factory :user do # This only exists in the dummy/ app
-    sequence(:email) {|n| "user_#{n}@effective_orders.test"}
+    sequence(:email) { |n| "user_#{n}@effective_orders.test"}
 
     password '12345678'
 

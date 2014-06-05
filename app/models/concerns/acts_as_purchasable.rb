@@ -73,7 +73,7 @@ module ActsAsPurchasable
   end
 
   def purchased?
-    orders.any? { |order| order.purchased? }
+    @is_purchased ||= orders.any? { |order| order.purchased? }
   end
 
   def purchased_orders
