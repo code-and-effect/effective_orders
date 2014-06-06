@@ -2,7 +2,7 @@ require 'spec_helper'
 
 # Attributes
 describe 'Factories' do
-  let(:factories) { [:user, :customer, :subscription, :address, :product, :cart, :order_item, :order, :purchased_order, :declined_order, :cart_with_subscription] }
+  let(:factories) { [:user, :customer, :subscription, :address, :product, :cart, :order_item, :order, :purchased_order, :declined_order, :cart_with_subscription, :order_with_subscription] }
 
   before { StripeMock.start }
   after { StripeMock.stop }

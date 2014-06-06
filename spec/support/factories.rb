@@ -78,6 +78,18 @@ FactoryGirl.define do
     end
   end
 
+  factory :order_with_subscription, :class => Effective::Order do
+    association :user
+
+    before(:create) do |order|
+      order.billing_address = FactoryGirl.build(:address, :addressable => order)
+      order.shipping_address = FactoryGirl.build(:address, :addressable => order)
+
+      order.order_items << FactoryGirl.create(:order_item, :order => order)
+      order.order_items << FactoryGirl.create(:order_item, :purchasable => FactoryGirl.create(:subscription), :order => order)
+    end
+  end
+
   factory :order_item, :class => Effective::OrderItem do
     association :purchasable, :factory => :product
     association :order, :factory => :order
