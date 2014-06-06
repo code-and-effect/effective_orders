@@ -99,7 +99,7 @@ describe Effective::Order do
     end
 
     it 'sends purchased callback to all order_items' do
-      order.order_items.each { |oi| oi.should_receive(:purchased).with(order).and_return(true) }
+      order.order_items.each { |oi| oi.purchasable.should_receive(:purchased!).with(order, oi) }
       order.purchase!('by a test')
     end
 
@@ -154,7 +154,7 @@ describe Effective::Order do
     end
 
     it 'sends declined callback to all order_items' do
-      order.order_items.each { |oi| oi.should_receive(:declined).with(order).and_return(true) }
+      order.order_items.each { |oi| oi.purchasable.should_receive(:declined!).with(order, oi) }
       order.decline!('by a test')
     end
 

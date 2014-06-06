@@ -25,7 +25,6 @@ module Effective
 
     delegate :purchased_download_url, :to => :purchasable
     delegate :purchased?, :declined?, :to => :order
-    delegate :purchased, :declined, :to => :purchasable # Callbacks
 
     scope :sold, -> { joins(:order).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}) }
     scope :sold_by, lambda { |user| sold().where(:seller_id => user.try(:id)) }

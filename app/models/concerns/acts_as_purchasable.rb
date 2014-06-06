@@ -9,10 +9,6 @@ module ActsAsPurchasable
   end
 
   included do
-    include ActiveSupport::Callbacks
-    define_callbacks :purchased
-    define_callbacks :declined
-
     has_many :orders, :through => :order_items, :class_name => 'Effective::Order'
     has_many :order_items, :as => :purchasable, :class_name => 'Effective::OrderItem'
     has_many :cart_items, :as => :purchasable, :dependent => :delete_all, :class_name => 'Effective::CartItem'
@@ -35,6 +31,13 @@ module ActsAsPurchasable
   end
 
   module ClassMethods
+    def after_purchase(&block)
+      send :define_method, :after_purchase do |order, order_item| self.instance_exec(order, order_item, &block) end
+    end
+
+    def after_decline(&block)
+      send :define_method, :after_decline do |order, order_item| self.instance_exec(order, order_item, &block) end
+    end
   end
 
   # Regular instance methods
@@ -92,28 +95,19 @@ module ActsAsPurchasable
     quantity_enabled? ? (quantity_remaining == 0) : false
   end
 
-  def purchased(order = nil)
-    # self.purchase_state = ActsAsPurchasable::PURCHASED if respond_to?('purchase_state')
+  def purchased!(order = nil, order_item = nil)
     # begin
     #   self.quantity_purchased = (self.quantity_purchased + 1)
     # rescue
     # end
 
-    run_callbacks :purchased do
-      @order = order
-    end
-
-    self.save
+    after_purchase(order, order_item) if self.respond_to?(:after_purchase)
+    self.save!
   end
 
-  def declined(order = nil)
-    # self.purchase_state = ActsAsPurchasable::DECLINED if respond_to?('purchase_state')
-
-    run_callbacks :declined do
-      @order = order
-    end
-
-    self.save
+  def declined!(order = nil, order_item = nil)
+    after_decline(order, order_item) if self.respond_to?(:after_decline)
+    self.save!
   end
 
   # Override me if this is a digital purchase.

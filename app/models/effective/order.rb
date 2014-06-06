@@ -76,10 +76,11 @@ module Effective
       end
     end
 
-    # This is used for entering Subscription codes
+    # This is used for updating Subscription codes.
     # We want to update the underlying purchasable object of an OrderItem
     # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
-    # So we override this method to do the updates on the non-persisted objects
+    # So we override this method to do the updates on the non-persisted OrderItem objects
+    # Right now strong_paramaters only lets through stripe_coupon_id
     # {"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
     def order_items_attributes=(order_item_attributes)
       if self.persisted? == false
@@ -132,7 +133,7 @@ module Effective
         self.purchased_at = Time.zone.now
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        order_items.each { |item| item.purchased(self) }
+        order_items.each { |item| item.purchasable.purchased!(self, item) }
 
         self.save!
 
@@ -163,7 +164,7 @@ module Effective
         self.purchase_state = EffectiveOrders::DECLINED
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        order_items.each { |item| item.declined(self) }
+        order_items.each { |item| item.purchasable.declined!(self, item) }
 
         self.save!
       end

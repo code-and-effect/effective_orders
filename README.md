@@ -49,6 +49,26 @@ can [:manage], Effective::Subscription, :user_id => user.id
 ```
     
 
+### Acts As Purchasable
+
+TODO
+
+You can define two callback
+
+```ruby
+class Product
+  acts_as_purchasable
+
+  after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
+    self.do_something() # Is a Product
+  end
+
+  after_decline do |order, order_item|
+  end
+end
+```
+
+
 ### Carts
 
 TODO
