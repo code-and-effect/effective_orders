@@ -76,6 +76,30 @@ module Effective
       end
     end
 
+    # This is used for entering Subscription codes
+    # We want to update the underlying purchasable object of an OrderItem
+    # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
+    # So we override this method to do the updates on the non-persisted objects
+    # {"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
+    def order_items_attributes=(order_item_attributes)
+      if self.persisted? == false
+        (order_item_attributes || {}).each do |_, atts|
+          order_item = self.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
+
+          if order_item
+            order_item.purchasable.attributes = atts.except(:id, :class)
+
+            # Recalculate the OrderItem based on the updated purchasable object
+            order_item.title = order_item.purchasable.title  
+            order_item.price = order_item.purchasable.price
+            order_item.tax_exempt = order_item.purchasable.tax_exempt
+            order_item.tax_rate = order_item.purchasable.tax_rate
+            order_item.seller_id = (order_item.purchasable.try(:seller).try(:id) rescue nil)
+          end
+        end
+      end
+    end
+
     def total
       order_items.collect(&:total).sum
     end

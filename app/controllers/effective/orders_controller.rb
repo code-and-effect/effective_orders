@@ -28,21 +28,7 @@ module Effective
     def create
       @order = Order.new(current_cart)
       @order.user = current_user
-
-      # Passing the order_item_attributes as acts_as_nested creates a new object instead of updating the temporary one.
-      # So we have to manually assign some atts
-      # Expecting something like "effective_order"=>{"order_items_attributes"=>{"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
-      @order.attributes = order_params.except(:order_items_attributes)
-
-      (order_params[:order_items_attributes] || {}).each do |_, atts|
-        order_item = @order.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
-
-        if order_item
-          order_item.purchasable.attributes = atts.except(:id, :class)
-          order_item.title = order_item.purchasable.title  # Recalculate the Title and Price, as we may have just added a coupon code
-          order_item.price = order_item.purchasable.price
-        end
-      end
+      @order.attributes = order_params
 
       EffectiveOrders.authorized?(self, :create, @order)
 
@@ -51,11 +37,11 @@ module Effective
           @order.save!
 
           if @order.save_billing_address? || @order.save_shipping_address?
-            if @order.save_billing_address? && @order.user.responds_to?(:billing_address)
+            if @order.save_billing_address? && @order.user.respond_to?(:billing_address)
               @order.user.billing_address = @order.billing_address
             end
 
-            if @order.save_shipping_address? && @order.user.responds_to?(:shipping_address)
+            if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address)
               @order.user.shipping_address = @order.shipping_address
             end
 

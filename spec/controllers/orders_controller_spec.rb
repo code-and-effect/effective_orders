@@ -105,6 +105,40 @@ describe Effective::OrdersController do
       response.should render_template(:create)
     end
 
+    it 'does not assign the billing_address to user if save_billing_address is false' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => false,
+        :shipping_address => shipping_atts, :save_shipping_address => true,
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq true
+
+      assigns(:order).billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).shipping_address.address1.should eq shipping_atts['address1']
+
+      assigns(:order).user.billing_address.present?.should eq false
+      assigns(:order).user.shipping_address.address1.should eq shipping_atts['address1']
+
+      response.should render_template(:create)
+    end
+
+    it 'does not assign the shipping_address to user if save_shipping_address is false' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address => shipping_atts, :save_shipping_address => false,
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq true
+
+      assigns(:order).billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).shipping_address.address1.should eq shipping_atts['address1']
+
+      assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).user.shipping_address.present?.should eq false
+
+      response.should render_template(:create)
+    end
+
     it 'is invalid when passed an invalid address' do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => true,
