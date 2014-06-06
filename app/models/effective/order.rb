@@ -92,6 +92,14 @@ module Effective
       order_items.to_a.sum(&:quantity)
     end
 
+    def save_billing_address?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_billing_address)
+    end
+
+    def save_shipping_address?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_shipping_address)
+    end
+
     def purchase!(payment_details = nil)
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
 

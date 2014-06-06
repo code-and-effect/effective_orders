@@ -192,4 +192,39 @@ describe Effective::Order do
     end
   end
 
+  describe '#save_billing_address?' do
+    it 'is true when save_billing_address is 1' do
+      order.save_billing_address = '1'
+      order.save_billing_address?.should eq true
+    end
+
+    it 'is false when save_billing_address is 0' do
+      order.save_billing_address = '0'
+      order.save_billing_address?.should eq false
+    end
+
+    it 'is false when save_billing_address is nil' do
+      order.save_billing_address = nil
+      order.save_billing_address?.should eq false
+    end
+  end
+
+  describe '#save_shipping_address?' do
+    it 'is true when save_shipping_address is 1' do
+      order.save_shipping_address = '1'
+      order.save_shipping_address?.should eq true
+    end
+
+    it 'is false when save_shipping_address is 0' do
+      order.save_shipping_address = '0'
+      order.save_shipping_address?.should eq false
+    end
+
+    it 'is false when save_shipping_address is nil' do
+      order.save_shipping_address = nil
+      order.save_shipping_address?.should eq false
+    end
+  end
+
+
 end
