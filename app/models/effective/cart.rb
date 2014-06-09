@@ -51,7 +51,7 @@ module Effective
     end
 
     def subtotal
-      [cart_items.collect(&:subtotal).sum, 0.00].max
+      cart_items.collect(&:subtotal).sum
     end
 
     def tax

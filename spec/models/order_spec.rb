@@ -64,11 +64,11 @@ describe Effective::Order do
       order.total.should eq 0.00
     end
 
-    it 'has a minimum order subtotal of 0.00' do
+    it 'has no minimum subtotal' do
       order.order_items.each { |order_item| order_item.stub(:subtotal).and_return(-10.00) }
 
       order.order_items.collect(&:subtotal).sum.should eq -30.00
-      order.subtotal.should eq 0.00
+      order.subtotal.should eq -30.00
     end
 
     it 'has a minimum order tax of 0.00' do

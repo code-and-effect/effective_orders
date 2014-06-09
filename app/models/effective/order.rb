@@ -108,7 +108,7 @@ module Effective
     end
 
     def subtotal
-      [order_items.collect(&:subtotal).sum, 0.00].max
+      order_items.collect(&:subtotal).sum
     end
 
     def tax
