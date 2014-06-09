@@ -56,6 +56,29 @@ describe Effective::Order do
     end
   end
 
+  describe 'minimum zero math' do
+    it 'has a minimum order total of 0.00' do
+      order.order_items.each { |order_item| order_item.stub(:total).and_return(-10.00) }
+
+      order.order_items.collect(&:total).sum.should eq -30.00
+      order.total.should eq 0.00
+    end
+
+    it 'has a minimum order subtotal of 0.00' do
+      order.order_items.each { |order_item| order_item.stub(:subtotal).and_return(-10.00) }
+
+      order.order_items.collect(&:subtotal).sum.should eq -30.00
+      order.subtotal.should eq 0.00
+    end
+
+    it 'has a minimum order tax of 0.00' do
+      order.order_items.each { |order_item| order_item.stub(:tax).and_return(-10.00) }
+
+      order.order_items.collect(&:tax).sum.should eq -30.00
+      order.tax.should eq 0.00
+    end
+  end
+
   describe 'user=' do
     it 'assigns the user' do
       order = Effective::Order.new()

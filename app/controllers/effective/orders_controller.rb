@@ -51,6 +51,7 @@ module Effective
           @order.total == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
           return
         rescue => e
+          flash[:alert] = "An error has ocurred.  Please try again. Message: #{e.message}"
           raise ActiveRecord::Rollback
         end
       end

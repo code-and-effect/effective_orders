@@ -152,6 +152,30 @@ describe Effective::OrdersController do
       response.should render_template(:new)
     end
 
+    it 'is invalid when passed an invalid order_item' do
+      Effective::OrderItem.any_instance.stub(:valid?).and_return(false)
+
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address => shipping_atts, :save_shipping_address => true,
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq false
+      response.should render_template(:new)
+    end
+
+    it 'is invalid when passed an invalid purchasable' do
+      Product.any_instance.stub(:valid?).and_return(false)
+
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address => shipping_atts, :save_shipping_address => true,
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq false
+      response.should render_template(:new)
+    end
+
     it 'prevents the order from proceeding when missing a required address' do
       post :create, :effective_order => { :billing_address => billing_atts, :save_billing_address => true }
 

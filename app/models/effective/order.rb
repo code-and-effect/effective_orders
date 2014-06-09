@@ -17,8 +17,10 @@ module Effective
     end
 
     accepts_nested_attributes_for :order_items, :allow_destroy => false, :reject_if => :all_blank
+
     validates_presence_of :user_id
     validates_presence_of :order_items, :message => 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
+    validates_associated :order_items
 
     serialize :payment, Hash
 
@@ -102,15 +104,15 @@ module Effective
     end
 
     def total
-      order_items.collect(&:total).sum
+      [order_items.collect(&:total).sum, 0.00].max
     end
 
     def subtotal
-      order_items.collect(&:subtotal).sum
+      [order_items.collect(&:subtotal).sum, 0.00].max
     end
 
     def tax
-      order_items.collect(&:tax).sum
+      [order_items.collect(&:tax).sum, 0.00].max
     end
 
     def num_items
