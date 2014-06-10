@@ -3,6 +3,8 @@ require 'spec_helper'
 describe Effective::OrdersController do
   routes { EffectiveOrders::Engine.routes }
 
+  let(:purchased_order) { FactoryGirl.create(:purchased_order) }
+
   let(:cart) { FactoryGirl.create(:cart) }
   let(:address) { FactoryGirl.create(:address) }
 
@@ -315,9 +317,53 @@ describe Effective::OrdersController do
 
     it 'redirects to the purchased page' do
       post :create, valid_order_attributes
-      response.should redirect_to "/orders/#{assigns(:order).id}/purchased"
+      response.should redirect_to "/orders/#{assigns(:order).to_param}/purchased"
     end
   end
 
+  describe '#show' do
+    before(:each) do
+      sign_in purchased_order.user
+    end
+
+    it 'finds the order by obfuscated ID' do
+      get :show, :id => purchased_order.to_param
+      assigns(:order).id.should eq purchased_order.id
+    end
+
+    it 'does not find an order by regular ID' do
+      expect { get :show, :id => purchased_order.id }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe '#purchased' do
+    before(:each) do
+      sign_in purchased_order.user
+    end
+
+    it 'finds the order by obfuscated ID' do
+      get :purchased, :id => purchased_order.to_param
+      assigns(:order).id.should eq purchased_order.id
+    end
+
+    it 'does not find an order by regular ID' do
+      expect { get :purchased, :id => purchased_order.id }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe '#declined' do
+    before(:each) do
+      sign_in purchased_order.user
+    end
+
+    it 'finds the order by obfuscated ID' do
+      get :declined, :id => purchased_order.to_param
+      assigns(:order).id.should eq purchased_order.id
+    end
+
+    it 'does not find an order by regular ID' do
+      expect { get :declined, :id => purchased_order.id }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
 
 end

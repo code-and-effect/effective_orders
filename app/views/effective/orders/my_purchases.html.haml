@@ -9,7 +9,7 @@
   %tbody
     - @orders.each do |order|
       %tr
-        %td= link_to "##{order.id}", effective_orders.order_path(order)
+        %td= link_to "##{order.to_param}", effective_orders.order_path(order)
         %td= order.purchased_at.strftime("%d-%b-%Y %H:%M")
         %td= order_summary(order)
 

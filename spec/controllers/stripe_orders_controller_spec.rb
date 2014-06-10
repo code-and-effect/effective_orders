@@ -44,7 +44,7 @@ describe Effective::OrdersController do
       it 'redirects to order_purchase_path on success' do
         post :stripe_charge, stripe_charge_params
         assigns(:order).purchased?.should eq true
-        response.should redirect_to "/orders/#{assigns(:order).id}/purchased"
+        response.should redirect_to "/orders/#{assigns(:order).to_param}/purchased"
       end
 
       it 'assigns the @stripe_charge, @order and @buyer properly' do
@@ -104,7 +104,7 @@ describe Effective::OrdersController do
     it 'redirects to order_purchase_path on success' do
       post :stripe_charge, stripe_charge_params
       assigns(:order).purchased?.should eq true
-      response.should redirect_to "/orders/#{assigns(:order).id}/purchased"
+      response.should redirect_to "/orders/#{assigns(:order).to_param}/purchased"
     end
 
     it 'makes a Stripe::Charge for only the non-Subscription OrderItems' do

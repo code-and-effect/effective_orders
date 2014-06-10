@@ -16,7 +16,7 @@
             %td{:rowspan => order_items.size}
               = link_to purchasable.title, acts_as_purchasable_path(purchasable)
 
-          %td= "##{order_item.order.id}"
+          %td= "##{order_item.order.to_param}"
           %td= order_item.order.try(:user).try(:to_s)
           %td= order_item.order.purchased_at.strftime("%d-%b-%Y %H:%M")
           %td= order_item_summary(order_item)

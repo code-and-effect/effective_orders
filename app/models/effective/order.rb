@@ -176,11 +176,10 @@ module Effective
 
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
+      return true if provider == nil
 
       begin
         case provider
-        when nil
-          true
         when :stripe_connect
           payment.keys.first.kind_of?(Numeric) && payment[payment.keys.first].key?('object') && payment[payment.keys.first]['object'] == 'charge'
         when :stripe
@@ -199,5 +198,8 @@ module Effective
       purchase_state == EffectiveOrders::DECLINED
     end
 
+    def to_param
+      Effective::Obfuscater.hide(self.id)
+    end
   end
 end

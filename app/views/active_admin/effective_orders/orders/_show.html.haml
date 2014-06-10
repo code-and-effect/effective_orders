@@ -1,12 +1,12 @@
 .panel
-  %h3= "Order ##{order.id} Details"
+  %h3= "Order ##{order.to_param} Details"
   .panel_contents
     .attributes_table
       %table
         %tbody
           %tr
             %th order
-            %td= "##{order.id}"
+            %td= "##{order.to_param}"
           %tr
             %th buyer
             %td= link_to order.user, admin_user_path(order.user)

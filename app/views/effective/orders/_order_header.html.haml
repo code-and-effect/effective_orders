@@ -10,7 +10,7 @@
 
 .col50
   - if order.persisted?
-    %p Order ID: ##{order.id}
+    %p Order ID: ##{order.to_param}
 
   - if order.purchased?
     %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
