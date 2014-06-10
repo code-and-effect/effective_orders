@@ -77,6 +77,7 @@ describe Effective::OrdersController do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => false,
         :shipping_address => shipping_atts, :save_shipping_address => false,
+        :shipping_address_same_as_billing => false
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq true
@@ -92,6 +93,7 @@ describe Effective::OrdersController do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => true,
         :shipping_address => shipping_atts, :save_shipping_address => true,
+        :shipping_address_same_as_billing => false
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq true
@@ -109,6 +111,7 @@ describe Effective::OrdersController do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => false,
         :shipping_address => shipping_atts, :save_shipping_address => true,
+        :shipping_address_same_as_billing => false
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq true
@@ -126,6 +129,7 @@ describe Effective::OrdersController do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => true,
         :shipping_address => shipping_atts, :save_shipping_address => false,
+        :shipping_address_same_as_billing => false
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq true
@@ -139,10 +143,64 @@ describe Effective::OrdersController do
       response.should render_template(:create)
     end
 
+    it 'assign billing address to the order shipping_address when shipping_address_same_as_billing' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address => shipping_atts, :save_shipping_address => true,
+        :shipping_address_same_as_billing => true
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq true
+
+      assigns(:order).billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).shipping_address.address1.should eq billing_atts['address1']
+
+      assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).user.shipping_address.address1.should eq billing_atts['address1']
+
+      response.should render_template(:create)
+    end
+
+    it 'assign billing address to the order shipping_address when shipping_address_same_as_billing and no shipping provided' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address_same_as_billing => true
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq true
+
+      assigns(:order).billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).shipping_address.address1.should eq billing_atts['address1']
+
+      assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).user.shipping_address.address1.should eq billing_atts['address1']
+
+      response.should render_template(:create)
+    end
+
+    it 'assign billing address to the order shipping_address but not hte user when shipping_address_same_as_billing provided' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => false,
+        :save_shipping_address => false,
+        :shipping_address_same_as_billing => true
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq true
+
+      assigns(:order).billing_address.address1.should eq billing_atts['address1']
+      assigns(:order).shipping_address.address1.should eq billing_atts['address1']
+
+      assigns(:order).user.billing_address.present?.should eq false
+      assigns(:order).user.shipping_address.present?.should eq false
+
+      response.should render_template(:create)
+    end
+
     it 'is invalid when passed an invalid address' do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => true,
         :shipping_address => shipping_atts.tap { |x| x[:address1] = nil }, :save_shipping_address => true,
+        :shipping_address_same_as_billing => false
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
@@ -177,7 +235,7 @@ describe Effective::OrdersController do
     end
 
     it 'prevents the order from proceeding when missing a required address' do
-      post :create, :effective_order => { :billing_address => billing_atts, :save_billing_address => true }
+      post :create, :effective_order => { :billing_address => billing_atts, :save_billing_address => true, :shipping_address_same_as_billing => false }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
       assigns(:order).errors[:shipping_address].present?.should eq true

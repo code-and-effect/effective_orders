@@ -49,10 +49,10 @@ module Effective
             @order.user.save!
           end
 
-          @order.total == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
+          @order.total.to_i == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
           return
         rescue => e
-          flash[:alert] = "An error has ocurred.  Please try again. Message: #{e.message}"
+          flash[:alert] = "An error has ocurred. Please try again. Message: #{e.message}"
           raise ActiveRecord::Rollback
         end
       end
