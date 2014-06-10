@@ -5,7 +5,7 @@ showShippingAddressFields = (shipping_address) ->
   shipping_address.show().find("input:not([name$='[address2]']),select:not([name$='[state_code]'])").prop('required', true)
 
 initShippingAddressFields = ->
-  effective_order = $('.effective_order').first()
+  effective_order = $('.effective-order').first()
 
   if effective_order.length > 0
     shipping_address_same_as_billing = effective_order.find('#effective_order_shipping_address_same_as_billing')
