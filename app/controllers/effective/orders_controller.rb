@@ -29,6 +29,7 @@ module Effective
       @order = Order.new(current_cart)
       @order.user = current_user
       @order.attributes = order_params
+      @order.shipping_address = @order.billing_address if @order.shipping_address_same_as_billing?
 
       EffectiveOrders.authorized?(self, :create, @order)
 
@@ -122,7 +123,7 @@ module Effective
     def order_params
       begin
         params.require(:effective_order).permit(
-          :save_billing_address, :save_shipping_address,
+          :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
           :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :order_items_attributes => [:stripe_coupon_id, :class, :id]

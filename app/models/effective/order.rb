@@ -3,7 +3,7 @@ module Effective
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
     acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
-    attr_accessor :save_billing_address, :save_shipping_address # Save these addresses to the user if selected
+    attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
 
     belongs_to :user  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
@@ -32,6 +32,11 @@ module Effective
 
     def initialize(cart = {})
       super() # Call super with no arguments
+
+      # Set up defaults
+      self.save_billing_address = true
+      self.save_shipping_address = true
+      self.shipping_address_same_as_billing = true
 
       if cart.kind_of?(Effective::Cart)
         cart_items = cart.cart_items
@@ -67,15 +72,8 @@ module Effective
     def user=(user)
       super
 
-      if user.respond_to?(:billing_address)
-        self.billing_address = user.billing_address
-        self.save_billing_address = true
-      end
-
-      if user.respond_to?(:shipping_address)
-        self.shipping_address = user.shipping_address
-        self.save_shipping_address = true
-      end
+      self.billing_address = user.billing_address if user.respond_to?(:billing_address)
+      self.shipping_address = user.shipping_address if user.respond_to?(:shipping_address)
     end
 
     # This is used for updating Subscription codes.
@@ -125,6 +123,10 @@ module Effective
 
     def save_shipping_address?
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_shipping_address)
+    end
+
+    def shipping_address_same_as_billing?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
     end
 
     def purchase!(payment_details = nil)
