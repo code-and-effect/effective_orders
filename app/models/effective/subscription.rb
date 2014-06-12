@@ -36,6 +36,8 @@ module Effective
     def stripe_plan_id=(plan_id)
       unless self[:stripe_plan_id] == plan_id
         self[:stripe_plan_id] = plan_id
+        @stripe_plan = nil   # Remove any memoization
+        
         assign_price_and_title()
       end
     end
@@ -43,6 +45,8 @@ module Effective
     def stripe_coupon_id=(coupon_id)
       unless self[:stripe_coupon_id] == coupon_id
         self[:stripe_coupon_id] = coupon_id
+        @stripe_coupon = nil   # Remove any memoization
+
         assign_price_and_title()
       end
     end

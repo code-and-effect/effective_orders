@@ -8,4 +8,11 @@ class Product < ActiveRecord::Base
 
     timestamps
   end
+
+  after_purchase do |order, order_item|
+  end
+
+  after_decline do |order, order_item|
+  end
+
 end

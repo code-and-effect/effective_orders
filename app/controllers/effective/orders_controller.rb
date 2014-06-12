@@ -28,41 +28,40 @@ module Effective
     def create
       @order = Order.new(current_cart)
       @order.user = current_user
-
-      # Passing the order_item_attributes as acts_as_nested creates a new object instead of updating the temporary one.
-      # So we have to manually assign some atts
-      # Expecting something like "effective_order"=>{"order_items_attributes"=>{"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
-      @order.attributes = order_params.except(:order_items_attributes)
-
-      (order_params[:order_items_attributes] || {}).each do |_, atts|
-        order_item = @order.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
-
-        if order_item
-          order_item.purchasable.attributes = atts.except(:id, :class)
-          order_item.title = order_item.purchasable.title  # Recalculate the Title and Price, as we may have just added a coupon code
-          order_item.price = order_item.purchasable.price
-        end
-      end
+      @order.attributes = order_params
+      @order.shipping_address = @order.billing_address if @order.shipping_address_same_as_billing?
 
       EffectiveOrders.authorized?(self, :create, @order)
 
-      if @order.save
-        if @order.save_billing_address || @order.save_shipping_address
-          begin
-            @order.user.billing_address = @order.billing_address if @order.save_billing_address
-            @order.user.shipping_address = @order.shipping_address if @order.save_shipping_address
-          rescue => e ; end
-          @order.user.save
-        end
+      Effective::Order.transaction do
+        begin
+          @order.save!
 
-        order_purchased('zero-dollar order') if @order.total == 0.00
-      else
-        render :action => :new
+          if @order.save_billing_address? || @order.save_shipping_address?
+            if @order.save_billing_address? && @order.user.respond_to?(:billing_address)
+              @order.user.billing_address = @order.billing_address
+            end
+
+            if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address)
+              @order.user.shipping_address = @order.shipping_address
+            end
+
+            @order.user.save!
+          end
+
+          @order.total.to_i == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
+          return
+        rescue => e
+          flash[:alert] = "An error has ocurred. Please try again. Message: #{e.message}"
+          raise ActiveRecord::Rollback
+        end
       end
+
+      render :action => :new
     end
 
     def show
-      @order = Order.find(params[:id])
+      @order = Order.find(Obfuscater.reveal(params[:id]))
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
@@ -83,19 +82,19 @@ module Effective
 
     # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
     def purchased # Thank You!
-      @order = Order.find(params[:id])
+      @order = Order.find(Obfuscater.reveal(params[:id]))
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
     # An error has occurred, please try again
     def declined # An error occurred!
-      @order = Order.find(params[:id])
+      @order = Order.find(Obfuscater.reveal(params[:id]))
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
     def pretend_purchase
       unless Rails.env.production?
-        @order = Order.find(params[:id])
+        @order = Order.find(Obfuscater.reveal(params[:id]))
         EffectiveOrders.authorized?(self, :update, @order)
         order_purchased('for pretend')
       end
@@ -124,7 +123,7 @@ module Effective
     def order_params
       begin
         params.require(:effective_order).permit(
-          :save_billing_address, :save_shipping_address, :stripe_token,
+          :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
           :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :order_items_attributes => [:stripe_coupon_id, :class, :id]

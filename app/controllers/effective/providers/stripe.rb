@@ -28,13 +28,13 @@ module Effective
       def process_stripe_charge(charge)
         Effective::Order.transaction do
           begin
-            buyer = Customer.for_user(charge.order.user)
-            buyer.update_card!(charge.token)
+            @buyer = Customer.for_user(charge.order.user)
+            @buyer.update_card!(charge.token)
 
             if EffectiveOrders.stripe_connect_enabled
-              return charge_with_stripe_connect(charge, buyer)
+              return charge_with_stripe_connect(charge, @buyer)
             else
-              return charge_with_stripe(charge, buyer)
+              return charge_with_stripe(charge, @buyer)
             end
           rescue => e
             charge.errors.add(:base, "Unable to process order with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\".")

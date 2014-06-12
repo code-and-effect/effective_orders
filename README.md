@@ -49,6 +49,26 @@ can [:manage], Effective::Subscription, :user_id => user.id
 ```
     
 
+### Acts As Purchasable
+
+TODO
+
+You can define two callback
+
+```ruby
+class Product
+  acts_as_purchasable
+
+  after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
+    self.do_something() # Is a Product
+  end
+
+  after_decline do |order, order_item|
+  end
+end
+```
+
+
 ### Carts
 
 TODO
@@ -116,7 +136,7 @@ Development:
 
 client_id: given by stripe, we need to record this.
 redirect_uri: stripe_connect_redirect_uri_url  # http://www.example.com/effective/orders/stripe_connect_redirect_uri
-webhook_uri:
+webhook_uri: none
 
 And add these values to the app/config/effective_orders.rb initializer:
 

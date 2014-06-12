@@ -3,7 +3,7 @@ module Effective
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
     acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
-    attr_accessor :save_billing_address, :save_shipping_address # Save these addresses to the user if selected
+    attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
 
     belongs_to :user  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
@@ -17,8 +17,10 @@ module Effective
     end
 
     accepts_nested_attributes_for :order_items, :allow_destroy => false, :reject_if => :all_blank
+
     validates_presence_of :user_id
     validates_presence_of :order_items, :message => 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
+    validates_associated :order_items
 
     serialize :payment, Hash
 
@@ -30,6 +32,11 @@ module Effective
 
     def initialize(cart = {})
       super() # Call super with no arguments
+
+      # Set up defaults
+      self.save_billing_address = true
+      self.save_shipping_address = true
+      self.shipping_address_same_as_billing = true
 
       if cart.kind_of?(Effective::Cart)
         cart_items = cart.cart_items
@@ -65,19 +72,37 @@ module Effective
     def user=(user)
       super
 
-      if user.respond_to?(:billing_address)
-        self.billing_address = user.billing_address
-        self.save_billing_address = true
-      end
+      self.billing_address = user.billing_address if user.respond_to?(:billing_address)
+      self.shipping_address = user.shipping_address if user.respond_to?(:shipping_address)
+    end
 
-      if user.respond_to?(:shipping_address)
-        self.shipping_address = user.shipping_address
-        self.save_shipping_address = true
+    # This is used for updating Subscription codes.
+    # We want to update the underlying purchasable object of an OrderItem
+    # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
+    # So we override this method to do the updates on the non-persisted OrderItem objects
+    # Right now strong_paramaters only lets through stripe_coupon_id
+    # {"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
+    def order_items_attributes=(order_item_attributes)
+      if self.persisted? == false
+        (order_item_attributes || {}).each do |_, atts|
+          order_item = self.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
+
+          if order_item
+            order_item.purchasable.attributes = atts.except(:id, :class)
+
+            # Recalculate the OrderItem based on the updated purchasable object
+            order_item.title = order_item.purchasable.title  
+            order_item.price = order_item.purchasable.price
+            order_item.tax_exempt = order_item.purchasable.tax_exempt
+            order_item.tax_rate = order_item.purchasable.tax_rate
+            order_item.seller_id = (order_item.purchasable.try(:seller).try(:id) rescue nil)
+          end
+        end
       end
     end
 
     def total
-      order_items.collect(&:total).sum
+      [order_items.collect(&:total).sum, 0.00].max
     end
 
     def subtotal
@@ -85,11 +110,23 @@ module Effective
     end
 
     def tax
-      order_items.collect(&:tax).sum
+      [order_items.collect(&:tax).sum, 0.00].max
     end
 
     def num_items
       order_items.to_a.sum(&:quantity)
+    end
+
+    def save_billing_address?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_billing_address)
+    end
+
+    def save_shipping_address?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_shipping_address)
+    end
+
+    def shipping_address_same_as_billing?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
     end
 
     def purchase!(payment_details = nil)
@@ -100,7 +137,7 @@ module Effective
         self.purchased_at = Time.zone.now
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        order_items.each { |item| item.purchased(self) }
+        order_items.each { |item| item.purchasable.purchased!(self, item) }
 
         self.save!
 
@@ -131,7 +168,7 @@ module Effective
         self.purchase_state = EffectiveOrders::DECLINED
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        order_items.each { |item| item.declined(self) }
+        order_items.each { |item| item.purchasable.declined!(self, item) }
 
         self.save!
       end
@@ -139,11 +176,10 @@ module Effective
 
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
+      return true if provider == nil
 
       begin
         case provider
-        when nil
-          true
         when :stripe_connect
           payment.keys.first.kind_of?(Numeric) && payment[payment.keys.first].key?('object') && payment[payment.keys.first]['object'] == 'charge'
         when :stripe
@@ -162,5 +198,8 @@ module Effective
       purchase_state == EffectiveOrders::DECLINED
     end
 
+    def to_param
+      Effective::Obfuscater.hide(self.id)
+    end
   end
 end

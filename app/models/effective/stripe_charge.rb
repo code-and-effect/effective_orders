@@ -12,6 +12,7 @@ module Effective
 
     def initialize(params = {})
       if params.kind_of?(Effective::Order)
+        @order = params
         @effective_order_id = params.id
       else
         params.each { |k, v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }

@@ -55,11 +55,11 @@ module Effective
     end
 
     def tax
-      cart_items.collect(&:tax).sum
+      [cart_items.collect(&:tax).sum, 0.00].max
     end
 
     def total
-      cart_items.collect(&:total).sum
+      [cart_items.collect(&:total).sum, 0.00].max
     end
   end
 end

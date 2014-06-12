@@ -12,7 +12,7 @@ FactoryGirl.define do
   end
 
   factory :product do # This only exists in the dummy/ app
-    sequence(:title) { |n| "Product #{n}"}
+    sequence(:title) { |n| "Product #{n}" }
 
     price 10.00
     tax_exempt false
@@ -20,11 +20,27 @@ FactoryGirl.define do
   end
 
   factory :user do # This only exists in the dummy/ app
-    sequence(:email) {|n| "user_#{n}@effective_orders.test"}
+    sequence(:email) { |n| "user_#{n}@effective_orders.test"}
 
     password '12345678'
 
     after(:build) { |user| user.skip_confirmation! if user.respond_to?(:skip_confirmation!) }
+  end
+
+  factory :customer, :class => Effective::Customer do
+    association :user
+  end
+
+  factory :subscription, :class => Effective::Subscription do
+    association :customer
+
+    before(:create) do |subscription|
+      stripe_plan = Stripe::Plan.create()
+      stripe_coupon = Stripe::Coupon.create()
+
+      subscription.stripe_plan_id = stripe_plan.id
+      subscription.stripe_coupon_id = stripe_coupon.id
+    end
   end
 
   factory :cart, :class => Effective::Cart do
@@ -42,13 +58,35 @@ FactoryGirl.define do
     quantity 1
   end
 
+  factory :cart_with_subscription, :class => Effective::Cart do
+    association :user
+
+    before(:create) do |cart|
+      cart.cart_items << FactoryGirl.create(:cart_item, :cart => cart)
+      cart.cart_items << FactoryGirl.create(:cart_item, :cart => cart, :purchasable => FactoryGirl.create(:subscription))
+    end
+  end
+
   factory :order, :class => Effective::Order do
     association :user
 
     before(:create) do |order|
       order.billing_address = FactoryGirl.build(:address, :addressable => order)
+      order.shipping_address = FactoryGirl.build(:address, :addressable => order)
 
       3.times { order.order_items << FactoryGirl.create(:order_item, :order => order) }
+    end
+  end
+
+  factory :order_with_subscription, :class => Effective::Order do
+    association :user
+
+    before(:create) do |order|
+      order.billing_address = FactoryGirl.build(:address, :addressable => order)
+      order.shipping_address = FactoryGirl.build(:address, :addressable => order)
+
+      order.order_items << FactoryGirl.create(:order_item, :order => order)
+      order.order_items << FactoryGirl.create(:order_item, :purchasable => FactoryGirl.create(:subscription), :order => order)
     end
   end
 

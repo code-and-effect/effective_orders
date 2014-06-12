@@ -1,7 +1,7 @@
 class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable, :rememberable, :recoverable, :trackable, :validatable, :authentication_keys => [:email]
 
-  acts_as_addressable :billing => {:presence => false, :use_full_name => false}
+  acts_as_addressable :billing, :shipping
 
   structure do
     # Devise attributes

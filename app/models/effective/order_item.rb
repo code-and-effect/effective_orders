@@ -8,7 +8,7 @@ module Effective
 
     structure do
       title                 :string, :validates => [:presence]
-      quantity              :integer, :validates => [:presence, :numericality => {:greater_than => 0}]
+      quantity              :integer, :validates => [:presence, :numericality]
       price                 :decimal, :precision => 8, :scale => 2, :default => 0.00
       tax_exempt            :boolean, :validates => [:inclusion => {:in => [true, false]}]
       tax_rate              :decimal, :precision => 5, :scale => 3, :default => 0.000, :validates => [:presence]
@@ -18,13 +18,13 @@ module Effective
     end
 
     validates_associated :purchasable
+    validates_presence_of :purchasable
     accepts_nested_attributes_for :purchasable, :allow_destroy => false, :reject_if => :all_blank, :update_only => true
 
     validates_presence_of :seller_id, :if => Proc.new { |order_item| EffectiveOrders.stripe_connect_enabled }
 
     delegate :purchased_download_url, :to => :purchasable
     delegate :purchased?, :declined?, :to => :order
-    delegate :purchased, :declined, :to => :purchasable # Callbacks
 
     scope :sold, -> { joins(:order).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}) }
     scope :sold_by, lambda { |user| sold().where(:seller_id => user.try(:id)) }
