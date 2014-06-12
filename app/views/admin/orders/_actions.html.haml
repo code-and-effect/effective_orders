@@ -1,0 +1,4 @@
+%span{:style => 'white-space: nowrap;'}
+  = link_to 'View', effective_orders.admin_order_path(order)
+  = '-'
+  = link_to 'Resend Receipt', effective_orders.admin_order_resend_buyer_receipt_path(order), 'data-confirm' => "This action will send an email containing the Order Receipt to the buyer.  Send receipt now?"

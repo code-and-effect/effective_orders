@@ -1,9 +1,9 @@
 %h2 Order
 %hr
 
-%a.btn.pull-right{'data-role' => 'print-button', :class => 'print-button', :onClick => "window.print(); false;"} Print
+%a.btn.btn-default.pull-right{'data-role' => 'print-button', :class => 'print-button', :onClick => "window.print(); false;"} Print
 
 = render @order
 
 %hr
-%h4= link_to 'Back', :back, :class => 'btn btn-primary'
+= link_to 'Back', :back, :class => 'btn btn-primary'

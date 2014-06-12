@@ -39,7 +39,8 @@ EffectiveOrders.setup do |config|
     :carts => 'application',
     :orders => 'application',
     :subscriptions => 'application',
-    :admin_customers => 'application'
+    :admin_customers => 'application',
+    :admin_orders => 'application'
   }
 
   # Mailer Settings

@@ -46,6 +46,8 @@ EffectiveOrders::Engine.routes.draw do
   if defined?(EffectiveDatatables)
     namespace :admin do
       resources :customers, :only => [:index]
+      resources :orders, :only => [:index, :show]
+      match 'orders/:id/resend_buyer_receipt', :to => 'orders#resend_buyer_receipt', :via => [:get], :as => 'order_resend_buyer_receipt'
     end
   end
 

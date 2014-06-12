@@ -1,0 +1,8 @@
+= render :partial => 'effective/orders/order', :locals => {:order => @order}
+
+%hr
+= link_to 'Back', effective_orders.admin_orders_path, :class => 'btn btn-primary'
+= '-'
+= link_to 'Resend Receipt', effective_orders.admin_order_resend_buyer_receipt_path(@order), 'data-confirm' => "This action will send an email containing the Order Receipt to the buyer.  Send receipt now?", :class => 'btn btn-default'
+
+

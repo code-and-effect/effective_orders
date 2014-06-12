@@ -4,5 +4,5 @@
   = simple_form_for @stripe_charge || Effective::StripeCharge.new(@order), :url => effective_orders.stripe_charges_path, :html => {:class => 'form-horizontal' } do |f|
     = f.input :effective_order_id, :as => :hidden
     = f.input :token, :as => :hidden
-    = f.submit 'Checkout with Stripe', :class => 'btn btn-primary'
+    = f.submit 'Continue to Payment', :class => 'btn btn-primary'
 

@@ -50,9 +50,9 @@ if defined?(ActiveAdmin)
       @order = Effective::Order.find(params[:id])
 
       if (Effective::OrdersMailer.order_receipt_to_buyer(@order).deliver rescue false)
-        flash[:notice] = "Successfully resent order receipt to #{@order.user.email}"
+        flash[:success] = "Successfully resent order receipt to #{@order.user.email}"
       else
-        flash[:alert] = "Unable to send order receipt"
+        flash[:danger] = "Unable to send order receipt"
       end
 
       redirect_to admin_effective_orders_path
