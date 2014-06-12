@@ -1,4 +1,4 @@
-%table.table
+%table.table.tablesaw.tablesaw-stack{:data => {:mode=> "stack"}}
   - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
   %thead
     %tr
@@ -10,19 +10,25 @@
   %tbody
     - order.order_items.each do |item|
       %tr
-        %td.quantity= item.quantity
+        %td.quantity
+          = item.quantity
         %td
-          = item.title.html_safe
-          - if order.new_record? && item.purchasable.kind_of?(Effective::Subscription)
-            = render :partial => 'effective/orders/stripe/subscription_fields', :locals => {:form => form, :subscription => item.purchasable }
+          .table-cell-inner
+            = item.title.html_safe
+            - if order.new_record? && item.purchasable.kind_of?(Effective::Subscription)
+              = render :partial => 'effective/orders/stripe/subscription_fields', :locals => {:form => form, :subscription => item.purchasable }
 
         - if include_download_column
           %td.download
-            - if item.purchased? && (item.purchased_download_url rescue nil).present?
-              = link_to 'download', item.purchased_download_url
-            - else
-              = '-'
-        %td.price= number_to_currency(item.subtotal)
+            .table-cell-inner
+              - if item.purchased? && (item.purchased_download_url rescue nil).present?
+                = link_to 'download', item.purchased_download_url
+              - else
+                = '-'
+        %td.price
+          .table-cell-inner
+            = number_to_currency(item.subtotal)
+%table.table
   %tfoot
     %tr
       %th{:colspan => (include_download_column ? 3 : 2)} Subtotal
