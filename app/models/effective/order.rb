@@ -17,8 +17,13 @@ module Effective
     end
 
     accepts_nested_attributes_for :order_items, :allow_destroy => false, :reject_if => :all_blank
+    accepts_nested_attributes_for :user, :allow_destroy => false, :update_only => true
 
-    validates_presence_of :user_id
+    unless EffectiveOrders.skip_user_validation
+      validates_presence_of :user_id
+      validates_associated :user
+    end
+
     validates_presence_of :order_items, :message => 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
     validates_associated :order_items
 

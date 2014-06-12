@@ -16,6 +16,14 @@ EffectiveOrders.setup do |config|
   config.require_billing_address = true
   config.require_shipping_address = false
 
+  # If set, the orders#new screen will render effective/orders/user_fields partial and capture this User Info
+  # The partial can be overridden to customize the form, but the following fields are also fed into strong_paramters
+  config.collect_user_fields = []
+  #config.collect_user_fields = [:salutation, :first_name, :last_name] # Must be valid fields on the User object
+
+  # Don't validate_associated :user when saving an Order
+  config.skip_user_validation = false
+
   # For use with development testing, pass the order ID plus this to the payment processor
   config.order_id_nudge = 0
 
@@ -23,9 +31,10 @@ EffectiveOrders.setup do |config|
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
 
   # Layout Settings
+  # Configure the Layout per controller, or all at once
+
   # config.layout = 'application'   # All EffectiveOrders controllers will use this layout
 
-  # Configure the Layout per controller, or all at once
   config.layout = {
     :carts => 'application',
     :orders => 'application',

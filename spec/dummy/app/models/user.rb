@@ -3,6 +3,8 @@ class User < ActiveRecord::Base
 
   acts_as_addressable :billing, :shipping
 
+  attr_accessor :first_name, :last_name
+
   structure do
     # Devise attributes
     encrypted_password      :string, :validates => [:presence]

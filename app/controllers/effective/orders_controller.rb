@@ -35,7 +35,6 @@ module Effective
 
       Effective::Order.transaction do
         begin
-          @order.save!
 
           if @order.save_billing_address? || @order.save_shipping_address?
             if @order.save_billing_address? && @order.user.respond_to?(:billing_address)
@@ -45,13 +44,14 @@ module Effective
             if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address)
               @order.user.shipping_address = @order.shipping_address
             end
-
-            @order.user.save!
           end
+
+          @order.save!
 
           @order.total.to_i == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
           return
         rescue => e
+          Rails.logger.info e.message
           flash[:alert] = "An error has ocurred. Please try again. Message: #{e.message}"
           raise ActiveRecord::Rollback
         end
@@ -126,6 +126,7 @@ module Effective
           :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
           :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
+          :user_attributes => (EffectiveOrders.collect_user_fields || []),
           :order_items_attributes => [:stripe_coupon_id, :class, :id]
         )
       rescue => e

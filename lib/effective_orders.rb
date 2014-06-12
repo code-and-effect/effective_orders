@@ -16,11 +16,15 @@ module EffectiveOrders
 
   mattr_accessor :authorization_method
   mattr_accessor :tax_rate_method
-  
+
   mattr_accessor :layout
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
+
+  mattr_accessor :collect_user_fields
+  mattr_accessor :skip_user_validation
+
   mattr_accessor :order_id_nudge
 
   mattr_accessor :paypal_enabled

@@ -110,6 +110,20 @@ describe Effective::Order do
       order.errors[:user_id].present?.should eq true
       order.errors[:order_items].present?.should eq true
     end
+
+    it 'should be invalid when user is invalid' do
+      order.user.stub(:valid?).and_return(false)
+      order.valid?.should eq false
+
+      order.errors[:user].present?.should eq true
+    end
+
+    it 'should be invalid when an order_item is invalid' do
+      order.order_items.first.stub(:valid?).and_return(false)
+      order.valid?.should eq false
+
+      order.errors[:order_items].present?.should eq true
+    end
   end
 
   describe 'purchase!' do

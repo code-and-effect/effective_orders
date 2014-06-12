@@ -75,6 +75,21 @@ describe Effective::OrdersController do
       assigns(:order).purchased?.should eq false
     end
 
+    it 'assign appropriate User fields' do
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => false,
+        :shipping_address => shipping_atts, :save_shipping_address => false,
+        :shipping_address_same_as_billing => false,
+        :user_attributes => {:first_name => 'First', :last_name => 'Last', :email => 'email@somwhere.com'}
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq true
+
+      assigns(:order).user.first_name.should eq 'First'
+      assigns(:order).user.last_name.should eq 'Last'
+      assigns(:order).user.email.should_not eq 'email@somwhere.com'
+    end
+
     it 'assign addresses to the order and not the user' do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => false,
@@ -180,7 +195,7 @@ describe Effective::OrdersController do
       response.should render_template(:create)
     end
 
-    it 'assign billing address to the order shipping_address but not hte user when shipping_address_same_as_billing provided' do
+    it 'assign billing address to the order shipping_address but not the user when shipping_address_same_as_billing provided' do
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => false,
         :save_shipping_address => false,
@@ -214,6 +229,18 @@ describe Effective::OrdersController do
 
     it 'is invalid when passed an invalid order_item' do
       Effective::OrderItem.any_instance.stub(:valid?).and_return(false)
+
+      post :create, :effective_order => {
+        :billing_address => billing_atts, :save_billing_address => true,
+        :shipping_address => shipping_atts, :save_shipping_address => true,
+      }
+
+      (assigns(:order).valid? && assigns(:order).persisted?).should eq false
+      response.should render_template(:new)
+    end
+
+    it 'is invalid when passed an invalid user' do
+      User.any_instance.stub(:valid?).and_return(false)
 
       post :create, :effective_order => {
         :billing_address => billing_atts, :save_billing_address => true,
