@@ -3,8 +3,8 @@
     - if defined?(fa.object.class::SALUTATIONS)
       = fa.input :salutation, :as => :select, :collection => fa.object.class::SALUTATIONS, :include_blank => false, :required => true
     - else
-      = fa.input :salutation, :required => true
+      = fa.input :salutation, :required => true, :placeholder => 'Salutation'
 
   - (EffectiveOrders.collect_user_fields || []).reject { |x| x == :salutation }.each do |field|
     - if fa.object.respond_to?(field)
-      = fa.input field, :required => true
+      = fa.input field, :required => true, :placeholder => field.to_s.humanize

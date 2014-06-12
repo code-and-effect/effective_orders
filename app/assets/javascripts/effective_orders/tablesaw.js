@@ -228,6 +228,4 @@
 
 
 // Make this work with turbolinks
-$(document).on('page:change', function() {
-  $(document).trigger('enhance.tablesaw');
-});
+$(document).on('page:change', function() { $(document).trigger('enhance.tablesaw'); });
