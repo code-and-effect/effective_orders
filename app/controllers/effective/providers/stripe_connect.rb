@@ -15,15 +15,15 @@ module Effective
 
           if token_params['access_token'].present? && customer.present?
             if customer.update_attributes(:stripe_connect_access_token => token_params['access_token'])
-              flash[:notice] = 'Successfully Connected with Stripe Connect'
+              flash[:success] = 'Successfully Connected with Stripe Connect'
             else
-              flash[:error] = "Unable to update customer: #{customer.errors[:base].first}"
+              flash[:danger] = "Unable to update customer: #{customer.errors[:base].first}"
             end
           else
-            flash[:error] = "Error when connecting to Stripe /oauth/token: #{token_params[:error]}.  Please try again."
+            flash[:danger] = "Error when connecting to Stripe /oauth/token: #{token_params[:error]}.  Please try again."
           end
         else
-          flash[:error] = "Error when connecting to Stripe /oauth/authorize: #{params[:error]}.  Please try again."
+          flash[:danger] = "Error when connecting to Stripe /oauth/authorize: #{params[:error]}.  Please try again."
         end
 
         redirect_to URI.parse(@stripe_state_params['redirect_to']).path rescue effective_orders.orders_path

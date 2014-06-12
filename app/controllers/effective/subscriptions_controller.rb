@@ -43,7 +43,7 @@ module Effective
         purchased_plans = @customer.subscriptions.purchased.map(&:stripe_plan_id)
         @plans = Stripe::Plan.all.reject { |stripe_plan| purchased_plans.include?(stripe_plan.id) }
 
-        flash[:error] ||= 'Unable to add subscription to cart.  Please try again.'
+        flash[:danger] ||= 'Unable to add subscription to cart.  Please try again.'
         render :action => :new
       end
     end
@@ -81,10 +81,10 @@ module Effective
           @subscription.destroy
           flash[:success] = "Successfully unsubscribed from #{params[:id]}"
         rescue => e
-          flash[:error] = "Unable to unsubscribe.  Message: \"#{e.message}\"."
+          flash[:danger] = "Unable to unsubscribe.  Message: \"#{e.message}\"."
         end
       else
-        flash[:error] = "Unable to find stripe subscription for #{params[:id]}" unless @subscription.present?
+        flash[:danger] = "Unable to find stripe subscription for #{params[:id]}" unless @subscription.present?
       end
 
       redirect_to effective_orders.subscriptions_path

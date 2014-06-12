@@ -45,7 +45,7 @@ describe Effective::OrdersController do
 
       get :new
 
-      flash[:alert].downcase.include?('must contain order items').should eq true
+      flash[:danger].downcase.include?('must contain order items').should eq true
       response.should redirect_to '/cart' # cart_path
     end
   end

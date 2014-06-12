@@ -20,7 +20,7 @@ module Effective
       EffectiveOrders.authorized?(self, :new, @order)
 
       unless @order.order_items.present?
-        flash[:alert] = 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
+        flash[:danger] = 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
         redirect_to effective_orders.cart_path
       end
     end
@@ -52,7 +52,7 @@ module Effective
           return
         rescue => e
           Rails.logger.info e.message
-          flash[:alert] = "An error has ocurred. Please try again. Message: #{e.message}"
+          flash[:danger] = "An error has ocurred. Please try again. Message: #{e.message}"
           raise ActiveRecord::Rollback
         end
       end
@@ -106,14 +106,14 @@ module Effective
       @order.purchase!(details)
       current_cart.try(:destroy)
 
-      flash[:notice] = "Successfully purchased order"
+      flash[:success] = "Successfully purchased order"
       redirect_to effective_orders.order_purchased_path(@order)
     end
 
     def order_declined(details = nil)
       @order.decline!(details)
 
-      flash[:error] = "Unable to process your order.  Your Cart items have been restored"
+      flash[:danger] = "Unable to process your order.  Your Cart items have been restored"
       redirect_to effective_orders.order_declined_path(@order)
     end
 

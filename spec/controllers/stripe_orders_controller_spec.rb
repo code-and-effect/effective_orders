@@ -32,7 +32,7 @@ describe Effective::OrdersController do
 
         post :stripe_charge, stripe_charge_params.tap { |x| x[:effective_stripe_charge]['token'] = nil }
 
-        flash[:error].downcase.include?('token').should eq true
+        flash[:danger].downcase.include?('token').should eq true
         assigns(:stripe_charge).errors[:token].present?.should eq true
 
         assigns(:order).purchased?.should eq false

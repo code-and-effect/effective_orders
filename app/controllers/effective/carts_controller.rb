@@ -15,9 +15,9 @@ module Effective
       EffectiveOrders.authorized?(self, :destroy, @cart)
 
       if @cart.destroy
-        flash[:notice] = 'Successfully emptied cart'
+        flash[:success] = 'Successfully emptied cart'
       else
-        flash[:alert] = 'Unable to destroy cart:' + e.message
+        flash[:danger] = 'Unable to destroy cart:' + e.message
       end
 
       request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
@@ -32,11 +32,11 @@ module Effective
         raise "please select a valid #{add_to_cart_params[:purchasable_type] || 'item' }" unless @purchasable
 
         current_cart.add_to_cart(@purchasable, [add_to_cart_params[:quantity].to_i, 1].max)
-        flash[:notice] = 'Successfully added item to cart'
+        flash[:success] = 'Successfully added item to cart'
       rescue EffectiveOrders::SoldOutException
-        flash[:alert] = 'This item is sold out'
+        flash[:warning] = 'This item is sold out'
       rescue => e
-        flash[:alert] = 'Unable to add item to cart: ' + e.message
+        flash[:danger] = 'Unable to add item to cart: ' + e.message
       end
 
       request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
@@ -48,9 +48,9 @@ module Effective
       EffectiveOrders.authorized?(self, :update, current_cart)
 
       if @cart_item.destroy
-        flash[:notice] = 'Successfully removed item from cart'
+        flash[:success] = 'Successfully removed item from cart'
       else
-        flash[:alert] = 'Unable to remove item from cart: ' + e.message
+        flash[:danger] = 'Unable to remove item from cart: ' + e.message
       end
 
       request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)

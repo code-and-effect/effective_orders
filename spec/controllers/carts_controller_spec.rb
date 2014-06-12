@@ -122,14 +122,14 @@ describe Effective::CartsController do
       get :add_to_cart, :purchasable_type => product.class, :purchasable_id => 'asdf'
 
       assigns(:purchasable).should eq nil
-      flash[:alert].include?('Unable to add item').should eq true
+      flash[:danger].include?('Unable to add item').should eq true
     end
 
     it 'provides a useful error when passed an unknown purchasable_type' do
       get :add_to_cart, :purchasable_type => 'Something', :purchasable_id => product.id
 
       assigns(:purchasable).should eq nil
-      flash[:alert].include?('Unable to add item').should eq true
+      flash[:danger].include?('Unable to add item').should eq true
     end
   end
 
