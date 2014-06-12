@@ -61,7 +61,7 @@ module EffectiveCartsHelper
       :data => {:confirm => 'This will clear your entire cart.  Are you sure?  This cannot be undone!'},
       :method => :delete
     }.merge(opts)
-    options[:class] = ((options[:class] || '') + ' btn-empty-cart')
+    options[:class] = ((options[:class] || '') + ' btn-empty-cart btn-danger')
 
     link_to (options.delete(:label) || 'Empty Cart'), effective_orders.cart_path, options
   end

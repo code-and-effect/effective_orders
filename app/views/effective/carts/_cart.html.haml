@@ -11,7 +11,7 @@
   %p Your cart has #{cart.cart_items.length} items.
   
   .effective-order
-    %table.table
+    %table.table.tablesaw.tablesaw-stack{:data => {:mode=> "stack"}}
       %thead
         %tr
           %th.quantity Quantity
@@ -21,10 +21,19 @@
       %tbody
         - cart.cart_items.each do |item|
           %tr
-            %td.quantity= item.quantity
-            %td= item.title.html_safe
-            %td.price= number_to_currency(item.subtotal)
-            %td.actions= link_to_remove_from_cart(item)
+            %td
+              .table-cell-inner
+                .quantity= item.quantity
+            %td
+              .table-cell-inner
+                = item.title.html_safe
+            %td
+              .table-cell-inner
+                .price= number_to_currency(item.subtotal)
+            %td
+              .table-cell-inner
+                .actions= link_to_remove_from_cart(item)
+    %table.table
       %tfoot
         %tr
           %th{:colspan => 2} Subtotal
