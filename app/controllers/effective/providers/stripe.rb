@@ -66,7 +66,7 @@ module Effective
 
         # Process regular order_items.
         amount = (charge.order_items.collect(&:total).sum * 100.0).to_i  # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
-        description = "Charge for Order ##{charge.order.id}"
+        description = "Charge for Order ##{charge.order.to_param}"
 
         if amount > 0
           results[:charge] = JSON.parse(::Stripe::Charge.create(
@@ -93,7 +93,7 @@ module Effective
         # Make one charge per seller, for all his order_items
         items.each do |seller, order_items|
           amount = (order_items.sum(&:total) * 100.0).to_i
-          description = "Charge for Order ##{charge.order.id} with OrderItems ##{order_items.map(&:id).join(', #')}"
+          description = "Charge for Order ##{charge.order.to_param} with OrderItems ##{order_items.map(&:id).join(', #')}"
           application_fee = (order_items.sum(&:stripe_connect_application_fee) * 100.0).to_i
 
           results[seller.id] = JSON.parse(::Stripe::Charge.create(

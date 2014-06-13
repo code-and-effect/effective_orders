@@ -4,12 +4,12 @@ module Effective
 
     def order_receipt_to_admin(order)
       @order = order
-      mail(:to => EffectiveOrders.mailer[:admin_email], :subject => subject("Order ##{order.id} Receipt"))
+      mail(:to => EffectiveOrders.mailer[:admin_email], :subject => subject("Order ##{order.to_param} Receipt"))
     end
 
     def order_receipt_to_buyer(order)  # Buyer
       @order = order
-      mail(:to => order.user.email, :subject => subject("Order ##{order.id} Receipt"))
+      mail(:to => order.user.email, :subject => subject("Order ##{order.to_param} Receipt"))
     end
 
     def order_receipt_to_seller(order, seller, order_items)
