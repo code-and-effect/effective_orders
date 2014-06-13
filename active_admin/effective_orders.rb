@@ -18,6 +18,11 @@ if defined?(ActiveAdmin)
     controller do
       include EffectiveOrdersHelper
 
+      def show
+        @effective_order = Effective::Order.find(Effective::Obfuscater.reveal(params[:id]))
+        render 'show'
+      end
+
       def scoped_collection
         end_of_association_chain.includes(:user).includes(:order_items => :purchasable)
       end
@@ -28,7 +33,7 @@ if defined?(ActiveAdmin)
     end
 
     index :download_links => false do
-      column 'Order', :sortable => :id do |order| link_to "##{order.id}", admin_effective_order_path(order) end
+      column 'Order', :sortable => :id do |order| link_to "##{order.to_param}", admin_effective_order_path(order) end
       column 'Buyer', :sortable => :user_id do |order| link_to order.user, admin_user_path(order.user) end
       column 'Summary' do |order| order_summary(order) end
       column do |order|
@@ -47,7 +52,7 @@ if defined?(ActiveAdmin)
     end
 
     member_action :resend_receipt do
-      @order = Effective::Order.find(params[:id])
+      @order = Effective::Order.find(Effective::Obfuscater.reveal(params[:id]))
 
       if (Effective::OrdersMailer.order_receipt_to_buyer(@order).deliver rescue false)
         flash[:success] = "Successfully resent order receipt to #{@order.user.email}"
@@ -75,7 +80,7 @@ if defined?(ActiveAdmin)
         @orders.each do |order|
           row = []
 
-          row << order.id
+          row << order.to_param
           row << (order.billing_address.try(:full_name) || order.user.to_s)
           row << order.purchased_at.strftime("%Y-%m-%d %H:%M:%S %z")
           row << "%.2f" % order.subtotal
