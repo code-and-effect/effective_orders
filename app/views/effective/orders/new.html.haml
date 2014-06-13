@@ -1,9 +1,5 @@
 %h2 Checkout
 
-%p All transactions are processed on a third-party secure payment page. When you confirm the order you will be moved off this website to complete your transaction.
-
-%br
-
 .effective-order
   = simple_form_for @order, :url => effective_orders.orders_path, :html => {:class => 'form-horizontal' } do |f|
     = render :partial => 'order_items', :locals => {:order => @order, :form => f}
