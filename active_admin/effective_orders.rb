@@ -43,7 +43,7 @@ if defined?(ActiveAdmin)
       end
     end
 
-    show do
+    show :title => proc { |order| "Order ##{order.to_param}"} do
       render :partial => 'active_admin/effective_orders/orders/show', :locals => {:order => effective_order}
     end
 
