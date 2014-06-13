@@ -1,4 +1,7 @@
-%h2 Order
+- if @order.purchased?
+  %h2 Receipt
+- else
+  %h2 Order
 %hr
 
 %a.btn.btn-default.pull-right{'data-role' => 'print-button', :class => 'print-button', :onClick => "window.print(); false;"} Print
