@@ -65,6 +65,10 @@ module Effective
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
+    def index
+      redirect_to effective_orders.my_purchases_path
+    end
+
     # Basically an index page.
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases

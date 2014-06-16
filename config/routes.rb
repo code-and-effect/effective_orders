@@ -31,7 +31,7 @@ EffectiveOrders::Engine.routes.draw do
     end
 
     # This must be below the other routes defined above.
-    resources :orders, :only => [:new, :create, :show]
+    resources :orders, :only => [:new, :create, :show, :index]
 
     match 'cart', :to => 'carts#show', :as => 'cart', :via => :get
     match 'cart', :to => 'carts#destroy', :via => :delete
