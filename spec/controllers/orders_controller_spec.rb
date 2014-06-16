@@ -4,6 +4,7 @@ describe Effective::OrdersController do
   routes { EffectiveOrders::Engine.routes }
 
   let(:purchased_order) { FactoryGirl.create(:purchased_order) }
+  let(:order) { FactoryGirl.create(:order) }
 
   let(:cart) { FactoryGirl.create(:cart) }
   let(:address) { FactoryGirl.create(:address) }
@@ -349,17 +350,28 @@ describe Effective::OrdersController do
   end
 
   describe '#show' do
-    before(:each) do
-      sign_in purchased_order.user
-    end
 
     it 'finds the order by obfuscated ID' do
+      sign_in purchased_order.user
       get :show, :id => purchased_order.to_param
       assigns(:order).id.should eq purchased_order.id
     end
 
     it 'does not find an order by regular ID' do
+      sign_in purchased_order.user
       expect { get :show, :id => purchased_order.id }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'renders the show template for a purchased order' do
+      sign_in purchased_order.user
+      get :show, :id => purchased_order.to_param
+      response.should render_template(:show)
+    end
+
+    it 'renders the checkout template for a non-purchased order' do
+      sign_in order.user
+      get :show, :id => order.to_param
+      response.should render_template(:checkout)
     end
   end
 
