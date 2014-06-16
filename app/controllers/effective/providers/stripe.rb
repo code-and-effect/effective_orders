@@ -19,7 +19,7 @@ module Effective
           order_purchased(response) # orders_controller#order_purchased
         else
           flash[:danger] = @stripe_charge.errors.full_messages.join(',')
-          render :action => :create
+          render 'checkout'
         end
       end
 

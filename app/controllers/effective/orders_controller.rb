@@ -48,7 +48,7 @@ module Effective
 
           @order.save!
 
-          @order.total.to_i == 0 ? order_purchased('zero-dollar order') : render(:action => :create)
+          @order.total.to_i == 0 ? order_purchased('zero-dollar order') : redirect_to(effective_orders.order_path(@order))
           return
         rescue => e
           Rails.logger.info e.message
@@ -63,6 +63,11 @@ module Effective
     def show
       @order = Order.find(Obfuscater.reveal(params[:id]))
       EffectiveOrders.authorized?(self, :show, @order)
+
+      if @order.purchased? == false
+        render('checkout') and return
+      end
+
     end
 
     def index

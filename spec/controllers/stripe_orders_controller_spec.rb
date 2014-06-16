@@ -36,7 +36,7 @@ describe Effective::OrdersController do
         assigns(:stripe_charge).errors[:token].present?.should eq true
 
         assigns(:order).purchased?.should eq false
-        response.should render_template(:create)
+        response.should render_template(:checkout)
       end
     end
 
@@ -83,7 +83,7 @@ describe Effective::OrdersController do
         assigns(:order).purchased?.should eq false
         assigns(:stripe_charge).errors[:base].first.downcase.include?('unable to process order with stripe').should eq true
         assigns(:stripe_charge).errors[:base].first.downcase.include?('the card was declined').should eq true
-        response.should render_template(:create)
+        response.should render_template(:checkout)
       end
     end
   end

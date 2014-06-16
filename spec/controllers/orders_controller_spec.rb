@@ -121,7 +121,7 @@ describe Effective::OrdersController do
       assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
       assigns(:order).user.shipping_address.address1.should eq shipping_atts['address1']
 
-      response.should render_template(:create)
+      response.should redirect_to "/orders/#{assigns(:order).to_param}"
     end
 
     it 'does not assign the billing_address to user if save_billing_address is false' do
@@ -139,7 +139,7 @@ describe Effective::OrdersController do
       assigns(:order).user.billing_address.present?.should eq false
       assigns(:order).user.shipping_address.address1.should eq shipping_atts['address1']
 
-      response.should render_template(:create)
+      response.should redirect_to "/orders/#{assigns(:order).to_param}"
     end
 
     it 'does not assign the shipping_address to user if save_shipping_address is false' do
@@ -157,7 +157,7 @@ describe Effective::OrdersController do
       assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
       assigns(:order).user.shipping_address.present?.should eq false
 
-      response.should render_template(:create)
+      response.should redirect_to "/orders/#{assigns(:order).to_param}"
     end
 
     it 'assign billing address to the order shipping_address when shipping_address_same_as_billing' do
@@ -175,7 +175,7 @@ describe Effective::OrdersController do
       assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
       assigns(:order).user.shipping_address.address1.should eq billing_atts['address1']
 
-      response.should render_template(:create)
+      response.should redirect_to "/orders/#{assigns(:order).to_param}"
     end
 
     it 'assign billing address to the order shipping_address when shipping_address_same_as_billing and no shipping provided' do
@@ -192,7 +192,7 @@ describe Effective::OrdersController do
       assigns(:order).user.billing_address.address1.should eq billing_atts['address1']
       assigns(:order).user.shipping_address.address1.should eq billing_atts['address1']
 
-      response.should render_template(:create)
+      response.should redirect_to "/orders/#{assigns(:order).to_param}"
     end
 
     it 'assign billing address to the order shipping_address but not the user when shipping_address_same_as_billing provided' do
@@ -210,7 +210,7 @@ describe Effective::OrdersController do
       assigns(:order).user.billing_address.present?.should eq false
       assigns(:order).user.shipping_address.present?.should eq false
 
-      response.should render_template(:create)
+      response.should redirect_to "/orders/#{assigns(:order).to_param}"
     end
 
     it 'is invalid when passed an invalid address' do
