@@ -8,8 +8,6 @@ module Effective
     end
 
     def order_receipt_to_buyer(order)  # Buyer
-      binding.pry
-
       @order = order
       mail(:to => order.user.email, :subject => receipt_to_buyer_subject(order))
     end
