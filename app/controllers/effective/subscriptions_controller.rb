@@ -50,11 +50,25 @@ module Effective
 
     def show
       @plan = Stripe::Plan.retrieve(params[:id])
-      raise ActiveRecord::RecordNotFound unless @plan.present?
+
+      unless @plan.present?
+        flash[:danger] = "Unrecognized Stripe Plan: #{params[:id]}"
+        raise ActiveRecord::RecordNotFound
+      end
 
       @subscription = @customer.subscriptions.find { |subscription| subscription.stripe_plan_id == params[:id] }
+
+      unless @subscription.present?
+        flash[:danger] = "Unable to find Customer Subscription for plan: #{params[:id]}"
+        raise ActiveRecord::RecordNotFound
+      end
+
       @stripe_subscription = @subscription.try(:stripe_subscription)
-      raise ActiveRecord::RecordNotFound unless @subscription.present? && @stripe_subscription.present?
+
+      unless @stripe_subscription.present?
+        flash[:danger] = "Unable to find Stripe Subscription for plan: #{params[:id]}"
+        raise ActiveRecord::RecordNotFound
+      end
 
       EffectiveOrders.authorized?(self, :show, @subscription)
 
