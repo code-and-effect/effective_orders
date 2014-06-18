@@ -147,16 +147,28 @@ module Effective
         self.save!
 
         if EffectiveOrders.mailer[:send_order_receipt_to_admin]
-          OrdersMailer.order_receipt_to_admin(self).deliver rescue false
+          if Rails.env.production?
+            (OrdersMailer.order_receipt_to_admin(self).deliver rescue false)
+          else
+            OrdersMailer.order_receipt_to_admin(self).deliver
+          end
         end
 
         if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
-          OrdersMailer.order_receipt_to_buyer(self).deliver rescue false
+          if Rails.env.production?
+            (OrdersMailer.order_receipt_to_buyer(self).deliver rescue false)
+          else
+            OrdersMailer.order_receipt_to_buyer(self).deliver
+          end
         end
 
         if EffectiveOrders.mailer[:send_order_receipt_to_seller] && self.purchased?(:stripe_connect)
           self.order_items.group_by(&:seller).each do |seller, order_items|
-            OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false
+            if Rails.env.production?
+              (OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false)
+            else
+              OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver
+            end
           end
         end
 

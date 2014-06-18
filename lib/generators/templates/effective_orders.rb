@@ -44,13 +44,30 @@ EffectiveOrders.setup do |config|
   }
 
   # Mailer Settings
+  # effective_orders will send out receipts to the buyer, seller and admins.
+  # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
+  #
+  # The subject_for_admin_receipt, subject_for_buyer_receipt and subject_for_seller_receipt can be one of:
+  # - nil / empty string to use the built in defaults
+  # - A string with the full subject line for this email
+  # - A Proc to create the subject line based on the email
+  # In all three of these cases, the subject_prefix will still be used.
+
+  # The Procs are the same for admin & buyer receipt, the seller Proc is different
+  # :subject_for_admin_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # :subject_for_buyer_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # :subject_for_seller_receipt => Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
+
   config.mailer = {
     :send_order_receipt_to_admin => true,
     :send_order_receipt_to_buyer => true,
     :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
     :admin_email => 'admin@example.com',
     :default_from => 'info@example.com',
-    :subject_prefix => '[example]'
+    :subject_prefix => '[example]',
+    :subject_for_admin_receipt => '',
+    :subject_for_buyer_receipt => '',
+    :subject_for_seller_receipt => ''
   }
 
   # Moneris configuration

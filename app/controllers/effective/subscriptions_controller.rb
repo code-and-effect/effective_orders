@@ -62,7 +62,7 @@ module Effective
         invoice.lines.any? { |line| line.id == @stripe_subscription.id }
       end
 
-      @page_title ||= "#{@plan.name} Subscription Details"
+      @page_title ||= "#{@plan.name}"
     end
 
     def destroy
