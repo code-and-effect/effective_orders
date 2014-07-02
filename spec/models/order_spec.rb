@@ -147,10 +147,17 @@ describe Effective::Order do
     end
 
     it 'sends emails to the admin, buyer and seller' do
-      Effective::OrdersMailer.should_receive(:order_receipt_to_admin).with(order)
-      Effective::OrdersMailer.should_receive(:order_receipt_to_buyer).with(order)
+      Effective::OrdersMailer.deliveries.clear
 
       order.purchase!('by a test')
+
+      Effective::OrdersMailer.deliveries.length.should eq 2
+
+      Effective::OrdersMailer.deliveries[0].to.first.should eq 'admin@example.com'
+      Effective::OrdersMailer.deliveries[0].subject.include?("Order ##{order.to_param} Receipt").should eq true
+
+      Effective::OrdersMailer.deliveries[1].to.first.should eq order.user.email
+      Effective::OrdersMailer.deliveries[1].subject.include?("Order ##{order.to_param} Receipt").should eq true
     end
 
     it 'is included with the purchased scope' do

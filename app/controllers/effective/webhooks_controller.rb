@@ -8,15 +8,15 @@ module Effective
       (head(:ok) and return) if (params[:livemode] == false && Rails.env.production?) || params[:object] != 'event' || params[:id].blank?
 
       # Dont trust the POST, and instead request the actual event from Stripe
-      event = Stripe::Event.retrieve(params[:id]) rescue (head(:ok) and return)
+      @event = Stripe::Event.retrieve(params[:id]) rescue (head(:ok) and return)
 
       Effective::Customer.transaction do
         begin
-          case event.type
-          when 'customer.created'   ; stripe_customer_created(event)
-          when 'customer.deleted'   ; stripe_customer_deleted(event)
-          when 'customer.subscription.created'    ; stripe_subscription_created(event)
-          when 'customer.subscription.deleted'    ; stripe_subscription_deleted(event)
+          case @event.type
+          when 'customer.created'   ; stripe_customer_created(@event)
+          when 'customer.deleted'   ; stripe_customer_deleted(@event)
+          when 'customer.subscription.created'    ; stripe_subscription_created(@event)
+          when 'customer.subscription.deleted'    ; stripe_subscription_deleted(@event)
           end
         rescue => e
           Rails.logger.info "Stripe Webhook Error: #{e.message}"
@@ -52,21 +52,24 @@ module Effective
 
     def stripe_subscription_created(event)
       stripe_subscription = event.data.object
-      customer = Effective::Customer.where(:stripe_customer_id => stripe_subscription.customer).first
+      @customer = Effective::Customer.where(:stripe_customer_id => stripe_subscription.customer).first
 
-      if customer.present?
-        subscription = customer.subscriptions.where(:stripe_plan_id => stripe_subscription.plan.id).first_or_initialize
+      if @customer.present?
+        subscription = @customer.subscriptions.where(:stripe_plan_id => stripe_subscription.plan.id).first_or_initialize
 
         subscription.stripe_subscription_id = stripe_subscription.id
-        subscription.stripe_plan_id = stripe_subscription.plan.id
-        subscription.stripe_coupon_id = stripe_subscription.discount.coupon.id if stripe_subscription.discount.present?
+        subscription.stripe_plan_id = (stripe_subscription.plan.id rescue nil)
+        subscription.stripe_coupon_id = stripe_subscription.discount.coupon.id if (stripe_subscription.discount.present? rescue false)
 
         subscription.save!
 
-        # Now we have to purchase it
-        order = Effective::Order.new(subscription)
-        order.user = customer.user
-        order.purchase!("via Stripe webhook #{event.id}")
+        unless subscription.purchased?
+          # Now we have to purchase it
+          @order = Effective::Order.new(subscription)
+          @order.user = @customer.user
+          @order.purchase!("via Stripe webhook #{event.id}")
+        end
+
       end
     end
 
