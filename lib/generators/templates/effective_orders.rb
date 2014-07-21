@@ -12,6 +12,9 @@ EffectiveOrders.setup do |config|
   # Authorization Method
   config.authorization_method = Proc.new { |controller, action, resource| can?(action, resource) } # CanCan gem
 
+  # Register Effective::Order with ActiveAdmin if ActiveAdmin is present
+  config.use_active_admin = true
+
   # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.require_billing_address = true
   config.require_shipping_address = false
