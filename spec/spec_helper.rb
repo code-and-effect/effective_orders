@@ -15,7 +15,6 @@ RSpec.configure do |config|
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
   config.include Devise::TestHelpers, :type => :controller
-  config.include RequestMacros, :type => :request
 
   Rails.logger.level = 4    # Output only minimal stuff to test.log
 
