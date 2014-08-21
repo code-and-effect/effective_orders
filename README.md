@@ -60,7 +60,7 @@ class Product
   acts_as_purchasable
 
   after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
-    self.do_something() # Is a Product
+    self.do_something() # self is an instance of this Product
   end
 
   after_decline do |order, order_item|

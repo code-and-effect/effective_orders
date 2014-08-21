@@ -1,3 +1,7 @@
+Rails.application.routes.draw do
+  mount EffectiveOrders::Engine => '/', :as => 'effective_orders'
+end
+
 EffectiveOrders::Engine.routes.draw do
   scope :module => 'effective' do
 
@@ -50,5 +54,4 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/:id/resend_buyer_receipt', :to => 'orders#resend_buyer_receipt', :via => [:get], :as => 'order_resend_buyer_receipt'
     end
   end
-
 end
