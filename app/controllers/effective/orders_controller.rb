@@ -113,15 +113,20 @@ module Effective
     protected
 
     def order_purchased(details = nil)
-      @order.purchase!(details)
-      current_cart.try(:destroy)
+      begin
+        @order.purchase!(details)
+        current_cart.try(:destroy)
 
-      flash[:success] = "Successfully purchased order"
-      redirect_to effective_orders.order_purchased_path(@order)
+        flash[:success] = "Successfully purchased order"
+        redirect_to effective_orders.order_purchased_path(@order)
+      rescue => e
+        flash[:danger] = "Unable to process your order.  Your card has not been charged.  Your Cart items have been restored.  Please try again.  Error Message: #{e.message}"
+        redirect_to effective_orders.cart_path
+      end
     end
 
     def order_declined(details = nil)
-      @order.decline!(details)
+      @order.decline!(details) rescue nil
 
       flash[:danger] = "Unable to process your order.  Your Cart items have been restored"
       redirect_to effective_orders.order_declined_path(@order)
@@ -151,7 +156,7 @@ module Effective
         when 'purchased'    ; 'Thank You'
         when 'declined'     ; 'Unable to process payment'
         when 'show'         ; 'Order Receipt'
-        else 'Checkout' 
+        else 'Checkout'
       end
     end
 

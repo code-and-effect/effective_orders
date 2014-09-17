@@ -96,7 +96,7 @@ module Effective
             order_item.purchasable.attributes = atts.except(:id, :class)
 
             # Recalculate the OrderItem based on the updated purchasable object
-            order_item.title = order_item.purchasable.title  
+            order_item.title = order_item.purchasable.title
             order_item.price = order_item.purchasable.price
             order_item.tax_exempt = order_item.purchasable.tax_exempt
             order_item.tax_rate = order_item.purchasable.tax_rate
@@ -136,6 +136,7 @@ module Effective
 
     def purchase!(payment_details = nil)
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
+      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if self.declined?
 
       Order.transaction do
         self.purchase_state = EffectiveOrders::PURCHASED
@@ -179,6 +180,7 @@ module Effective
     end
 
     def decline!(payment_details = nil)
+      raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
       raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if self.declined?
 
       Order.transaction do
