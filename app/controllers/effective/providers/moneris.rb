@@ -15,7 +15,9 @@ module Effective
         if params[:result].to_s == '1' && params[:transactionKey].present?
           verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey]))
 
-          if (verify_params[:response_code].to_i || 999) < 50  # Less than 50 means a successful validation
+          response_code = verify_params[:response_code].to_i
+
+          if response_code > 0 && response_code < 50  # Less than 50 means a successful validation
             order_purchased(params.merge(verify_params))
           else
             order_declined(params.merge(verify_params))
@@ -81,3 +83,5 @@ end
 # Click YES Enable Transaction Verification
 # Sent to your server as a POST
 # Response URL:  http://ourwebsite.com/orders/moneris_postback
+
+# Displayed as key/value pairs on our server. ????
