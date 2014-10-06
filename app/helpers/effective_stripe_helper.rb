@@ -4,7 +4,7 @@ module EffectiveStripeHelper
   STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
 
   def is_stripe_connect_seller?(user)
-    Effective::Customer.for_user(user).try(:is_stripe_connect_seller?) == true
+    Effective::Customer.for_user(user).try(:is_stripe_connect_seller?)
   end
 
   def link_to_new_stripe_connect_customer(opts = {})
@@ -13,17 +13,20 @@ module EffectiveStripeHelper
     raise ArgumentError.new('effective_orders config: stripe.connect_client_id has not been set') unless client_id.present?
 
     authorize_params = {
-      :response_type => :code,
-      :client_id => client_id,            # This is the Application's ClientID
-      :scope => :read_write,
-      :state => {
-        :form_authenticity_token => form_authenticity_token,   # Rails standard CSRF
-        :redirect_to => URI.encode(request.original_url)  # TODO: Allow this to be customized
+      response_type: :code,
+      client_id: client_id,            # This is the Application's ClientID
+      scope: :read_write,
+      state: {
+        form_authenticity_token: form_authenticity_token,   # Rails standard CSRF
+        redirect_to: URI.encode(request.original_url)  # TODO: Allow this to be customized
       }.to_json
     }
 
-    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL.chomp('/') + '?' + authorize_params.to_query
+    # Add the stripe_user parameter if it's possible
+    stripe_user_params = opts.delete :stripe_user
+    authorize_params.merge!({stripe_user: stripe_user_params}) if stripe_user_params.is_a?(Hash) && stripe_user_params.present?
 
+    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL.chomp('/') + '?' + authorize_params.to_query
     options = {}.merge(opts)
     link_to image_tag('/assets/effective_orders/stripe_connect.png'), authorize_url, options
   end
@@ -56,7 +59,5 @@ module EffectiveStripeHelper
       "#{coupon.id} - #{amount} off #{coupon.duration}"
     end
   end
-
-
 
 end
