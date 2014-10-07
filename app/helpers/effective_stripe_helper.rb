@@ -4,7 +4,7 @@ module EffectiveStripeHelper
   STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
 
   def is_stripe_connect_seller?(user)
-    Effective::Customer.for_user(user).try(:is_stripe_connect_seller?)
+    Effective::Customer.for_user(user).try(:is_stripe_connect_seller?) == true
   end
 
   def link_to_new_stripe_connect_customer(opts = {})
@@ -24,7 +24,7 @@ module EffectiveStripeHelper
 
     # Add the stripe_user parameter if it's possible
     stripe_user_params = opts.delete :stripe_user
-    authorize_params.merge!({stripe_user: stripe_user_params}) if stripe_user_params.is_a?(Hash) && stripe_user_params.present?
+    authorize_params.merge!({stripe_user: stripe_user_params}) if stripe_user_params.is_a?(Hash)
 
     authorize_url = STRIPE_CONNECT_AUTHORIZE_URL.chomp('/') + '?' + authorize_params.to_query
     options = {}.merge(opts)
