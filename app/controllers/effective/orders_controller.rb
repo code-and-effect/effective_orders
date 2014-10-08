@@ -35,15 +35,12 @@ module Effective
 
       Effective::Order.transaction do
         begin
+          if @order.save_billing_address? && @order.user.respond_to?(:billing_address)
+            @order.user.billing_address = @order.billing_address
+          end
 
-          if @order.save_billing_address? || @order.save_shipping_address?
-            if @order.save_billing_address? && @order.user.respond_to?(:billing_address)
-              @order.user.billing_address = @order.billing_address
-            end
-
-            if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address)
-              @order.user.shipping_address = @order.shipping_address
-            end
+          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address)
+            @order.user.shipping_address = @order.shipping_address
           end
 
           @order.save!
