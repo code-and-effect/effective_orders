@@ -61,7 +61,7 @@ module Effective
     end
 
     def show
-      @order = Order.find(Obfuscater.reveal(params[:id]))
+      @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
       if @order.purchased? == false
@@ -92,19 +92,19 @@ module Effective
 
     # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
     def purchased # Thank You!
-      @order = Order.find(Obfuscater.reveal(params[:id]))
+      @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
     # An error has occurred, please try again
     def declined # An error occurred!
-      @order = Order.find(Obfuscater.reveal(params[:id]))
+      @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
     def pretend_purchase
       unless Rails.env.production?
-        @order = Order.find(Obfuscater.reveal(params[:id]))
+        @order = Order.find(params[:id])
         EffectiveOrders.authorized?(self, :update, @order)
         order_purchased('for pretend')
       end

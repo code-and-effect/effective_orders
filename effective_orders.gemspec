@@ -23,8 +23,8 @@ Gem::Specification.new do |s|
   s.add_dependency "migrant"
   s.add_dependency "simple_form"
   s.add_dependency "effective_addresses"
+  s.add_dependency "effective_obfuscation"
   s.add_dependency "stripe"
-  s.add_dependency "scatter_swap"
 
   s.add_development_dependency "stripe-ruby-mock"
   s.add_development_dependency "factory_girl_rails"

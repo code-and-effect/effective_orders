@@ -38,7 +38,7 @@ if defined?(EffectiveDatatables)
 
         def search_column(collection, table_column, search_term)
           if table_column[:name] == 'id'
-            collection.where(:id => Effective::Obfuscater.reveal(search_term))
+            collection.where(:id => search_term)
           else
             super
           end

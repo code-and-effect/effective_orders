@@ -5,7 +5,7 @@ module Effective
     include ActiveModel::Conversion
     include ActiveModel::Validations
     include ActiveRecord::Reflection
-    
+
     attr_accessor :effective_order_id, :order, :token # For our form
 
     validates_presence_of :effective_order_id, :token
@@ -13,7 +13,7 @@ module Effective
     def initialize(params = {})
       if params.kind_of?(Effective::Order)
         @order = params
-        @effective_order_id = params.id
+        @effective_order_id = params.to_param
       else
         params.each { |k, v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
       end

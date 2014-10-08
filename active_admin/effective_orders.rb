@@ -19,7 +19,7 @@ if defined?(ActiveAdmin)
       include EffectiveOrdersHelper
 
       def show
-        @effective_order = Effective::Order.find(Effective::Obfuscater.reveal(params[:id]))
+        @effective_order = Effective::Order.find(params[:id])
         render 'show'
       end
 
@@ -52,7 +52,7 @@ if defined?(ActiveAdmin)
     end
 
     member_action :resend_receipt do
-      @order = Effective::Order.find(Effective::Obfuscater.reveal(params[:id]))
+      @order = Effective::Order.find(params[:id])
 
       if (Effective::OrdersMailer.order_receipt_to_buyer(@order).deliver rescue false)
         flash[:success] = "Successfully resent order receipt to #{@order.user.email}"
