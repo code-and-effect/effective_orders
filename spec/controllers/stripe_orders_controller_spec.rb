@@ -12,11 +12,11 @@ describe Effective::OrdersController do
   let(:buyer) { Effective::Customer.for_user(order.user) }
   let(:token) { 'tok_123456789' }
   let(:stripe_charge_params) do
-    {:effective_stripe_charge => {'effective_order_id' => order.id, 'token' => token}}
+    {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
   end
 
   describe '#stripe_charge' do
-    before do 
+    before do
       sign_in order.user
     end
 
@@ -94,10 +94,10 @@ describe Effective::OrdersController do
     let(:subscription) { order.order_items[1].purchasable }
     let(:token) { 'tok_123456789' }
     let(:stripe_charge_params) do
-      {:effective_stripe_charge => {'effective_order_id' => order.id, 'token' => token}}
+      {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
     end
 
-    before do 
+    before do
       sign_in order.user
     end
 

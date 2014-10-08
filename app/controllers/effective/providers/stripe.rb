@@ -14,7 +14,7 @@ module Effective
         @stripe_charge.order = @order
 
         EffectiveOrders.authorized?(self, :update, @order)
-        
+
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(response) # orders_controller#order_purchased
         else
@@ -70,9 +70,9 @@ module Effective
 
         if amount > 0
           results[:charge] = JSON.parse(::Stripe::Charge.create(
-            :amount => amount, 
-            :currency => EffectiveOrders.stripe[:currency], 
-            :customer => buyer.stripe_customer.id, 
+            :amount => amount,
+            :currency => EffectiveOrders.stripe[:currency],
+            :customer => buyer.stripe_customer.id,
             :description => description
           ).to_json)
         end
@@ -98,8 +98,8 @@ module Effective
 
           results[seller.id] = JSON.parse(::Stripe::Charge.create(
             {
-              :amount => amount, 
-              :currency => EffectiveOrders.stripe[:currency], 
+              :amount => amount,
+              :currency => EffectiveOrders.stripe[:currency],
               :card => seller.token.id,
               :description => description,
               :application_fee => application_fee

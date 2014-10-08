@@ -272,7 +272,7 @@ describe Effective::Order do
 
   describe '#to_param' do
     it 'returns an obfuscated ID' do
-      order.to_param.should eq Effective::Obfuscater.hide(order.id)
+      (order.to_param.length >= 10).should eq true
     end
   end
 

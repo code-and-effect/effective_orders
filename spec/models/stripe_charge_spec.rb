@@ -11,7 +11,7 @@ describe Effective::StripeCharge do
   it 'can be initialized with an order' do
     charge = Effective::StripeCharge.new(order)
     charge.order.should eq order
-    charge.effective_order_id.should eq order.id
+    charge.effective_order_id.should eq order.to_param
   end
 
   it 'can be initialized without an order' do
