@@ -18,6 +18,7 @@ module EffectiveOrders
   mattr_accessor :tax_rate_method
 
   mattr_accessor :layout
+  mattr_accessor :simple_form_options
   mattr_accessor :use_active_admin
 
   mattr_accessor :require_billing_address

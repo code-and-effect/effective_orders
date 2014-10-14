@@ -64,6 +64,20 @@ EffectiveOrders.setup do |config|
     :admin_orders => 'application'
   }
 
+  # SimpleForm Options
+  # This Hash of options will be passed into any simple_form_for() calls
+  config.simple_form_options = {}
+
+  # config.simple_form_options = {
+  #   :html => {:class => 'form-horizontal'},
+  #   :wrapper => :horizontal_form,
+  #   :wrapper_mappings => {
+  #     :boolean => :horizontal_boolean,
+  #     :check_boxes => :horizontal_radio_and_checkboxes,
+  #     :radio_buttons => :horizontal_radio_and_checkboxes
+  #   }
+  # }
+
   # Mailer Settings
   # effective_orders will send out receipts to the buyer, seller and admins.
   # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
