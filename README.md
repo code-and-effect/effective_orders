@@ -38,7 +38,110 @@ Then migrate the database:
 rake db:migrate
 ```
 
-### Permissions
+### Integrating with your app
+
+Once installed, we still need to create something to purchase.
+
+Let's make a 'Product' model that uses the acts_as_purchasable mixin.
+
+We're also going to prevent the Product from being deleted by overriding destroy and setting a boolean archived=true instead.
+
+If someone purchased a Product which is later deleted, the Order History page will be unable to find the Product.
+
+```ruby
+class Product < ActiveRecord::Base
+  acts_as_purchasable
+
+  # this structure do... block is provided by the migrant gem https://github.com/pascalh1011/migrant
+  structure do
+    title               :string
+
+    price               :decimal, :precision => 8, :scale => 2, :default => 0.00
+
+    archived            :boolean, :default => false
+
+    timestamps
+  end
+
+  validates_presence_of :title
+  validates_numericality_of :price, :greater_than => 0.0
+
+  scope :products, -> { where(:archived => false) }
+
+  # This prevents the Product from being deleted
+  def destroy
+    update_attributes(:archived => true)
+  end
+
+end
+```
+
+The database migration will look like the following:
+
+```ruby
+class CreateProducts < ActiveRecord::Migration
+  def self.up
+    create_table :products do |t|
+      t.string :title
+      t.decimal :price, :default=>0.0, :precision=>8, :scale=>2
+      t.boolean :archived, :default=>false
+      t.datetime :updated_at
+      t.datetime :created_at
+    end
+  end
+
+  def self.down
+    drop_table :products
+  end
+end
+```
+
+Once the database has been migrated, it is time to scaffold/build the CRUD Product screens and create some Products to sell.
+
+...that is an exercise left upto the reader...
+
+So then back on a Product#show page, we will render the product with the Add To Cart link
+
+```haml
+%h4= @product.title
+%p= number_to_currency(@product.price)
+%p= link_to_add_to_cart(@product, :class => 'btn btn-primary', :label => 'Add To My Shopping Cart')
+```
+
+When the user clicks 'Add To My Shopping Cart' the product will be added to the cart.  A flash message is displayed, and the user will return to the same page.
+
+We still need to create a link to the Shopping Cart page so that the user can see his cart.  On your site's menu, or wherever:
+
+```ruby
+= link_to 'My Cart', effective_orders.carts_path
+```
+
+or
+
+```ruby
+= link_to_current_cart()  # To display Cart (3) when there are 3 items
+```
+
+or
+
+```ruby
+= link_to_current_cart(:label => 'My Shopping Cart')  # To display My Shopping Cart Cart (3) when there are 3 items
+```
+
+The checkout screen can be reached through the My Cart page, or reached directly via
+
+```ruby
+= link_to 'Go Checkout Already', effective_orders.new_order_path
+```
+
+or
+
+```ruby
+= link_to_checkout()
+```
+
+
+## Permissions
 
 Using CanCan
 
@@ -47,9 +150,9 @@ can [:manage], Effective::Cart, :user_id => user.id
 can [:manage], Effective::Order, :user_id => user.id # Orders cannot be deleted
 can [:manage], Effective::Subscription, :user_id => user.id
 ```
-    
 
-### Acts As Purchasable
+
+## Acts As Purchasable
 
 TODO
 
@@ -69,33 +172,33 @@ end
 ```
 
 
-### Carts
+## Carts
 
 TODO
 
-### Orders
+## Orders
 
 TODO
 
-### Helpers
+## Helpers
 
 TODO
 
-### Using Ngrok to test in Development
+## Using Ngrok to test in Development
 
 Used to use localtunnel, but it looks like its down.  Try ngrok instead.
 
 https://ngrok.com/
 
-### Moneris
+## Moneris
 
 TODO
 
-### PayPal
+## PayPal
 
 TODO
 
-### Stripe
+## Stripe
 
 First register for an account with Stripe
 
@@ -164,9 +267,9 @@ MIT License.  Copyright Code and Effect Inc. http://www.codeandeffect.com
 
 You are not granted rights or licenses to the trademarks of Code and Effect
 
-### Testing
+## Testing
 
-The test suite for this gem is unfortunately not yet complete.
+The test suite for this gem is mostly complete.
 
 Run tests by:
 
