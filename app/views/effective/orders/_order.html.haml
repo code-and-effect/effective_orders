@@ -1,27 +1,4 @@
 .effective-order
-
   = render :partial => 'effective/orders/order_header', :locals => {:order => order}
-
-  %table.table.tablesaw.tablesaw-stack{:data => {:mode=> "stack"}}
-    %thead
-      %tr
-        %th= "#{order.purchased? ? 'Sold To' : 'Bill To'}"
-        - if order.shipping_address.present?
-          %th Ship To
-    %tbody
-      %tr
-        %td
-          .table-cell-inner
-            - if order.user.to_s.present?
-              = "#{order.user.to_s} (#{mail_to order.user.email})".html_safe
-            - else
-              = mail_to order.user.email
-            %br
-            - if order.billing_address.present?
-              = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address}
-        - if order.shipping_address.present?
-          %td
-            .table-cell-inner
-              = render :partial => 'effective/addresses/address', :locals => {:address => order.shipping_address}
-
+  = render :partial => 'effective/orders/order_shipping', :locals => {:order => order}
   = render :partial => 'effective/orders/order_items', :locals => {:order => order}

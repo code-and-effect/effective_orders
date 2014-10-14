@@ -40,7 +40,7 @@ module EffectiveCartsHelper
   def link_to_add_to_cart(purchasable, opts = {})
     raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.respond_to?(:is_effectively_purchasable?)
 
-    options = {:class => 'btn', :rel => :nofollow}.merge(opts)
+    options = {:class => 'btn', :rel => :nofollow, 'data-disable-with' => 'Add to Cart...'}.merge(opts)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')
 
     link_to (options.delete(:label) || 'Add to Cart'), effective_orders.add_to_cart_path(:purchasable_type => purchasable.class.name, :purchasable_id => purchasable.id.to_i), options
@@ -76,6 +76,15 @@ module EffectiveCartsHelper
     options[:class] = ((options[:class] || '') + ' btn-checkout')
 
     link_to (options.delete(:label) || 'Proceed to Checkout'), effective_orders.new_order_path, options
+  end
+
+  def render_cart(cart = nil, opts = {})
+    cart ||= current_cart
+    render(:partial => 'effective/carts/cart', :locals => {:cart => cart})
+  end
+
+  def render_purchasables(*purchasables)
+    render(:partial => 'effective/orders/order_items', :locals => {:order => Effective::Order.new(purchasables)})
   end
 
 end
