@@ -1,6 +1,6 @@
 module EffectiveOrdersHelper
   def order_summary(order)
-    content_tag(:p, "#{number_to_currency(order.total)} total for #{order.num_items} items:") +
+    content_tag(:p, "#{number_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
 
     content_tag(:ul) do
       order.order_items.map do |item|
@@ -16,7 +16,7 @@ module EffectiveOrdersHelper
 
   def order_item_summary(order_item)
     if order_item.quantity > 1
-      content_tag(:p, "#{number_to_currency(order_item.total)} total for #{order_item.quantity}x items")
+      content_tag(:p, "#{number_to_currency(order_item.total)} total for #{pluralize(order_item.quantity, 'item')}")
     else
       content_tag(:p, "#{number_to_currency(order_item.total)} total")
     end
