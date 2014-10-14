@@ -27,7 +27,7 @@ module ActsAsPurchasable
     scope :sold, -> { purchased() }
     scope :sold_by, lambda { |user| joins(:order_items).joins(:orders).where(:order_items => {:seller_id => user.try(:id)}).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}).uniq }
 
-    scope :not_purchased, -> { where('id NOT IN (?)', purchased.map(&:id)) }
+    scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
   end
 
   module ClassMethods
