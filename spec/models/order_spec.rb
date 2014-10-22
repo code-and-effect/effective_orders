@@ -124,6 +124,30 @@ describe Effective::Order do
 
       order.errors[:order_items].present?.should eq true
     end
+
+    it 'should be invalid when less than the minimum charge' do
+      order.stub(:total).and_return(0.49)
+
+      order.valid?.should eq false
+
+      order.errors[:total].present?.should eq true
+      order.errors[:total].first.downcase.include?('minimum order of 0.5 is required').should eq true
+    end
+
+    it 'should be valid when >= minimum charge' do
+      order.stub(:total).and_return(0.5)
+      order.valid?.should eq true
+
+      order.stub(:total).and_return(0.51)
+      order.valid?.should eq true
+    end
+
+    it 'should be valid for a free order' do
+      order.order_items.each { |order_item| order_item.stub(:total).and_return(0.0) }
+
+      order.valid?.should eq true
+      order.errors[:total].present?.should eq false
+    end
   end
 
   describe 'purchase!' do

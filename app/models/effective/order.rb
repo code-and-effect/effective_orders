@@ -26,7 +26,15 @@ module Effective
       validates_associated :user
     end
 
-    validates_presence_of :order_items, :message => 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
+    if ((minimum_charge = EffectiveOrders.minimum_charge.to_f) rescue nil).present?
+      if EffectiveOrders.allow_free_orders
+        validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :unless => Proc.new { |order| order.total < 0.01 && order.total >= 0.00 }, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+      else
+        validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+      end
+    end
+
+    validates_presence_of :order_items, :message => 'No items are present.  Please add one or more item to your cart.'
     validates_associated :order_items
 
     serialize :payment, Hash

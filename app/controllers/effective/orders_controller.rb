@@ -19,8 +19,15 @@ module Effective
 
       EffectiveOrders.authorized?(self, :new, @order)
 
-      unless @order.order_items.present?
-        flash[:danger] = 'An order must contain order items.  Please add one or more items to your Cart before proceeding to checkout.'
+      # We're only going to check for a subset of errors on this step,
+      # with the idea that we don't want to create an Order object if the Order is totally invalid
+      @order.valid?
+
+      if @order.errors[:order_items].present?
+        flash[:danger] = @order.errors[:order_items].first
+        redirect_to effective_orders.cart_path
+      elsif @order.errors[:total].present?
+        flash[:danger] = @order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_s, view_context.number_to_currency(EffectiveOrders.minimum_charge))
         redirect_to effective_orders.cart_path
       end
     end
@@ -45,7 +52,12 @@ module Effective
 
           @order.save!
 
-          @order.total.to_i == 0 ? order_purchased('zero-dollar order') : redirect_to(effective_orders.order_path(@order))
+          if @order.total < 0.01 && @order.total >= 0.00 && EffectiveOrders.allow_free_orders
+            order_purchased('zero-dollar order')
+          else
+            redirect_to(effective_orders.order_path(@order))
+          end
+
           return
         rescue => e
           Rails.logger.info e.message

@@ -46,7 +46,17 @@ describe Effective::OrdersController do
 
       get :new
 
-      flash[:danger].downcase.include?('must contain order items').should eq true
+      flash[:danger].downcase.include?('add one or more item to your cart').should eq true
+      response.should redirect_to '/cart' # cart_path
+    end
+
+    it 'redirects if order total is less than minimum charge' do
+      sign_in cart.user
+      Effective::CartItem.any_instance.stub(:price).and_return(0.1)
+
+      get :new
+
+      flash[:danger].downcase.include?('a minimum order of $0.50 is required').should eq true
       response.should redirect_to '/cart' # cart_path
     end
   end
@@ -55,10 +65,10 @@ describe Effective::OrdersController do
   #   "order_items_attributes"=> {
   #     "0"=> {
   #       "class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}},
-  #   "billing_address"=>{"address1"=>"1234 Fake street", "address2"=>"", "city"=>"Edmonton", "country_code"=>"KH", "state_code"=>"1", "postal_code"=>"T5T2T1"}, 
-  #   "save_billing_address"=>"1", 
-  #   "shipping_address"=>{"address1"=>"123 Shipping street", "address2"=>"", "city"=>"Edmonton", "country_code"=>"KH", "state_code"=>"10", "postal_code"=>"t5t2t1"}, 
-  #   "save_shipping_address"=>"1"}, 
+  #   "billing_address"=>{"address1"=>"1234 Fake street", "address2"=>"", "city"=>"Edmonton", "country_code"=>"KH", "state_code"=>"1", "postal_code"=>"T5T2T1"},
+  #   "save_billing_address"=>"1",
+  #   "shipping_address"=>{"address1"=>"123 Shipping street", "address2"=>"", "city"=>"Edmonton", "country_code"=>"KH", "state_code"=>"10", "postal_code"=>"t5t2t1"},
+  #   "save_shipping_address"=>"1"},
   #   "commit"=>"Continue Checkout"
   # }
 
@@ -282,7 +292,7 @@ describe Effective::OrdersController do
       valid_order_attributes.tap { |x| x[:effective_order]['order_items_attributes'] = {'0' => {"class"=>"Effective::Subscription", "stripe_coupon_id"=>"#{::Stripe::Coupon.create().id}", 'id' => "#{subscription.id}"}} }
     end
 
-    before do 
+    before do
       StripeMock.start
       sign_in cart_with_subscription.user
     end

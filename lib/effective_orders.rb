@@ -29,6 +29,9 @@ module EffectiveOrders
 
   mattr_accessor :order_id_nudge
 
+  mattr_accessor :minimum_charge
+  mattr_accessor :allow_free_orders
+
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
 

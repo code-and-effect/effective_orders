@@ -51,11 +51,22 @@ EffectiveOrders.setup do |config|
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
 
+  # Minimum Charge
+  # Prevent orders less than this value from being purchased
+  # Stripe doesn't allow orders less than $0.50
+  # Set to nil for no minimum charge
+  config.minimum_charge = 0.50
+
+  # Free Orders
+  # Allow orders with a total of 0.00 to be purchased (regardless of the minimum charge setting)
+  # When enabled, the checkout process will skip the paypal/stripe/purchasing step
+  # and just display the 'Thank You' after checkout is clicked
+  config.allow_free_orders = true
+
   # Layout Settings
   # Configure the Layout per controller, or all at once
 
   # config.layout = 'application'   # All EffectiveOrders controllers will use this layout
-
   config.layout = {
     :carts => 'application',
     :orders => 'application',
