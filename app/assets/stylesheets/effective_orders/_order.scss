@@ -1,9 +1,4 @@
 .effective-order {
-  .col50 {
-    float: left;
-    width: 50%;
-  }
-
   .table {
     clear: both;
 
@@ -17,7 +12,7 @@
         text-align: right;
         padding-right: 65px;
       }
-      
+
       .actions { border: none; }
     }
 
@@ -25,10 +20,10 @@
   }
 
   .effective-stripe-subscription {
-    input { 
+    input {
       margin-top: 5px;
-      width: 30%; 
-      min-width: 200px; 
+      width: 30%;
+      min-width: 200px;
     }
   }
 

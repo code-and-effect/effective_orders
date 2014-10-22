@@ -141,7 +141,11 @@ module Effective
     end
 
     def shipping_address_same_as_billing?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
+      if self.shipping_address_same_as_billing.present?
+        ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
+      else
+        true
+      end
     end
 
     def purchase!(payment_details = nil)

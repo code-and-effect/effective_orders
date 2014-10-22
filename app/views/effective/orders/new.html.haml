@@ -11,21 +11,27 @@
       %h3 User Information
       = render :partial => 'effective/orders/order_user_fields', :locals => {:form => f, :user => f.object.user }
 
-    - if EffectiveOrders.require_billing_address
-      %h3 Billing Address
-      = effective_address_fields(f, :billing_address)
-      - if @order.save_billing_address != nil
-        = f.input :save_billing_address, :as => :boolean, :label => 'Save as my default Billing Address'
+    - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
 
-    - if EffectiveOrders.require_shipping_address
-      %h3 Shipping Address
-      - if EffectiveOrders.require_billing_address && EffectiveOrders.require_shipping_address
-        = f.input :shipping_address_same_as_billing, :as => :boolean, :label => 'My Shipping address is the same as my Billing address'
+    - if num_addresses > 0
+      .row
+        - if EffectiveOrders.require_billing_address
+          %div{:class => "col-sm-#{12 / num_addresses}"}
+            %h3 Billing Address
+            = effective_address_fields(f, :billing_address)
+            - if @order.save_billing_address != nil
+              = f.input :save_billing_address, :as => :boolean, :label => 'Save as my default Billing Address'
 
-        .shipping_address_fields{:style => (f.object.shipping_address_same_as_billing? && (f.object.errors[:shipping_address] || []).blank?) ? 'display: none;' : 'display: block;'}
-          = effective_address_fields(f, :shipping_address)
-          - if @order.save_shipping_address != nil
-            = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
+        - if EffectiveOrders.require_shipping_address
+          %div{:class => "col-sm-#{12 / num_addresses}"}
+            %h3 Shipping Address
+            - if EffectiveOrders.require_billing_address && EffectiveOrders.require_shipping_address
+              .shipping_address_fields{:style => (f.object.shipping_address_same_as_billing? && (f.object.errors[:shipping_address] || []).blank?) ? 'display: none;' : 'display: block;'}
+                = effective_address_fields(f, :shipping_address)
+                - if @order.save_shipping_address != nil
+                  = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
+
+              = f.input :shipping_address_same_as_billing, :as => :boolean, :label => 'My Shipping address is the same as my Billing address'
 
     %hr
     = link_to_current_cart :label => 'Change Items', :class => 'btn btn-default'
