@@ -45,7 +45,7 @@ module Effective
     scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }
     scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
 
-    def initialize(cart = {})
+    def initialize(cart = {}, user = nil)
       super() # Call super with no arguments
 
       # Set up defaults
@@ -82,6 +82,8 @@ module Effective
           :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
         )
       end
+
+      self.user = user if user.present?
     end
 
     def user=(user)
