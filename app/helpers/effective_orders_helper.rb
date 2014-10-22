@@ -50,4 +50,15 @@ module EffectiveOrdersHelper
     end
   end
 
+  def render_checkout(order, opts = {})
+    raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
+
+    if order.new_record?
+      render(:partial => 'effective/orders/checkout_step_1', :locals => {:order => order})
+    else
+      raise ArgumentError.new('unable to checkout a persisted but invalid order') unless order.valid?
+      render(:partial => 'effective/orders/checkout_step_2', :locals => {:order => order})
+    end
+  end
+
 end

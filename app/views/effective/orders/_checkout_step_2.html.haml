@@ -1,0 +1,13 @@
+= render order
+
+- if EffectiveOrders.moneris_enabled
+  = render :partial => '/effective/orders/moneris/form', :locals => {:order => order}
+
+- if EffectiveOrders.paypal_enabled
+  = render :partial => '/effective/orders/paypal/form', :locals => {:order => order}
+
+- if EffectiveOrders.stripe_enabled
+  = render :partial => '/effective/orders/stripe/form', :locals => {:order => order}
+
+- unless Rails.env.production?
+  = link_to 'Purchase for Pretend (development mode only)', effective_orders.pretend_purchase_path(order), :class => 'btn btn-primary'

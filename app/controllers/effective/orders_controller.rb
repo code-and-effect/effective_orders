@@ -75,7 +75,7 @@ module Effective
 
       if @order.purchased? == false
         @page_title = 'Checkout'
-        render('checkout') and return
+        render(:checkout) and return
       end
 
     end

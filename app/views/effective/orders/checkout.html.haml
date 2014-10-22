@@ -1,15 +1,3 @@
 %h2 Checkout
 
-= render @order
-
-- if EffectiveOrders.moneris_enabled
-  = render :partial => '/effective/orders/moneris/form'
-
-- if EffectiveOrders.paypal_enabled
-  = render :partial => '/effective/orders/paypal/form'
-
-- if EffectiveOrders.stripe_enabled
-  = render :partial => '/effective/orders/stripe/form'
-
-- unless Rails.env.production?
-  = link_to 'Purchase for Pretend (development mode only)', effective_orders.pretend_purchase_path(@order), :class => 'btn btn-primary'
+= render_checkout(@order)
