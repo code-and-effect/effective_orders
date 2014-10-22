@@ -14,8 +14,7 @@ module Effective
 
     # This is the entry point for the "Checkout" buttons
     def new
-      @order ||= Order.new(current_cart)
-      @order.user = current_user
+      @order ||= Order.new(current_cart, current_user)
 
       EffectiveOrders.authorized?(self, :new, @order)
 
@@ -33,8 +32,7 @@ module Effective
     end
 
     def create
-      @order = Order.new(current_cart)
-      @order.user = current_user
+      @order = Order.new(current_cart, current_user)
       @order.attributes = order_params
       @order.shipping_address = @order.billing_address if @order.shipping_address_same_as_billing?
 
