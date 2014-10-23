@@ -53,11 +53,16 @@ module EffectiveOrdersHelper
   def render_checkout(order, opts = {})
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 
+    locals = {
+      :purchased_redirect_url => nil,
+      :declined_redirect_url => nil
+    }.merge(opts)
+
     if order.new_record?
-      render(:partial => 'effective/orders/checkout_step_1', :locals => {:order => order})
+      render(:partial => 'effective/orders/checkout_step_1', :locals => locals.merge({:order => order}))
     else
       raise ArgumentError.new('unable to checkout a persisted but invalid order') unless order.valid?
-      render(:partial => 'effective/orders/checkout_step_2', :locals => {:order => order})
+      render(:partial => 'effective/orders/checkout_step_2', :locals => locals.merge({:order => order}))
     end
   end
 

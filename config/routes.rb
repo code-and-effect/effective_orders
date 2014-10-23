@@ -32,6 +32,7 @@ EffectiveOrders::Engine.routes.draw do
 
     unless Rails.env.production?
       match 'orders/:id/pretend_purchase', :to => 'orders#pretend_purchase', :as => 'pretend_purchase', :via => [:get, :post]
+      match 'orders/:id/pretend_decline', :to => 'orders#pretend_decline', :as => 'pretend_decline', :via => [:get, :post]
     end
 
     # This must be below the other routes defined above.

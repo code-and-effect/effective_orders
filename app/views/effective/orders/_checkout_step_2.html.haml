@@ -10,4 +10,5 @@
   = render :partial => '/effective/orders/stripe/form', :locals => {:order => order}
 
 - unless Rails.env.production?
-  = link_to 'Purchase for Pretend (development mode only)', effective_orders.pretend_purchase_path(order), :class => 'btn btn-primary'
+  = link_to 'Purchase for Pretend (development only)', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url), :class => 'btn btn-primary'
+  = link_to 'Decline for Pretend (development only)', effective_orders.pretend_decline_path(order, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'

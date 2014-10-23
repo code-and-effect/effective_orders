@@ -113,30 +113,40 @@ module Effective
       unless Rails.env.production?
         @order = Order.find(params[:id])
         EffectiveOrders.authorized?(self, :update, @order)
-        order_purchased('for pretend')
+        order_purchased('for pretend', params[:purchased_redirect_url])
+      end
+    end
+
+    def pretend_decline
+      unless Rails.env.production?
+        @order = Order.find(params[:id])
+        EffectiveOrders.authorized?(self, :update, @order)
+        order_declined('for pretend', params[:declined_redirect_url])
       end
     end
 
     protected
 
-    def order_purchased(details = nil)
+    def order_purchased(details = nil, redirect_url = nil)
       begin
         @order.purchase!(details)
         current_cart.try(:destroy)
 
         flash[:success] = "Successfully purchased order"
-        redirect_to effective_orders.order_purchased_path(@order)
+
+        redirect_to (redirect_url.presence || effective_orders.order_purchased_path(@order)).gsub(':id', @order.id.to_s)
       rescue => e
         flash[:danger] = "Unable to process your order.  Your card has not been charged.  Your Cart items have been restored.  Please try again.  Error Message: #{e.message}"
         redirect_to effective_orders.cart_path
       end
     end
 
-    def order_declined(details = nil)
+    def order_declined(details = nil, redirect_url = nil)
       @order.decline!(details) rescue nil
 
-      flash[:danger] = "Unable to process your order.  Your Cart items have been restored"
-      redirect_to effective_orders.order_declined_path(@order)
+      flash[:danger] = "Unable to process your order.  Your Cart items have been restored."
+
+      redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
 
     private
