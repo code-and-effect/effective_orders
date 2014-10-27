@@ -1,4 +1,6 @@
 = render :partial => 'effective/orders/order', :locals => {:order => @order}
+%hr
+= render :partial => 'effective/orders/order_payment_details', :locals => {:order => @order}
 
 %hr
 = link_to 'Back', effective_orders.admin_orders_path, :class => 'btn btn-primary'

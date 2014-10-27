@@ -1,0 +1,11 @@
+%h4 Payment Details
+
+%p This order was purchased with the following details:
+%br
+
+%table.table
+  %tbody
+    - order.payment.each do |k, v|
+      %tr
+        %td= k
+        %td= v

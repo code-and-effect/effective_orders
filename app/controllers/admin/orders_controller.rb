@@ -13,6 +13,8 @@ module Admin
 
     def show
       @order = Effective::Order.find(params[:id])
+      @page_title = "Order ##{@order.to_param}"
+
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
