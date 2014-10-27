@@ -220,6 +220,7 @@ module Effective
         when :stripe
           payment.key?('object') && payment['object'] == 'charge'
         when :moneris
+          payment.key?('response_code') && payment.key?('transactionKey')
         when :paypal
         else
           false
