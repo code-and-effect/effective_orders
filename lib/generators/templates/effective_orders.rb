@@ -45,9 +45,6 @@ EffectiveOrders.setup do |config|
   # Don't validate_associated :user when saving an Order
   config.skip_user_validation = false
 
-  # For use with development testing, pass the order ID plus this to the payment processor
-  config.order_id_nudge = 0
-
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
 
@@ -124,14 +121,16 @@ EffectiveOrders.setup do |config|
       :ps_store_id => '',
       :hpp_key => '',
       :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php'
+      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php',
+      :order_nudge => 0
     }
   else
     config.moneris = {
       :ps_store_id => '',
       :hpp_key => '',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
+      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php',
+      :order_nudge => 0
     }
   end
 

@@ -190,13 +190,145 @@ Used to use localtunnel, but it looks like its down.  Try ngrok instead.
 
 https://ngrok.com/
 
-## Moneris
-
-TODO
-
 ## PayPal
 
 TODO
+
+## Moneris
+
+Use the following instructions to set up a Moneris TEST store.
+
+The set up process is identical to a Production store, except that you will need to Sign Up with Moneris and get real credentials.
+
+We are also going to use ngrok to give us a public facing URL
+
+### Create Test / Development Store
+
+Visit https://esqa.moneris.com/mpg/ and login with: demouser / store1 / password
+
+Select ADMIN -> hosted config from the menu
+
+Click the 'Generate a New Configuration' button which should bring us to a "Hosted Paypage Configuration"
+
+### Basic Configuration
+
+Description:  'My Test store'
+Transaction Type: Purchase
+Response Method: Sent to your server as a POST
+Approved URL: http://4f972556.ngrok.com/orders/moneris_postback
+Declined URL: http://4f972556.ngrok.com/orders/moneris_postback
+
+Note: The Approved and Declined URLs must match the effective_orders.moneris_postback_path value in your application. By default it is /orders/moneris_postback
+
+Click 'Save Changes'
+
+### PsStoreId and HppKey
+
+At the top of the main 'Hosted Paypage Configuration' page should be the ps_store_id and hpp_key values.
+
+Copy these two values into the appropriate lines of config/effective_orders.rb initializer file.
+
+```ruby
+  config.moneris_enabled = true
+
+  if Rails.env.production?
+    config.moneris = {
+      :ps_store_id => '',
+      :hpp_key => '',
+      :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
+      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php',
+      :order_nudge => 0
+    }
+  else
+    config.moneris = {
+      :ps_store_id => 'VZ9BNtore1',
+      :hpp_key => 'hp1Y5J35GVDM',
+      :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
+      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php',
+      :order_nudge => 0
+    }
+  end
+```
+
+### Paypage Appearance
+
+Click 'Configure Appearance' from the main Hosted Paypage Configuration
+
+Display item details: true
+Display customer details: true
+Display billing address details: true
+Display shipping address details: true
+
+Enable input of Billing, Shipping and extra fields: false
+
+Display merchange name: true, if you have an SSL cert
+
+Cancel Button Text:  'Cancel'
+Cancel Button URL: http://4f972556.ngrok.com
+
+Click 'Save Appearance Settings'
+Click 'Return to main configuration'
+
+### Response Fields
+
+None of the 'Return...' checkboxes are needed. Leave unchecked.
+
+Perform asynchronous data post:  false, unchecked
+Async Response URL:  leave blank
+
+Click 'Save Response Settings'
+Click 'Return to main configuration'
+
+
+### Security
+
+Referring URL: Depends how you're using effective_orders in your application, you can add multiple URLs
+By default, use http://4f972556.ngrok.com/orders/new
+
+Enable Card Verification: false, unused
+
+Enable Transaction Verification: true
+Response Method: Displayed as key/value pairs on our server.
+Response URL: leave blank
+
+Click 'Save Verification Settings'
+Click 'Return to main configuration'
+
+
+### Configure Email Receipts
+
+effective_orders automatically sends its own receipts.
+
+If you'd prefer to use the Moneris receipt, disable email sendouts from the config/effective_orders.rb initializer
+
+
+### Purchasing an Order through Moneris
+
+With this test store set up, you can make a successful purchase with:
+
+Cardholder Name: Any name
+Credit Card Number: 4242 4242 4242 4242
+Expiry Date: Any future date
+
+Some gotchas:
+
+1. When using a test store, if your order total price is less than $10, the penny amount may be used to raise an error code.
+
+Order totals ending in .00 will be Approved
+Order totals ending in .05 will be Declined
+
+And there's a whole bunch more.  Please refer to:
+
+https://www.google.ca/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CB8QFjAA&url=https%3A%2F%2Fcartthrob.com%2F%3FACT%3D50%26fid%3D25%26aid%3D704_jvVKOeo1a8d3aSYeT3R4%26board_id%3D1&ei=_p1OVOysEpK_sQTZ8oDgCg&usg=AFQjCNHJGH_hEm4kUJAzkvKrzTqEpFnrgA&sig2=XJdE6PZoOY9habWH_B4uWA&bvm=bv.77880786,d.cWc&cad=rja
+
+2. Moneris will not process a duplicate order ID
+
+Once Order id=1 has been purchased/declined, you will be unable to purchase an order with id=1 ever again.
+
+This is what the moneris order_nudge configuration setting is used for.
+
+You can set this to 1000 to start the IDs at 1+1000 instead of 1.
+
 
 ## Stripe
 
