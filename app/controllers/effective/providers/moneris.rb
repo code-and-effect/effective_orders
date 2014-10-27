@@ -20,7 +20,7 @@ module Effective
         declined_redirect_url = params.delete(:rvar_declined_redirect_url)
 
         if params[:result].to_s == '1' && params[:transactionKey].present?
-          verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey]))
+          verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey])) || {}
 
           response_code = verify_params[:response_code].to_i # Sometimes moneris sends us the string 'null'
 
