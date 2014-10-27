@@ -79,6 +79,10 @@ module ActsAsPurchasable
     @is_purchased ||= orders.any? { |order| order.purchased? }
   end
 
+  def purchased_by?(user)
+    orders.any? { |order| order.purchased? && order.user_id == user.id }
+  end
+
   def purchased_orders
     orders.select { |order| order.purchased? }
   end
