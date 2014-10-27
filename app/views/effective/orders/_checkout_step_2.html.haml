@@ -1,7 +1,7 @@
 = render order
 
 - if EffectiveOrders.moneris_enabled
-  = render :partial => '/effective/orders/moneris/form', :locals => {:order => order}
+  = render :partial => '/effective/orders/moneris/form', :locals => {:order => order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url}
 
 - if EffectiveOrders.paypal_enabled
   = render :partial => '/effective/orders/paypal/form', :locals => {:order => order}

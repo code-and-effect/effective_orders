@@ -1,14 +1,20 @@
 = form_tag(EffectiveOrders.moneris[:hpp_url], :method => 'post') do
   = hidden_field_tag(:ps_store_id, EffectiveOrders.moneris[:ps_store_id])
   = hidden_field_tag(:hpp_key, EffectiveOrders.moneris[:hpp_key])
-  = hidden_field_tag(:charge_total, '%.2f' % order.total)
+  = hidden_field_tag(:lang, 'en-ca')
   = hidden_field_tag(:rvar_authenticity_token, form_authenticity_token)
 
+  - if purchased_redirect_url.present?
+    = hidden_field_tag(:rvar_purchased_redirect_url, purchased_redirect_url)
+
+  - if declined_redirect_url.present?
+    = hidden_field_tag(:rvar_declined_redirect_url, declined_redirect_url)
+
+  = hidden_field_tag(:email, order.user.try(:email))
   = hidden_field_tag(:cust_id, order.user.to_param)
   = hidden_field_tag(:order_id, "#{order.to_param.to_i + EffectiveOrders.moneris[:order_nudge].to_i}")
-  = hidden_field_tag(:lang, "en-ca")
   = hidden_field_tag(:gst, '%.2f' % order.tax)
-  = hidden_field_tag(:email, order.user.try(:email))
+  = hidden_field_tag(:charge_total, '%.2f' % order.total)
 
   - order.order_items.each_with_index do |item, x|
     = hidden_field_tag("id#{x}", x)

@@ -12,7 +12,12 @@ module Effective
 
         EffectiveOrders.authorized?(self, :update, @order)
 
+        # Store the Order Nudge if present, so we can have this information in our order_purchased hash
         params[:order_nudge] = EffectiveOrders.moneris[:order_nudge] if EffectiveOrders.moneris[:order_nudge].to_i > 0
+
+        # Delete the Purchased and Declined Redirect URLs
+        purchased_redirect_url = params.delete(:rvar_purchased_redirect_url)
+        declined_redirect_url = params.delete(:rvar_declined_redirect_url)
 
         if params[:result].to_s == '1' && params[:transactionKey].present?
           verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey]))
@@ -20,12 +25,12 @@ module Effective
           response_code = verify_params[:response_code].to_i # Sometimes moneris sends us the string 'null'
 
           if response_code > 0 && response_code < 50  # Less than 50 means a successful validation
-            order_purchased(params.merge(verify_params))
+            order_purchased(params.merge(verify_params), purchased_redirect_url)
           else
-            order_declined(params.merge(verify_params))
+            order_declined(params.merge(verify_params), declined_redirect_url)
           end
         else
-          order_declined(params)
+          order_declined(params, declined_redirect_url)
         end
       end
 
