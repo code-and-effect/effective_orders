@@ -14,6 +14,6 @@
       %p Order: ##{order.to_param}
 
     - if order.purchased?
-      %p Purchased on: #{order.purchased_at.strftime("%b %d, %Y")}
+      %p Purchased at: #{order.purchased_at.strftime("%Y-%m-%d %H:%M")}
     - else
-      %p Date: #{Time.zone.now.strftime("%b %d, %Y")}
+      %p Date: #{Time.zone.now.strftime("%Y-%m-%d %H:%M")}

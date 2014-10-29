@@ -16,7 +16,7 @@
           - if order.purchased?
             %tr
               %th purchased
-              %td= order.purchased_at.strftime("%d-%b-%Y %H:%M")
+              %td= order.purchased_at.strftime("%Y-%m-%d %H:%M")
           - if order.billing_address.present?
             %tr
               %th billing address
