@@ -213,9 +213,13 @@ Click the 'Generate a New Configuration' button which should bring us to a "Host
 ### Basic Configuration
 
 Description:  'My Test store'
+
 Transaction Type: Purchase
+
 Response Method: Sent to your server as a POST
+
 Approved URL: http://4f972556.ngrok.com/orders/moneris_postback
+
 Declined URL: http://4f972556.ngrok.com/orders/moneris_postback
 
 Note: The Approved and Declined URLs must match the effective_orders.moneris_postback_path value in your application. By default it is /orders/moneris_postback
@@ -255,8 +259,11 @@ Copy these two values into the appropriate lines of config/effective_orders.rb i
 Click 'Configure Appearance' from the main Hosted Paypage Configuration
 
 Display item details: true
+
 Display customer details: true
+
 Display billing address details: true
+
 Display shipping address details: true
 
 Enable input of Billing, Shipping and extra fields: false
@@ -264,9 +271,11 @@ Enable input of Billing, Shipping and extra fields: false
 Display merchange name: true, if you have an SSL cert
 
 Cancel Button Text:  'Cancel'
+
 Cancel Button URL: http://4f972556.ngrok.com
 
 Click 'Save Appearance Settings'
+
 Click 'Return to main configuration'
 
 ### Response Fields
@@ -274,9 +283,11 @@ Click 'Return to main configuration'
 None of the 'Return...' checkboxes are needed. Leave unchecked.
 
 Perform asynchronous data post:  false, unchecked
+
 Async Response URL:  leave blank
 
 Click 'Save Response Settings'
+
 Click 'Return to main configuration'
 
 
