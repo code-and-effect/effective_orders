@@ -1,20 +1,6 @@
 %h2 Order History
 
-%table.table
-  %thead
-    %tr
-      %th Order
-      %th Date of Purchase
-      %th Description
-  %tbody
-    - @orders.each do |order|
-      %tr
-        %td= link_to "##{order.to_param}", effective_orders.order_path(order)
-        %td= order.purchased_at.strftime("%d-%b-%Y %H:%M")
-        %td= order_summary(order)
-
-- unless @orders.present?
-  %p You have no previous orders
+= render_order_history(@orders)
 
 %hr
 = link_to 'Home', root_url, :class => 'btn btn-primary'

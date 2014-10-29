@@ -66,4 +66,28 @@ module EffectiveOrdersHelper
     end
   end
 
+  def render_order_history(user_or_orders, opts = {})
+    if user_or_orders.kind_of?(User)
+      orders = Effective::Order.purchased_by(user_or_orders)
+    elsif user_or_orders.respond_to?(:to_a)
+      begin
+        orders = user_or_orders.to_a.select { |order| order.purchased? }
+      rescue => e
+        raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
+      end
+    else
+      raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
+    end
+
+    locals = {
+      :orders => orders,
+      :order_path => effective_orders.order_path(':id') # The :id string will be replaced with the order id
+    }.merge(opts)
+
+    render(:partial => 'effective/orders/my_purchases', :locals => locals)
+  end
+
+  alias_method :render_purchases, :render_order_history
+  alias_method :render_my_purchases, :render_order_history
+
 end
