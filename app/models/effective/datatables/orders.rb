@@ -6,7 +6,7 @@ if defined?(EffectiveDatatables)
           order.to_param
         end
 
-        array_column :email, :label => 'Buyer' do |order|
+        array_column :email, :label => 'Buyer', :if => Proc.new { attributes[:user_id].blank? } do |order|
           link_to order.user.email, (edit_admin_user_path(order.user) rescue admin_user_path(order.user) rescue '#')
         end
 
@@ -25,7 +25,11 @@ if defined?(EffectiveDatatables)
         table_column :actions, :sortable => false, :filter => false, :partial => '/admin/orders/actions'
 
         def collection
-          Effective::Order.purchased.includes(:user).includes(:order_items)
+          if attributes[:user_id].present?
+            Effective::Order.purchased.where(:user_id => attributes[:user_id]).includes(:user).includes(:order_items)
+          else
+            Effective::Order.purchased.includes(:user).includes(:order_items)
+          end
         end
 
         def search_column(collection, table_column, search_term)
