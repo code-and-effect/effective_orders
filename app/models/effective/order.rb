@@ -53,23 +53,30 @@ module Effective
       self.save_shipping_address = true
       self.shipping_address_same_as_billing = true
 
-      if cart.kind_of?(Effective::Cart)
-        cart_items = cart.cart_items
-      elsif cart.present? == false
-        cart_items = []
-      else
-        purchasables = [cart].flatten
+      add_to_order(cart) if cart.present?
 
-        if purchasables.all? { |purchasable| purchasable.respond_to?(:is_effectively_purchasable?) }
-          cart_items = purchasables.map do |purchasable|
-            CartItem.new(:quantity => 1).tap { |cart_item| cart_item.purchasable = purchasable }
-          end
-        else
-          throw ArgumentError.new("Order.new() expects an Effective::Cart, a single acts_as_purchasable item, or an array of acts_as_purchasable items")
+      self.user = user if user.present?
+    end
+
+    def add(item, quantity = 1)
+      raise 'unable to alter a purchased order' if purchased?
+      raise 'unable to alter a declined order' if declined?
+
+      if item.kind_of?(Effective::Cart)
+        cart_items = item.cart_items
+      else
+        purchasables = [item].flatten
+
+        if purchasables.any? { |p| !p.respond_to?(:is_effectively_purchasable?) }
+          raise ArgumentError.new('Effective::Order.add() expects a single acts_as_purchasable item, or an array of acts_as_purchasable items')
+        end
+
+        cart_items = purchasables.map do |purchasable|
+          CartItem.new(:quantity => quantity).tap { |cart_item| cart_item.purchasable = purchasable }
         end
       end
 
-      cart_items.each do |item|
+      retval = cart_items.map do |item|
         self.order_items.build(
           :title => item.title,
           :quantity => item.quantity,
@@ -83,8 +90,9 @@ module Effective
         )
       end
 
-      self.user = user if user.present?
+      retval.size == 1 ? retval.first : retval
     end
+    alias_method :add_to_order, :add
 
     def user=(user)
       super
@@ -119,15 +127,15 @@ module Effective
     end
 
     def total
-      [order_items.collect(&:total).sum, 0.00].max
+      [order_items.collect(&:total).sum, 0.00].max.round(2)
     end
 
     def subtotal
-      order_items.collect(&:subtotal).sum
+      order_items.collect(&:subtotal).sum.round(2)
     end
 
     def tax
-      [order_items.collect(&:tax).sum, 0.00].max
+      [order_items.collect(&:tax).sum, 0.00].max.round(2)
     end
 
     def num_items
@@ -156,7 +164,7 @@ module Effective
 
       Order.transaction do
         self.purchase_state = EffectiveOrders::PURCHASED
-        self.purchased_at = Time.zone.now
+        self.purchased_at ||= Time.zone.now
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
         order_items.each { |item| item.purchasable.purchased!(self, item) }

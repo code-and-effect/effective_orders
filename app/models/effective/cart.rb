@@ -12,7 +12,7 @@ module Effective
     default_scope -> { includes(:cart_items => :purchasable) }
 
     def add(item, quantity = 1)
-      raise ArgumentError.new('expecting an acts_as_purchasable object') unless item.respond_to?(:is_effectively_purchasable?)
+      raise 'expecting an acts_as_purchasable object' unless item.respond_to?(:is_effectively_purchasable?)
 
       existing_item = cart_items.where(:purchasable_id => item.id, :purchasable_type => item.class.name).first
 
