@@ -10,7 +10,9 @@
       %small Customize me by overriding '/app/views/effective/orders/_order_header.html.haml'
 
   .col-sm-6
-    - if order.persisted?
+    - if order.purchased?
+      %p Receipt: ##{order.to_param}
+    - elsif order.persisted?
       %p Order: ##{order.to_param}
 
     - if order.purchased?
