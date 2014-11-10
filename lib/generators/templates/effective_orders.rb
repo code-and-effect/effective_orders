@@ -55,7 +55,8 @@ EffectiveOrders.setup do |config|
   # Prevent orders less than this value from being purchased
   # Stripe doesn't allow orders less than $0.50
   # Set to nil for no minimum charge
-  config.minimum_charge = 0.50
+  # Default value is $0.50, 50 cents
+  config.minimum_charge = 50
 
   # Free Orders
   # Allow orders with a total of 0.00 to be purchased (regardless of the minimum charge setting)

@@ -38,6 +38,15 @@ Then migrate the database:
 rake db:migrate
 ```
 
+### Upgrading
+
+If you're running a 0.3.x version and upgrading to 0.4.x, just one command:
+
+```ruby
+rails generate effective_orders:upgrade_from03x
+rake db:migrate
+```
+
 ### Integrating with your app
 
 Once installed, we still need to create something to purchase.
@@ -104,7 +113,7 @@ So then back on a Product#show page, we will render the product with the Add To 
 
 ```haml
 %h4= @product.title
-%p= number_to_currency(@product.price)
+%p= price_to_currency(@product.price)
 %p= link_to_add_to_cart(@product, :class => 'btn btn-primary', :label => 'Add To My Shopping Cart')
 ```
 
