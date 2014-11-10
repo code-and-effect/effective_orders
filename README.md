@@ -47,6 +47,16 @@ rails generate effective_orders:upgrade_from03x
 rake db:migrate
 ```
 
+### Prices
+
+All prices should be represented as integers.  Think of it as the number of cents.
+
+To set a price of `$0.50` teh value should be `50`.
+
+Decimal prices will work, but you'll run into some nasty deprecation notices.
+
+TODO: Improve this content
+
 ### Integrating with your app
 
 Once installed, we still need to create something to purchase.
@@ -65,7 +75,7 @@ class Product < ActiveRecord::Base
   structure do
     title               :string
 
-    price               :decimal, :precision => 8, :scale => 2, :default => 0.00
+    price               :integer, :default => 0
 
     archived            :boolean, :default => false
 
@@ -73,7 +83,7 @@ class Product < ActiveRecord::Base
   end
 
   validates_presence_of :title
-  validates_numericality_of :price, :greater_than => 0.0
+  validates_numericality_of :price, :greater_than => 0
 
   scope :products, -> { where(:archived => false) }
 
@@ -92,7 +102,7 @@ class CreateProducts < ActiveRecord::Migration
   def self.up
     create_table :products do |t|
       t.string :title
-      t.decimal :price, :default=>0.0, :precision=>8, :scale=>2
+      t.integer :price, :default=>0
       t.boolean :archived, :default=>false
       t.datetime :updated_at
       t.datetime :created_at
