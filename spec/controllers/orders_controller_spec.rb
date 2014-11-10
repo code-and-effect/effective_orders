@@ -52,7 +52,7 @@ describe Effective::OrdersController do
 
     it 'redirects if order total is less than minimum charge' do
       sign_in cart.user
-      Effective::CartItem.any_instance.stub(:price).and_return(0.1)
+      Effective::CartItem.any_instance.stub(:price).and_return(10)
 
       get :new
 

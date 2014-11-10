@@ -69,7 +69,7 @@ describe Effective::OrdersController do
       it 'stores the Stripe::Charge info in the order.payment' do
         post :stripe_charge, stripe_charge_params
         assigns(:order).payment[:charge]['object'].should eq 'charge'
-        assigns(:order).payment[:charge]['amount'].should eq (order.total*100).to_i
+        assigns(:order).payment[:charge]['amount'].should eq order.total
         assigns(:order).payment[:charge]['customer'].should eq buyer.stripe_customer_id
       end
     end
@@ -110,7 +110,7 @@ describe Effective::OrdersController do
     it 'makes a Stripe::Charge for only the non-Subscription OrderItems' do
       post :stripe_charge, stripe_charge_params
       assigns(:order).payment[:charge]['object'].should eq 'charge'
-      assigns(:order).payment[:charge]['amount'].should eq (order.order_items.first.total * 100).to_i
+      assigns(:order).payment[:charge]['amount'].should eq order.order_items.first.total
     end
 
     it 'makes a Stripe::Subscription for the Subscriptions' do

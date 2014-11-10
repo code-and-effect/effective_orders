@@ -57,25 +57,25 @@ describe Effective::Order do
   end
 
   describe 'minimum zero math' do
-    it 'has a minimum order total of 0.00' do
-      order.order_items.each { |order_item| order_item.stub(:total).and_return(-10.00) }
+    it 'has a minimum order total of 0' do
+      order.order_items.each { |order_item| order_item.stub(:total).and_return(-1000) }
 
-      order.order_items.collect(&:total).sum.should eq -30.00
-      order.total.should eq 0.00
+      order.order_items.collect(&:total).sum.should eq -3000
+      order.total.should eq 0
     end
 
     it 'has no minimum subtotal' do
-      order.order_items.each { |order_item| order_item.stub(:subtotal).and_return(-10.00) }
+      order.order_items.each { |order_item| order_item.stub(:subtotal).and_return(-1000) }
 
-      order.order_items.collect(&:subtotal).sum.should eq -30.00
-      order.subtotal.should eq -30.00
+      order.order_items.collect(&:subtotal).sum.should eq -3000
+      order.subtotal.should eq -3000
     end
 
     it 'has a minimum order tax of 0.00' do
-      order.order_items.each { |order_item| order_item.stub(:tax).and_return(-10.00) }
+      order.order_items.each { |order_item| order_item.stub(:tax).and_return(-1000) }
 
-      order.order_items.collect(&:tax).sum.should eq -30.00
-      order.tax.should eq 0.00
+      order.order_items.collect(&:tax).sum.should eq -3000
+      order.tax.should eq 0
     end
   end
 
@@ -126,24 +126,24 @@ describe Effective::Order do
     end
 
     it 'should be invalid when less than the minimum charge' do
-      order.stub(:total).and_return(0.49)
+      order.stub(:total).and_return(49)
 
       order.valid?.should eq false
 
       order.errors[:total].present?.should eq true
-      order.errors[:total].first.downcase.include?('minimum order of 0.5 is required').should eq true
+      order.errors[:total].first.downcase.include?('minimum order of 50 is required').should eq true
     end
 
     it 'should be valid when >= minimum charge' do
-      order.stub(:total).and_return(0.5)
+      order.stub(:total).and_return(50)
       order.valid?.should eq true
 
-      order.stub(:total).and_return(0.51)
+      order.stub(:total).and_return(51)
       order.valid?.should eq true
     end
 
     it 'should be valid for a free order' do
-      order.order_items.each { |order_item| order_item.stub(:total).and_return(0.0) }
+      order.order_items.each { |order_item| order_item.stub(:total).and_return(0) }
 
       order.valid?.should eq true
       order.errors[:total].present?.should eq false

@@ -68,7 +68,7 @@ ActiveRecord::Schema.define(:version => 4) do
     t.integer  "purchasable_id"
     t.string   "title"
     t.integer  "quantity"
-    t.decimal  "price",                :precision => 8, :scale => 2, :default => 0.0
+    t.integer  "price",                :default => 0
     t.boolean  "tax_exempt"
     t.decimal  "tax_rate",             :precision => 5, :scale => 3, :default => 0.0
     t.datetime "created_at",                                                          :null => false
@@ -93,7 +93,15 @@ ActiveRecord::Schema.define(:version => 4) do
 
   create_table "products", :force => true do |t|
     t.string   "title"
-    t.decimal  "price",                :precision => 8, :scale => 2, :default => 0.0
+    t.integer  "price",                :default => 0
+    t.boolean  "tax_exempt"
+    t.datetime "created_at",                                                          :null => false
+    t.datetime "updated_at",                                                          :null => false
+  end
+
+  create_table "product_with_float_prices", :force => true do |t|
+    t.string   "title"
+    t.decimal "price",                :default => 0
     t.boolean  "tax_exempt"
     t.datetime "created_at",                                                          :null => false
     t.datetime "updated_at",                                                          :null => false
@@ -105,7 +113,7 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string   "stripe_subscription_id"
     t.string   "stripe_coupon_id"
     t.string   "title"
-    t.decimal  "price",                  precision: 8, scale: 2, default: 0.0
+    t.integer  "price",                  default: 0
     t.datetime "created_at"
     t.datetime "updated_at"
   end

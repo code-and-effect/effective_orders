@@ -67,7 +67,7 @@ describe Effective::Subscription do
 
       subscription.stripe_plan_id = plan.id
 
-      (subscription.price * 100).should eq plan.amount
+      subscription.price.should eq plan.amount
       subscription.title.include?(plan.name).should eq true
       subscription.title.include?(plan.interval).should eq true
     end
@@ -81,7 +81,7 @@ describe Effective::Subscription do
       subscription.stripe_plan_id = plan.id
       subscription.stripe_coupon_id = coupon.id
 
-      (subscription.price * 100).to_i.should eq (plan.amount * (coupon.percent_off.to_i / 100.0)).floor.to_i
+      subscription.price.should eq (plan.amount * (coupon.percent_off.to_i / 100.0)).floor
       subscription.title.include?('25% off').should eq true
     end
 
@@ -94,7 +94,7 @@ describe Effective::Subscription do
       subscription.stripe_plan_id = plan.id
       subscription.stripe_coupon_id = coupon.id
 
-      (subscription.price * 100).to_i.should eq plan.amount - coupon.amount_off
+      subscription.price.should eq plan.amount - coupon.amount_off
       subscription.title.include?('$1.00 off').should eq true
     end
   end

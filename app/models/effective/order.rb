@@ -126,7 +126,7 @@ module Effective
     end
 
     def total
-      order_items.map(&:total).sum
+      [order_items.map(&:total).sum, 0].max
     end
 
     def subtotal
@@ -134,7 +134,7 @@ module Effective
     end
 
     def tax
-      order_items.map(&:tax).sum
+      [order_items.map(&:tax).sum, 0].max
     end
 
     def num_items
