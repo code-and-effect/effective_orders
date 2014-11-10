@@ -85,7 +85,6 @@ module Effective
           :price => item.price,
           :tax_exempt => item.tax_exempt,
           :tax_rate => item.tax_rate,
-          :quickbooks_item_name => item.quickbooks_item_name,
           :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
         ).tap { |order_item| order_item.purchasable = item.purchasable }
       end

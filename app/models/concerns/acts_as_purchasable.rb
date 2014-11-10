@@ -71,10 +71,6 @@ module ActsAsPurchasable
     end
   end
 
-  def quickbooks_item_name
-    self[:quickbooks_item_name] || ''
-  end
-
   def purchased?
     @is_purchased ||= orders.any? { |order| order.purchased? }
   end

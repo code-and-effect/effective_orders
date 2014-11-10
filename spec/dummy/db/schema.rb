@@ -71,7 +71,6 @@ ActiveRecord::Schema.define(:version => 4) do
     t.decimal  "price",                :precision => 8, :scale => 2, :default => 0.0
     t.boolean  "tax_exempt"
     t.decimal  "tax_rate",             :precision => 5, :scale => 3, :default => 0.0
-    t.string   "quickbooks_item_name"
     t.datetime "created_at",                                                          :null => false
     t.datetime "updated_at",                                                          :null => false
   end
@@ -96,7 +95,6 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string   "title"
     t.decimal  "price",                :precision => 8, :scale => 2, :default => 0.0
     t.boolean  "tax_exempt"
-    t.string   "quickbooks_item_name"
     t.datetime "created_at",                                                          :null => false
     t.datetime "updated_at",                                                          :null => false
   end

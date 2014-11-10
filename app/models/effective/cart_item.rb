@@ -12,7 +12,7 @@ module Effective
 
     validates_presence_of :purchasable
 
-    delegate :title, :price, :tax_exempt, :tax_rate, :quickbooks_item_name, :to => :purchasable
+    delegate :title, :price, :tax_exempt, :tax_rate :to => :purchasable
 
     default_scope -> { order(:updated_at) }
 

@@ -16,7 +16,6 @@ FactoryGirl.define do
 
     price 10.00
     tax_exempt false
-    quickbooks_item_name "Quickbooks Item Name"
   end
 
   factory :user do # This only exists in the dummy/ app
@@ -95,7 +94,6 @@ FactoryGirl.define do
     association :order, :factory => :order
 
     sequence(:title) { |n| "Order Item #{n}" }
-    sequence(:quickbooks_item_name) { |n| "Order Item #{n} QB Item Name" }
     quantity 1
     price 10.00
     tax_exempt false

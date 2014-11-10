@@ -12,7 +12,6 @@ module Effective
       price                 :decimal, :precision => 8, :scale => 2, :default => 0.00
       tax_exempt            :boolean, :validates => [:inclusion => {:in => [true, false]}]
       tax_rate              :decimal, :precision => 5, :scale => 3, :default => 0.000, :validates => [:presence]
-      quickbooks_item_name  :string
 
       timestamps
     end
