@@ -13,15 +13,15 @@
   = hidden_field_tag(:email, order.user.try(:email))
   = hidden_field_tag(:cust_id, order.user.to_param)
   = hidden_field_tag(:order_id, "#{order.to_param.to_i + EffectiveOrders.moneris[:order_nudge].to_i}")
-  = hidden_field_tag(:gst, '%.2f' % order.tax)
-  = hidden_field_tag(:charge_total, '%.2f' % order.total)
+  = hidden_field_tag(:gst, '%.2f' % (order.tax / 100.0))
+  = hidden_field_tag(:charge_total, '%.2f' % (order.total / 100.0))
 
   - order.order_items.each_with_index do |item, x|
     = hidden_field_tag("id#{x}", x)
     = hidden_field_tag("description#{x}", item.title)
     = hidden_field_tag("quantity#{x}", item.quantity)
-    = hidden_field_tag("price#{x}", '%.2f' % item.price)
-    = hidden_field_tag("subtotal#{x}", '%.2f' % item.subtotal)
+    = hidden_field_tag("price#{x}", '%.2f' % (item.price / 100.0))
+    = hidden_field_tag("subtotal#{x}", '%.2f' % (item.subtotal / 100.0))
 
   - if order.billing_address.present?
     - address = order.billing_address

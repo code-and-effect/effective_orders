@@ -19,16 +19,16 @@ module EffectivePaypalHelper
       :cert_id => EffectiveOrders.paypal[:cert_id],
       :currency_code => EffectiveOrders.paypal[:currency],
       :invoice => order.id + EffectiveOrders.paypal[:order_id_nudge].to_i,
-      :amount => order.subtotal,
-      :tax_cart => order.tax
+      :amount => (order.subtotal / 100.0).round(2),
+      :tax_cart => (order.tax / 100.0).round(2)
     }
 
     order.order_items.each_with_index do |item, x|
       values["item_number_#{x+1}"] = x+1
       values["item_name_#{x+1}"] = item.title
       values["quantity_#{x+1}"] = item.quantity
-      values["amount_#{x+1}"] = item.price
-      values["tax_#{x+1}"] = '%.2f' % (item.tax / item.quantity)  # Tax for 1 of these items
+      values["amount_#{x+1}"] = '%.2f' % (item.price / 100.0)
+      values["tax_#{x+1}"] = '%.2f' % ((item.tax / 100.0) / item.quantity)  # Tax for 1 of these items
     end
 
     signed = OpenSSL::PKCS7::sign(OpenSSL::X509::Certificate.new(APP_CERT_PEM), OpenSSL::PKey::RSA.new(APP_KEY_PEM, ''), values.map { |k, v| "#{k}=#{v}" }.join("\n"), [], OpenSSL::PKCS7::BINARY)

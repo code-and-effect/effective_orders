@@ -8,10 +8,10 @@ module EffectiveOrders
     # Include Helpers to base application
     initializer 'effective_orders.action_controller' do |app|
       ActiveSupport.on_load :action_controller do
-        helper EffectiveOrders::EffectiveOrdersHelper
-        helper EffectiveOrders::EffectiveCartsHelper
-        helper EffectiveOrders::EffectivePaypalHelper if EffectiveOrders.paypal_enabled
-        helper EffectiveOrders::EffectiveStripeHelper if EffectiveOrders.stripe_enabled
+        helper EffectiveOrdersHelper
+        helper EffectiveCartsHelper
+        helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
+        helper EffectiveStripeHelper if EffectiveOrders.stripe_enabled
       end
     end
 
