@@ -26,7 +26,7 @@ module Effective
         flash[:danger] = @order.errors[:order_items].first
         redirect_to effective_orders.cart_path
       elsif @order.errors[:total].present?
-        flash[:danger] = @order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_s, view_context.number_to_currency(EffectiveOrders.minimum_charge))
+        flash[:danger] = @order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, view_context.price_to_currency(EffectiveOrders.minimum_charge.to_i))
         redirect_to effective_orders.cart_path
       end
     end

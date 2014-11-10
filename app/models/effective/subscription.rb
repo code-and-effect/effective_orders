@@ -14,7 +14,7 @@ module Effective
       stripe_coupon_id        :string
 
       title                   :string, :validates => [:presence]
-      price                   :decimal, :precision => 8, :scale => 2, :default => 0.00, :validates => [:numericality => {:greater_than => 0.0}]
+      price                   :integer, :default => 0, :validates => [:numericality => {:greater_than => 0}]
 
       timestamps
     end
@@ -37,7 +37,7 @@ module Effective
       unless self[:stripe_plan_id] == plan_id
         self[:stripe_plan_id] = plan_id
         @stripe_plan = nil   # Remove any memoization
-        
+
         assign_price_and_title()
       end
     end
@@ -74,11 +74,11 @@ module Effective
     def assign_price_and_title
       if stripe_plan
         if stripe_coupon
-          self.price = (price_with_coupon(stripe_plan.amount, stripe_coupon) / 100.0)
+          self.price = price_with_coupon(stripe_plan.amount, stripe_coupon)
           self.title = stripe_plan_description(stripe_plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
         else
           self.title = stripe_plan_description(stripe_plan)
-          self.price = (stripe_plan.amount / 100.0)
+          self.price = stripe_plan.amount
         end
       end
     end

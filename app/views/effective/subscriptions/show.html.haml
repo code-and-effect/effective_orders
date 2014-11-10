@@ -42,7 +42,7 @@
           = Time.zone.at(invoice.lines.first.period.start).strftime("%d-%b-%Y")
           to
           = Time.zone.at(invoice.lines.first.period.end).strftime("%d-%b-%Y")
-        %td= number_to_currency(invoice.total / 100.0)
+        %td= price_to_currency(invoice.total)
 
 %h3 Cancel Subscription
 

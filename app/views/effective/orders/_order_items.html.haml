@@ -25,15 +25,15 @@
               - else
                 = '-'
           %td.price
-            = number_to_currency(item.subtotal)
+            = price_to_currency(item.subtotal)
     %tfoot
       %tr
         %th{:colspan => (include_download_column ? 3 : 2)} Subtotal
-        %td.price= number_to_currency(order.subtotal)
+        %td.price= price_to_currency(order.subtotal)
       %tr
         %th{:colspan => (include_download_column ? 3 : 2)} Tax
-        %td.price= number_to_currency(order.tax)
+        %td.price= price_to_currency(order.tax)
       %tr
         %th{:colspan => (include_download_column ? 3 : 2)} Total Due
-        %td.price= number_to_currency(order.total)
+        %td.price= price_to_currency(order.total)
 

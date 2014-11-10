@@ -6,7 +6,7 @@
       %p.inline-errors= order.errors[:order_items].first
 
     - if order.errors[:total].present?
-      %p.inline-errors= order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_s, number_to_currency(EffectiveOrders.minimum_charge))
+      %p.inline-errors= order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, price_to_currency(EffectiveOrders.minimum_charge.to_i))
 
     - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
       %h3 User Information

@@ -28,9 +28,9 @@ module Effective
       validates_associated :user
     end
 
-    if ((minimum_charge = EffectiveOrders.minimum_charge.to_f) rescue nil).present?
+    if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
       if EffectiveOrders.allow_free_orders
-        validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :unless => Proc.new { |order| order.total < 0.01 && order.total >= 0.00 }, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+        validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :unless => Proc.new { |order| order.total == 0 }, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
       else
         validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
       end
@@ -126,19 +126,19 @@ module Effective
     end
 
     def total
-      [order_items.collect(&:total).sum, 0.00].max.round(2)
+      order_items.map(&:total).sum
     end
 
     def subtotal
-      order_items.collect(&:subtotal).sum.round(2)
+      order_items.map(&:subtotal).sum
     end
 
     def tax
-      [order_items.collect(&:tax).sum, 0.00].max.round(2)
+      order_items.map(&:tax).sum
     end
 
     def num_items
-      order_items.to_a.sum(&:quantity)
+      order_items.map(&:quantity).sum
     end
 
     def save_billing_address?

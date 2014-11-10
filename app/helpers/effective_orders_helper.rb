@@ -1,12 +1,17 @@
 module EffectiveOrdersHelper
+  def price_to_currency(price)
+    raise 'price_to_currency expects an Integer representing the number of cents in a price' unless price.kind_of?(Integer)
+    number_to_currency(price / 100.0)
+  end
+
   def order_summary(order)
-    content_tag(:p, "#{number_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
+    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
 
     content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
           title = item.title.split('<br>')
-          "#{item.quantity}x #{title.first} for #{number_to_currency(item.price)}".tap do |output|
+          "#{item.quantity}x #{title.first} for #{price_to_currency(item.price)}".tap do |output|
             title[1..-1].each { |line| output << "<br>#{line}" }
           end.html_safe
         end
@@ -16,9 +21,9 @@ module EffectiveOrdersHelper
 
   def order_item_summary(order_item)
     if order_item.quantity > 1
-      content_tag(:p, "#{number_to_currency(order_item.total)} total for #{pluralize(order_item.quantity, 'item')}")
+      content_tag(:p, "#{price_to_currency(order_item.total)} total for #{pluralize(order_item.quantity, 'item')}")
     else
-      content_tag(:p, "#{number_to_currency(order_item.total)} total")
+      content_tag(:p, "#{price_to_currency(order_item.total)} total")
     end
   end
 

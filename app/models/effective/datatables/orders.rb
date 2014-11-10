@@ -19,7 +19,7 @@ if defined?(EffectiveDatatables)
         table_column :purchased_at
 
         array_column :total do |order|
-          number_to_currency(order.total)
+          price_to_currency(order.total)
         end
 
         table_column :actions, :sortable => false, :filter => false, :partial => '/admin/orders/actions'

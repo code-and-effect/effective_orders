@@ -36,6 +36,9 @@ EffectiveOrders.setup do |config|
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
   config.obfuscate_order_ids = true
 
+  # Silence the price deprecation warnings
+  config.silence_deprecation_warnings = false
+
   # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.require_billing_address = true
   config.require_shipping_address = false
@@ -55,7 +58,7 @@ EffectiveOrders.setup do |config|
   # Prevent orders less than this value from being purchased
   # Stripe doesn't allow orders less than $0.50
   # Set to nil for no minimum charge
-  # Default value is $0.50, 50 cents
+  # Default value is 50 cents, or $0.50
   config.minimum_charge = 50
 
   # Free Orders

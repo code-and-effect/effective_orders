@@ -21,6 +21,7 @@ module EffectiveOrders
   mattr_accessor :simple_form_options
   mattr_accessor :use_active_admin
   mattr_accessor :obfuscate_order_ids
+  mattr_accessor :silence_deprecation_warnings
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
@@ -56,6 +57,15 @@ module EffectiveOrders
       raise Effective::AccessDenied.new() unless (controller || self).instance_exec(controller, action, resource, &authorization_method)
     end
     true
+  end
+
+  def self.minimum_charge
+    if @@minimum_charge.nil? || @@minimum_charge.kind_of?(Integer)
+      @@minimum_charge
+    else
+      ActiveSupport::Deprecation.warn('EffectiveOrders.minimum_charge config option is a non-integer. It should be an Integer representing the number of cents.  Continuing with (price * 100.0).floor conversion') unless EffectiveOrders.silence_deprecation_warnings
+      ((@@minimum_charge * 100.0).floor rescue nil)
+    end
   end
 
   class SoldOutException < Exception; end

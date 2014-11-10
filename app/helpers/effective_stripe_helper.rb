@@ -47,11 +47,11 @@ module EffectiveStripeHelper
       else            ; plan.interval
     end
 
-    "#{plan.name} - #{ActionController::Base.helpers.number_to_currency(plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}"
+    "#{plan.name} - #{ActionController::Base.helpers.price_to_currency(plan.amount)} #{plan.currency.upcase}#{occurrence}"
   end
 
   def stripe_coupon_description(coupon)
-    amount = coupon.amount_off.present? ? ActionController::Base.helpers.number_to_currency(coupon.amount_off / 100.0) : "#{coupon.percent_off}%"
+    amount = coupon.amount_off.present? ? ActionController::Base.helpers.price_to_currency(coupon.amount_off) : "#{coupon.percent_off}%"
 
     if coupon.duration_in_months.present?
       "#{coupon.id} - #{amount} off for #{coupon.duration_in_months} months"

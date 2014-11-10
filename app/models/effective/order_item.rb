@@ -9,7 +9,7 @@ module Effective
     structure do
       title                 :string, :validates => [:presence]
       quantity              :integer, :validates => [:presence, :numericality]
-      price                 :decimal, :precision => 8, :scale => 2, :default => 0.00
+      price                 :integer, :default => 0, :validates => [:numericality]
       tax_exempt            :boolean, :validates => [:inclusion => {:in => [true, false]}]
       tax_rate              :decimal, :precision => 5, :scale => 3, :default => 0.000, :validates => [:presence]
 
@@ -33,7 +33,7 @@ module Effective
     end
 
     def tax  # This is the total tax, for 3 items if quantity is 3
-      tax_exempt ? 0.00 : (subtotal * tax_rate)
+      tax_exempt ? 0 : (subtotal * tax_rate).floor
     end
 
     def total
@@ -49,8 +49,8 @@ module Effective
 
     def stripe_connect_application_fee
       @stripe_connect_application_fee ||= (
-        self.instance_exec(self, &EffectiveOrders.stripe_connect_application_fee_method).to_f.tap do |fee|
-          raise ArgumentError.new("expected EffectiveOrders.stripe_connect_application_fee_method to return a value between 0 and the order_item total (#{self.total}).  Received #{fee}.") if (fee > total || fee < 0.0)
+        self.instance_exec(self, &EffectiveOrders.stripe_connect_application_fee_method).to_i.tap do |fee|
+          raise ArgumentError.new("expected EffectiveOrders.stripe_connect_application_fee_method to return a value between 0 and the order_item total (#{self.total}).  Received #{fee}.") if (fee > total || fee < 0)
         end
       )
     end

@@ -12,7 +12,7 @@ module Effective
 
     validates_presence_of :purchasable
 
-    delegate :title, :price, :tax_exempt, :tax_rate :to => :purchasable
+    delegate :title, :price, :tax_exempt, :tax_rate, :to => :purchasable
 
     default_scope -> { order(:updated_at) }
 
@@ -21,7 +21,7 @@ module Effective
     end
 
     def tax
-      tax_exempt ? 0.00 : (subtotal * tax_rate)
+      tax_exempt ? 0 : (subtotal * tax_rate)
     end
 
     def total
