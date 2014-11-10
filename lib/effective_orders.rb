@@ -20,6 +20,7 @@ module EffectiveOrders
   mattr_accessor :layout
   mattr_accessor :simple_form_options
   mattr_accessor :use_active_admin
+  mattr_accessor :obfuscate_order_ids
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address

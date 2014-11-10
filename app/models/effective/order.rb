@@ -2,7 +2,9 @@ module Effective
   class Order < ActiveRecord::Base
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
-    acts_as_obfuscated
+    if EffectiveOrders.obfuscate_order_ids
+      acts_as_obfuscated
+    end
 
     acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected

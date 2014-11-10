@@ -33,6 +33,9 @@ EffectiveOrders.setup do |config|
   # Register Effective::Order with ActiveAdmin if ActiveAdmin is present
   config.use_active_admin = true
 
+  # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
+  config.obfuscate_order_ids = true
+
   # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.require_billing_address = true
   config.require_shipping_address = false
