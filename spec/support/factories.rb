@@ -14,6 +14,13 @@ FactoryGirl.define do
   factory :product do # This only exists in the dummy/ app
     sequence(:title) { |n| "Product #{n}" }
 
+    price 1000
+    tax_exempt false
+  end
+
+  factory :product_with_float_price do # This only exists in the dummy/ app
+    sequence(:title) { |n| "Product #{n}" }
+
     price 10.00
     tax_exempt false
   end
@@ -95,7 +102,7 @@ FactoryGirl.define do
 
     sequence(:title) { |n| "Order Item #{n}" }
     quantity 1
-    price 10.00
+    price 1000
     tax_exempt false
     tax_rate 0.05
   end
