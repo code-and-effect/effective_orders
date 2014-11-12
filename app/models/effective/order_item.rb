@@ -40,6 +40,17 @@ module Effective
       subtotal + tax
     end
 
+    def price=(value)
+      if value.kind_of?(Integer)
+        super
+      elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
+        super
+      else # Could be Float, BigDecimal, or String like 9.99
+        ActiveSupport::Deprecation.warn('order_item.price= was passed a non-integer. Expecting an Integer representing the number of cents.  Continuing with (price * 100.0).floor conversion') unless EffectiveOrders.silence_deprecation_warnings
+        super((value.to_f * 100.0).to_i)
+      end
+    end
+
     # This is going to return an Effective::Customer object that matches the purchasable.user
     # And is the Customer representing who is selling the product
     # This is really only used for StripeConnect
