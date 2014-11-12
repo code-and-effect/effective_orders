@@ -54,6 +54,21 @@ module ActsAsPurchasable
     end
   end
 
+  # If I have a column type of Integer, and I'm passed a non-Integer, convert it here
+  def price=(value)
+    integer_column = ((column_for_attribute('price').try(:type) rescue nil) == :integer) # Rails built in method to lookup datatype
+
+    if integer_column == false
+      super
+    elsif value.kind_of?(Integer)
+      super
+    elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
+      super
+    else # Could be Float, BigDecimal, or String like 9.99
+      super((value.to_f * 100.0).to_i)
+    end
+  end
+
   def title
     self[:title] || 'ActsAsPurchasable'
   end

@@ -55,6 +55,52 @@ describe Product do
       order.tax.should eq 100
       order.total.should eq 2100
     end
+  end
+
+  describe 'price=' do
+    it 'should accept an integer price' do
+      product = Product.new()
+      product.price = 1250
+
+      product.price.should eq 1250
+    end
+
+    it 'should convert a String that looks like an Integer' do
+      product = Product.new()
+      product.price = '1250'
+
+      product.price.should eq 1250
+    end
+
+    it 'should convert a String that looks like a Float' do
+      product = Product.new()
+      product.price = '12.50'
+
+      product.price.should eq 1250
+    end
+
+    it 'should convert from a Float' do
+      product = Product.new()
+      product.price = 12.50
+      product.price.should eq 1250
+
+      product.price = Float(12.50)
+      product.price.should eq 1250
+    end
+
+    it 'should convert from a BigDecimal' do
+      product = Product.new()
+      product.price = BigDecimal.new(12.5, 4)
+
+      product.price.should eq 1250
+    end
+
+    it 'should treat nil as a zero' do
+      product = Product.new()
+      product.price = nil
+
+      product.price.should eq 0
+    end
 
   end
 

@@ -2,8 +2,7 @@ module EffectiveOrders
   class Engine < ::Rails::Engine
     engine_name 'effective_orders'
 
-    config.autoload_paths += Dir["#{config.root}/app/models/concerns"]
-    config.autoload_paths += Dir["#{config.root}/app/models/validators"]
+    config.autoload_paths += Dir["#{config.root}/app/models/**/"]
 
     # Include Helpers to base application
     initializer 'effective_orders.action_controller' do |app|
@@ -19,6 +18,12 @@ module EffectiveOrders
     initializer 'effective_orders.active_record' do |app|
       ActiveSupport.on_load :active_record do
         ActiveRecord::Base.extend(ActsAsPurchasable::ActiveRecord)
+      end
+    end
+
+    initializer 'effective_orders.action_view' do |app|
+      ActiveSupport.on_load :action_view do
+        ActionView::Helpers::FormBuilder.send(:include, Inputs::PriceFormInput)
       end
     end
 

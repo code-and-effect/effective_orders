@@ -40,15 +40,27 @@ rake db:migrate
 
 ### Upgrading
 
-If you're running a 0.3.x version and upgrading to 0.4.x, just one command:
+In the 0.3.x versions, prices were represented as Decimals
+
+This has been changed in 0.4.x to be Integer columns
+
+If you're running a 0.3.x or earlier version, please upgrade to 0.4.x with this one command:
 
 ```ruby
-bundle exec rake effective_orders:upgrade_from_03x
+rake effective_orders:upgrade_from_03x
+```
+
+the above command will upgrade the order_items and subscriptions tables.
+
+If you have additional tables with a column `price` represented as a Decimal, they should also be converted:
+
+```ruby
+rake effective_orders:upgrade_price_column_on_table[products]
 ```
 
 ### Prices
 
-All prices should be represented as integers.  Think of it as the number of cents.
+All prices are represented as Integers.  Think of it as the number of cents.
 
 To set a price of `$10.00` the value should be `1000`.
 
@@ -56,11 +68,6 @@ To set a price of `$0.50` the value should be `50`.
 
 Decimal prices will work, but you'll run into some nasty deprecation notices.
 
-```ruby
-bundle exec rake effective_orders:upgrade_price_column_on_table[products]
-```
-
-TODO: Improve this content
 
 ### Integrating with your app
 
@@ -88,7 +95,7 @@ class Product < ActiveRecord::Base
   end
 
   validates_presence_of :title
-  validates_numericality_of :price, :greater_than => 0
+  validates_numericality_of :price, :greater_than_or_equal_to => 0
 
   scope :products, -> { where(:archived => false) }
 
@@ -122,7 +129,24 @@ end
 
 Once the database has been migrated, it is time to scaffold/build the CRUD Product screens and create some Products to sell.
 
-...that is an exercise left upto the reader...
+```haml
+= simple_form_for(product) do |f|
+  = f.input :title
+  = f.input :price, :as => :price   # This is an EffectiveOrders Form Input
+  = f.button :submit
+```
+
+Please take note of the :as => :price above.
+This is an EffectiveOrders custom form input that is available for simple_form, formtastic and rails form builder
+
+It will take an Integer price, display it as a currency formatted value, and ensure that a properly formatted price is entered by the user.
+
+```haml
+= form_for(product) do |f|
+  = f.price_field :price
+```
+
+A new Product has now been created.
 
 So then back on a Product#show page, we will render the product with the Add To Cart link
 
@@ -131,6 +155,9 @@ So then back on a Product#show page, we will render the product with the Add To 
 %p= price_to_currency(@product.price)
 %p= link_to_add_to_cart(@product, :class => 'btn btn-primary', :label => 'Add To My Shopping Cart')
 ```
+
+Please take not of the price_to_currency helper above.
+This is an EffectiveOrders helper that will display an Integer price as a currency formatted value.
 
 When the user clicks 'Add To My Shopping Cart' the product will be added to the cart.  A flash message is displayed, and the user will return to the same page.
 
