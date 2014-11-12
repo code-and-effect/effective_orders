@@ -21,7 +21,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration
 
       t.string    :title
       t.integer   :quantity
-      t.decimal   :price, :precision => 8, :scale => 2, :default => 0.0
+      t.integer   :price, :default => 0
       t.boolean   :tax_exempt
       t.decimal   :tax_rate, :precision => 5, :scale => 3, :default => 0.0
 
@@ -71,7 +71,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.string    :stripe_subscription_id
       t.string    :stripe_coupon_id
       t.string    :title
-      t.decimal   :price, :precision => 8, :scale => 2, :default => 0.0
+      t.integer   :price, :default => 0
 
       t.timestamps
     end

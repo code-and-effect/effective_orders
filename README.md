@@ -43,17 +43,22 @@ rake db:migrate
 If you're running a 0.3.x version and upgrading to 0.4.x, just one command:
 
 ```ruby
-rails generate effective_orders:upgrade_from03x
-rake db:migrate
+bundle exec rake effective_orders:upgrade_from_03x
 ```
 
 ### Prices
 
 All prices should be represented as integers.  Think of it as the number of cents.
 
-To set a price of `$0.50` teh value should be `50`.
+To set a price of `$10.00` the value should be `1000`.
+
+To set a price of `$0.50` the value should be `50`.
 
 Decimal prices will work, but you'll run into some nasty deprecation notices.
+
+```ruby
+bundle exec rake effective_orders:upgrade_price_column_on_table[products]
+```
 
 TODO: Improve this content
 
