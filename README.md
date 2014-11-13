@@ -47,15 +47,17 @@ This has been changed in 0.4.x to be Integer columns
 If you're running a 0.3.x or earlier version, please upgrade to 0.4.x with this one command:
 
 ```ruby
-rake effective_orders:upgrade_from_03x
+rails generate effective_orders:upgrade_from03x
 ```
 
 the above command will upgrade the order_items and subscriptions tables.
 
-If you have additional tables with a column `price` represented as a Decimal, they should also be converted:
+If you have additional tables with a column `price` represented as a Decimal, they should also be converted.
+
+To create a migration on the table `products` with a column of `price`:
 
 ```ruby
-rake effective_orders:upgrade_price_column_on_table[products]
+bundle exec rails generate effective_orders:upgrade_price_column products price
 ```
 
 ### Prices
@@ -136,15 +138,17 @@ Once the database has been migrated, it is time to scaffold/build the CRUD Produ
   = f.button :submit
 ```
 
-Please take note of the :as => :price above.
-This is an EffectiveOrders custom form input that is available for simple_form, formtastic and rails form builder
-
-It will take an Integer price, display it as a currency formatted value, and ensure that a properly formatted price is entered by the user.
+or
 
 ```haml
 = form_for(product) do |f|
   = f.price_field :price
 ```
+
+Please take note of the :as => :price above.
+This is an EffectiveOrders custom form input that is available for simple_form, formtastic and rails form builder
+
+It will take an Integer price, display it as a currency formatted value, and ensure that a properly formatted price is entered by the user.
 
 A new Product has now been created.
 

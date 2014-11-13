@@ -46,12 +46,7 @@ module ActsAsPurchasable
   end
 
   def price
-    if (self[:price] || 0).kind_of?(Integer)
-      self[:price] || 0
-    else
-      ActiveSupport::Deprecation.warn('price is a non-integer. It should be an Integer representing the number of cents.  Continuing with (price * 100.0).floor conversion') unless EffectiveOrders.silence_deprecation_warnings
-      ((self[:price] * 100.0).floor rescue 0)
-    end
+    self[:price] || 0
   end
 
   # If I have a column type of Integer, and I'm passed a non-Integer, convert it here

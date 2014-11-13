@@ -1,0 +1,17 @@
+class UpgradePriceColumnOn<%= @table.capitalize %> < ActiveRecord::Migration
+  def self.up
+    prices = ActiveRecord::Base.connection.execute("SELECT <%= @column %> FROM <%= @table %> LIMIT 10").values.flatten
+    if prices.blank? || prices.any? { |<%= @column %>| <%= @column %>.to_s.include?('.') }
+      ActiveRecord::Base.connection.execute("UPDATE <%= @table %> O SET <%= @column %> = (O.<%= @column %> * 100.0)")
+      change_column :<%= @table %>, :<%= @column %>, :integer, :default => 0
+    end
+  end
+
+  def self.down
+    prices = ActiveRecord::Base.connection.execute("SELECT price FROM <%= @table %> LIMIT 10").values.flatten
+    if prices.none? { |<%= @column %>| <%= @column %>.to_s.include?('.') }
+      change_column :<%= @table %>, :<%= @column %>, :decimal, :precision => 8, :scale => 2, :default => 0.0
+      ActiveRecord::Base.connection.execute("UPDATE <%= @table %> O SET <%= @column %> = (O.<%= @column %> / 100.0)")
+    end
+  end
+end

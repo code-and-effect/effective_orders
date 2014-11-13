@@ -1,0 +1,29 @@
+class UpgradeEffectiveOrdersFrom03x < ActiveRecord::Migration
+  def self.up
+    prices = ActiveRecord::Base.connection.execute("SELECT price from <%= @order_items_table_name.gsub(':', '') %> LIMIT 10").values.flatten
+    if prices.blank? || prices.any? { |price| price.to_s.include?('.') }
+      ActiveRecord::Base.connection.execute("UPDATE <%= @order_items_table_name.gsub(':', '') %> O SET price = (O.price * 100.0)")
+      change_column <%= @order_items_table_name %>, :price, :integer, :default => 0
+    end
+
+    prices = ActiveRecord::Base.connection.execute("SELECT price from <%= @subscriptions_table_name.gsub(':', '') %> LIMIT 10").values.flatten
+    if prices.blank? || prices.any? { |price| price.to_s.include?('.') }
+      ActiveRecord::Base.connection.execute("UPDATE <%= @subscriptions_table_name.gsub(':', '') %> O SET price = (O.price * 100.0)")
+      change_column <%= @subscriptions_table_name %>, :price, :integer, :default => 0
+    end
+  end
+
+  def self.down
+    prices = ActiveRecord::Base.connection.execute("SELECT price from <%= @order_items_table_name.gsub(':', '') %> LIMIT 10").values.flatten
+    if prices.none? { |price| price.to_s.include?('.') }
+      change_column <%= @order_items_table_name %>, :price, :decimal, :precision => 8, :scale => 2, :default => 0.0
+      ActiveRecord::Base.connection.execute("UPDATE <%= @order_items_table_name.gsub(':', '') %> O SET price = (O.price / 100.0)")
+    end
+
+    prices = ActiveRecord::Base.connection.execute("SELECT price from <%= @subscriptions_table_name.gsub(':', '') %> LIMIT 10").values.flatten
+    if prices.none? { |price| price.to_s.include?('.') }
+      change_column <%= @subscriptions_table_name %>, :price, :decimal, :precision => 8, :scale => 2, :default => 0.0
+      ActiveRecord::Base.connection.execute("UPDATE <%= @subscriptions_table_name.gsub(':', '') %> O SET price = (O.price / 100.0)")
+    end
+  end
+end
