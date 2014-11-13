@@ -52,9 +52,9 @@ rails generate effective_orders:upgrade_from03x
 
 the above command will upgrade the order_items and subscriptions tables.
 
-If you have additional tables with a column `price` represented as a Decimal, they should also be converted.
+If you have additional tables with a column `price` represented as a Decimal, they should also be upgraded.
 
-To create a migration on the table `products` with a column of `price`:
+To upgrade, use this generator to create a migration on table `products` with column `price`:
 
 ```ruby
 bundle exec rails generate effective_orders:upgrade_price_column products price
