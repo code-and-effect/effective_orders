@@ -27,7 +27,7 @@ module Inputs
     end
 
     def value
-      val = @object.send(@method)
+      val = @object.send(@method) || 0
       val.kind_of?(Integer) ? ('%.2f' % (val / 100.0)) : ('%.2f' % val)
     end
 
@@ -37,7 +37,7 @@ module Inputs
     end
 
     def price
-      val = @object.send(@method)
+      val = @object.send(@method) || 0
       val.kind_of?(Integer) ? val : (val * 100.0).to_i
     end
 
