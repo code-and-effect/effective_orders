@@ -184,6 +184,14 @@ describe Effective::Order do
       Effective::OrdersMailer.deliveries[1].subject.include?("Order ##{order.to_param} Receipt").should eq true
     end
 
+    it 'does not send email if passed :email => false' do
+      Effective::OrdersMailer.deliveries.clear
+
+      order.purchase!('by a test', :email => false)
+
+      Effective::OrdersMailer.deliveries.length.should eq 0
+    end
+
     it 'is included with the purchased scope' do
       order.purchase!('by a test')
       Effective::Order.purchased.to_a.include?(order).should eq true
@@ -194,6 +202,17 @@ describe Effective::Order do
       order.purchase!('by a test')
       Effective::Order.declined.to_a.include?(order).should eq false
     end
+
+    it 'should return false when the Order is invalid' do
+      order.stub(:valid?).and_return(false)
+      expect { order.purchase!('by a test') }.to raise_exception
+    end
+
+    it 'should return true when the Order is invalid and :validate => false is passed' do
+      order.stub(:valid?).and_return(false)
+      order.purchase!('by a test', :validate => false).should eq true
+    end
+
   end
 
   describe 'purchased?' do

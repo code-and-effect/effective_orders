@@ -157,9 +157,12 @@ module Effective
       end
     end
 
-    def purchase!(payment_details = nil)
+    # :validate => false, :email => false
+    def purchase!(payment_details = nil, opts = {})
+      opts = {:validate => true, :email => true}.merge(opts)
+
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
-      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if self.declined?
+      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (self.declined? && opts[:validate])
 
       Order.transaction do
         self.purchase_state = EffectiveOrders::PURCHASED
@@ -168,9 +171,9 @@ module Effective
 
         order_items.each { |item| item.purchasable.purchased!(self, item) }
 
-        self.save!
+        self.save!(:validate => opts[:validate])
 
-        if EffectiveOrders.mailer[:send_order_receipt_to_admin]
+        if EffectiveOrders.mailer[:send_order_receipt_to_admin] && opts[:email]
           if Rails.env.production?
             (OrdersMailer.order_receipt_to_admin(self).deliver rescue false)
           else
@@ -178,7 +181,7 @@ module Effective
           end
         end
 
-        if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+        if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && opts[:email]
           if Rails.env.production?
             (OrdersMailer.order_receipt_to_buyer(self).deliver rescue false)
           else
@@ -186,7 +189,7 @@ module Effective
           end
         end
 
-        if EffectiveOrders.mailer[:send_order_receipt_to_seller] && self.purchased?(:stripe_connect)
+        if EffectiveOrders.mailer[:send_order_receipt_to_seller] && self.purchased?(:stripe_connect) && opts[:email]
           self.order_items.group_by(&:seller).each do |seller, order_items|
             if Rails.env.production?
               (OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false)
