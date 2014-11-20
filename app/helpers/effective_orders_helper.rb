@@ -55,6 +55,10 @@ module EffectiveOrdersHelper
     end
   end
 
+  def render_order(order)
+    render(:partial => 'effective/orders/order', :locals => {:order => order})
+  end
+
   def render_checkout(order, opts = {})
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 

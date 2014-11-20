@@ -78,7 +78,7 @@ module EffectiveCartsHelper
     link_to (options.delete(:label) || 'Proceed to Checkout'), effective_orders.new_order_path, options
   end
 
-  def render_cart(cart = nil, opts = {})
+  def render_cart(cart = nil)
     cart ||= current_cart
     render(:partial => 'effective/carts/cart', :locals => {:cart => cart})
   end
