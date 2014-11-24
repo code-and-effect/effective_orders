@@ -33,7 +33,7 @@ module Effective
     end
 
     def tax  # This is the total tax, for 3 items if quantity is 3
-      tax_exempt ? 0 : (subtotal * tax_rate).floor
+      tax_exempt ? 0 : (subtotal * tax_rate).ceil
     end
 
     def total
