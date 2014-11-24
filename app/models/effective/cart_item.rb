@@ -30,7 +30,7 @@ module Effective
     end
 
     def tax
-      tax_exempt ? 0 : (subtotal * tax_rate)
+      tax_exempt ? 0 : (subtotal * tax_rate).ceil
     end
 
     def total
