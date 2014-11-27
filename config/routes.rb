@@ -7,6 +7,7 @@ EffectiveOrders::Engine.routes.draw do
 
     match 'orders/:id/purchased', :to => 'orders#purchased', :as => 'order_purchased', :via => :get
     match 'orders/:id/declined', :to => 'orders#declined', :as => 'order_declined', :via => :get
+    match 'orders/:id/resend_buyer_receipt', :to => 'orders#resend_buyer_receipt', :via => :get, :as => 'resend_buyer_receipt'
     match 'orders/my_purchases', :to => 'orders#my_purchases', :as => 'my_purchases', :via => :get
 
     if EffectiveOrders.paypal_enabled
@@ -35,6 +36,7 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/:id/pretend_decline', :to => 'orders#pretend_decline', :as => 'pretend_decline', :via => [:get, :post]
     end
 
+
     # This must be below the other routes defined above.
     resources :orders, :only => [:new, :create, :show, :index]
 
@@ -52,7 +54,6 @@ EffectiveOrders::Engine.routes.draw do
     namespace :admin do
       resources :customers, :only => [:index]
       resources :orders, :only => [:index, :show]
-      match 'orders/:id/resend_buyer_receipt', :to => 'orders#resend_buyer_receipt', :via => [:get], :as => 'order_resend_buyer_receipt'
     end
   end
 end
