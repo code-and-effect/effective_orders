@@ -26,7 +26,7 @@ if defined?(EffectiveDatatables)
           content_tag(:span, :style => 'white-space: nowrap;') do
             [
               link_to('View', (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order))),
-              (link_to('Resend Receipt', effective_orders.resend_buyer_receipt_path(order), {'data-confirm' => 'This action will email the buyer a copy of the original email receipt.  Send receipt now?'}) if order.try(:purchased?))
+              (link_to('Resend Receipt', effective_orders.resend_buyer_receipt_path(order), {'data-confirm' => 'This action will resend a copy of the original email receipt.  Send receipt now?'}) if order.try(:purchased?))
             ].compact.join(' - ').html_safe
           end
         end

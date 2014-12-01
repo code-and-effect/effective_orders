@@ -24,7 +24,7 @@ module Effective
     end
 
     def add_to_cart
-      @purchasable = add_to_cart_params[:purchasable_type].constantize.find(add_to_cart_params[:purchasable_id].to_i) rescue nil
+      @purchasable = (add_to_cart_params[:purchasable_type].constantize.find(add_to_cart_params[:purchasable_id].to_i) rescue nil)
 
       EffectiveOrders.authorized?(self, :update, current_cart)
 
