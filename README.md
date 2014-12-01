@@ -1,19 +1,17 @@
 # Effective Orders
 
-A full solution for payments in a Rails3/4 application.
+A Rails Engine to handle the purchase workflow in a Rails 3.2.x / Rails 4 application.
 
-Handles Carts, Orders, and taking payment through Moneris, PayPal and Stripe.
+Includes Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
 
-Also works with Stripe Connect (for a digital marketplace type app) and Stripe Subscriptions
+Also works with Stripe Connect and Stripe Subscriptions with coupons.
 
-Rails 3.2.x and Rails 4
-
-## Getting Started
+# Getting Started
 
 Add to your Gemfile:
 
 ```ruby
-gem 'effective_orders'
+gem 'effective_orders', :git => 'https://github.com/code-and-effect/effective_orders'
 ```
 
 Run the bundle command to install it:
@@ -38,11 +36,23 @@ Then migrate the database:
 rake db:migrate
 ```
 
-### Upgrading
+Require the javascript on the asset pipeline by adding the following to your application.js:
 
-In the 0.3.x versions, prices were represented as Decimals
+```ruby
+//= require effective_orders
+```
 
-This has been changed in 0.4.x to be Integer columns
+Require the stylesheet on the asset pipeline by adding the following to your application.css:
+
+```ruby
+*= require effective_orders
+```
+
+## Upgrading from 0.3.x
+
+In the 0.3.x versions of this gem, prices were internally represented as Decimals
+
+This has been changed in 0.4.x to properly be Integer columns
 
 If you're running a 0.3.x or earlier version, please upgrade to 0.4.x with this one command:
 
@@ -52,7 +62,7 @@ rails generate effective_orders:upgrade_from03x
 
 the above command will upgrade the order_items and subscriptions tables.
 
-If you have additional tables with a column `price` represented as a Decimal, they should also be upgraded.
+If you have additional (products or whatever..) tables with a column `price` represented as a Decimal, they should also be upgraded.
 
 To upgrade, use this generator to create a migration on table `products` with column `price`:
 
@@ -60,24 +70,56 @@ To upgrade, use this generator to create a migration on table `products` with co
 bundle exec rails generate effective_orders:upgrade_price_column products price
 ```
 
-### Prices
+# High Level Overview
 
-All prices are represented as Integers.  Think of it as the number of cents.
+Your rails app creates and displays a list of `acts_as_purchsable` objects, each with a `link_to_add_to_cart`.
 
-To set a price of `$10.00` the value should be `1000`.
+The user clicks one or more Add to Cart links and adds some purchasables to their cart.
 
-To set a price of `$0.50` the value should be `50`.
+They then click the Checkout link from the My Cart page, or another `link_to_checkout` displayed somewhere, which takes them to `effective_orders.new_order_path`
 
-Decimal prices will work, but you'll run into some nasty deprecation notices.
+The checkout is a 2-page process:
+
+The first page gives the user their final option to 'Change Items' and alter the order.
+
+If `require_billing_address` or `require_shipping_address` options are `true` in the `config/initializer/effective_orders.rb` initializer this first checkout page will collect the billing/shipping information.
+
+After clicking 'Save and Continue', the user will be on the collect money page.
+
+If the payment processor is PayPal or Moneris, the user will be sent to their website to enter their credit card details.
+
+If the payment processor is Stripe, there is an in-screen popup form to collect those details.
+
+Once the user has successfully paid, they are returned to a thank you page displaying the order receipt.
+
+An email notification containing the receipt is also sent to the buyer's email address, and the site admin (configurable).
 
 
-### Integrating with your app
+# Usage
+
+effective_orders handles the add_to_cart -> checkout -> collect of payment workflow, but relies on the base application to define, create and display the purchaseable things.
+
+These purchasables could be Products, EventTickets, Memberships or anything else.
+
+
+## Representing Prices
+
+All prices should be represented as Integers.  For us North Americans, think of it as the number of cents.
+
+To represent the value of `$10.00` the price method should return `1000`.
+
+Similarly, to represent a value of `$0.50` the price method should return `50`.
+
+EffectiveOrders does not deal with a specific currency or do any currency conversions of any kind.
+
+
+## Creating a purchasable
 
 Once installed, we still need to create something to purchase.
 
-Let's make a 'Product' model that uses the acts_as_purchasable mixin.
+Let's create a `Product` model that uses the `acts_as_purchasable` mixin.
 
-We're also going to prevent the Product from being deleted by overriding destroy and setting a boolean archived=true instead.
+We're also going to prevent the Product from being deleted by overriding `def destroy` and instead setting a boolean `archived = true`.
 
 If someone purchased a Product which is later deleted, the Order History page will be unable to find the Product.
 
@@ -90,6 +132,7 @@ class Product < ActiveRecord::Base
     title               :string
 
     price               :integer, :default => 0
+    tax_exempt          :boolean, :default => false
 
     archived            :boolean, :default => false
 
@@ -101,7 +144,7 @@ class Product < ActiveRecord::Base
 
   scope :products, -> { where(:archived => false) }
 
-  # This prevents the Product from being deleted
+  # This archives Products instead of deleting them
   def destroy
     update_attributes(:archived => true)
   end
@@ -117,6 +160,7 @@ class CreateProducts < ActiveRecord::Migration
     create_table :products do |t|
       t.string :title
       t.integer :price, :default=>0
+      t.boolean :tax_exempt, :default=>false
       t.boolean :archived, :default=>false
       t.datetime :updated_at
       t.datetime :created_at
@@ -129,30 +173,53 @@ class CreateProducts < ActiveRecord::Migration
 end
 ```
 
-Once the database has been migrated, it is time to scaffold/build the CRUD Product screens and create some Products to sell.
+Once the database has been migrated, it is time to scaffold/build the CRUD Product screens to create some Products to sell.
+
+### Products#new/#edit
+
+Use the EffectiveOrders price input to enter the price.
+
+It displays the underlying Integer price as a currency formatted value, ensures that a properly formatted price is entered by the user, and POSTs the appropriate Integer value back to the server.
+
+This is available for simple_form, formtastic and Rails default FormBuilder.
 
 ```haml
-= simple_form_for(product) do |f|
+= simple_form_for(@product) do |f|
   = f.input :title
-  = f.input :price, :as => :price   # This is an EffectiveOrders Form Input
+  = f.input :tax_exempt
+  = f.input :price, :as => :price
   = f.button :submit
 ```
 
 or
 
+```ruby
+= semantic_form_for(@product) do |f|
+  = f.input :price, :as => :price
+```
+
+or
+
 ```haml
-= form_for(product) do |f|
+= form_for(@product) do |f|
   = f.price_field :price
 ```
 
-Please take note of the :as => :price above.
-This is an EffectiveOrders custom form input that is available for simple_form, formtastic and rails form builder
+The `:as => :price` will work interchangeably with SimpleForm or Formtastic, as long as only one of these gems is present in your application
 
-It will take an Integer price, display it as a currency formatted value, and ensure that a properly formatted price is entered by the user.
+If you use both SimpleForm and Formtastic, you will need to call price input differently:
 
-A new Product has now been created.
+```ruby
+= simple_form_for(@product) do |f|
+  = f.input :price, :as => :price_simple_form
 
-So then back on a Product#show page, we will render the product with the Add To Cart link
+= semantic_form_for @user do |f|
+  = f.input :price, :as => :price_formtastic
+```
+
+### Products#show
+
+So back on the Product#show page, we will render the product with an Add To Cart link
 
 ```haml
 %h4= @product.title
@@ -160,12 +227,15 @@ So then back on a Product#show page, we will render the product with the Add To 
 %p= link_to_add_to_cart(@product, :class => 'btn btn-primary', :label => 'Add To My Shopping Cart')
 ```
 
-Please take not of the price_to_currency helper above.
+Please take note of the `price_to_currency` helper above.
+
 This is an EffectiveOrders helper that will display an Integer price as a currency formatted value.
 
 When the user clicks 'Add To My Shopping Cart' the product will be added to the cart.  A flash message is displayed, and the user will return to the same page.
 
-We still need to create a link to the Shopping Cart page so that the user can see his cart.  On your site's menu, or wherever:
+### My Cart
+
+We still need to create a link to the Shopping Cart page so that the user can see his cart.  On your site's main menu:
 
 ```ruby
 = link_to 'My Cart', effective_orders.carts_path
@@ -180,10 +250,12 @@ or
 or
 
 ```ruby
-= link_to_current_cart(:label => 'My Shopping Cart')  # To display My Shopping Cart Cart (3) when there are 3 items
+= link_to_current_cart(:label => 'My Shopping Cart')  # To display My Shopping Cart (3) when there are 3 items
 ```
 
-The checkout screen can be reached through the My Cart page, or reached directly via
+### Checkout
+
+The checkout screen can be reached through the My Cart page, or linked to directly via
 
 ```ruby
 = link_to 'Go Checkout Already', effective_orders.new_order_path
@@ -195,10 +267,139 @@ or
 = link_to_checkout()
 ```
 
+From here, the effective_orders engine takes over, walks the user through billing and shipping details screens, then finally collects payment through one of the configured payment processors.
+
+## Acts As Purchasable
+
+Mark your rails model with the mixin `acts_as_purchasable` to use it with the effective_orders gem.
+
+This mixin sets up the relationships and provides some validations on price and such.
+
+### Methods
+
+acts_as_purchasable provides the following handy methods:
+
+`.purchased?` has this been purchased by any user in any order?
+
+`.purchased_by?(user)` has this been purchased by the given user?
+
+`.purchased_orders` returns the orders in which the purchases have been made
+
+### Scopes
+
+acts_as_purchsable provides the following scopes:
+
+`Product.purchased` all the Products that have been purchased
+
+`Product.purchased_by(user)` all the Products purchased by a given user.
+
+`Product.sold` all the Products that have been solid (same as purchased)
+
+`Product.sold_by(user)` all the Products that this user has sold via Stripe Connect
+
+`Product.not_purchased` all unpurchased Products
+
+### Digital Downloads
+
+If your product is a digital download, simply specify the URL to download.
+
+The download link will be displayed on all purchased order receipts.
+
+```ruby
+def purchased_download_url
+  'http://www.something.com/my_cool_product.zip'
+end
+```
+
+Of course, there's no mechanism here to prevent someone from just copy&pasting this URL to a friend.
+
+If you're interested in this functionality, please check out `effective_assets` and the authenticated-read temporary URLs.
+
+
+### Tax
+
+All `acts_as_purchasable` objects will respond to `tax_exempt`.
+
+By default, `tax_exempt` is false, meaning that tax must be applied to this item.
+
+The tax calculation is controlled by the config/initializers/effective_orders.rb `config.tax_rate_method` and may be set on an app wide basis.
+
+If `tax_exempt` returns true, it means that no tax will be applied to this item.
+
+Please see the initializer for more information.
+
+
+### Callbacks
+
+When defined, upon purchase the following callback will be triggered:
+
+```ruby
+class Product
+  acts_as_purchasable
+
+  after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
+    self.do_something() # self is the newly purchased instance of this Product
+  end
+
+end
+```
+
+# Authorization
+
+All authorization checks are handled via the config.authorization_method found in the `config/initializers/effective_orders.rb` file.
+
+It is intended for flow through to CanCan or Pundit, but neither of those gems are required.
+
+This method is called by the controller action with the appropriate action and resource
+
+This method is called by all controller actions with the appropriate action and resource
+
+Action will be one of [:index, :show, :new, :create, :edit, :update, :destroy]
+
+Resource will the appropriate Effective::Order, Effective::Cart or Effective::Subscription ActiveRecord object or class
+
+The authorization method is defined in the initializer file:
+
+```ruby
+# As a Proc (with CanCan)
+config.authorization_method = Proc.new { |controller, action, resource| authorize!(action, resource) }
+```
+
+```ruby
+# As a Custom Method
+config.authorization_method = :my_authorization_method
+```
+
+and then in your application_controller.rb:
+
+```ruby
+def my_authorization_method(action, resource)
+  current_user.is?(:admin) || EffectivePunditPolicy.new(current_user, resource).send('#{action}?')
+end
+```
+
+or disabled entirely:
+
+```ruby
+config.authorization_method = false
+```
+
+If the method or proc returns false (user is not authorized) an Effective::AccessDenied exception will be raised
+
+You can rescue from this exception by adding the following to your application_controller.rb:
+
+```ruby
+rescue_from Effective::AccessDenied do |exception|
+  respond_to do |format|
+    format.html { render 'static_pages/access_denied', :status => 403 }
+    format.any { render :text => 'Access Denied', :status => 403 }
+  end
+end
+```
 
 ## Permissions
 
-Using CanCan
+The permissions you actually want to define are as follows (using CanCan):
 
 ```ruby
 can [:manage], Effective::Cart, :user_id => user.id
@@ -207,37 +408,60 @@ can [:manage], Effective::Subscription, :user_id => user.id
 ```
 
 
-## Acts As Purchasable
-
-TODO
-
-You can define two callback
-
-```ruby
-class Product
-  acts_as_purchasable
-
-  after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
-    self.do_something() # self is an instance of this Product
-  end
-
-  after_decline do |order, order_item|
-  end
-end
-```
-
-
 ## Carts
 
-TODO
+The standard website shopping cart paradigm.  Add one or more objects to the cart and purchase them all in one step.
+
+When a non-logged-in user comes to the website, a new `Effective::Cart` object is created and stored in the session variable.  This user can add items to the Shopping Cart as normal.
+
+When user proceeds to Checkout, they will be required to login.
+
+When that user logs in, the Cart will be assigned to that User ID and if they had a previous existing cart, the items will be merged.
+
+You shouldn't need to deal with the Cart at all, except to make a link from your Site Menu to the 'My Cart' page
+
+```ruby
+= link_to_current_cart()  # To display Cart (3) when there are 3 items
+```
+
+or
+
+```ruby
+= link_to 'My Cart', effective_orders.carts_path
+```
+
+However, if you want to render a cart inline on some random page, or play with the object directly, you can.
+
+Use the helper method `current_cart` to refer to the current `Effective::Cart`.
+
+And call `render_cart(current_cart)` to display the Cart on your very custom page.
+
 
 ## Orders
 
 TODO
 
+
+
 ## Helpers
 
 TODO
+
+
+## Admin Screen
+
+To use the Admin screen, please also install the effective_datatables gem:
+
+```ruby
+gem 'effective_datatables', :git => 'https://github.com/code-and-effect/effective_datatables.git'
+```
+
+Then you should be able to visit:
+
+```ruby
+link_to 'Orders', effective_orders.admin_orders_path   # /admin/orders
+```
+
 
 ## Using Ngrok to test in Development
 
@@ -474,3 +698,13 @@ Run tests by:
 ```ruby
 guard
 ```
+
+
+# Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
