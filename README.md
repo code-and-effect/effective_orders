@@ -106,13 +106,13 @@ These purchasables could be Products, EventTickets, Memberships or anything else
 
 ### Representing Prices
 
-All prices should be represented as Integers.  For us North Americans, think of it as the number of cents.
+All prices should be internally represented as Integers.  For us North Americans, think of it as the number of cents.
 
 To represent the value of `$10.00` the price method should return `1000`.
 
 Similarly, to represent a value of `$0.50` the price method should return `50`.
 
-EffectiveOrders does not deal with a specific currency or do any currency conversions of any kind.
+EffectiveOrders does not deal with a specific currency or do any currency conversions of any kind.  The main gem authors are North American, and as such this gem is unfortunately North American biased.
 
 
 ### Creating a purchasable
@@ -231,7 +231,7 @@ So back on the Product#show page, we will render the product with an Add To Cart
 
 Please take note of the `price_to_currency` helper above.
 
-This is an EffectiveOrders helper that will display an Integer price as a currency formatted value.
+This is an EffectiveOrders helper that will display an Integer price as a currency formatted value.  It does an Integer to Float conversion then calls the rails standard `number_to_currency`.
 
 When the user clicks 'Add To My Shopping Cart' the product will be added to the cart.  A flash message is displayed, and the user will return to the same page.
 
@@ -241,7 +241,17 @@ We still need to create a link to the Shopping Cart page so that the user can vi
 
 ```ruby
 = link_to_current_cart()  # To display Cart (3) when there are 3 items
+```
+
+or
+
+```ruby
 = link_to_current_cart(:label => 'Shopping Cart', :class => 'btn btn-prmary')  # To display Shopping Cart (3) when there are 3 items
+```
+
+or
+
+```ruby
 = link_to 'My Cart', effective_orders.carts_path
 ```
 
