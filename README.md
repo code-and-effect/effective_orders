@@ -1,8 +1,8 @@
 # Effective Orders
 
-A Rails Engine to handle the purchase workflow in a Rails 3.2.x / Rails 4 application.
+Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
 
-Includes Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
+A Rails Engine to handle the purchase workflow in a Rails 3.2.x / Rails 4 application.
 
 Also works with Stripe Connect and Stripe Subscriptions with coupons.
 
@@ -456,7 +456,7 @@ If you are using effective_orders to roll your own custom payment workflow, you 
 
 - `render_purchasables(one_or_more_acts_as_purchasable_objects)` to display a list of purchasable items
 
-- `render_order(order)` to display the full Order receipt
+- `render_order(order)` to display the full Order receipt.
 - `order_summary(order)` to display some quick details of an Order and its OrderItems.
 - `order_payment_to_html(order)` to display the payment processor details for an order's payment transaction.
 
@@ -499,16 +499,15 @@ The one gotcha with the above two scenarios, is that when `purchase!` is called,
 You can skip validations with the following command, but be careful as this skips all validations:
 
 ```ruby
-Effective::Order.new(@product, @user).purchase!('with no validations', :validate => false)
+Effective::Order.new(@product, @user).purchase!('no validations', :validate => false)
 ```
 
 The `@product` is now considered purchased.
 
 
-
 To check an Order's purchase state, you can call `@order.purchased?`
 
-There also exist the scopes: `Effective::Order.purchased`, `Effective::Order.purchased_by(user)` which return a chainable relation of all purchased `Effective::Order` objects.
+There also exist the scopes: `Effective::Order.purchased` and `Effective::Order.purchased_by(user)` which return a chainable relation of all purchased `Effective::Order` objects.
 
 
 ### My Purchases / Order History
@@ -517,11 +516,25 @@ This screen displays all past purchases made by the current user.  You can add i
 
 ```ruby
 = link_to_my_purchases()  # To display My Purchases
-= link_to_my_purchases(:label => Order History', :class => 'btn btn-primary')
+```
+
+or
+
+```ruby
+= link_to_my_purchases(:label => 'Order History', :class => 'btn btn-primary')
+```
+
+or
+
+```ruby
 = link_to 'My Order History', effective_orders.my_purchases_path
 ```
 
-or render it inline on an existing page with `render_order_history(user_or_orders)`
+or render it inline on an existing page with
+
+```ruby
+render_order_history(user_or_orders)
+```
 
 If a user is passed, a call to `Effective::Order.purchased_by(user)` will be made to assign all purchased orders.
 
@@ -539,7 +552,7 @@ and then in the view:
 render_datatable @datatable
 ```
 
-Please refer to effective_datatables for more information about that gem.
+Please refer to [effective_datatables](https://github.com/code-and-effect/effective_datatables/) for more information about that gem.
 
 
 ### Admin Screen
@@ -575,7 +588,7 @@ Every payment processor seems to have its own development sandbox which allow yo
 
 You will need an external IP address to work with these sandboxes.
 
-I use `https://ngrok.com/` for this ability.
+We suggest the free application `https://ngrok.com/` for this ability.
 
 
 ## Paying via Moneris
