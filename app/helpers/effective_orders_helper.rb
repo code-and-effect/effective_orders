@@ -75,6 +75,12 @@ module EffectiveOrdersHelper
     end
   end
 
+  def link_to_my_purchases(opts = {})
+    options = {:rel => :nofollow}.merge(opts)
+    link_to (options.delete(:label) || 'My Purchases'), effective_orders.my_purchases_path, options
+  end
+  alias_method :link_to_order_history, :link_to_my_purchases
+
   def render_order_history(user_or_orders, opts = {})
     if user_or_orders.kind_of?(User)
       orders = Effective::Order.purchased_by(user_or_orders)

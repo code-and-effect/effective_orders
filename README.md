@@ -6,7 +6,11 @@ Includes Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
 
 Also works with Stripe Connect and Stripe Subscriptions with coupons.
 
-# Getting Started
+Sends order receipt emails automatically.
+
+Has Order History, My Purchases, My Sales and Admin screens.
+
+## Getting Started
 
 Add to your Gemfile:
 
@@ -28,7 +32,7 @@ rails generate effective_orders:install
 
 The generator will install an initializer which describes all configuration options and creates a database migration.
 
-If you want to tweak the table name (to use something other than the default 'orders', 'order_items', 'carts', 'cart_items', 'customers'), manually adjust both the configuration file and the migration now.
+If you want to tweak the table name (to use something other than the default 'orders', 'order_items', 'carts', 'cart_items', 'customers', 'subscriptions'), manually adjust both the configuration file and the migration now.
 
 Then migrate the database:
 
@@ -48,7 +52,7 @@ Require the stylesheet on the asset pipeline by adding the following to your app
 *= require effective_orders
 ```
 
-## Upgrading from 0.3.x
+### Upgrading from 0.3.x
 
 In the 0.3.x versions of this gem, prices were internally represented as Decimals
 
@@ -70,39 +74,37 @@ To upgrade, use this generator to create a migration on table `products` with co
 bundle exec rails generate effective_orders:upgrade_price_column products price
 ```
 
-# High Level Overview
+## High Level Overview
 
-Your rails app creates and displays a list of `acts_as_purchsable` objects, each with a `link_to_add_to_cart`.
+Your rails app creates and displays a list of `acts_as_purchsable` objects, each with a `link_to_add_to_cart(object)`.
 
 The user clicks one or more Add to Cart links and adds some purchasables to their cart.
 
-They then click the Checkout link from the My Cart page, or another `link_to_checkout` displayed somewhere, which takes them to `effective_orders.new_order_path`
+They then click the Checkout link from the My Cart page, or another `link_to_checkout` displayed somewhere, which takes them to `effective_orders.new_order_path` to begin checkout.
 
 The checkout is a 2-page process:
 
-The first page gives the user their final option to 'Change Items' and alter the order.
-
-If `require_billing_address` or `require_shipping_address` options are `true` in the `config/initializer/effective_orders.rb` initializer this first checkout page will collect the billing/shipping information.
+The first page collects billing/shipping details and gives the user their final option to 'Change Items'.
 
 After clicking 'Save and Continue', the user will be on the collect money page.
 
 If the payment processor is PayPal or Moneris, the user will be sent to their website to enter their credit card details.
 
-If the payment processor is Stripe, there is an in-screen popup form to collect those details.
+If the payment processor is Stripe, there is an on-screen popup form to collect those details.
 
-Once the user has successfully paid, they are returned to a thank you page displaying the order receipt.
+Once the user has successfully paid, they are redirected to a thank you page displaying the order receipt.
 
-An email notification containing the receipt is also sent to the buyer's email address, and the site admin (configurable).
+An email notification containing the receipt is also sent to the buyer's email address, and the site admin.
 
 
-# Usage
+## Usage
 
 effective_orders handles the add_to_cart -> checkout -> collect of payment workflow, but relies on the base application to define, create and display the purchaseable things.
 
 These purchasables could be Products, EventTickets, Memberships or anything else.
 
 
-## Representing Prices
+### Representing Prices
 
 All prices should be represented as Integers.  For us North Americans, think of it as the number of cents.
 
@@ -113,7 +115,7 @@ Similarly, to represent a value of `$0.50` the price method should return `50`.
 EffectiveOrders does not deal with a specific currency or do any currency conversions of any kind.
 
 
-## Creating a purchasable
+### Creating a purchasable
 
 Once installed, we still need to create something to purchase.
 
@@ -235,22 +237,12 @@ When the user clicks 'Add To My Shopping Cart' the product will be added to the 
 
 ### My Cart
 
-We still need to create a link to the Shopping Cart page so that the user can see his cart.  On your site's main menu:
-
-```ruby
-= link_to 'My Cart', effective_orders.carts_path
-```
-
-or
+We still need to create a link to the Shopping Cart page so that the user can view their cart.  On your site's main menu:
 
 ```ruby
 = link_to_current_cart()  # To display Cart (3) when there are 3 items
-```
-
-or
-
-```ruby
-= link_to_current_cart(:label => 'My Shopping Cart')  # To display My Shopping Cart (3) when there are 3 items
+= link_to_current_cart(:label => 'Shopping Cart', :class => 'btn btn-prmary')  # To display Shopping Cart (3) when there are 3 items
+= link_to 'My Cart', effective_orders.carts_path
 ```
 
 ### Checkout
@@ -258,16 +250,13 @@ or
 The checkout screen can be reached through the My Cart page, or linked to directly via
 
 ```ruby
+= link_to_checkout() # To display Proceed to Checkout
+= link_to_checkout(:label => 'Continue to Checkout', :class => 'btn btn-primary')
 = link_to 'Go Checkout Already', effective_orders.new_order_path
 ```
 
-or
-
-```ruby
-= link_to_checkout()
-```
-
 From here, the effective_orders engine takes over, walks the user through billing and shipping details screens, then finally collects payment through one of the configured payment processors.
+
 
 ## Acts As Purchasable
 
@@ -277,13 +266,13 @@ This mixin sets up the relationships and provides some validations on price and 
 
 ### Methods
 
-acts_as_purchasable provides the following handy methods:
+acts_as_purchasable provides the following methods:
 
 `.purchased?` has this been purchased by any user in any order?
 
 `.purchased_by?(user)` has this been purchased by the given user?
 
-`.purchased_orders` returns the orders in which the purchases have been made
+`.purchased_orders` returns the `Effective::Order`s in which the purchases have been made
 
 ### Scopes
 
@@ -301,9 +290,9 @@ acts_as_purchsable provides the following scopes:
 
 ### Digital Downloads
 
-If your product is a digital download, simply specify the URL to download.
+If your product is a digital download, simply create a method in your acts_as_purchasable rails model that returns the full URL to download.
 
-The download link will be displayed on all purchased order receipts.
+The download link will be displayed on all purchased order receipts and the Order History page.
 
 ```ruby
 def purchased_download_url
@@ -313,12 +302,12 @@ end
 
 Of course, there's no mechanism here to prevent someone from just copy&pasting this URL to a friend.
 
-If you're interested in this functionality, please check out `effective_assets` and the authenticated-read temporary URLs.
+If you're interested in that kind of restricted-download functionality, please check out [effective_assets](https://github.com/code-and-effect/effective_assets) and the authenticated-read temporary URLs.
 
 
 ### Tax
 
-All `acts_as_purchasable` objects will respond to `tax_exempt`.
+All `acts_as_purchasable` objects will respond to the boolean method `tax_exempt`.
 
 By default, `tax_exempt` is false, meaning that tax must be applied to this item.
 
@@ -344,7 +333,7 @@ class Product
 end
 ```
 
-# Authorization
+## Authorization
 
 All authorization checks are handled via the config.authorization_method found in the `config/initializers/effective_orders.rb` file.
 
@@ -397,7 +386,7 @@ rescue_from Effective::AccessDenied do |exception|
 end
 ```
 
-## Permissions
+### Permissions
 
 The permissions you actually want to define are as follows (using CanCan):
 
@@ -407,48 +396,153 @@ can [:manage], Effective::Order, :user_id => user.id # Orders cannot be deleted
 can [:manage], Effective::Subscription, :user_id => user.id
 ```
 
+## Whats Included
 
-## Carts
+This gem has a lot of screens, all of which are automatically available via the Rails Engine.
+
+Pretty much every screen also has a coresponding helper function that is used in rendering that content.
+
+The idea behind this implementation is that you, the developer, should be able to use effective_orders as a quick drop-in purchasing solution, with all screens and routes provided, but also have all the individual pieces available to customize the workflow.
+
+
+### Carts
 
 The standard website shopping cart paradigm.  Add one or more objects to the cart and purchase them all in one step.
 
-When a non-logged-in user comes to the website, a new `Effective::Cart` object is created and stored in the session variable.  This user can add items to the Shopping Cart as normal.
+When a non-logged-in user comes to the website, a new `Effective::Cart` object is created and stored in the session variable.  This user can add items to the Cart as normal.
 
-When user proceeds to Checkout, they will be required to login.
+Only when the user proceeds to Checkout will they be required to login.
 
-When that user logs in, the Cart will be assigned to that User ID and if they had a previous existing cart, the items will be merged.
+Upon log in, the session Cart will be assigned to that User's ID, and if the User had a previous existing cart, all CartItems will be merged.
 
-You shouldn't need to deal with the Cart at all, except to make a link from your Site Menu to the 'My Cart' page
 
-```ruby
-= link_to_current_cart()  # To display Cart (3) when there are 3 items
-```
 
-or
+You shouldn't need to deal with the Cart object at all, except to make a link from your Site Menu to the 'My Cart' page (as documented above).
 
-```ruby
-= link_to 'My Cart', effective_orders.carts_path
-```
-
-However, if you want to render a cart inline on some random page, or play with the object directly, you can.
+However, if you want to render a Cart on another page, or play with the Cart object directly, you totally can.
 
 Use the helper method `current_cart` to refer to the current `Effective::Cart`.
 
-And call `render_cart(current_cart)` to display the Cart on your very custom page.
+And call `render_cart(current_cart)` to display the Cart anywhere.
 
 
-## Orders
+### Orders
 
-TODO
+On the Checkout page (`effective_orders.new_order_path`) a new `Effective::Order` object is created and one or more `Effective::OrderItem`s are initialized based on the `current_cart`.
+
+If the configuration options `config.require_billing_address` and/or `config.require_shipping_address` options are `true` then the user will be prompted for the appropriate addresses, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
+
+As well, if the config option `config.collect_user_fields` is present, form fields to collect those user attributes will be present on this page.
+
+When the user submits the form on this screen, a POST to `effective_orders.order_path` is made, and the `Effective::Order` object is validated and created.
+
+On this final checkout screen, links to all configured payment providers are displayed, and the user may choose which payment processor should be used to make a payment.
+
+The payment processor handles collecting the Credit Card number, and through one way or another, the `Effective::Order` `@order.purchase!` method is called.
+
+Once the order has been marked purchased, the user is redirected to the `effective_orders.order_purchased_path` screen where they see a 'Thank You!' message, and the Order receipt.
+
+If the configuration option `config.mailer[:send_order_receipt_to_buyer] == true` the order receipt will be emailed to the user.
+
+As well, if the configuration option `config.mailer[:send_order_receipt_to_admin] == true` the order receipt will be emailed to the site admin.
+
+The Order has now been purchased.
+
+
+If you are using effective_orders to roll your own custom payment workflow, you should be aware of the following helpers:
+
+- `render_checkout(order)` to display the standard Checkout step inline.
+- `render_checkout(order, :purchased_redirect_url => '/', :declined_redirect_url => '/')` to display the Checkout step with custom redirect paths.
+
+- `render_purchasables(one_or_more_acts_as_purchasable_objects)` to display a list of purchasable items
+
+- `render_order(order)` to display the full Order receipt
+- `order_summary(order)` to display some quick details of an Order and its OrderItems.
+- `order_payment_to_html(order)` to display the payment processor details for an order's payment transaction.
+
+
+### Effective::Order Model
+
+There may be times where you want to deal with the `Effective::Order` object directly.
+
+The `acts_as_purchasable` `.purchased?` and `.purchased_by?(user)` methods only return true when a purchased `Effective::Order` exists for that object.
+
+To programatically purchase one or more `acts_as_purchasable` objects:
+
+```ruby
+Effective::Order.new([@product1, @product2], current_user).purchase!('from my rake task')
+```
+
+Here the `billing_address` and `shipping_address` are copied from the `current_user` object if the `current_user` responds_to `billing_address` / `shipping_address` as per [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
+
+Here's another example of programatically purchasing some `acts_as_purchasable` objects:
+
+```ruby
+order = Effective::Order.new()
+order.user = @user
+order.billing_address = Effective::Address.new(...)
+order.shipping_address = Effective::Address.new(...)
+order.add(@product1)
+order.add(@product2)
+order.purchase!(:some => {:complicated => 'details', :in => 'a hash'})
+```
+
+The one gotcha with the above two scenarios, is that when `purchase!` is called, the `Effective::Order` in question will run through its validations.  These validations include:
+
+- `validates_presence_of :billing_address` when configured to be required
+- `validates_presence_of :shipping_address` when configured to be required
+- `validates :user` which can be disabled via config initializer
+
+- `validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge` where minimum_charge is the configured value, once again from the initializer
+- `validates_presence_of :order_items` the Order must have at least one OrderItem
+
+You can skip validations with the following command, but be careful as this skips all validations:
+
+```ruby
+Effective::Order.new(@product, @user).purchase!('with no validations', :validate => false)
+```
+
+The `@product` is now considered purchased.
 
 
 
-## Helpers
+To check an Order's purchase state, you can call `@order.purchased?`
 
-TODO
+There also exist the scopes: `Effective::Order.purchased`, `Effective::Order.purchased_by(user)` which return a chainable relation of all purchased `Effective::Order` objects.
 
 
-## Admin Screen
+### My Purchases / Order History
+
+This screen displays all past purchases made by the current user.  You can add it to your site's main menu or User profile area:
+
+```ruby
+= link_to_my_purchases()  # To display My Purchases
+= link_to_my_purchases(:label => Order History', :class => 'btn btn-primary')
+= link_to 'My Order History', effective_orders.my_purchases_path
+```
+
+or render it inline on an existing page with `render_order_history(user_or_orders)`
+
+If a user is passed, a call to `Effective::Order.purchased_by(user)` will be made to assign all purchased orders.
+
+Totally optional, but another way of displaying the Order History is to use the included datatable, based on [effective_datatables](https://github.com/code-and-effect/effective_datatables/)
+
+In your controller:
+
+```ruby
+@datatable = Effective::Datatables::Orders.new(:user_id => @user.id)
+```
+
+and then in the view:
+
+```ruby
+render_datatable @datatable
+```
+
+Please refer to effective_datatables for more information about that gem.
+
+
+### Admin Screen
 
 To use the Admin screen, please also install the effective_datatables gem:
 
@@ -462,18 +556,29 @@ Then you should be able to visit:
 link_to 'Orders', effective_orders.admin_orders_path   # /admin/orders
 ```
 
+or to create your own Datatable of all Orders, in your controller:
 
-## Using Ngrok to test in Development
+```ruby
+@datatable = Effective::Datatables::Orders.new()
+```
 
-Used to use localtunnel, but it looks like its down.  Try ngrok instead.
+and then in the view:
 
-https://ngrok.com/
+```ruby
+render_datatable @datatable
+```
 
-## PayPal
 
-TODO
+## Testing in Development
 
-## Moneris
+Every payment processor seems to have its own development sandbox which allow you to make test purchases in development mode.
+
+You will need an external IP address to work with these sandboxes.
+
+I use `https://ngrok.com/` for this ability.
+
+
+## Paying via Moneris
 
 Use the following instructions to set up a Moneris TEST store.
 
@@ -620,7 +725,7 @@ This is what the moneris order_nudge configuration setting is used for.
 You can set this to 1000 to start the IDs at 1+1000 instead of 1.
 
 
-## Stripe
+## Paying via Stripe
 
 First register for an account with Stripe
 
@@ -674,6 +779,7 @@ config.stripe = {
 }
 ```
 
+
 ### Stripe Subscriptions
 
 Subscriptions and Stripe Connect do not currently work together.
@@ -681,6 +787,11 @@ Subscriptions and Stripe Connect do not currently work together.
 Register an additional Webhook, to accept Stripe subscription creation events from Stripe
 
 root_url/webhooks/stripe
+
+
+### PayPal
+
+TODO
 
 
 ## License
@@ -700,7 +811,7 @@ guard
 ```
 
 
-# Contributing
+## Contributing
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
