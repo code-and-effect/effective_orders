@@ -15,7 +15,7 @@ Has Order History, My Purchases, My Sales and Admin screens.
 Add to your Gemfile:
 
 ```ruby
-gem 'effective_orders', :git => 'https://github.com/code-and-effect/effective_orders'
+gem 'effective_orders'
 ```
 
 Run the bundle command to install it:
@@ -261,7 +261,17 @@ The checkout screen can be reached through the My Cart page, or linked to direct
 
 ```ruby
 = link_to_checkout() # To display Proceed to Checkout
+```
+
+or
+
+```ruby
 = link_to_checkout(:label => 'Continue to Checkout', :class => 'btn btn-primary')
+```
+
+or
+
+```ruby
 = link_to 'Go Checkout Already', effective_orders.new_order_path
 ```
 
@@ -570,7 +580,7 @@ Please refer to [effective_datatables](https://github.com/code-and-effect/effect
 To use the Admin screen, please also install the effective_datatables gem:
 
 ```ruby
-gem 'effective_datatables', :git => 'https://github.com/code-and-effect/effective_datatables.git'
+gem 'effective_datatables'
 ```
 
 Then you should be able to visit:
@@ -823,6 +833,7 @@ MIT License.  Copyright Code and Effect Inc. http://www.codeandeffect.com
 
 You are not granted rights or licenses to the trademarks of Code and Effect
 
+
 ## Testing
 
 The test suite for this gem is mostly complete.
@@ -840,5 +851,6 @@ guard
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+5. Bonus points for test coverage
+6. Create new Pull Request
 

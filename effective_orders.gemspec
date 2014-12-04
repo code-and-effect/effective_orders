@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Code and Effect"]
   s.email       = ["info@codeandeffect.com"]
   s.homepage    = "https://github.com/code-and-effect/effective_orders"
-  s.summary     = "Effectively manage the Cart -> Order process in an application."
-  s.description = "A full solution for managing orders with ActiveAdmin integration"
+  s.summary     = "Quickly build an online store with carts, orders, automatic email receipts and payment collection via Stripe, StripeConnect, PayPal and Moneris."
+  s.description = "Quickly build an online store with carts, orders, automatic email receipts and payment collection via Stripe, StripeConnect, PayPal and Moneris."
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["spec/**/*"]
