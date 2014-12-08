@@ -12,27 +12,28 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/code-and-effect/effective_orders"
   s.summary     = "Quickly build an online store with carts, orders, automatic email receipts and payment collection via Stripe, StripeConnect, PayPal and Moneris."
   s.description = "Quickly build an online store with carts, orders, automatic email receipts and payment collection via Stripe, StripeConnect, PayPal and Moneris."
+  s.licenses    = ['MIT']
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["spec/**/*"]
 
-  s.add_dependency "rails"
+  s.add_dependency "rails", [">= 3.2.0"]
   s.add_dependency "coffee-rails"
   s.add_dependency "devise"
   s.add_dependency "haml"
   s.add_dependency "migrant"
   s.add_dependency "simple_form"
-  s.add_dependency "effective_addresses"
-  s.add_dependency "effective_obfuscation"
+  s.add_dependency "effective_addresses", [">= 1.0.0"]
+  s.add_dependency "effective_obfuscation", [">= 1.0.0"]
   s.add_dependency "stripe"
 
   s.add_development_dependency "stripe-ruby-mock"
-  s.add_development_dependency "factory_girl_rails"
-  s.add_development_dependency "rspec-rails"
-  s.add_development_dependency "shoulda-matchers"
-  s.add_development_dependency "sqlite3"
+  # s.add_development_dependency "factory_girl_rails"
+  # s.add_development_dependency "rspec-rails"
+  # s.add_development_dependency "shoulda-matchers"
+  # s.add_development_dependency "sqlite3"
 
-  s.add_development_dependency "guard"
-  s.add_development_dependency "guard-rspec"
-  s.add_development_dependency "guard-livereload"
+  # s.add_development_dependency "guard"
+  # s.add_development_dependency "guard-rspec"
+  # s.add_development_dependency "guard-livereload"
 end
