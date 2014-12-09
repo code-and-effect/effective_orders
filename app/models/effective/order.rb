@@ -3,7 +3,7 @@ module Effective
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
     if EffectiveOrders.obfuscate_order_ids
-      acts_as_obfuscated
+      acts_as_obfuscated :format => '###-####-###'
     end
 
     acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
