@@ -31,11 +31,9 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/my_sales', :to => 'orders#my_sales', :as => 'my_sales', :via => :get
     end
 
-    unless Rails.env.production?
+    if Rails.env.development? || EffectiveOrders.allow_pretend_purchase_in_production
       match 'orders/:id/pretend_purchase', :to => 'orders#pretend_purchase', :as => 'pretend_purchase', :via => [:get, :post]
-      match 'orders/:id/pretend_decline', :to => 'orders#pretend_decline', :as => 'pretend_decline', :via => [:get, :post]
     end
-
 
     # This must be below the other routes defined above.
     resources :orders, :only => [:new, :create, :show, :index]

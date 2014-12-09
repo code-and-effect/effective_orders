@@ -23,6 +23,9 @@ module EffectiveOrders
   mattr_accessor :obfuscate_order_ids
   mattr_accessor :silence_deprecation_warnings
 
+  mattr_accessor :allow_pretend_purchase_in_production
+  mattr_accessor :allow_pretend_purchase_in_production_message
+
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
 

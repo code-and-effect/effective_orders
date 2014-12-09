@@ -126,20 +126,11 @@ module Effective
       end
     end
 
-
     def pretend_purchase
-      unless Rails.env.production?
+      if Rails.env.development? || EffectiveOrders.allow_pretend_purchase_in_production
         @order = Order.find(params[:id])
         EffectiveOrders.authorized?(self, :update, @order)
         order_purchased('for pretend', params[:purchased_redirect_url], params[:declined_redirect_url])
-      end
-    end
-
-    def pretend_decline
-      unless Rails.env.production?
-        @order = Order.find(params[:id])
-        EffectiveOrders.authorized?(self, :update, @order)
-        order_declined('for pretend', params[:declined_redirect_url])
       end
     end
 

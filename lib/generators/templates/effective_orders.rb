@@ -67,6 +67,20 @@ EffectiveOrders.setup do |config|
   # and just display the 'Thank You' after checkout is clicked
   config.allow_free_orders = true
 
+  # Allow Pretend Purchase in Production
+  # WARNING: Setting this option to true will allow users to purchase! an Order without entering a credit card
+  # WARNING: When true, users can purchase! anything without paying money
+  #
+  # This should basically always be false, but sometimes you want to make a Beta/Demo site
+  # where users may test the purchase workflow without actually paying money
+  #
+  # When true, there will be a 'Process Order' button on the Checkout screen.
+  # Clicking this button will mark an Order purchased and redirect the user to the
+  # Thank You page just as if they had successfully Checked Out through a payment processor
+  config.allow_pretend_purchase_in_production = false
+  config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
+
+
   # Layout Settings
   # Configure the Layout per controller, or all at once
 
