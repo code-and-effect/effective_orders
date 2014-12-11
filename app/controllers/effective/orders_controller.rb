@@ -50,7 +50,7 @@ module Effective
 
           @order.save!
 
-          if @order.total < 0.01 && @order.total >= 0.00 && EffectiveOrders.allow_free_orders
+          if @order.total == 0 && EffectiveOrders.allow_free_orders
             order_purchased('zero-dollar order')
           else
             redirect_to(effective_orders.order_path(@order))

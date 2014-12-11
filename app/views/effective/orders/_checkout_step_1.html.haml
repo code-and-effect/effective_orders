@@ -1,6 +1,6 @@
 .effective-order
   = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(:url => effective_orders.orders_path)) do |f|
-    = render :partial => 'order_items', :locals => {:order => order, :form => f}
+    = render :partial => 'effective/orders/order_items', :locals => {:order => order, :form => f}
 
     - if order.errors[:order_items].present?
       %p.inline-errors= order.errors[:order_items].first
@@ -36,4 +36,8 @@
 
     %hr
     = link_to_current_cart :label => 'Change Items', :class => 'btn btn-default'
-    = f.submit 'Continue to Checkout Confirmation', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'
+
+    - if order.total == 0 && EffectiveOrders.allow_free_orders
+      = f.submit 'Checkout', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'
+    - else
+      = f.submit 'Continue to Checkout Confirmation', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'

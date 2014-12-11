@@ -67,10 +67,9 @@ module EffectiveOrdersHelper
       :declined_redirect_url => nil
     }.merge(opts)
 
-    if order.new_record?
+    if order.new_record? || !order.valid?
       render(:partial => 'effective/orders/checkout_step_1', :locals => locals.merge({:order => order}))
     else
-      raise ArgumentError.new('unable to checkout a persisted but invalid order') unless order.valid?
       render(:partial => 'effective/orders/checkout_step_2', :locals => locals.merge({:order => order}))
     end
   end
