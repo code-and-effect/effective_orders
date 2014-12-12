@@ -7,10 +7,10 @@
   %tbody
     %tr
       %td
-        - if order.user.to_s != order.user.email
-          = "#{order.user.to_s} (#{mail_to order.user.email})".html_safe
-        - else
-          = mail_to order.user.email
+        - if order.user.to_s.start_with?('#<User:') == false && EffectiveAddresses.use_full_name == false
+          = order.user.to_s
+          %br
+        = mail_to order.user.email
         %br
         - if order.billing_address.present?
           = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address}
