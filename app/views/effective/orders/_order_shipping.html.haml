@@ -1,19 +1,22 @@
-%table.table
+%table.table{:style => 'width: 600px;margin-bottom:25px;'}
   %thead
     %tr
-      %th= "#{order.purchased? ? 'Sold To' : 'Bill To'}"
+      %th{:style => 'text-align: left;'}= "#{order.purchased? ? 'Sold to' : 'Bill to'}"
       - if EffectiveOrders.require_shipping_address && order.shipping_address.present?
-        %th Ship To
+        %th{:style => 'text-align: left;'} Ship to
+
   %tbody
     %tr
-      %td
+      %td{:style => 'text-align: left;'}
         - if order.user.to_s.start_with?('#<User:') == false && EffectiveAddresses.use_full_name == false
           = order.user.to_s
           %br
         = mail_to order.user.email
-        %br
+
         - if order.billing_address.present?
+          %br
           = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address}
+
       - if EffectiveOrders.require_shipping_address && order.shipping_address.present?
-        %td
+        %td{:style => 'text-align: left;'}
           = render :partial => 'effective/addresses/address', :locals => {:address => order.shipping_address}
