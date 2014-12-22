@@ -8,8 +8,8 @@
   %tbody
     %tr
       %td{:style => 'text-align: left;'}
-        - if order.user.to_s.start_with?('#<User:') == false && EffectiveAddresses.use_full_name == false
-          = order.user.to_s
+        - if order.billing_name.present? && EffectiveAddresses.use_full_name == false
+          = order.billing_name
           %br
         = mail_to order.user.email
 
