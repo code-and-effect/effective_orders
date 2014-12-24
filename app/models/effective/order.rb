@@ -162,10 +162,12 @@ module Effective
         billing_address.full_name
       elsif user.to_s.start_with?('#<User:') == false
         user.to_s
-      elsif user.respond_to?(:first_name) && user.respond_to?(:last_name)
-        user.first_name.to_s + ' ' + user.last_name.to_s
       elsif user.respond_to?(:full_name)
         user.full_name.to_s
+      elsif user.respond_to?(:first_name) && user.respond_to?(:last_name)
+        user.first_name.to_s + ' ' + user.last_name.to_s
+      else
+        ''
       end
     end
 
