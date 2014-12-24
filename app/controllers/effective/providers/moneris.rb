@@ -8,7 +8,11 @@ module Effective
       end
 
       def moneris_postback
-        @order ||= Effective::Order.find(params[:response_order_id].to_i - EffectiveOrders.moneris[:order_nudge].to_i)
+        response_order_id = (EffectiveOrders.obfuscate_order_ids == true ? Effective::Order.deobfuscate(params[:response_order_id]).to_i : params[:response_order_id].to_i)
+        response_order_id = response_order_id - EffectiveOrders.moneris[:order_nudge].to_i
+
+        @order ||= Effective::Order.find_by_id(response_order_id)
+        raise ActiveRecord::RecordNotFound unless @order
 
         EffectiveOrders.authorized?(self, :update, @order)
 
