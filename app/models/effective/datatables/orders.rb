@@ -2,24 +2,26 @@ if defined?(EffectiveDatatables)
   module Effective
     module Datatables
       class Orders < Effective::Datatable
+        default_order :purchased_at, :desc
+
         table_column :id do |order|
           order.to_param
         end
 
-        array_column :email, :label => 'Buyer', :if => Proc.new { attributes[:user_id].blank? } do |order|
-          link_to order.user.email, (edit_admin_user_path(order.user) rescue admin_user_path(order.user) rescue '#')
+        table_column :email, :column => 'users.email', :label => 'Buyer', :if => Proc.new { attributes[:user_id].blank? } do |order|
+          link_to order[:email], (edit_admin_user_path(order.user_id) rescue admin_user_path(order.user_id) rescue '#')
         end
 
-        array_column :order_items do |order|
+        table_column :order_items, :sortable => false, :column => 'order_items.title' do |order|
           content_tag(:ul) do
-            order.order_items.map { |oi| content_tag(:li, oi.title) }.join().html_safe
+            order[:order_items].split('!!OI!!').map { |oi| content_tag(:li, oi) }.join().html_safe
           end
         end
 
         table_column :purchased_at
 
-        array_column :total do |order|
-          price_to_currency(order.total)
+        table_column :total do |order|
+          price_to_currency(order[:total].to_i)
         end
 
         table_column :actions, :sortable => false, :filter => false do |order|
@@ -32,16 +34,31 @@ if defined?(EffectiveDatatables)
         end
 
         def collection
+          collection = Effective::Order.unscoped.purchased
+            .joins(:user)
+            .joins(:order_items)
+            .group('users.email')
+            .group('orders.id')
+            .select('users.email AS email')
+            .select('orders.*')
+            .select("#{query_total} AS total")
+            .select("string_agg(order_items.title, '!!OI!!') AS order_items")
+
           if attributes[:user_id].present?
-            Effective::Order.purchased.where(:user_id => attributes[:user_id]).includes(:user).includes(:order_items)
+            collection.where(:user_id => attributes[:user_id])
           else
-            Effective::Order.purchased.includes(:user).includes(:order_items)
+            collection
           end
+
+        end
+
+        def query_total
+          "SUM((order_items.price * order_items.quantity) + (CASE order_items.tax_exempt WHEN true THEN 0 ELSE ((order_items.price * order_items.quantity) * order_items.tax_rate) END))"
         end
 
         def search_column(collection, table_column, search_term)
-          if table_column[:name] == 'id'
-            collection.where(:id => search_term)
+          if table_column[:name] == 'total'
+            collection.having("#{query_total} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
           else
             super
           end
