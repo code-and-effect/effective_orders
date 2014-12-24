@@ -33,7 +33,7 @@ module Effective
     end
 
     def tax  # This is the total tax, for 3 items if quantity is 3
-      tax_exempt ? 0 : (subtotal * tax_rate).ceil
+      tax_exempt ? 0 : (subtotal * tax_rate).round(0).to_i
     end
 
     def total
@@ -46,7 +46,7 @@ module Effective
       elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
         super
       else # Could be Float, BigDecimal, or String like 9.99
-        ActiveSupport::Deprecation.warn('order_item.price= was passed a non-integer. Expecting an Integer representing the number of cents.  Continuing with (price * 100.0).floor conversion') unless EffectiveOrders.silence_deprecation_warnings
+        ActiveSupport::Deprecation.warn('order_item.price= was passed a non-integer. Expecting an Integer representing the number of cents.  Continuing with (price * 100.0).round(0).to_i conversion') unless EffectiveOrders.silence_deprecation_warnings
         super((value.to_f * 100.0).to_i)
       end
     end

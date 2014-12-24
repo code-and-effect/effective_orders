@@ -81,7 +81,7 @@ describe Effective::Subscription do
       subscription.stripe_plan_id = plan.id
       subscription.stripe_coupon_id = coupon.id
 
-      subscription.price.should eq (plan.amount * (coupon.percent_off.to_i / 100.0)).floor
+      subscription.price.should eq (plan.amount * (coupon.percent_off.to_i / 100.0)).round(0).to_i
       subscription.title.include?('25% off').should eq true
     end
 

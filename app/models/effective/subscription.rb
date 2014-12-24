@@ -85,7 +85,7 @@ module Effective
 
     def price_with_coupon(amount, coupon)
       if coupon.percent_off.present?
-        (amount * (coupon.percent_off.to_i / 100.0)).floor
+        (amount * (coupon.percent_off.to_i / 100.0)).round(0).to_i
       else
         [0, amount - coupon.amount_off].max
       end

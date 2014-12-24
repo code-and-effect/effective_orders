@@ -66,8 +66,8 @@ module EffectiveOrders
     if @@minimum_charge.nil? || @@minimum_charge.kind_of?(Integer)
       @@minimum_charge
     else
-      ActiveSupport::Deprecation.warn('EffectiveOrders.minimum_charge config option is a non-integer. It should be an Integer representing the number of cents.  Continuing with (price * 100.0).floor conversion') unless EffectiveOrders.silence_deprecation_warnings
-      ((@@minimum_charge * 100.0).floor rescue nil)
+      ActiveSupport::Deprecation.warn('EffectiveOrders.minimum_charge config option is a non-integer. It should be an Integer representing the number of cents.  Continuing with (price * 100.0).round(0).to_i conversion') unless EffectiveOrders.silence_deprecation_warnings
+      ((@@minimum_charge * 100.0).round(0).to_i rescue nil)
     end
   end
 
