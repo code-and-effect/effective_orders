@@ -8,14 +8,13 @@
   %tbody
     %tr
       %td{:style => 'text-align: left;'}
-        - if order.billing_address.try(:full_name).present? == false
+        - if EffectiveOrders.require_billing_address && order.billing_address.present?
+          = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address, :email => order.user.email}
+        - else
           = order.billing_name
           %br
           = mail_to(order.user.email)
           %br
-
-        - if order.billing_address.present?
-          = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address, :email => (order.user.email if order.billing_address.try(:full_name).present?)}
 
       - if EffectiveOrders.require_shipping_address && order.shipping_address.present?
         %td{:style => 'text-align: left;'}

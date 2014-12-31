@@ -6,7 +6,7 @@ module Effective
       acts_as_obfuscated :format => '###-####-###'
     end
 
-    acts_as_addressable :billing => EffectiveOrders.require_billing_address, :shipping => EffectiveOrders.require_shipping_address
+    acts_as_addressable :billing => {:presence => EffectiveOrders.require_billing_address, :use_full_name => true}, :shipping => {:presence => EffectiveOrders.require_shipping_address, :use_full_name => true}
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
 
     belongs_to :user  # This is the user who purchased the order
@@ -96,8 +96,15 @@ module Effective
     def user=(user)
       super
 
-      self.billing_address = user.billing_address if user.respond_to?(:billing_address)
-      self.shipping_address = user.shipping_address if user.respond_to?(:shipping_address)
+      if user.respond_to?(:billing_address) && EffectiveOrders.require_billing_address
+        self.billing_address = user.billing_address
+        self.billing_address.full_name = billing_name if self.billing_address.full_name.blank?
+      end
+
+      if user.respond_to?(:shipping_address) && EffectiveOrders.require_shipping_address
+        self.shipping_address = user.shipping_address
+        self.shipping_address.full_name = billing_name if self.shipping_address.full_name.blank?
+      end
     end
 
     # This is used for updating Subscription codes.
@@ -160,12 +167,12 @@ module Effective
     def billing_name
       if billing_address.try(:full_name).present?
         billing_address.full_name
-      elsif user.to_s.start_with?('#<User:') == false
-        user.to_s
       elsif user.respond_to?(:full_name)
         user.full_name.to_s
       elsif user.respond_to?(:first_name) && user.respond_to?(:last_name)
         user.first_name.to_s + ' ' + user.last_name.to_s
+      elsif user.to_s.start_with?('#<User:') == false
+        user.to_s
       else
         ''
       end
