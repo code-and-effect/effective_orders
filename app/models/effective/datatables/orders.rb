@@ -4,9 +4,7 @@ if defined?(EffectiveDatatables)
       class Orders < Effective::Datatable
         default_order :purchased_at, :desc
 
-        table_column :id do |order|
-          order.to_param
-        end
+        table_column :id
 
         table_column :email, :column => 'users.email', :label => 'Buyer', :if => Proc.new { attributes[:user_id].blank? } do |order|
           link_to order[:email], (edit_admin_user_path(order.user_id) rescue admin_user_path(order.user_id) rescue '#')
