@@ -24,7 +24,7 @@ if defined?(EffectiveDatatables)
 
         table_column :purchased_at
 
-        table_column :purchase_state, :visible => false, :filter => {:type => :select, :values => [['abandoned', 'abandoned'], [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], :selected => EffectiveOrders::PURCHASED, :when_hidden => true} do |order|
+        table_column :purchase_state, :filter => {:type => :select, :values => [['abandoned', 'abandoned'], [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], :selected => EffectiveOrders::PURCHASED} do |order|
           order.purchase_state || 'abandoned'
         end
 
