@@ -657,16 +657,14 @@ Copy these two values into the appropriate lines of config/effective_orders.rb i
       :ps_store_id => '',
       :hpp_key => '',
       :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php',
-      :order_nudge => 0
+      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php'
     }
   else
     config.moneris = {
       :ps_store_id => 'VZ9BNtore1',
       :hpp_key => 'hp1Y5J35GVDM',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php',
-      :order_nudge => 0
+      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
   end
 ```
@@ -752,10 +750,6 @@ https://www.google.ca/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CB8QFjAA&url
 2. Moneris will not process a duplicate order ID
 
 Once Order id=1 has been purchased/declined, you will be unable to purchase an order with id=1 ever again.
-
-This is what the moneris order_nudge configuration setting is used for.
-
-You can set this to 1000 to start the IDs at 1+1000 instead of 1.
 
 
 ## Paying via Stripe

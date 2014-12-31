@@ -8,16 +8,9 @@ module Effective
       end
 
       def moneris_postback
-        response_order_id = (EffectiveOrders.obfuscate_order_ids == true ? Effective::Order.deobfuscate(params[:response_order_id]).to_i : params[:response_order_id].to_i)
-        response_order_id = response_order_id - EffectiveOrders.moneris[:order_nudge].to_i
-
-        @order ||= Effective::Order.find_by_id(response_order_id)
-        raise ActiveRecord::RecordNotFound unless @order
+        @order ||= Effective::Order.find(params[:response_order_id])
 
         EffectiveOrders.authorized?(self, :update, @order)
-
-        # Store the Order Nudge if present, so we can have this information in our order_purchased hash
-        params[:order_nudge] = EffectiveOrders.moneris[:order_nudge] if EffectiveOrders.moneris[:order_nudge].to_i > 0
 
         # Delete the Purchased and Declined Redirect URLs
         purchased_redirect_url = params.delete(:rvar_purchased_redirect_url)

@@ -142,18 +142,14 @@ EffectiveOrders.setup do |config|
       :ps_store_id => '',
       :hpp_key => '',
       :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php',
-      :order_nudge => 0,
-      :include_billing_name_in_order_id => false
+      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php'
     }
   else
     config.moneris = {
       :ps_store_id => '',
       :hpp_key => '',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php',
-      :order_nudge => 0,
-      :include_billing_name_in_order_id => false
+      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
   end
 

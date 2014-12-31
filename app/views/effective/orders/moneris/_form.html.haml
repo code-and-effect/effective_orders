@@ -13,11 +13,7 @@
   = hidden_field_tag(:email, order.user.try(:email))
   = hidden_field_tag(:cust_id, order.user.to_param)
 
-  - moneris_order_id = "#{order.to_param.gsub(/[^0-9]/, '').to_i + EffectiveOrders.moneris[:order_nudge].to_i}"
-  - if EffectiveOrders.moneris[:include_billing_name_in_order_id] == true
-    - moneris_order_id = moneris_order_id + '-' + order.billing_name.parameterize
-
-  = hidden_field_tag(:order_id, moneris_order_id)
+  = hidden_field_tag(:order_id, [order.to_param, order.billing_name.try(:parameterize).presence].compact.join('-'))
   = hidden_field_tag(:gst, '%.2f' % (order.tax / 100.0))
   = hidden_field_tag(:charge_total, '%.2f' % (order.total / 100.0))
 
@@ -30,6 +26,8 @@
 
   - if order.billing_address.present?
     - address = order.billing_address
+    = hidden_field_tag(:bill_first_name, address.first_name)
+    = hidden_field_tag(:bill_last_name, address.last_name)
     = hidden_field_tag(:bill_address_one, address.address1)
     = hidden_field_tag(:bill_city, address.city)
     = hidden_field_tag(:bill_state_or_province, address.state)

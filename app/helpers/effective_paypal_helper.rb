@@ -18,7 +18,7 @@ module EffectivePaypalHelper
       :notify_url => effective_orders.paypal_postback_url,
       :cert_id => EffectiveOrders.paypal[:cert_id],
       :currency_code => EffectiveOrders.paypal[:currency],
-      :invoice => order.id + EffectiveOrders.paypal[:order_id_nudge].to_i,
+      :invoice => order.id,
       :amount => (order.subtotal / 100.0).round(2),
       :tax_cart => (order.tax / 100.0).round(2)
     }
