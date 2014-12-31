@@ -6,17 +6,27 @@ if defined?(EffectiveDatatables)
 
         table_column :id
 
-        table_column :email, :column => 'users.email', :label => 'Buyer', :if => Proc.new { attributes[:user_id].blank? } do |order|
+        table_column :email, :column => 'users.email', :label => 'Buyer Email', :if => Proc.new { attributes[:user_id].blank? } do |order|
           link_to order[:email], (edit_admin_user_path(order.user_id) rescue admin_user_path(order.user_id) rescue '#')
+        end
+
+        if EffectiveOrders.require_billing_address
+          table_column :full_name, :sortable => false, :label => 'Buyer Name', :if => Proc.new { attributes[:user_id].blank? } do |order|
+            (order[:full_name] || '').split('!!SEP!!').find { |name| name.present? }
+          end
         end
 
         table_column :order_items, :sortable => false, :column => 'order_items.title' do |order|
           content_tag(:ul) do
-            order[:order_items].split('!!OI!!').map { |oi| content_tag(:li, oi) }.join().html_safe
+            (order[:order_items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi) }.join().html_safe
           end
         end
 
         table_column :purchased_at
+
+        table_column :purchase_state, :visible => false, :filter => {:type => :select, :values => [['abandoned', 'abandoned'], [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], :selected => EffectiveOrders::PURCHASED, :when_hidden => true} do |order|
+          order.purchase_state || 'abandoned'
+        end
 
         table_column :total do |order|
           price_to_currency(order[:total].to_i)
@@ -32,7 +42,7 @@ if defined?(EffectiveDatatables)
         end
 
         def collection
-          collection = Effective::Order.unscoped.purchased
+          collection = Effective::Order.unscoped
             .joins(:user)
             .joins(:order_items)
             .group('users.email')
@@ -40,7 +50,14 @@ if defined?(EffectiveDatatables)
             .select('users.email AS email')
             .select('orders.*')
             .select("#{query_total} AS total")
-            .select("string_agg(order_items.title, '!!OI!!') AS order_items")
+            .select("string_agg(order_items.title, '!!SEP!!') AS order_items")
+
+          if EffectiveOrders.require_billing_address
+            collection = collection
+              .joins("LEFT OUTER JOIN addresses ON addresses.addressable_id = orders.id AND addresses.addressable_type = 'Effective::Order'")
+              .select("string_agg(addresses.full_name, '!!SEP!!') AS full_name")
+              .where("addresses IS NULL OR addresses.category = 'billing'")
+          end
 
           if attributes[:user_id].present?
             collection.where(:user_id => attributes[:user_id])
@@ -57,6 +74,8 @@ if defined?(EffectiveDatatables)
         def search_column(collection, table_column, search_term)
           if table_column[:name] == 'total'
             collection.having("#{query_total} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
+          elsif table_column[:name] == 'purchase_state' && search_term == 'abandoned'
+            collection.where(:purchase_state => nil)
           else
             super
           end

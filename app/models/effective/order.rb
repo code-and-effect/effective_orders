@@ -98,12 +98,12 @@ module Effective
 
       if user.respond_to?(:billing_address) && EffectiveOrders.require_billing_address
         self.billing_address = user.billing_address
-        self.billing_address.full_name = billing_name if self.billing_address.full_name.blank?
+        self.billing_address.full_name = billing_name if self.billing_address.present? && self.billing_address.full_name.blank?
       end
 
       if user.respond_to?(:shipping_address) && EffectiveOrders.require_shipping_address
         self.shipping_address = user.shipping_address
-        self.shipping_address.full_name = billing_name if self.shipping_address.full_name.blank?
+        self.shipping_address.full_name = billing_name if self.shipping_address.present? && self.shipping_address.full_name.blank?
       end
     end
 
