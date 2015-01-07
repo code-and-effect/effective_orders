@@ -11,8 +11,8 @@ if defined?(EffectiveDatatables)
         end
 
         if EffectiveOrders.require_billing_address
-          table_column :full_name, :sortable => false, :label => 'Buyer Name', :if => Proc.new { attributes[:user_id].blank? } do |order|
-            (order[:full_name] || '').split('!!SEP!!').find { |name| name.present? }
+          table_column :buyer_name, :sortable => false, :label => 'Buyer Name', :if => Proc.new { attributes[:user_id].blank? } do |order|
+            (order[:buyer_name] || '').split('!!SEP!!').find { |name| name.present? }
           end
         end
 
@@ -33,12 +33,7 @@ if defined?(EffectiveDatatables)
         end
 
         table_column :actions, :sortable => false, :filter => false do |order|
-          content_tag(:span, :style => 'white-space: nowrap;') do
-            [
-              link_to('View', (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order))),
-              (link_to('Resend Receipt', effective_orders.resend_buyer_receipt_path(order), {'data-confirm' => 'This action will resend a copy of the original email receipt.  Send receipt now?'}) if order.try(:purchased?))
-            ].compact.join(' - ').html_safe
-          end
+          link_to('View', (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)))
         end
 
         def collection
@@ -52,11 +47,13 @@ if defined?(EffectiveDatatables)
             .select("#{query_total} AS total")
             .select("string_agg(order_items.title, '!!SEP!!') AS order_items")
 
-          if EffectiveOrders.require_billing_address
+          if EffectiveOrders.require_billing_address && defined?(EffectiveAddresses)
+            tblAddresses = EffectiveAddresses.addresses_table_name
+
             collection = collection
-              .joins("LEFT OUTER JOIN addresses ON addresses.addressable_id = orders.id AND addresses.addressable_type = 'Effective::Order'")
-              .select("string_agg(addresses.full_name, '!!SEP!!') AS full_name")
-              .where("addresses IS NULL OR addresses.category = 'billing'")
+              .joins("LEFT JOIN (SELECT addressable_id, string_agg(#{tblAddresses}.full_name, '!!SEP!!') AS buyer_name FROM #{tblAddresses} WHERE #{tblAddresses}.category = 'billing' AND #{tblAddresses}.addressable_type = 'Effective::Order' GROUP BY #{tblAddresses}.addressable_id) #{tblAddresses} ON orders.id = #{tblAddresses}.addressable_id")
+              .group("#{tblAddresses}.buyer_name")
+              .select("#{tblAddresses}.buyer_name AS buyer_name")
           end
 
           if attributes[:user_id].present?
