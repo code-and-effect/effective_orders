@@ -5,7 +5,8 @@
 
   %hr
   = link_to 'Home', root_url, :class => 'btn btn-primary'
-  = link_to 'Order History', effective_orders.my_purchases_path, :class => 'btn btn-default'
+  - if EffectiveOrders.show_order_history_button
+    = link_to 'Order History', effective_orders.my_purchases_path, class: 'btn btn-default'
 
 - else
   %p Your cart has #{@cart.cart_items.length} items.
@@ -15,4 +16,5 @@
   %hr
   = link_to_checkout :class => 'btn btn-primary pull-right'
   = link_to_empty_cart
-  = link_to 'Order History', effective_orders.my_purchases_path, :class => 'btn btn-default', :rel => :nofollow
+  - if EffectiveOrders.show_order_history_button
+    = link_to 'Order History', effective_orders.my_purchases_path, class: 'btn btn-default', rel: :nofollow

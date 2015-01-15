@@ -80,6 +80,8 @@ EffectiveOrders.setup do |config|
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
 
+  # Show/hide the 'Order History' button on the 'Cart Page'
+  config.show_order_history_button = true
 
   # Layout Settings
   # Configure the Layout per controller, or all at once

@@ -38,6 +38,8 @@ module EffectiveOrders
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
 
+  mattr_accessor :show_order_history_button
+
   # application fee  is required if stripe_connect_enabled is true
   mattr_accessor :stripe_enabled
 
