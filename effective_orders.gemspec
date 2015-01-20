@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.add_dependency "coffee-rails"
   s.add_dependency "devise"
   s.add_dependency "haml"
+  s.add_dependency "sass-rails"
   s.add_dependency "migrant"
   s.add_dependency "simple_form"
   s.add_dependency "effective_addresses", [">= 1.0.3"]
