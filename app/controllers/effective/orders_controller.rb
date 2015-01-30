@@ -154,7 +154,7 @@ module Effective
     def order_declined(details = nil, redirect_url = nil)
       @order.decline!(details) rescue nil
 
-      flash[:danger] = "Unable to process your order.  Your Cart items have been restored."
+      flash[:danger] = "Unable to purchase order.  Your credit card was declined by the payment processor.  Your cart items have been restored.  Please try again."
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
