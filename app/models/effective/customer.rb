@@ -45,7 +45,7 @@ module Effective
         if stripe_customer.save && stripe_customer.default_card.present?
           card = stripe_customer.cards.retrieve(stripe_customer.default_card)
 
-          self.stripe_active_card = "**** **** **** #{card.last4} #{card.type} #{card.exp_month}/#{card.exp_year}"
+          self.stripe_active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
           self.save!
         else
           raise Exception.new('unable to update stripe customer with new card')
