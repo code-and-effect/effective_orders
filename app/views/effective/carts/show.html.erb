@@ -1,0 +1,18 @@
+<h2>Shopping Cart</h2>
+<% if @cart.empty? %>
+  <p>Your cart is empty.</p>
+  <hr/>
+  <%= link_to 'Home', root_url, :class => 'btn btn-primary' %>
+  <% if EffectiveOrders.show_order_history_button %>
+    <%= link_to 'Order History', effective_orders.my_purchases_path, class: 'btn btn-default' %>
+  <% end %>
+<% else %>
+  <p>Your cart has #{@cart.cart_items.length} items.</p>
+  <%= render_cart(@cart) %>
+  <hr/>
+  <%= link_to_checkout :class => 'btn btn-primary pull-right' %>
+  <%= link_to_empty_cart %>
+  <% if EffectiveOrders.show_order_history_button %>
+    <%= link_to 'Order History', effective_orders.my_purchases_path, class: 'btn btn-default', rel: :nofollow %>
+  <% end %>
+<% end %>
