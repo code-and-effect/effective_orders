@@ -1,0 +1,55 @@
+<div class="effective-order">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="quantity">Quantity</th>
+        <th class="item">Item</th>
+        <th class="price">Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% cart.cart_items.each do |item| %>
+        <tr>
+          <td class="quantity">
+            <%= item.quantity %>
+          </td>
+          <td class="item">
+            <%= item.title.html_safe %>
+            <%= ' - ' %>
+            <%= link_to_remove_from_cart(item) %>
+          </td>
+          <td class="price">
+            <%= price_to_currency(item.subtotal) %>
+          </td>
+        </tr>
+      <% end %>
+      <% if cart.empty? %>
+        <tr>
+          <td class="quantity"></td>
+          <td class="item">There are no items in your shopping cart</td>
+          <td class="price"></td>
+        </tr>
+      <% end %>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Subtotal</th>
+        <td class="price">
+          <%= price_to_currency(cart.subtotal) %>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2">Tax</th>
+        <td class="price">
+          <%= price_to_currency(cart.tax) %>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2">Total Due</th>
+        <td class="price">
+          <%= price_to_currency(cart.total) %>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
