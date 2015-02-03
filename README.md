@@ -359,9 +359,7 @@ All authorization checks are handled via the config.authorization_method found i
 
 It is intended for flow through to CanCan or Pundit, but neither of those gems are required.
 
-This method is called by the controller action with the appropriate action and resource
-
-This method is called by all controller actions with the appropriate action and resource
+This method is called by the controller action with the appropriate action and resource.
 
 Action will be one of [:index, :show, :new, :create, :edit, :update, :destroy]
 

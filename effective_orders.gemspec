@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency "simple_form"
   s.add_dependency "effective_addresses", [">= 1.0.3"]
   s.add_dependency "effective_obfuscation", [">= 1.0.0"]
-  s.add_dependency "stripe"
+  s.add_dependency "stripe", [">= 1.18.0"]
 
   s.add_development_dependency "stripe-ruby-mock"
   s.add_development_dependency "factory_girl_rails"
