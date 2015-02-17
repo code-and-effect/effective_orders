@@ -145,7 +145,6 @@ module Effective
 
         redirect_to (redirect_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
       rescue => e
-        binding.pry
         flash[:danger] = "Unable to process your order.  Your card has not been charged.  Your Cart items have been restored.  Please try again.  Error Message: #{e.message}"
         redirect_to (declined_redirect_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
       end
