@@ -29,7 +29,7 @@ describe Effective::Subscription do
     it 'sets the stripe plan' do
       subscription = Effective::Subscription.new()
 
-      plan = ::Stripe::Plan.create()
+      plan = ::Stripe::Plan.create(:id => 'stripe_plan', :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
       subscription.stripe_plan_id = plan.id
       subscription.stripe_plan.id.should eq plan.id
     end
@@ -63,7 +63,7 @@ describe Effective::Subscription do
     it 'assigns the price and title as per the stripe plan and coupon' do
       subscription = Effective::Subscription.new()
 
-      plan = ::Stripe::Plan.create()
+      plan = ::Stripe::Plan.create(:id => 'stripe_plan', :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
 
       subscription.stripe_plan_id = plan.id
 
@@ -75,7 +75,7 @@ describe Effective::Subscription do
     it 'assigns the price and title as per the stripe plan and coupon amount off' do
       subscription = Effective::Subscription.new()
 
-      plan = ::Stripe::Plan.create()
+      plan = ::Stripe::Plan.create(:id => 'stripe_plan', :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
       coupon = ::Stripe::Coupon.create(:percent_off => 25)
 
       subscription.stripe_plan_id = plan.id
@@ -88,7 +88,7 @@ describe Effective::Subscription do
     it 'assigns the price and title as per the stripe plan and coupon percent off' do
       subscription = Effective::Subscription.new()
 
-      plan = ::Stripe::Plan.create()
+      plan = ::Stripe::Plan.create(:id => 'stripe_plan', :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
       coupon = ::Stripe::Coupon.create(:percent_off => nil, :amount_off => 100)
 
       subscription.stripe_plan_id = plan.id

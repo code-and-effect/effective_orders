@@ -26,6 +26,7 @@ describe Effective::Customer do
   describe 'Stripe Integration' do
     before { StripeMock.start }
     after { StripeMock.stop }
+    let(:stripe_helper) { StripeMock.create_test_helper }
 
     describe '#stripe_customer' do
       it 'creates a new Stripe::Customer if one doesnt exist.' do
@@ -51,12 +52,12 @@ describe Effective::Customer do
 
     describe '#update_card' do
       it 'can update the card' do
-        customer.update_card!('sometoken').should eq true
+        customer.update_card!(stripe_helper.generate_card_token).should eq true
       end
 
       it 'updates stripe_active_card when updating the card' do
         customer.should_receive(:save!).and_return(true)
-        customer.update_card!('sometoken').should eq true
+        customer.update_card!(stripe_helper.generate_card_token).should eq true
 
         customer.stripe_active_card.present?.should eq true
       end

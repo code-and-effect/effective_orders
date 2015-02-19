@@ -8,9 +8,10 @@ describe Effective::OrdersController do
   before { StripeMock.start }
   after { StripeMock.stop }
 
+  let(:stripe_helper) { StripeMock.create_test_helper }
   let(:order) { FactoryGirl.create(:order) }
   let(:buyer) { Effective::Customer.for_user(order.user) }
-  let(:token) { 'tok_123456789' }
+  let(:token) { stripe_helper.generate_card_token }
   let(:stripe_charge_params) do
     {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
   end
@@ -92,7 +93,7 @@ describe Effective::OrdersController do
     let(:order) { FactoryGirl.create(:order_with_subscription) }
     let(:buyer) { Effective::Customer.for_user(order.user) }
     let(:subscription) { order.order_items[1].purchasable }
-    let(:token) { 'tok_123456789' }
+    let(:token) { stripe_helper.generate_card_token  }
     let(:stripe_charge_params) do
       {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
     end
@@ -117,7 +118,7 @@ describe Effective::OrdersController do
       post :stripe_charge, stripe_charge_params
 
       assigns(:order).payment[:subscriptions]["#{subscription.stripe_plan_id}"]['object'].should eq 'subscription'
-      assigns(:order).payment[:subscriptions]["#{subscription.stripe_plan_id}"]['plan'].should eq subscription.stripe_plan_id
+      assigns(:order).payment[:subscriptions]["#{subscription.stripe_plan_id}"]['plan']['id'].should eq subscription.stripe_plan_id
       subscription.reload.stripe_subscription_id.present?.should eq true
       subscription.reload.stripe_coupon_id.present?.should eq true
 

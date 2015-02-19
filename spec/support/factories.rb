@@ -41,7 +41,7 @@ FactoryGirl.define do
     association :customer
 
     before(:create) do |subscription|
-      stripe_plan = Stripe::Plan.create()
+      stripe_plan = Stripe::Plan.create(:id => "stripe_plan_#{subscription.object_id}", :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
       stripe_coupon = Stripe::Coupon.create()
 
       subscription.stripe_plan_id = stripe_plan.id
