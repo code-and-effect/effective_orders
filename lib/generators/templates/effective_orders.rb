@@ -28,7 +28,7 @@ EffectiveOrders.setup do |config|
   #
   # Or disable the check completely:
   # config.authorization_method = false
-  config.authorization_method = Proc.new { |controller, action, resource| can?(action, resource) } # CanCan gem
+  config.authorization_method = Proc.new { |controller, action, resource| true }
 
   # Register Effective::Order with ActiveAdmin if ActiveAdmin is present
   config.use_active_admin = true
