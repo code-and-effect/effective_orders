@@ -21,6 +21,28 @@ describe Product do
       product.purchased_orders.include?(order).should eq true
     end
 
+    it 'is purchased? in the after_purchase callback' do
+      instance_order = nil
+      instance_product = nil
+      instance_purchased = nil
+
+      Product.instance_eval do
+        after_purchase do |order, order_item|
+          if defined?(:instance_order)
+            instance_order = order
+            instance_product = self
+            instance_purchased = self.purchased?
+          end
+        end
+      end
+
+      order.purchase!('by a test')
+
+      instance_order.purchased?.should eq true
+      instance_product.purchased?.should eq true
+      instance_purchased.should eq true
+    end
+
     it 'is returned by the purchased scopes' do
       order.purchase!('by a test')
 

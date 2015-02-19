@@ -190,9 +190,8 @@ module Effective
         self.purchased_at ||= Time.zone.now
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        order_items.each { |item| item.purchasable.purchased!(self, item) }
-
         self.save!(:validate => opts[:validate])
+        order_items.each { |item| item.purchasable.purchased!(self, item) }
 
         if EffectiveOrders.mailer[:send_order_receipt_to_admin] && opts[:email]
           if Rails.env.production?
