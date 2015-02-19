@@ -26,9 +26,9 @@ Gem::Specification.new do |s|
   s.add_dependency "simple_form"
   s.add_dependency "effective_addresses", [">= 1.0.3"]
   s.add_dependency "effective_obfuscation", [">= 1.0.0"]
-  s.add_dependency "stripe", [">= 1.18.0"]
+  s.add_dependency "stripe", [">= 1.19.0"]
 
-  s.add_development_dependency "stripe-ruby-mock"
+  s.add_development_dependency "stripe-ruby-mock", [">= 2.0.4"]
   s.add_development_dependency "factory_girl_rails"
   s.add_development_dependency "rspec-rails"
   s.add_development_dependency "shoulda-matchers"
@@ -37,4 +37,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard"
   s.add_development_dependency "guard-rspec"
   s.add_development_dependency "guard-livereload"
+
+  s.add_development_dependency "pry"
+  s.add_development_dependency "pry-stack_explorer"
+  s.add_development_dependency "pry-byebug"
+
 end
