@@ -6,7 +6,7 @@ module Effective
       acts_as_obfuscated :format => '###-####-###'
     end
 
-    acts_as_addressable :billing => {:presence => EffectiveOrders.require_billing_address, :use_full_name => true}, :shipping => {:presence => EffectiveOrders.require_shipping_address, :use_full_name => true}
+    acts_as_addressable :billing => {:singular => true, :presence => EffectiveOrders.require_billing_address, :use_full_name => true}, :shipping => {:singular => true, :presence => EffectiveOrders.require_shipping_address, :use_full_name => true}
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
 
     belongs_to :user  # This is the user who purchased the order
@@ -96,14 +96,31 @@ module Effective
     def user=(user)
       super
 
-      if user.respond_to?(:billing_address) && (billing_address.blank? || billing_address.empty?)
+      # Copy user addresses into this order if they are present
+      if user.respond_to?(:billing_address) && !user.billing_address.nil?
         self.billing_address = user.billing_address
-        self.billing_address.full_name = billing_name if billing_address.present? && billing_address.full_name.blank?
       end
 
-      if user.respond_to?(:shipping_address) && (shipping_address.blank? || shipping_address.empty?)
+      if user.respond_to?(:shipping_address) && !user.shipping_address.nil?
         self.shipping_address = user.shipping_address
-        self.shipping_address.full_name = billing_name if shipping_address.present? &&shipping_address.full_name.blank?
+      end
+
+      # If our addresses are required, make sure they exist
+      if EffectiveOrders.require_billing_address
+        self.billing_address ||= Effective::Address.new()
+      end
+
+      if EffectiveOrders.require_shipping_address
+        self.shipping_address ||= Effective::Address.new()
+      end
+
+      # Ensure the Full Name is assigned when an address exists
+      if billing_address.nil? == false && billing_address.full_name.blank?
+        self.billing_address.full_name = billing_name
+      end
+
+      if shipping_address.nil? == false && shipping_address.full_name.blank?
+        self.shipping_address.full_name = billing_name
       end
     end
 
@@ -165,17 +182,13 @@ module Effective
     end
 
     def billing_name
-      if billing_address.try(:full_name).present?
-        billing_address.full_name
-      elsif user.respond_to?(:full_name)
-        user.full_name.to_s
-      elsif user.respond_to?(:first_name) && user.respond_to?(:last_name)
-        user.first_name.to_s + ' ' + user.last_name.to_s
-      elsif user.to_s.start_with?('#<User:') == false
-        user.to_s
-      else
-        ''
-      end
+      name ||= billing_address.try(:full_name).presence
+      name ||= user.try(:full_name).presence
+      name ||= (user.try(:first_name).to_s + ' ' + user.try(:last_name).to_s).presence
+      name ||= user.try(:email).presence
+      name ||= user.to_s
+      name ||= "User #{user.try(:id)}"
+      name
     end
 
     # :validate => false, :email => false
