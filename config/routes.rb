@@ -52,6 +52,7 @@ EffectiveOrders::Engine.routes.draw do
     namespace :admin do
       resources :customers, :only => [:index]
       resources :orders, :only => [:index, :show]
+      resources :order_items, :only => [:index]
     end
   end
 end
