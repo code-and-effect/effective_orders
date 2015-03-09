@@ -1,17 +1,18 @@
 = render order
 
-- if EffectiveOrders.moneris_enabled
-  = render :partial => '/effective/orders/moneris/form', :locals => {:order => order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url}
+.effective-order.effective-order-purchase-actions
+  - if EffectiveOrders.moneris_enabled
+    = render :partial => '/effective/orders/moneris/form', :locals => {:order => order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url}
 
-- if EffectiveOrders.paypal_enabled
-  = render :partial => '/effective/orders/paypal/form', :locals => {:order => order}
+  - if EffectiveOrders.paypal_enabled
+    = render :partial => '/effective/orders/paypal/form', :locals => {:order => order}
 
-- if EffectiveOrders.stripe_enabled
-  = render :partial => '/effective/orders/stripe/form', :locals => {:order => order}
+  - if EffectiveOrders.stripe_enabled
+    = render :partial => '/effective/orders/stripe/form', :locals => {:order => order}
 
-- if EffectiveOrders.allow_pretend_purchase_in_production
-  = link_to 'Process Order', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'
-  %p= EffectiveOrders.allow_pretend_purchase_in_production_message
-- elsif Rails.env.development?
-  = link_to 'Process Order (development only)', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'
+  - if EffectiveOrders.allow_pretend_purchase_in_production
+    = link_to 'Process Order', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'
+    %p= EffectiveOrders.allow_pretend_purchase_in_production_message
+  - elsif Rails.env.development?
+    = link_to 'Process Order (development only)', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'
 

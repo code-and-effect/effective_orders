@@ -34,10 +34,10 @@
 
               = f.input :shipping_address_same_as_billing, :as => :boolean, :label => 'My Shipping address is the same as my Billing address'
 
-    %hr
     = link_to_current_cart :label => 'Change Items', :class => 'btn btn-default'
 
-    - if order.total == 0 && EffectiveOrders.allow_free_orders
-      = f.submit 'Checkout', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'
-    - else
-      = f.submit 'Continue to Checkout Confirmation', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'
+    .text-right
+      - if order.total == 0 && EffectiveOrders.allow_free_orders
+        = f.submit 'Checkout', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'
+      - else
+        = f.submit 'Continue to Checkout Confirmation', :class => 'btn btn-primary pull-right', :rel => :nofollow, 'data-disable-with' => 'Continuing...'

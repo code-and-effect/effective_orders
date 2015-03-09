@@ -232,7 +232,6 @@ describe Effective::OrdersController do
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
-      assigns(:order).errors[:addresses].present?.should eq true
       assigns(:order).errors[:shipping_address].present?.should eq true
 
       response.should render_template(:new)

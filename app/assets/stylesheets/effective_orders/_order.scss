@@ -26,5 +26,13 @@
       min-width: 200px;
     }
   }
+}
+
+.effective-order-purchase-actions {
+  text-align: right;
+
+  > * {
+    display: inline-block;
+  }
 
 }
