@@ -1,7 +1,4 @@
 %h2 Orders
 
-- unless @datatable.collection.length > 0
-  %p 
-    There are no orders
-- else
-  = render_datatable @datatable
+= render_datatable @datatable do
+  %p There are no orders

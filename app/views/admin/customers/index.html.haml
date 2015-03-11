@@ -1,10 +1,7 @@
 %h2 Customers
 
-- unless @datatable.collection.length > 0
-  %p 
-    There are no customers
-- else
-  = render_datatable @datatable
+= render_datatable @datatable do
+  %p There are no customers
 
 %hr
 %p= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
