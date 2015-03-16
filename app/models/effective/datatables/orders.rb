@@ -27,8 +27,6 @@ if defined?(EffectiveDatatables)
           end
         end
 
-        table_column(:subtotal) { |order| price_to_currency(order[:subtotal].to_i) }
-        table_column(:tax) { |order| price_to_currency(order[:tax].to_i) }
         table_column(:total) { |order| price_to_currency(order[:total].to_i) }
 
         table_column :created_at, :visible => false
@@ -43,7 +41,7 @@ if defined?(EffectiveDatatables)
             .joins(:user, :order_items)
             .group('users.email, orders.id')
             .select('orders.*, users.email AS email')
-            .select("#{query_subtotal} AS subtotal, #{query_tax} AS tax, #{query_total} AS total")
+            .select("#{query_total} AS total")
             .select("string_agg(order_items.title, '!!SEP!!') AS order_items")
 
           if EffectiveOrders.require_billing_address && defined?(EffectiveAddresses)
