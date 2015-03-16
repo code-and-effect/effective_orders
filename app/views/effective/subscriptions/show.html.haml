@@ -46,4 +46,4 @@
 
 %h3 Cancel Subscription
 
-= link_to 'Unsubscribe', effective_orders.subscription_path(@plan.id), :data => {:method => :delete, :confirm => 'This will cancel your subscription. Are you sure? This cannot be undone.'}
+= link_to 'Unsubscribe', effective_orders.subscription_path(@plan.id), :data => {:method => :delete, :confirm => 'This will cancel your subscription. Are you sure? This cannot be undone.', :disable_with => 'Unsubscribing...'}

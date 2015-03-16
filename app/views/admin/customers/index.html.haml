@@ -1,7 +1,10 @@
 %h2 Customers
 
+%p.text-right= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
+
 = render_datatable @datatable do
   %p There are no customers
 
-%hr
-%p= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
+- if @datatable.present?
+  %p.text-right= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
+

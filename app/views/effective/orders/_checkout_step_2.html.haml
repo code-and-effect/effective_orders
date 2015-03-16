@@ -11,8 +11,8 @@
     = render :partial => '/effective/orders/stripe/form', :locals => {:order => order}
 
   - if EffectiveOrders.allow_pretend_purchase_in_production
-    = link_to 'Process Order', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'
+    = link_to 'Purchase Order', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary', :data => {'disable_with' => 'Purchasing...' }
     %p= EffectiveOrders.allow_pretend_purchase_in_production_message
   - elsif Rails.env.development?
-    = link_to 'Process Order (development only)', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary'
+    = link_to 'Purchase Order (development only)', effective_orders.pretend_purchase_path(order, :purchased_redirect_url => purchased_redirect_url, :declined_redirect_url => declined_redirect_url), :class => 'btn btn-primary', :data => {'disable_with' => 'Purchasing...' }
 

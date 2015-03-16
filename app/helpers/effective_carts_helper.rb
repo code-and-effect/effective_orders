@@ -40,7 +40,7 @@ module EffectiveCartsHelper
   def link_to_add_to_cart(purchasable, opts = {})
     raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.respond_to?(:is_effectively_purchasable?)
 
-    options = {:class => 'btn', :rel => :nofollow, 'data-disable-with' => 'Add to Cart...'}.merge(opts)
+    options = {:class => 'btn', :rel => :nofollow, 'data-disable-with' => 'Adding...'}.merge(opts)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')
 
     link_to (options.delete(:label) || 'Add to Cart'), effective_orders.add_to_cart_path(:purchasable_type => purchasable.class.name, :purchasable_id => purchasable.id.to_i), options
@@ -51,9 +51,13 @@ module EffectiveCartsHelper
 
     options = {
       :rel => :nofollow,
-      :data => {:confirm => 'Are you sure? This cannot be undone!'},
+      :data => {
+        :confirm => 'Are you sure? This cannot be undone!',
+        :disable_with => 'Removing...'
+      },
       :method => :delete
     }.merge(opts)
+
     options[:class] = ((options[:class] || '') + ' btn-remove-from-cart')
 
     link_to (options.delete(:label) || 'Remove'), effective_orders.remove_from_cart_path(cart_item), options
@@ -63,16 +67,25 @@ module EffectiveCartsHelper
     options = {
       :rel => :nofollow,
       :class => 'btn',
-      :data => {:confirm => 'This will clear your entire cart.  Are you sure?  This cannot be undone!'},
+      :data => {
+        :confirm => 'This will clear your entire cart.  Are you sure?  This cannot be undone!',
+        :disable_with => 'Emptying...'
+      },
       :method => :delete
     }.merge(opts)
+
     options[:class] = ((options[:class] || '') + ' btn-empty-cart btn-danger')
 
     link_to (options.delete(:label) || 'Empty Cart'), effective_orders.cart_path, options
   end
 
   def link_to_checkout(opts = {})
-    options = {:class => 'btn', :rel => :nofollow}.merge(opts)
+    options = {
+      :class => 'btn',
+      :rel => :nofollow,
+      :disable_with => 'Proceeding...'
+    }.merge(opts)
+
     options[:class] = ((options[:class] || '') + ' btn-checkout')
 
     link_to (options.delete(:label) || 'Proceed to Checkout'), effective_orders.new_order_path, options
