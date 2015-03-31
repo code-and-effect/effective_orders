@@ -17,7 +17,7 @@ module Effective
       if @cart.destroy
         flash[:success] = 'Successfully emptied cart'
       else
-        flash[:danger] = 'Unable to destroy cart:' + e.message
+        flash[:danger] = 'Unable to destroy cart'
       end
 
       request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
@@ -50,7 +50,7 @@ module Effective
       if @cart_item.destroy
         flash[:success] = 'Successfully removed item from cart'
       else
-        flash[:danger] = 'Unable to remove item from cart: ' + e.message
+        flash[:danger] = 'Unable to remove item from cart'
       end
 
       request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
