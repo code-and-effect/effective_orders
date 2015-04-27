@@ -13,6 +13,9 @@ module Effective
       @page_title ||= 'My Subscriptions'
 
       @subscriptions = @customer.subscriptions.purchased
+      @active_stripe_subscription = @subscriptions.map(&:stripe_subscription).find do |subscription|
+        subscription.present? && subscription.status == 'active' && subscription.current_period_end > Time.zone.now.to_i
+      end
 
       EffectiveOrders.authorized?(self, :index, Effective::Subscription)
     end
