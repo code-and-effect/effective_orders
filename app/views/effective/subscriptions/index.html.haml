@@ -11,6 +11,10 @@
         = '-'
         = link_to 'unsubscribe', effective_orders.subscription_path(subscription.stripe_plan_id), :data => {:method => :delete, :confirm => 'This will cancel your subscription. Are you sure? This cannot be undone.'}
         = ')'
+
+  - if @active_stripe_subscription.present?
+    %p Your current subscription will be renewed automatically at #{ Time.zone.at(@active_stripe_subscription.current_period_end).strftime('%d-%b-%Y %H:%M') }.
+
 - else
   %p You have no subscriptions
 
