@@ -1,7 +1,7 @@
 require 'effective_addresses'
+require 'effective_obfuscation'
 require "effective_orders/engine"
 require 'migrant'     # Required for rspec to run properly
-require 'effective_obfuscation'
 
 module EffectiveOrders
   PURCHASED = 'purchased'
