@@ -30,11 +30,8 @@ module EffectiveCartsHelper
   def link_to_current_cart(opts = {})
     options = {:id => 'current_cart', :rel => :nofollow}.merge(opts)
 
-    if current_cart.size == 0
-      link_to (options.delete(:label) || 'Cart'), effective_orders.cart_path, options
-    else
-      link_to (options.delete(:label) || "Cart (#{current_cart.size})"), effective_orders.cart_path, options
-    end
+    label = options.delete(:label) || 'Cart'
+    link_to (current_cart.size == 0 ? label : "#{label} (#{current_cart.size})"), effective_orders.cart_path, options
   end
 
   def link_to_add_to_cart(purchasable, opts = {})
