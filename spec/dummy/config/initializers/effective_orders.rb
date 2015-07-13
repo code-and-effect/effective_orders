@@ -43,6 +43,10 @@ EffectiveOrders.setup do |config|
   config.require_billing_address = true
   config.require_shipping_address = true
 
+  # Use billing/shipping address full name in checkout process. Address full name will be validated.
+  # Works with effective_addresses gem
+  config.use_address_full_name = true
+
   # If set, the orders#new screen will render effective/orders/user_fields partial and capture this User Info
   # The partial can be overridden to customize the form, but the following fields are also fed into strong_paramters
   config.collect_user_fields = [:first_name, :last_name]
