@@ -32,7 +32,7 @@ module Effective
     end
 
     def create
-      @order = Order.new(current_cart, current_user)
+      @order ||= Order.new(current_cart, current_user)
       @order.attributes = order_params
       @order.shipping_address = @order.billing_address if @order.shipping_address_same_as_billing?
 
@@ -59,7 +59,7 @@ module Effective
           return
         rescue => e
           Rails.logger.info e.message
-          flash[:danger] = "An error has ocurred. Please try again. Message: #{e.message}"
+          flash.now[:danger] = "An error has ocurred. Please try again. Message: #{e.message}"
           raise ActiveRecord::Rollback
         end
       end
