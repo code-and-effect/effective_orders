@@ -2,38 +2,40 @@ if defined?(EffectiveDatatables)
   module Effective
     module Datatables
       class Orders < Effective::Datatable
-        default_order :purchased_at, :desc
+        datatable do
+          default_order :purchased_at, :desc
 
-        table_column :purchased_at
-        table_column :id
+          table_column :purchased_at
+          table_column :id
 
-        table_column :email, column: 'users.email', label: 'Buyer Email', if: proc { attributes[:user_id].blank? } do |order|
-          link_to order[:email], (edit_admin_user_path(order.user_id) rescue admin_user_path(order.user_id) rescue '#')
-        end
-
-        if EffectiveOrders.require_billing_address
-          table_column :buyer_name, sortable: false, label: 'Buyer Name', if: proc { attributes[:user_id].blank? } do |order|
-            (order[:buyer_name] || '').split('!!SEP!!').find(&:present?)
+          table_column :email, column: 'users.email', label: 'Buyer Email', if: proc { attributes[:user_id].blank? } do |order|
+            link_to order[:email], (edit_admin_user_path(order.user_id) rescue admin_user_path(order.user_id) rescue '#')
           end
-        end
 
-        table_column :purchase_state, filter: { type: :select, values: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order|
-          order.purchase_state || 'abandoned'
-        end
-
-        table_column :order_items, sortable: false, column: 'order_items.title' do |order|
-          content_tag(:ul) do
-            (order[:order_items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi) }.join.html_safe
+          if EffectiveOrders.require_billing_address
+            table_column :buyer_name, sortable: false, label: 'Buyer Name', if: proc { attributes[:user_id].blank? } do |order|
+              (order[:buyer_name] || '').split('!!SEP!!').find(&:present?)
+            end
           end
-        end
 
-        table_column(:total) { |order| price_to_currency(order[:total].to_i) }
+          table_column :purchase_state, filter: { type: :select, values: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order|
+            order.purchase_state || 'abandoned'
+          end
 
-        table_column :created_at, :visible => false
-        table_column :updated_at, :visible => false
+          table_column :order_items, sortable: false, column: 'order_items.title' do |order|
+            content_tag(:ul) do
+              (order[:order_items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi) }.join.html_safe
+            end
+          end
 
-        table_column :actions, sortable: false, filter: false do |order|
-          link_to('View', (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)))
+          table_column(:total) { |order| price_to_currency(order[:total].to_i) }
+
+          table_column :created_at, :visible => false
+          table_column :updated_at, :visible => false
+
+          table_column :actions, sortable: false, filter: false do |order|
+            link_to('View', (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)))
+          end
         end
 
         def collection

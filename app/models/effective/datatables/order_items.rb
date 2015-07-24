@@ -2,43 +2,45 @@ if defined?(EffectiveDatatables)
   module Effective
     module Datatables
       class OrderItems < Effective::Datatable
-        default_order :purchased_at, :desc
+        datatable do
+          default_order :purchased_at, :desc
 
-        table_column(:purchased_at, :type => :datetime, :column => 'orders.purchased_at') do |order_item|
-          Time.at(order_item[:purchased_at]).in_time_zone if order_item[:purchased_at].present?
-        end
-
-        table_column :id, :visible => false
-
-        table_column(:order, :type => :obfuscated_id, :sortable => false) do |order_item|
-          obfuscated_id = Effective::Order.obfuscate(order_item[:order_id])
-          link_to(obfuscated_id, (datatables_admin_path? ? effective_orders.admin_order_path(obfuscated_id) : effective_orders.order_path(obfuscated_id)))
-        end
-
-        table_column :email, column: 'users.email', label: 'Buyer Email', if: proc { attributes[:user_id].blank? } do |order_item|
-          link_to order_item[:email], (edit_admin_user_path(order_item[:user_id]) rescue admin_user_path(order_item[:user_id]) rescue '#')
-        end
-
-        if EffectiveOrders.require_billing_address
-          table_column :buyer_name, sortable: false, label: 'Buyer Name', if: proc { attributes[:user_id].blank? } do |order_item|
-            (order_item[:buyer_name] || '').split('!!SEP!!').find(&:present?)
+          table_column(:purchased_at, :type => :datetime, :column => 'orders.purchased_at') do |order_item|
+            Time.at(order_item[:purchased_at]).in_time_zone if order_item[:purchased_at].present?
           end
+
+          table_column :id, :visible => false
+
+          table_column(:order, :type => :obfuscated_id, :sortable => false) do |order_item|
+            obfuscated_id = Effective::Order.obfuscate(order_item[:order_id])
+            link_to(obfuscated_id, (datatables_admin_path? ? effective_orders.admin_order_path(obfuscated_id) : effective_orders.order_path(obfuscated_id)))
+          end
+
+          table_column :email, column: 'users.email', label: 'Buyer Email', if: proc { attributes[:user_id].blank? } do |order_item|
+            link_to order_item[:email], (edit_admin_user_path(order_item[:user_id]) rescue admin_user_path(order_item[:user_id]) rescue '#')
+          end
+
+          if EffectiveOrders.require_billing_address
+            table_column :buyer_name, sortable: false, label: 'Buyer Name', if: proc { attributes[:user_id].blank? } do |order_item|
+              (order_item[:buyer_name] || '').split('!!SEP!!').find(&:present?)
+            end
+          end
+
+          table_column :purchase_state, column: 'orders.purchase_state', filter: { type: :select, values: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
+            order_item[:purchase_state] || 'abandoned'
+          end
+
+          table_column :title do |order_item|
+            order_item.quantity == 1 ? order_item.title : "#{order_item.title} (#{order_item.quantity} purchased)"
+          end
+
+          table_column(:subtotal) { |order_item| price_to_currency(order_item[:subtotal].to_i) }
+          table_column(:tax) { |order_item| price_to_currency(order_item[:tax].to_i) }
+          table_column(:total) { |order_item| price_to_currency(order_item[:total].to_i) }
+
+          table_column :created_at, :visible => false
+          table_column :updated_at, :visible => false
         end
-
-        table_column :purchase_state, column: 'orders.purchase_state', filter: { type: :select, values: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
-          order_item[:purchase_state] || 'abandoned'
-        end
-
-        table_column :title do |order_item|
-          order_item.quantity == 1 ? order_item.title : "#{order_item.title} (#{order_item.quantity} purchased)"
-        end
-
-        table_column(:subtotal) { |order_item| price_to_currency(order_item[:subtotal].to_i) }
-        table_column(:tax) { |order_item| price_to_currency(order_item[:tax].to_i) }
-        table_column(:total) { |order_item| price_to_currency(order_item[:total].to_i) }
-
-        table_column :created_at, :visible => false
-        table_column :updated_at, :visible => false
 
         def collection
           collection = Effective::OrderItem.unscoped

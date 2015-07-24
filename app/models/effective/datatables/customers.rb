@@ -2,23 +2,25 @@ if defined?(EffectiveDatatables)
   module Effective
     module Datatables
       class Customers < Effective::Datatable
-        default_order :email, :asc
+        datatable do
+          default_order :email, :asc
 
-        table_column :id, visible: false
-        table_column(:email, column: 'users.email') { |user| mail_to user.email, user.email }
+          table_column :id, visible: false
+          table_column(:email, column: 'users.email') { |user| mail_to user.email, user.email }
 
-        if EffectiveOrders.stripe_enabled
-          table_column :stripe_customer_id
-          table_column :stripe_active_card
+          if EffectiveOrders.stripe_enabled
+            table_column :stripe_customer_id
+            table_column :stripe_active_card
+          end
+
+          if EffectiveOrders.stripe_connect_enabled
+            table_column :stripe_connect_access_token
+          end
+
+          table_column :subscription_types, column: 'subscription_types'
+
+          table_column :actions, sortable: false, filter: false, partial: '/admin/customers/actions'
         end
-
-        if EffectiveOrders.stripe_connect_enabled
-          table_column :stripe_connect_access_token
-        end
-
-        table_column :subscription_types, column: 'subscription_types'
-
-        table_column :actions, sortable: false, filter: false, partial: '/admin/customers/actions'
 
         def collection
           Effective::Customer.customers.uniq
