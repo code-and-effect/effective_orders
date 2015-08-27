@@ -40,10 +40,10 @@ module Effective
 
     def update_card!(token)
       if token.present? # Oh, so they want to use a new credit card...
-        stripe_customer.card = token  # This sets the default_card to the new card
+        stripe_customer.source = token  # This sets the default_source to the new card
 
-        if stripe_customer.save && stripe_customer.default_card.present?
-          card = stripe_customer.cards.retrieve(stripe_customer.default_card)
+        if stripe_customer.save && stripe_customer.default_source.present?
+          card = stripe_customer.sources.retrieve(stripe_customer.default_source)
 
           self.stripe_active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
           self.save!
