@@ -25,7 +25,7 @@ module Effective
 
     unless EffectiveOrders.skip_user_validation
       validates_presence_of :user_id
-      validates_associated :user
+      # validates_associated :user
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
