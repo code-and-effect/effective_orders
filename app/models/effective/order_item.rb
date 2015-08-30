@@ -16,7 +16,7 @@ module Effective
       timestamps
     end
 
-    # validates_associated :purchasable
+    validates_associated :purchasable
     validates_presence_of :purchasable
     accepts_nested_attributes_for :purchasable, :allow_destroy => false, :reject_if => :all_blank, :update_only => true
 
