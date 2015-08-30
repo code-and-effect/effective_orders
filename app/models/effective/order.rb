@@ -37,7 +37,7 @@ module Effective
     end
 
     validates_presence_of :order_items, :message => 'No items are present.  Please add one or more item to your cart.'
-    validates_associated :order_items
+    validates :order_items, presence: true
 
     serialize :payment, Hash
 
