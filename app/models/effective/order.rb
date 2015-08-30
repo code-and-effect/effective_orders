@@ -25,7 +25,7 @@ module Effective
 
     unless EffectiveOrders.skip_user_validation
       validates_presence_of :user_id
-      validates_associated :user
+      validates :user
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
@@ -37,7 +37,7 @@ module Effective
     end
 
     validates_presence_of :order_items, :message => 'No items are present.  Please add one or more item to your cart.'
-    validates :order_items
+    validates_associated :order_items
 
     serialize :payment, Hash
 
