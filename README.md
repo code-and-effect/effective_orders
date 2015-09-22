@@ -820,6 +820,14 @@ Once they've registered their account on the Stripe side, Stripe sends a webhook
 In the webhook controller, an `Effective::Customer` object is created, and your user is now ready to sell stuff via StripeConnect.
 
 
+Your product model must also define a `seller` method so that effective_orders knows who is selling the Product.  Add the following to your `acts_as_purchasable` model:
+
+```ruby
+def seller
+  User.find(user_id)
+end
+```
+
 ### Stripe Subscriptions
 
 Subscriptions and Stripe Connect do not currently work together.
