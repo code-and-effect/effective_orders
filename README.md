@@ -806,6 +806,19 @@ config.stripe = {
 }
 ```
 
+There are a few additional steps you need to take on the rails application side of things:
+
+
+Before allowing one of your Users to create a Product for sale, you must enforce that they have a Stripe Connect account setup and configured.
+
+You can check if they have an account set up using the built in helper `is_stripe_connect_seller?(current_user)`
+
+If the above check returns false, you must send them to Stripe to set up their StripeConnect account, using the built in helper `link_to_new_stripe_connect_customer`
+
+Once they've registered their account on the Stripe side, Stripe sends a webhook request, which is processed by the `webhooks_controller.rb`
+
+In the webhook controller, an `Effective::Customer` object is created, and your user is now ready to sell stuff via StripeConnect.
+
 
 ### Stripe Subscriptions
 
