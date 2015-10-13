@@ -1,6 +1,7 @@
 module Effective
   class OrdersController < ApplicationController
     include EffectiveCartsHelper
+    acts_as_active_admin_controller('orders') if defined?(ActiveAdmin) && EffectiveOrders.use_active_admin == true
 
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled

@@ -2,6 +2,7 @@ require 'effective_addresses'
 require 'effective_obfuscation'
 require "effective_orders/engine"
 require 'migrant'     # Required for rspec to run properly
+require 'simple_form'
 
 module EffectiveOrders
   PURCHASED = 'purchased'
@@ -20,7 +21,10 @@ module EffectiveOrders
 
   mattr_accessor :layout
   mattr_accessor :simple_form_options
+
   mattr_accessor :use_active_admin
+  mattr_accessor :active_admin_namespace
+
   mattr_accessor :obfuscate_order_ids
   mattr_accessor :silence_deprecation_warnings
 

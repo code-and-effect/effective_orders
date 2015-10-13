@@ -45,6 +45,7 @@ module EffectiveOrders
     initializer 'effective_orders.active_admin' do
       if defined?(ActiveAdmin) && EffectiveOrders.use_active_admin == true
         ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
+        ActionController::Base.extend(ActsAsActiveAdmin::ActionController)
       end
     end
 

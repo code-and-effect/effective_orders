@@ -31,7 +31,10 @@ EffectiveOrders.setup do |config|
   config.authorization_method = Proc.new { |controller, action, resource| true }
 
   # Register Effective::Order with ActiveAdmin if ActiveAdmin is present
+  # You must have authorization to authorized?(:manage, Effective::Order)
+  # For the activeadmin menu to item to show up
   config.use_active_admin = true
+  config.active_admin_namespace = :admin  # Passed internally to ActiveAdmin.register
 
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
   config.obfuscate_order_ids = true
