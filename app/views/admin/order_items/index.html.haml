@@ -1,4 +1,10 @@
 %h2 Order Items
 
-= render_datatable @datatable do
-  %p There are no orders items
+- if @datatable.nil?
+  %p
+    Please install
+    = link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'
+    to see this page.
+- else
+  = render_datatable @datatable do
+    %p There are no order items
