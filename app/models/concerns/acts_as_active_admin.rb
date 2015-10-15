@@ -28,6 +28,9 @@ module ActsAsActiveAdmin
     else
       self.send(:define_method, :resource_path) { |resource| public_send(resource_path, resource) }
     end
+
+    helper_method :resource, :resource_path
+
   end
 
   module ClassMethods

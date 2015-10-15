@@ -2,7 +2,7 @@ if defined?(ActiveAdmin)
   require 'csv'
 
   ActiveAdmin.register Effective::Order, namespace: EffectiveOrders.active_admin_namespace, as: 'Orders' do
-    menu label: 'Orders', if: proc { (authorized?(:manage, Effective::Order) rescue false) }
+    menu label: 'Orders', if: proc { (authorized?(:show, Effective::Order.new(nil, current_user)) rescue false) }
 
     actions :index
 
@@ -12,7 +12,6 @@ if defined?(ActiveAdmin)
     filter :payment
 
     scope :purchased, default: true do |objs| objs.purchased end
-    scope :declined do |objs| objs.declined end
     scope :all
 
     controller do
