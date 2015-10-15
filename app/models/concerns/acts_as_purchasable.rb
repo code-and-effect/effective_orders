@@ -91,6 +91,10 @@ module ActsAsPurchasable
     @is_purchased ||= orders.any? { |order| order.purchased? }
   end
 
+  def purchased_at
+    @purchased_at ||= orders.map { |order| order.purchased_at if order.purchased? }.compact.sort.first
+  end
+
   def purchased_by?(user)
     orders.any? { |order| order.purchased? && order.user_id == user.id }
   end
@@ -118,12 +122,12 @@ module ActsAsPurchasable
     # end
 
     after_purchase(order, order_item) if self.respond_to?(:after_purchase)
-    self.save!
+    save!
   end
 
   def declined!(order = nil, order_item = nil)
     after_decline(order, order_item) if self.respond_to?(:after_decline)
-    self.save!
+    save!
   end
 
   # Override me if this is a digital purchase.
