@@ -17,9 +17,28 @@ module ActsAsActiveAdmin
 
     resource_key = @active_admin_resource_element_lookup_key.to_s
     self.send(:define_method, :active_admin_resource_element_key) { resource_key }
+
+    resource_ivar = '@' + resource_key.singularize
+    self.send(:define_method, :resource) { instance_variable_get(resource_ivar) }
+
+    resource_path = "effective_orders.#{resource_key.singularize}_path"
+
+    if resource_path == 'effective_orders.cart_path'
+      self.send(:define_method, :resource_path) { |resource| effective_orders.cart_path }
+    else
+      self.send(:define_method, :resource_path) { |resource| public_send(resource_path, resource) }
+    end
   end
 
   module ClassMethods
+  end
+
+  def active_admin_namespace
+    ActiveAdmin.application.namespaces[EffectiveOrders.active_admin_namespace || :root]
+  end
+
+  def active_admin_config
+    active_admin_namespace.resources[active_admin_resource_key]
   end
 
   def active_admin_resource_key
@@ -27,14 +46,6 @@ module ActsAsActiveAdmin
       namespace = ActiveAdmin.application.namespaces[EffectiveOrders.active_admin_namespace || :root]
       namespace.resources.keys.find { |resource| resource.element == active_admin_resource_element_key }
     end
-  end
-
-  def active_admin_config
-    ActiveAdmin.application.namespaces[:root].resources[active_admin_resource_key]
-  end
-
-  def active_admin_namespace
-    ActiveAdmin.application.namespaces[EffectiveOrders.active_admin_namespace || :root]
   end
 
   def current_active_admin_user

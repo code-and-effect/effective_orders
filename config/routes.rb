@@ -35,7 +35,6 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/:id/pretend_purchase', :to => 'orders#pretend_purchase', :as => 'pretend_purchase', :via => [:get, :post]
     end
 
-    # This must be below the other routes defined above.
     resources :orders, :only => [:new, :create, :show, :index]
 
     match 'cart', :to => 'carts#show', :as => 'cart', :via => :get
