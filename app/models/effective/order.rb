@@ -47,7 +47,8 @@ module Effective
     scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }
     scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
 
-    def initialize(cart = {}, user = nil)
+    # Can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
+    def initialize(items = {}, user = nil)
       super() # Call super with no arguments
 
       # Set up defaults
@@ -55,8 +56,7 @@ module Effective
       self.save_shipping_address = true
       self.shipping_address_same_as_billing = true
 
-      add_to_order(cart) if cart.present?
-
+      add_to_order(items) if items.present?
       self.user = user if user.present?
     end
 
@@ -193,62 +193,46 @@ module Effective
 
     # :validate => false, :email => false
     def purchase!(payment_details = nil, opts = {})
-      opts = {:validate => true, :email => true}.merge(opts)
+      opts = {validate: true, email: true}.merge(opts)
 
-      raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
-      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (self.declined? && opts[:validate])
+      return true if purchased?
+      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
+
+      success = false
 
       Order.transaction do
-        self.purchase_state = EffectiveOrders::PURCHASED
-        self.purchased_at ||= Time.zone.now
-        self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
+        begin
+          self.purchase_state = EffectiveOrders::PURCHASED
+          self.purchased_at ||= Time.zone.now
+          self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        self.save!(:validate => opts[:validate])
-        order_items.each { |item| item.purchasable.purchased!(self, item) }
+          save!(validate: opts[:validate])
 
-        if EffectiveOrders.mailer[:send_order_receipt_to_admin] && opts[:email]
-          if Rails.env.production?
-            (OrdersMailer.order_receipt_to_admin(self).deliver rescue false)
-          else
-            OrdersMailer.order_receipt_to_admin(self).deliver
-          end
+          order_items.each { |item| (item.purchasable.purchased!(self, item) rescue nil) }
+
+          success = true
+        rescue => e
+          raise ActiveRecord::Rollback
         end
-
-        if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && opts[:email]
-          if Rails.env.production?
-            (OrdersMailer.order_receipt_to_buyer(self).deliver rescue false)
-          else
-            OrdersMailer.order_receipt_to_buyer(self).deliver
-          end
-        end
-
-        if EffectiveOrders.mailer[:send_order_receipt_to_seller] && self.purchased?(:stripe_connect) && opts[:email]
-          self.order_items.group_by(&:seller).each do |seller, order_items|
-            if Rails.env.production?
-              (OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false)
-            else
-              OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver
-            end
-          end
-        end
-
-        return true
       end
 
-      false
+      send_order_receipts! if success && opts[:email]
+
+      success
     end
 
     def decline!(payment_details = nil)
-      raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if self.purchased?
-      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if self.declined?
+      return true if declined?
+
+      raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 
       Order.transaction do
         self.purchase_state = EffectiveOrders::DECLINED
         self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
 
-        order_items.each { |item| item.purchasable.declined!(self, item) }
+        order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
 
-        self.save!
+        save!
       end
     end
 
@@ -276,5 +260,44 @@ module Effective
     def declined?
       purchase_state == EffectiveOrders::DECLINED
     end
+
+    def send_order_receipts!
+      send_order_receipt_to_admin!
+      send_order_receipt_to_buyer!
+      send_order_receipt_to_seller!
+    end
+
+    def send_order_receipt_to_admin!
+      return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_admin]
+
+      if Rails.env.production?
+        (OrdersMailer.order_receipt_to_admin(self).deliver rescue false)
+      else
+        OrdersMailer.order_receipt_to_admin(self).deliver
+      end
+    end
+
+    def send_order_receipt_to_buyer!
+      return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+
+      if Rails.env.production?
+        (OrdersMailer.order_receipt_to_buyer(self).deliver rescue false)
+      else
+        OrdersMailer.order_receipt_to_buyer(self).deliver
+      end
+    end
+
+    def send_order_receipt_to_seller!
+      return false unless purchased?(:stripe_connect) && EffectiveOrders.mailer[:send_order_receipt_to_seller]
+
+      order_items.group_by(&:seller).each do |seller, order_items|
+        if Rails.env.production?
+          (OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false)
+        else
+          OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver
+        end
+      end
+    end
+
   end
 end

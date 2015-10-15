@@ -35,7 +35,12 @@ module Effective
     def create
       @order ||= Order.new(current_cart, current_user)
       @order.attributes = order_params
-      @order.shipping_address = @order.billing_address if @order.shipping_address_same_as_billing?
+
+      if EffectiveOrders.require_shipping_address
+        if @order.shipping_address_same_as_billing? && @order.billing_address.present?
+          @order.shipping_address ||= @order.billing_address
+        end
+      end
 
       EffectiveOrders.authorized?(self, :create, @order)
 
@@ -76,7 +81,6 @@ module Effective
         @page_title = 'Checkout'
         render(:checkout) and return
       end
-
     end
 
     def index
@@ -114,17 +118,13 @@ module Effective
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      if (Effective::OrdersMailer.order_receipt_to_buyer(@order).deliver rescue false)
+      if @order.send_order_receipt_to_buyer!
         flash[:success] = "Successfully resent order receipt to #{@order.user.email}"
       else
         flash[:danger] = "Unable to send order receipt"
       end
 
-      begin
-        redirect_to :back
-      rescue => e
-        redirect_to effective_orders.admin_orders_path
-      end
+      redirect_to(:back) rescue effective_orders.order_path(@order)
     end
 
     def pretend_purchase
