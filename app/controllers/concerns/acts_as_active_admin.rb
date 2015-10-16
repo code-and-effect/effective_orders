@@ -1,10 +1,12 @@
-module ActsAsActiveAdmin
+module ActsAsActiveAdminController
   extend ActiveSupport::Concern
 
   module ActionController
     def acts_as_active_admin_controller(key)
+      puts "=== Including ActsAsActiveAdmin #{key}"
+
       @active_admin_resource_element_lookup_key = key
-      include ::ActsAsActiveAdmin
+      include ::ActsAsActiveAdminController
     end
   end
 
