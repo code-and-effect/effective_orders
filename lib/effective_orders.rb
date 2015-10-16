@@ -28,6 +28,7 @@ module EffectiveOrders
   mattr_accessor :obfuscate_order_ids
   mattr_accessor :silence_deprecation_warnings
 
+  mattr_accessor :allow_pretend_purchase_in_development
   mattr_accessor :allow_pretend_purchase_in_production
   mattr_accessor :allow_pretend_purchase_in_production_message
 

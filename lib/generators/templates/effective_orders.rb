@@ -74,6 +74,10 @@ EffectiveOrders.setup do |config|
   # and just display the 'Thank You' after checkout is clicked
   config.allow_free_orders = true
 
+  # Display a 'Purchase order' button on the Checkout screen allowing the user
+  # to purchase an Order without going through the payment processor
+  config.allow_pretend_purchase_in_development = true
+
   # Allow Pretend Purchase in Production
   # WARNING: Setting this option to true will allow users to purchase! an Order without entering a credit card
   # WARNING: When true, users can purchase! anything without paying money
