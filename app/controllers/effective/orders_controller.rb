@@ -91,15 +91,13 @@ module Effective
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
       @orders = Order.purchased_by(current_user)
-
-      EffectiveOrders.authorized?(self, :index, Effective::Order)
+      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Sales is a list of what products beign sold by me have been purchased
     def my_sales
       @order_items = OrderItem.sold_by(current_user)
-
-      EffectiveOrders.authorized?(self, :index, Effective::Order)
+      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
@@ -131,6 +129,7 @@ module Effective
       if (Rails.env.development? || Rails.env.test?) || EffectiveOrders.allow_pretend_purchase_in_production
         @order = Order.find(params[:id])
         EffectiveOrders.authorized?(self, :update, @order)
+
         order_purchased('for pretend', params[:purchased_redirect_url], params[:declined_redirect_url])
       end
     end
@@ -181,7 +180,7 @@ module Effective
         when 'my_purchases' ; 'Order History'
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'
-        when 'declined'     ; 'Unable to process payment'
+        when 'declined'     ; 'Payment Declined'
         when 'show'         ; 'Order Receipt'
         else 'Checkout'
       end

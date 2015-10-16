@@ -56,8 +56,8 @@ module Effective
       self.save_shipping_address = true
       self.shipping_address_same_as_billing = true
 
+      self.user = (items.delete(:user) if items.kind_of?(Hash)) || user
       add_to_order(items) if items.present?
-      self.user = user if user.present?
     end
 
     def add(item, quantity = 1)
@@ -94,6 +94,8 @@ module Effective
     alias_method :add_to_order, :add
 
     def user=(user)
+      return if user.nil?
+
       super
 
       # Copy user addresses into this order if they are present
