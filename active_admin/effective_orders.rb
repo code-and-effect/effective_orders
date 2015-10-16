@@ -2,7 +2,7 @@ if defined?(ActiveAdmin)
   require 'csv'
 
   ActiveAdmin.register Effective::Order, namespace: EffectiveOrders.active_admin_namespace, as: 'Orders' do
-    menu label: 'Orders', if: proc { (authorized?(:show, Effective::Order.new(nil, current_user)) rescue false) }
+    menu label: 'Orders', if: proc { (authorized?(:manage, Effective::Order.new(nil, current_user)) rescue false) }
 
     actions :index
 
