@@ -7,6 +7,10 @@ module EffectiveOrders
     # Include Helpers to base application
     initializer 'effective_orders.action_controller' do |app|
       ActiveSupport.on_load :action_controller do
+        if EffectiveOrders.use_active_admin
+          ActionController::Base.extend(ActsAsActiveAdminController::ActionController)
+        end
+
         helper EffectiveOrdersHelper
         helper EffectiveCartsHelper
         helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
@@ -45,13 +49,7 @@ module EffectiveOrders
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin
         require 'activeadmin'
-        puts "AM HERE IN EFFECTIVE ORDERS"
-
-        ActiveAdmin::Event.subscribe ActiveAdmin::Application::BeforeLoadEvent do
-          puts "SUBSCRIBED ACTIVEADMIN EVENT"
-          ::ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
-        end
-
+        ::ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
       end
     end
 
