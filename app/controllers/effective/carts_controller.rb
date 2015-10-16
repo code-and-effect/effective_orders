@@ -1,7 +1,8 @@
 module Effective
   class CartsController < ApplicationController
     include EffectiveCartsHelper
-    acts_as_active_admin_controller('carts') if defined?(ActiveAdmin) && EffectiveOrders.use_active_admin == true
+    include ActiveAdminHelpers::Carts if EffectiveOrders.use_active_admin
+
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:carts] : EffectiveOrders.layout)
 
     def show
