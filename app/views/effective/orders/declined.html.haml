@@ -1,10 +1,5 @@
-%h2 Unable to Purchase
-%p There was an error purchasing an order.
+%h2 Payment Declined
 
-= render @order
+%p Your #{link_to_current_cart(label: 'Shopping Cart')} items have been saved.  Please try again.
 
-%p Your cart has been restored.
 
-%hr
-= link_to 'Home', root_url, :class => 'btn btn-primary'
-= link_to_current_cart :class => 'btn btn-default'

@@ -1,4 +1,7 @@
 .effective-order
-  = render :partial => 'effective/orders/order_header', :locals => {:order => order}
-  = render :partial => 'effective/orders/order_shipping', :locals => {:order => order}
-  = render :partial => 'effective/orders/order_items', :locals => {:order => order}
+  - unless defined?(no_order_actions)
+    = render partial: 'effective/orders/order_actions', locals: {order: order}
+
+  = render partial: 'effective/orders/order_header', locals: {order: order}
+  = render partial: 'effective/orders/order_shipping', locals: {order: order}
+  = render partial: 'effective/orders/order_items', locals: {order: order}

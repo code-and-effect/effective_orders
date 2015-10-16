@@ -1,16 +1,5 @@
-- if @order.purchased?
-  %h2 Receipt
-- else
-  %h2 Order
-%hr
-
-%p.pull-right
-  %a.btn.btn-default{'data-role' => 'print-button', :class => 'print-button', :onClick => "window.print(); false;"} Print
-  - if @order.purchased?
-    = link_to 'Resend Receipt', effective_orders.resend_buyer_receipt_path(@order), :data => {'confirm' => 'This action will email you a copy of the original email receipt.  Send receipt now?', 'disable_with' => 'Resending...'}, :class => 'btn btn-default'
+%h2= (@order.purchased? ? 'Receipt' : 'Order')
 
 = render @order
-
-= link_to 'Back', :back, :class => 'btn btn-primary'
 
 

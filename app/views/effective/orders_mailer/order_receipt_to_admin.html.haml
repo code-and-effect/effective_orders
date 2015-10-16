@@ -5,4 +5,4 @@
   %body
     %p An order has been successfully purchased:
 
-    = render @order
+    = render(@order, no_order_actions: true)

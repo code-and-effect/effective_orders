@@ -1,0 +1,4 @@
+- if order.purchased?
+  %p.pull-right
+    = link_to 'Print', '#', :class => 'btn btn-default print-button', 'data-role' => 'print-button', :onClick => "window.print(); false;"
+    = link_to 'Resend Receipt', effective_orders.resend_buyer_receipt_path(order), :data => {'confirm' => 'This action will email you a copy of the original email receipt.  Send receipt now?', 'disable_with' => 'Resending...'}, :class => 'btn btn-default'
