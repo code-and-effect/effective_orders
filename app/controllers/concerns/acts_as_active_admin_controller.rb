@@ -3,6 +3,7 @@ module ActsAsActiveAdminController
 
   module ActionController
     def acts_as_active_admin_controller(key)
+      puts "== acts_as_active_admin_controller(#{key})"
       @active_admin_resource_element_lookup_key = key
       include ::ActsAsActiveAdminController
     end
