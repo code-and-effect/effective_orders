@@ -44,8 +44,14 @@ module EffectiveOrders
     # This prepends the load path so someone can override the assets.rb if they want.
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin
-        require 'active_admin'
-        ::ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
+        require 'activeadmin'
+        puts "AM HERE IN EFFECTIVE ORDERS"
+
+        ActiveAdmin::Event.subscribe ActiveAdmin::Application::BeforeLoadEvent do
+          puts "SUBSCRIBED ACTIVEADMIN EVENT"
+          ::ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
+        end
+
       end
     end
 
