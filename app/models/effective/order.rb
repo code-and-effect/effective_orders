@@ -197,7 +197,7 @@ module Effective
     def purchase!(payment_details = nil, opts = {})
       opts = {validate: true, email: true}.merge(opts)
 
-      return true if purchased?
+      return false if purchased?
       raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
 
       success = false
@@ -224,7 +224,7 @@ module Effective
     end
 
     def decline!(payment_details = nil)
-      return true if declined?
+      return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 

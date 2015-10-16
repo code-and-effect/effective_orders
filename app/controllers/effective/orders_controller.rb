@@ -38,7 +38,7 @@ module Effective
 
       if EffectiveOrders.require_shipping_address
         if @order.shipping_address_same_as_billing? && @order.billing_address.present?
-          @order.shipping_address ||= @order.billing_address
+          @order.shipping_address = @order.billing_address
         end
       end
 

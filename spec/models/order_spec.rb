@@ -164,10 +164,9 @@ describe Effective::Order do
       order.purchase!('by a test')
     end
 
-    it 'throws an error when purchased twice' do
+    it 'returns true when purchased twice' do
       order.purchase!('first time')
-
-      expect { order.purchase!('second time') }.to raise_error(EffectiveOrders::AlreadyPurchasedException)
+      order.purchase!('second time').should eq false
     end
 
     it 'sends emails to the admin, buyer and seller' do
@@ -245,10 +244,14 @@ describe Effective::Order do
       order.decline!('by a test')
     end
 
-    it 'throws an error when declined twice' do
+    it 'returns false when declined twice' do
       order.decline!('first time')
+      order.decline!('second time').should eq false
+    end
 
-      expect { order.decline!('second time') }.to raise_error(EffectiveOrders::AlreadyDeclinedException)
+    it 'returns false when declined twice' do
+      order.decline!('first time')
+      order.decline!('second time').should eq false
     end
 
     it 'is included with the declined scope' do
