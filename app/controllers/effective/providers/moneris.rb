@@ -16,6 +16,11 @@ module Effective
         purchased_redirect_url = params.delete(:rvar_purchased_redirect_url)
         declined_redirect_url = params.delete(:rvar_declined_redirect_url)
 
+        if @order.purchased?  # Fallback to a success condition of the Order is already purchased
+          order_purchased(params, purchased_redirect_url)
+          return
+        end
+
         if params[:result].to_s == '1' && params[:transactionKey].present?
           verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey])) || {}
 

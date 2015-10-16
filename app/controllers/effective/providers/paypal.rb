@@ -13,7 +13,9 @@ module Effective
         EffectiveOrders.authorized?(self, :update, @order)
 
         if @order.present?
-          if params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret]
+          if @order.purchased?
+            order_purchased(params)
+          elsif (params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret])
             order_purchased(params)
           else
             order_declined(params)
