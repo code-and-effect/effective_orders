@@ -4,5 +4,4 @@
   = simple_form_for(@stripe_charge || Effective::StripeCharge.new(order), (EffectiveOrders.simple_form_options || {}).merge(:url => effective_orders.stripe_charges_path)) do |f|
     = f.input :effective_order_id, :as => :hidden
     = f.input :token, :as => :hidden
-    = f.submit 'Continue to Payment', :class => 'btn btn-primary'
-
+    = f.submit 'Pay with Stripe', :class => 'stripe-button', :data => {'disable_with' => 'Continuing...' }

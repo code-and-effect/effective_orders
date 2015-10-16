@@ -3,7 +3,7 @@ stripeCheckoutHandler = (key, form) ->
     key: key
     token: (token, args) ->
       if token.error
-        form.find("input[type='submit']").prop('disabled', false)
+        form.find("input[type='submit']").removeProp('disabled')
         alert("An error ocurred when contacting Stripe.  Your card has not been charged.  Please refresh the page and try again. #{token.error.message}")
       else
         form.find("input[type='submit']").prop('disabled', true)
@@ -25,4 +25,4 @@ $(document).on 'click', "#effective-orders-new-subscription-form form input[type
       email: obj.data('user-email')
       description: plan.text()
       panelLabel: 'Start Subscription'
-      closed: -> form.find("input[type='submit']").prop('disabled', false)
+      closed: -> form.find("input[type='submit']").removeProp('disabled')
