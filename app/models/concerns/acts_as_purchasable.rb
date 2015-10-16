@@ -66,7 +66,7 @@ module ActsAsPurchasable
   end
 
   def title
-    self[:title] || 'ActsAsPurchasable'
+    self[:title] || to_s
   end
 
   def tax_exempt
