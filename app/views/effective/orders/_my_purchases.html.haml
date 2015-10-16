@@ -4,12 +4,14 @@
       %th Order
       %th Date of Purchase
       %th Description
+      %th
   %tbody
     - orders.each do |order|
       %tr
-        %td= link_to "##{order.to_param}", order_path.gsub(':id', order.to_param)
+        %td= order.to_param
         %td= order.purchased_at.strftime("%Y-%m-%d %H:%M")
         %td= order_summary(order)
+        %td= link_to 'View', order_path.gsub(':id', order.to_param)
 
 - unless orders.present?
   %p You have no purchased orders
