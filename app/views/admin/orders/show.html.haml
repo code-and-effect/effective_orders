@@ -1,11 +1,2 @@
 = render :partial => 'effective/orders/order', :locals => {:order => @order}
-%hr
 = render :partial => 'effective/orders/order_payment_details', :locals => {:order => @order}
-
-%hr
-= link_to 'Back', :back, :class => 'btn btn-primary'
-- if @order.purchased?
-  = '-'
-  = link_to 'Resend Receipt', effective_orders.resend_buyer_receipt_path(@order), 'data-confirm' => 'This action will email the buyer a copy of the original email receipt.  Send receipt now?', :class => 'btn btn-default'
-
-

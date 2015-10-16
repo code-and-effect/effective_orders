@@ -6,11 +6,7 @@
   - elsif order.declined?
     %p This order was declined with the following details:
 
-  %table.table
-    %tbody
-      - order.payment.each do |k, v|
-        %tr
-          %td= k
-          %td= v
+  = tableize_hash(order.payment)
+
 - else
   %p No payment details present

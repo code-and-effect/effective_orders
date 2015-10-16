@@ -104,4 +104,28 @@ module EffectiveOrdersHelper
   alias_method :render_purchases, :render_order_history
   alias_method :render_my_purchases, :render_order_history
 
+  # Used by the _payment_details partial
+  def tableize_hash(hash, options = {class: 'table table-bordered'})
+    if hash.present? && hash.kind_of?(Hash)
+      content_tag(:table, options[:class]) do
+        hash.map do |k, v|
+          content_tag(:tr) do
+            content_tag((options[:th] ? :th : :td), k) +
+            content_tag(:td) do
+              if v.kind_of?(Hash)
+                tableize_hash(v, options.merge({:class => 'table table-bordered', :th => (options.key?(:sub_th) ? options[:sub_th] : options[:th])}))
+              elsif v.kind_of?(Array)
+                '[' + v.join(', ') + ']'
+              else
+                v
+              end
+            end
+          end
+        end.join('').html_safe
+      end.html_safe
+    else
+      hash.to_s.html_safe
+    end
+  end
+
 end
