@@ -44,7 +44,7 @@ module EffectiveOrders
     # This prepends the load path so someone can override the assets.rb if they want.
     initializer 'effective_orders.active_admin' do
       if defined?(ActiveAdmin) && EffectiveOrders.use_active_admin == true
-        ActionController::Base.extend(ActsAsActiveAdminController::ActionController)
+        ActionController::Base.extend(::ActsAsActiveAdminController::ActionController)
         ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
       end
     end
