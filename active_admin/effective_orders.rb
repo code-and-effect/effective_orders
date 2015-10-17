@@ -62,7 +62,7 @@ if defined?(ActiveAdmin)
     end
 
     collection_action :export_csv do
-      @orders = Effective::Order.purchased
+      @orders = Effective::Order.purchased.includes(:addresses)
 
       col_headers = []
       col_headers << "Order ID"
@@ -81,9 +81,9 @@ if defined?(ActiveAdmin)
           row << order.to_param
           row << (order.billing_address.try(:full_name) || order.user.to_s)
           row << order.purchased_at.strftime("%Y-%m-%d %H:%M:%S %z")
-          row << "%.2f" % order.subtotal
-          row << "%.2f" % order.tax
-          row << "%.2f" % order.total
+          row << (order.subtotal / 100.0).round(2)
+          row << (order.tax / 100.0).round(2)
+          row << (order.total / 100.0).round(2)
 
           csv << row
         end
