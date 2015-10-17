@@ -8,7 +8,7 @@ module Effective
       end
 
       def paypal_postback
-        @order ||= Effective::Order.where(:id => params[:invoice].to_i).first
+        @order ||= Effective::Order.where(id: (params[:invoice].to_i rescue 0)).first
 
         EffectiveOrders.authorized?(self, :update, @order)
 

@@ -7,10 +7,6 @@ module EffectiveOrders
     # Include Helpers to base application
     initializer 'effective_orders.action_controller' do |app|
       ActiveSupport.on_load :action_controller do
-        if EffectiveOrders.use_active_admin
-          ActionController::Base.extend(ActsAsActiveAdminController::ActionController)
-        end
-
         helper EffectiveOrdersHelper
         helper EffectiveCartsHelper
         helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
@@ -44,12 +40,16 @@ module EffectiveOrders
       end
     end
 
-    # ActiveAdmin (optional)
-    # This prepends the load path so someone can override the assets.rb if they want.
+    # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin
         require 'activeadmin'
-        ::ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
+
+        ActiveSupport.on_load :action_controller do
+          ApplicationController.extend(ActsAsActiveAdminController::ActionController)
+        end
+
+        ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
       end
     end
 
