@@ -47,7 +47,7 @@ EffectiveOrders::Engine.routes.draw do
     match 'webhooks/stripe', :to => 'webhooks#stripe', :via => [:post, :put]
   end
 
-  if defined?(EffectiveDatatables) && !EffectiveOrders.use_active_admin == true
+  if defined?(EffectiveDatatables) && !EffectiveOrders.use_active_admin?
     namespace :admin do
       resources :customers, :only => [:index]
       resources :orders, :only => [:index, :show]

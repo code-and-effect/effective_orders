@@ -42,7 +42,7 @@ module EffectiveOrders
 
     # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
-      if EffectiveOrders.use_active_admin
+      if EffectiveOrders.use_active_admin?
         require 'activeadmin'
 
         ActiveSupport.on_load :action_controller do

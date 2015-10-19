@@ -80,6 +80,10 @@ module EffectiveOrders
     end
   end
 
+  def self.use_active_admin?
+    use_active_admin && defined?(ActiveAdmin)
+  end
+
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
   class AlreadyDeclinedException < Exception; end
