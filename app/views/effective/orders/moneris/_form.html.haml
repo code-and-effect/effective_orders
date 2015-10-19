@@ -26,8 +26,8 @@
 
   - if order.billing_address.present?
     - address = order.billing_address
-    = hidden_field_tag(:bill_first_name, address.first_name || order.user.try(:first_name))
-    = hidden_field_tag(:bill_last_name, address.last_name || order.user.try(:last_name))
+    = hidden_field_tag(:bill_first_name, address.first_name || order.try(:user).try(:first_name))
+    = hidden_field_tag(:bill_last_name, address.last_name || order.try(:user).try(:last_name))
     = hidden_field_tag(:bill_address_one, address.address1)
     = hidden_field_tag(:bill_city, address.city)
     = hidden_field_tag(:bill_state_or_province, address.state)
@@ -36,8 +36,8 @@
 
   - if order.shipping_address.present?
     - address = order.shipping_address
-    = hidden_field_tag(:ship_first_name, address.first_name || order.user.try(:first_name))
-    = hidden_field_tag(:ship_last_name, address.last_name || order.user.try(:last_name))
+    = hidden_field_tag(:ship_first_name, address.first_name || order.try(:user).try(:first_name))
+    = hidden_field_tag(:ship_last_name, address.last_name || order.try(:user).try(:last_name))
     = hidden_field_tag(:ship_address_one, address.address1)
     = hidden_field_tag(:ship_city, address.city)
     = hidden_field_tag(:ship_state_or_province, address.state)
