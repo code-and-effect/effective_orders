@@ -1,12 +1,13 @@
-%h4 Payment Details
+.effective-order-payment-details
+  %h4 Payment Details
 
-- if order.payment.present?
-  - if order.purchased?
-    %p This order was purchased with the following details:
-  - elsif order.declined?
-    %p This order was declined with the following details:
+  - if order.payment.present?
+    - if order.purchased?
+      %p This order was purchased with the following details:
+    - elsif order.declined?
+      %p This order was declined with the following details:
 
-  = tableize_hash(order.payment)
+    = tableize_hash(order.payment)
 
-- else
-  %p No payment details present
+  - else
+    %p No payment details present

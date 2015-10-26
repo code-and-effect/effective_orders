@@ -1,21 +1,22 @@
-%table.table{:style => 'width: 600px;margin-bottom:25px;'}
-  %thead
-    %tr
-      %th{:style => 'text-align: left;'}= "#{order.purchased? ? 'Sold to' : 'Bill to'}"
-      - if order.shipping_address.present? && !order.shipping_address.empty?
-        %th{:style => 'text-align: left;'} Ship to
+.effective-order-shipping
+  %table.table{:style => 'width: 600px;margin-bottom:25px;'}
+    %thead
+      %tr
+        %th{:style => 'text-align: left;'}= "#{order.purchased? ? 'Sold to' : 'Bill to'}"
+        - if order.shipping_address.present? && !order.shipping_address.empty?
+          %th{:style => 'text-align: left;'} Ship to
 
-  %tbody
-    %tr
-      %td{:style => 'text-align: left;'}
-        - if order.billing_address.present? && !order.billing_address.empty?
-          = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address, :email => order.user.email}
-        - else
-          = order.billing_name
-          %br
-          = mail_to(order.user.email)
-          %br
-
-      - if order.shipping_address.present? && !order.shipping_address.empty?
+    %tbody
+      %tr
         %td{:style => 'text-align: left;'}
-          = render :partial => 'effective/addresses/address', :locals => {:address => order.shipping_address}
+          - if order.billing_address.present? && !order.billing_address.empty?
+            = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address, :email => order.user.email}
+          - else
+            = order.billing_name
+            %br
+            = mail_to(order.user.email)
+            %br
+
+        - if order.shipping_address.present? && !order.shipping_address.empty?
+          %td{:style => 'text-align: left;'}
+            = render :partial => 'effective/addresses/address', :locals => {:address => order.shipping_address}
