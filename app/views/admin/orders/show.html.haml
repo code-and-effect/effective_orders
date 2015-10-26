@@ -1,2 +1,3 @@
-= render :partial => 'effective/orders/order', :locals => {:order => @order}
-= render :partial => 'effective/orders/order_payment_details', :locals => {:order => @order}
+%h2= (@order.purchased? ? 'Receipt' : 'Order')
+
+= render @order

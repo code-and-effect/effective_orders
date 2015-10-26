@@ -43,22 +43,8 @@ if defined?(ActiveAdmin)
       column :purchased_at
 
       column do |order|
-        links = link_to('View', effective_orders.order_path(order), class: 'member_link view_link')
-
-        if authorized?(:manage, Effective::Order) # This is the Admin level check
-          details_path = ['details', EffectiveOrders.active_admin_namespace.presence, 'order_path'].compact.join('_')
-          links += link_to('Details', public_send(details_path, order))
-        end
-
-        links
+        link_to('View Receipt', effective_orders.admin_order_path(order), class: 'member_link view_link')
       end
-    end
-
-    member_action :details do
-      @order = Effective::Order.find(params[:id])
-      @page_title = "Order ##{@order.to_param} Details"
-
-      render file: 'admin/orders/show'
     end
 
     collection_action :export_csv do
