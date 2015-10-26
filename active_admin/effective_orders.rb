@@ -18,7 +18,7 @@ if defined?(ActiveAdmin)
       include EffectiveOrdersHelper
 
       def scoped_collection
-        end_of_association_chain.includes(:user).includes(:order_items => :purchasable)
+        end_of_association_chain.includes(:user).includes(order_items: :purchasable)
       end
     end
 
@@ -33,7 +33,8 @@ if defined?(ActiveAdmin)
       end
 
       column 'Buyer', :sortable => :user_id do |order|
-        link_to order.user, (admin_user_path(order.user) rescue '#')
+        user_path = [EffectiveOrders.active_admin_namespace.presence, 'user_path'].compact.join('_')
+        link_to order.user, (public_send(user_path, order.user) rescue '#')
       end
 
       column 'Summary' do |order|
@@ -41,37 +42,41 @@ if defined?(ActiveAdmin)
       end
 
       column :purchased_at
+      column :purchase_method
 
       column do |order|
-        link_to('View Receipt', effective_orders.admin_order_path(order), class: 'member_link view_link')
+        link_to('View Receipt', effective_orders.order_path(order), class: 'member_link view_link') if order.purchased?
       end
+
     end
 
     collection_action :export_csv do
       @orders = Effective::Order.purchased.includes(:addresses)
 
       col_headers = []
-      col_headers << "Order ID"
+      col_headers << "Order"
+      col_headers << "Purchased at"
+      col_headers << "Email"
       col_headers << "Full Name"
-      col_headers << "Purchased"
       col_headers << "Subtotal"
       col_headers << "Tax"
       col_headers << "Total"
+      col_headers << 'Purchase method'
 
       csv_string = CSV.generate do |csv|
         csv << col_headers
 
         @orders.each do |order|
-          row = []
-
-          row << order.to_param
-          row << (order.billing_address.try(:full_name) || order.user.to_s)
-          row << order.purchased_at.strftime("%Y-%m-%d %H:%M:%S %z")
-          row << (order.subtotal / 100.0).round(2)
-          row << (order.tax / 100.0).round(2)
-          row << (order.total / 100.0).round(2)
-
-          csv << row
+          csv << [
+            order.to_param,
+            order.purchased_at.strftime("%Y-%m-%d %H:%M:%S %z"),
+            order.user.try(:email),
+            (order.billing_address.try(:full_name) || order.user.to_s),
+            (order.subtotal / 100.0).round(2),
+            (order.tax / 100.0).round(2),
+            (order.total / 100.0).round(2),
+            order.purchase_method
+          ]
         end
       end
 

@@ -238,6 +238,22 @@ module Effective
       end
     end
 
+    def purchase_method
+      if purchased?(:stripe_connect)
+        'Stripe Connect'
+      elsif purchased?(:stripe)
+        'Stripe'
+      elsif purchased?(:moneris)
+        'Moneris'
+      elsif purchased?(:paypal)
+        'PayPal'
+      elsif purchased?
+        'Online'
+      else
+        'None'
+      end
+    end
+
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
       return true if provider == nil
