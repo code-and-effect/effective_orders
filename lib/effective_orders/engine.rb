@@ -44,12 +44,16 @@ module EffectiveOrders
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin?
         require 'activeadmin'
+        ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
 
-        ActiveSupport.on_load :action_controller do
-          ApplicationController.extend(ActsAsActiveAdminController::ActionController)
+        Rails.application.config.to_prepare do
+          ActiveSupport.on_load :action_controller do
+            ApplicationController.extend(ActsAsActiveAdminController::ActionController)
+            Effective::OrdersController.send(:acts_as_active_admin_controller, 'orders')
+            Effective::CartsController.send(:acts_as_active_admin_controller, 'carts')
+          end
         end
 
-        ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
       end
     end
 
