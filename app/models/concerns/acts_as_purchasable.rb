@@ -103,6 +103,10 @@ module ActsAsPurchasable
     orders.select { |order| order.purchased? }
   end
 
+  def purchased_order
+    purchased_orders.first
+  end
+
   def quantity_enabled?
     self.respond_to?(:quantity_enabled) ? quantity_enabled == true : false
   end
