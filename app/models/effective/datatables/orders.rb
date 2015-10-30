@@ -29,6 +29,7 @@ if defined?(EffectiveDatatables)
           end
 
           table_column(:total) { |order| price_to_currency(order[:total].to_i) }
+          table_column :payment_method
 
           table_column :created_at, :visible => false
           table_column :updated_at, :visible => false
@@ -70,15 +71,22 @@ if defined?(EffectiveDatatables)
           'SUM((order_items.price * order_items.quantity) + (CASE order_items.tax_exempt WHEN true THEN 0 ELSE ((order_items.price * order_items.quantity) * order_items.tax_rate) END))'
         end
 
+        def query_payment_method
+          "SUBSTRING(payment FROM 'card: (\\w{1,2})\\n')"
+        end
+
         def search_column(collection, table_column, search_term)
-          if table_column[:name] == 'subtotal'
-            collection.having("#{query_subtotal} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
-          elsif table_column[:name] == 'tax'
-            collection.having("#{query_tax} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
-          elsif table_column[:name] == 'total'
-            collection.having("#{query_total} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
-          elsif table_column[:name] == 'purchase_state' && search_term == 'abandoned'
-            collection.where(purchase_state: nil)
+          case table_column[:name]
+          when 'subtotal'
+            then collection.having("#{query_subtotal} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
+          when 'tax'
+            then collection.having("#{query_tax} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
+          when 'total'
+            then collection.having("#{query_total} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
+          when 'purchase_state'
+            then search_term == 'abandoned' ? collection.where(purchase_state: nil) : super
+          when 'payment_method'
+            then collection.having("#{query_payment_method} = ?", search_term)
           else
             super
           end
