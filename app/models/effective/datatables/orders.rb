@@ -46,6 +46,7 @@ if defined?(EffectiveDatatables)
             .select('orders.*, users.email AS email')
             .select("#{query_total} AS total")
             .select("string_agg(order_items.title, '!!SEP!!') AS order_items")
+            .select("#{query_payment_method} AS payment_method")
 
           if EffectiveOrders.require_billing_address && defined?(EffectiveAddresses)
             addresses_tbl = EffectiveAddresses.addresses_table_name
@@ -72,7 +73,7 @@ if defined?(EffectiveDatatables)
         end
 
         def query_payment_method
-          "SUBSTRING(payment FROM 'card: (\\w{1,2})\\n')"
+          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'))"
         end
 
         def search_column(collection, table_column, search_term)
@@ -86,7 +87,7 @@ if defined?(EffectiveDatatables)
           when 'purchase_state'
             then search_term == 'abandoned' ? collection.where(purchase_state: nil) : super
           when 'payment_method'
-            then collection.having("#{query_payment_method} = ?", search_term)
+            then collection.having("#{query_payment_method} LIKE ?", "#{search_term}%")
           else
             super
           end
