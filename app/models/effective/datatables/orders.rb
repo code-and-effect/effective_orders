@@ -22,9 +22,9 @@ if defined?(EffectiveDatatables)
             order.purchase_state || 'abandoned'
           end
 
-          table_column :order_items, sortable: false, column: 'order_items.title' do |order|
+          table_column :items, label: 'Order Items', sortable: false, column: query_items_list do |order|
             content_tag(:ul) do
-              (order[:order_items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi) }.join.html_safe
+              (order[:items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi) }.join.html_safe
             end
           end
 
@@ -45,7 +45,7 @@ if defined?(EffectiveDatatables)
             .group('users.email, orders.id')
             .select('orders.*, users.email AS email')
             .select("#{query_total} AS total")
-            .select("string_agg(order_items.title, '!!SEP!!') AS order_items")
+            .select("#{query_items_list} AS items")
             .select("#{query_payment_method} AS payment_method")
 
           if EffectiveOrders.require_billing_address && defined?(EffectiveAddresses)
@@ -72,6 +72,10 @@ if defined?(EffectiveDatatables)
           'SUM((order_items.price * order_items.quantity) + (CASE order_items.tax_exempt WHEN true THEN 0 ELSE ((order_items.price * order_items.quantity) * order_items.tax_rate) END))'
         end
 
+        def query_items_list
+          "string_agg(order_items.title, '!!SEP!!')"
+        end
+
         def query_payment_method
           "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'))"
         end
@@ -86,6 +90,8 @@ if defined?(EffectiveDatatables)
             then collection.having("#{query_total} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
           when 'purchase_state'
             then search_term == 'abandoned' ? collection.where(purchase_state: nil) : super
+          when 'items'
+            then collection.having("#{query_items_list} ILIKE ?", "%#{search_term}%")
           when 'payment_method'
             then collection.having("#{query_payment_method} LIKE ?", "#{search_term}%")
           else
