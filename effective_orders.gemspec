@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency "sass-rails"
   s.add_dependency "migrant"
   s.add_dependency "simple_form"
-  s.add_dependency "effective_addresses", [">= 1.1.0"]
+  s.add_dependency "effective_addresses", [">= 1.3.6"]
   s.add_dependency "effective_obfuscation", [">= 1.0.2"]
   s.add_dependency "stripe", [">= 1.19.0"]
 
