@@ -1,5 +1,5 @@
 hideShippingAddressFields = (shipping_address) ->
-  shipping_address.hide().find('input,select').removeProp('required')
+  shipping_address.hide().find('input,select').removeAttr('required')
 
 showShippingAddressFields = (shipping_address) ->
   shipping_address.show().find("input:not([name$='[address2]']),select:not([name$='[state_code]'])").prop('required', true)
