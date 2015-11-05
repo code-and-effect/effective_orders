@@ -1,7 +1,8 @@
+require 'haml-rails'
+require 'migrant'
+require 'simple_form'
 require 'effective_addresses'
 require 'effective_obfuscation'
-require 'migrant'     # Required for rspec to run properly
-require 'simple_form'
 require 'effective_orders/engine'
 
 module EffectiveOrders
