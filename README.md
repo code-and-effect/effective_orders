@@ -406,12 +406,19 @@ end
 
 ### Permissions
 
-The permissions you actually want to define are as follows (using CanCan):
+The permissions you actually want to define for a regular user are as follows (using CanCan):
 
 ```ruby
 can [:manage], Effective::Cart, :user_id => user.id
 can [:manage], Effective::Order, :user_id => user.id # Orders cannot be deleted
 can [:manage], Effective::Subscription, :user_id => user.id
+```
+
+In addition to the above, the following permissions allow access to the `/admin` screens:
+
+```ruby
+can :admin, :effective_orders # Can access the admin screens
+can :show, :payment_details # Can see the payment purchase details on orders
 ```
 
 ## Whats Included
@@ -753,6 +760,8 @@ Once Order id=1 has been purchased/declined, you will be unable to purchase an o
 
 
 ## Paying via Stripe
+
+Make sure `gem 'stripe'` is included in your Gemfile.
 
 First register for an account with Stripe
 
