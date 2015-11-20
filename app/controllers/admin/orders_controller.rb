@@ -8,6 +8,7 @@ module Admin
       @datatable = Effective::Datatables::Orders.new() if defined?(EffectiveDatatables)
       @page_title = 'Orders'
 
+      EffectiveOrders.authorized?(self, :admin, :effective_orders)
       EffectiveOrders.authorized?(self, :index, Effective::Order)
     end
 
