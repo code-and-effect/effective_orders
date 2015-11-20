@@ -7,4 +7,4 @@
     - elsif order.declined?
       %p This order was declined with the following details:
 
-    = tableize_hash(order.payment)
+    = tableize_hash(order.payment, class: 'table')
