@@ -35,7 +35,12 @@ module EffectiveOrders
     # Set up our Stripe API Key
     initializer "effective_orders.stripe_api_key", :after => :load_config_initializers do |app|
       if EffectiveOrders.stripe_enabled
-        require 'stripe'
+        begin
+          require 'stripe'
+        rescue Exception
+          raise "unable to load stripe.  Plese add gem 'stripe' to your Gemfile and then 'bundle install'"
+        end
+
         ::Stripe.api_key = EffectiveOrders.stripe[:secret_key]
       end
     end
@@ -43,7 +48,12 @@ module EffectiveOrders
     # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin?
-        require 'activeadmin'
+        begin
+          require 'activeadmin'
+        rescue Exception
+          raise "unable to load activeadmin.  Plese add gem 'activeadmin' to your Gemfile and then 'bundle install'"
+        end
+
         ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
 
         Rails.application.config.to_prepare do
