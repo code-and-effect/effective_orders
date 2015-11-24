@@ -1,10 +1,3 @@
 - if order.payment.present?
   .effective-order-payment-details
-    %h4 Payment Details
-
-    - if order.purchased?
-      %p This order was purchased with the following details:
-    - elsif order.declined?
-      %p This order was declined with the following details:
-
-    = tableize_hash(order.payment, class: 'table')
+    = tableize_hash(order.payment, {class: 'table', title: 'Payment Details'})
