@@ -28,6 +28,10 @@ module Effective
     scope :sold, -> { joins(:order).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}) }
     scope :sold_by, lambda { |user| sold().where(:seller_id => user.try(:id)) }
 
+    def to_s
+      (quantity || 0) > 1 ? "#{quantity}x #{title}" : title
+    end
+
     def subtotal
       price * quantity
     end
