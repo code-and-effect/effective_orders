@@ -239,6 +239,8 @@ module Effective
     end
 
     def purchase_method
+      return 'None' unless purchased?
+
       if purchased?(:stripe_connect)
         'Stripe Connect'
       elsif purchased?(:stripe)
@@ -247,31 +249,45 @@ module Effective
         'Moneris'
       elsif purchased?(:paypal)
         'PayPal'
-      elsif purchased?
-        'Online'
       else
-        'None'
+        'Online'
+      end
+    end
+
+    def purchase_card_type
+      return 'None' unless purchased?
+
+      if purchased?(:stripe_connect)
+        ((payment[:charge] || payment['charge'])['card']['brand'] rescue 'Unknown')
+      elsif purchased?(:stripe)
+        ((payment[:charge] || payment['charge'])['card']['brand'] rescue 'Unknown')
+      elsif purchased?(:moneris)
+        payment[:card] || payment['card'] || 'Unknown'
+      elsif purchased?(:paypal)
+        payment[:payment_type] || payment['payment_type'] || 'Unknown'
+      else
+        'Online'
       end
     end
 
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
-      return true if provider == nil
+      return true if provider == nil || payment.kind_of?(Hash) == false
 
-      begin
-        case provider
-        when :stripe_connect
-          payment.keys.first.kind_of?(Numeric) && payment[payment.keys.first].key?('object') && payment[payment.keys.first]['object'] == 'charge'
-        when :stripe
-          payment.key?('object') && payment['object'] == 'charge'
-        when :moneris
-          payment.key?('response_code') && payment.key?('transactionKey')
-        when :paypal
-        else
-          false
-        end
-      rescue => e
-        false
+      case provider.to_sym
+      when :stripe_connect
+        charge = (payment[:charge] || payment['charge'])
+        charge['id'] && charge['customer'] && charge['application_fee'].present?
+      when :stripe
+        charge = (payment[:charge] || payment['charge'])
+        charge['id'] && charge['customer']
+      when :moneris
+        (payment[:response_code] || payment['response_code']) &&
+        (payment[:transactionKey] || payment['transactionKey'])
+      when :paypal
+        (payment[:payer_email] || payment['payer_email'])
+      else
+        raise "Unknown provider #{provider} passed to Effective::Order.purchased?"
       end
     end
 
