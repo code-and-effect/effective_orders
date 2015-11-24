@@ -105,7 +105,7 @@ module EffectiveOrdersHelper
   alias_method :render_my_purchases, :render_order_history
 
   # Used by the _payment_details partial
-  def tableize_hash(hash, options = {class: 'table table-bordered'})
+  def tableize_order_payment(hash, options = {class: 'table table-bordered'})
     if hash.present? && hash.kind_of?(Hash)
       content_tag(:table, class: options[:class]) do
         title = options.delete(:title)
