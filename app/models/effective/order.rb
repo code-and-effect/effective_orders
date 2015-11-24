@@ -253,6 +253,7 @@ module Effective
         'Online'
       end
     end
+    alias_method :payment_method, :purchase_method
 
     def purchase_card_type
       return 'None' unless purchased?
@@ -269,6 +270,7 @@ module Effective
         'Online'
       end
     end
+    alias_method :payment_card_type, :purchase_card_type
 
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
