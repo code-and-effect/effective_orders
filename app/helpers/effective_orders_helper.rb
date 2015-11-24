@@ -15,7 +15,7 @@ module EffectiveOrdersHelper
             title[1..-1].each { |line| output << "<br>#{line}" }
           end.html_safe
         end
-      end.join().html_safe
+      end.join.html_safe
     end
   end
 
@@ -107,22 +107,28 @@ module EffectiveOrdersHelper
   # Used by the _payment_details partial
   def tableize_hash(hash, options = {class: 'table table-bordered'})
     if hash.present? && hash.kind_of?(Hash)
-      content_tag(:table, options[:class]) do
-        hash.map do |k, v|
-          content_tag(:tr) do
-            content_tag((options[:th] ? :th : :td), k) +
-            content_tag(:td) do
-              if v.kind_of?(Hash)
-                tableize_hash(v, options.merge({:class => 'table table-bordered', :th => (options.key?(:sub_th) ? options[:sub_th] : options[:th])}))
-              elsif v.kind_of?(Array)
-                '[' + v.join(', ') + ']'
-              else
-                v
+      content_tag(:table, class: options[:class]) do
+        title = options.delete(:title)
+
+        content = content_tag(:tbody) do
+          hash.map do |k, v|
+            content_tag(:tr) do
+              content_tag((options[:th] ? :th : :td), k) +
+              content_tag(:td) do
+                if v.kind_of?(Hash)
+                  tableize_hash(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
+                elsif v.kind_of?(Array)
+                  '[' + v.join(', ') + ']'
+                else
+                  v
+                end
               end
             end
-          end
-        end.join('').html_safe
-      end.html_safe
+          end.join.html_safe
+        end
+
+        title.blank? ? content : (content_tag(:thead) { content_tag(:tr) { content_tag(:th, title, colspan: 2) } } + content)
+      end
     else
       hash.to_s.html_safe
     end

@@ -28,21 +28,38 @@ if defined?(ActiveAdmin)
     end
 
     index :download_links => false do
+      column :purchased_at
+
       column 'Order', :sortable => :id do |order|
         link_to "##{order.to_param}", effective_orders.order_path(order)
       end
 
-      column 'Buyer', :sortable => :user_id do |order|
+      column 'Buyer Email' do |order|
+        mail_to order.user.email
+      end
+
+      column 'Buyer Name', :sortable => :user_id do |order|
         user_path = [EffectiveOrders.active_admin_namespace.presence, 'user_path'].compact.join('_')
         link_to order.user, (public_send(user_path, order.user) rescue '#')
       end
 
-      column 'Summary' do |order|
-        order_summary(order)
+      column 'Order Items' do |order|
+        content_tag(:ul) do
+          (order.order_items).map { |oi| content_tag(:li, oi) }.join.html_safe
+        end
       end
 
-      column :purchased_at
-      column :purchase_method
+      column 'Total' do |order|
+        price_to_currency(order.total)
+      end
+
+      column :payment_method do |order|
+        order.payment_method
+      end
+
+      column :payment_card_type do |order|
+        order.payment_card_type
+      end
 
       column do |order|
         link_to('View Receipt', effective_orders.order_path(order), class: 'member_link view_link') if order.purchased?
