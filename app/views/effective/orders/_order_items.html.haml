@@ -1,40 +1,48 @@
 - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
 
 .effective-order
-  %table.table{:style => 'width: 600px;margin-bottom:25px;'}
-
+  %table.table
     %thead
       %tr
-        %th.quantity{:style => 'text-align: left;'} Qty
-        %th.item{:style => 'text-align: left;'} Item
+        %th.quantity Qty
+        %th.item= order.order_items.length > 1 ? 'Items' : 'Item'
         - if include_download_column
-          %th.download{:style => 'text-align: left;'} Download
-        %th.price{:style => 'text-align: right;'} Price
+          %th.download Download
+        %th.price Price
 
     %tbody
       - order.order_items.each do |item|
         %tr
-          %td.quantity{:style => 'text-align: left;'}= item.quantity
-          %td.item{:style => 'text-align: left;'}
+          %td.quantity= item.quantity
+          %td.item
             = item.title.html_safe
             - if order.new_record? && item.purchasable.kind_of?(Effective::Subscription)
               = render :partial => 'effective/orders/stripe/subscription_fields', :locals => {:form => form, :subscription => item.purchasable }
 
           - if include_download_column
-            %td.download{:style => 'text-align: left;'}
+            %td.download
               - if item.purchased? && (item.purchased_download_url rescue nil).present?
                 = link_to 'download', item.purchased_download_url
               - else
                 = '-'
-          %td.price{:style => 'text-align: right;'}= price_to_currency(item.subtotal)
+          %td.price= price_to_currency(item.subtotal)
 
     %tfoot
       %tr
-        %th{:style => 'text-align: right;', :colspan => (include_download_column ? 3 : 2)} Subtotal
-        %td.price{:style => 'text-align: right;'}= price_to_currency(order.subtotal)
+        %th.quantity
+        - if include_download_column
+          %th.download
+        %th.subtotal Subtotal
+        %td.price.subtotal-price= price_to_currency(order.subtotal)
       %tr
-        %th{:style => 'text-align: right;', :colspan => (include_download_column ? 3 : 2)} Tax
-        %td.price{:style => 'text-align: right;'}= price_to_currency(order.tax)
+        %th.quantity
+        - if include_download_column
+          %th.download
+        %th.tax Tax
+        %td.price.tax-price= price_to_currency(order.tax)
       %tr
-        %th{:style => 'text-align: right;', :colspan => (include_download_column ? 3 : 2)} Total Due
-        %td.price{:style => 'text-align: right;'}= price_to_currency(order.total)
+        %th.quantity
+        - if include_download_column
+          %th.download
+        %th.total Total Due
+        %td.price.total-price= price_to_currency(order.total)

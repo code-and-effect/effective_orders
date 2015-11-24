@@ -1,6 +1,8 @@
 .effective-order {
-  .table {
+  table {
     clear: both;
+    width: 600px;
+    margin-bottom: 25px;
 
     tfoot {
       > tr:first-child {
@@ -13,11 +15,15 @@
         padding-right: 65px;
       }
 
+      td {
+        text-align: right;
+      }
+
       .actions { border: none; }
     }
-
-    .price { text-align: right; }
   }
+
+  .price { text-align: right; }
 
   .effective-stripe-subscription {
     input {
