@@ -34,5 +34,10 @@
   > * {
     display: inline-block;
   }
+}
 
+@media print {
+  .effective-order-purchase-actions { display: none; }
+  .print-button { display: none; }
+  .resend-receipt-button { display: none; }
 }
