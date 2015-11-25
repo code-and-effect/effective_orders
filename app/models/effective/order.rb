@@ -276,6 +276,9 @@ module Effective
       return false if (purchase_state != EffectiveOrders::PURCHASED)
       return true if provider == nil || payment.kind_of?(Hash) == false
 
+      return true if pretend? && provider.blank?
+      return false if pretend? && provider.present?
+
       case provider.to_sym
       when :stripe_connect
         charge = (payment[:charge] || payment['charge'])
@@ -295,6 +298,10 @@ module Effective
 
     def declined?
       purchase_state == EffectiveOrders::DECLINED
+    end
+
+    def pretend?
+      payment[:details] == 'for pretend'
     end
 
     def send_order_receipts!
