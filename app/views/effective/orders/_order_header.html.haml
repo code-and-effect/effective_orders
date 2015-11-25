@@ -2,7 +2,8 @@
   %h3 Acme Industries Inc.
   .row
     .col-sm-6
-      %p= mail_to EffectiveOrders.mailer[:admin_email] || 'info@acmeindustries.com'
+      - email_address = EffectiveOrders.mailer[:admin_email] || 'info@acmeindustries.com'
+      %p= mail_to u(email_address), email_address
       %p
         1234 Fake Street
         %br
