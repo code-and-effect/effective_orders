@@ -165,8 +165,8 @@ describe Effective::Order do
     end
 
     it 'returns true when purchased twice' do
-      order.purchase!('first time')
-      order.purchase!('second time').should eq false
+      order.purchase!('first time by a test')
+      order.purchase!('second time by a test').should eq false
     end
 
     it 'sends emails to the admin, buyer and seller' do

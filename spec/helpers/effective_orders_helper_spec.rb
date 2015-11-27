@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe EffectiveOrdersHelper do
+describe EffectiveOrdersHelper, :type => :helper do
   describe '#price_to_currency' do
     it 'converts an integer number of cents to a currency formatted string' do
       price_to_currency(1050).should eq '$10.50'

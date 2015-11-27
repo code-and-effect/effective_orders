@@ -276,16 +276,13 @@ module Effective
       return false if (purchase_state != EffectiveOrders::PURCHASED)
       return true if provider == nil || payment.kind_of?(Hash) == false
 
-      return true if pretend? && provider.blank?
-      return false if pretend? && provider.present?
-
       case provider.to_sym
       when :stripe_connect
         charge = (payment[:charge] || payment['charge'])
-        charge['id'] && charge['customer'] && charge['application_fee'].present?
+        charge['id'] && charge['customer'] && charge['application_fee'].present? if charge.present?
       when :stripe
         charge = (payment[:charge] || payment['charge'])
-        charge['id'] && charge['customer']
+        charge['id'] && charge['customer'] if charge.present?
       when :moneris
         (payment[:response_code] || payment['response_code']) &&
         (payment[:transactionKey] || payment['transactionKey'])
@@ -298,10 +295,6 @@ module Effective
 
     def declined?
       purchase_state == EffectiveOrders::DECLINED
-    end
-
-    def pretend?
-      payment[:details] == 'for pretend'
     end
 
     def send_order_receipts!

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Effective::OrdersController do
+describe Effective::OrdersController, type: :controller do
   routes { EffectiveOrders::Engine.routes }
 
   let(:purchased_order) { FactoryGirl.create(:purchased_order) }
@@ -288,7 +288,7 @@ describe Effective::OrdersController do
     let(:subscription) { cart_with_subscription.cart_items.find { |obj| obj.purchasable.kind_of?(Effective::Subscription)}.purchasable }
 
     let(:valid_order_with_new_subscription_coupon_attributes) do
-      valid_order_attributes.tap { |x| x[:effective_order]['order_items_attributes'] = {'0' => {"class"=>"Effective::Subscription", "stripe_coupon_id"=>"#{::Stripe::Coupon.create().id}", 'id' => "#{subscription.id}"}} }
+      valid_order_attributes.tap { |x| x[:effective_order]['order_items_attributes'] = {'0' => {"class"=>"Effective::Subscription", "stripe_coupon_id"=>"#{FactoryGirl.create(:stripe_coupon).id}", 'id' => "#{subscription.id}"}} }
     end
 
     before do
