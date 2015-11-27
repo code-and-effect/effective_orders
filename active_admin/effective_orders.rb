@@ -18,7 +18,9 @@ if defined?(ActiveAdmin)
       include EffectiveOrdersHelper
 
       def scoped_collection
-        end_of_association_chain.includes(:user).includes(order_items: :purchasable)
+        scoped = end_of_association_chain.includes(:user).includes(order_items: :purchasable)
+        scoped = scoped.where(user: current_user) if !authorized?(:admin, :effective_orders)
+        scoped
       end
     end
 
@@ -45,7 +47,7 @@ if defined?(ActiveAdmin)
 
       column 'Order Items' do |order|
         content_tag(:ul) do
-          (order.order_items).map { |oi| content_tag(:li, oi) }.join.html_safe
+          (order.order_items).map { |oi| content_tag(:li, oi.to_s.html_safe) }.join.html_safe
         end
       end
 
@@ -79,6 +81,7 @@ if defined?(ActiveAdmin)
       col_headers << "Tax"
       col_headers << "Total"
       col_headers << 'Purchase method'
+      col_headers << 'Card Type'
 
       csv_string = CSV.generate do |csv|
         csv << col_headers
@@ -92,7 +95,8 @@ if defined?(ActiveAdmin)
             (order.subtotal / 100.0).round(2),
             (order.tax / 100.0).round(2),
             (order.total / 100.0).round(2),
-            order.purchase_method
+            order.payment_method,
+            order.payment_card_type
           ]
         end
       end

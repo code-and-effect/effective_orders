@@ -278,11 +278,11 @@ module Effective
 
       case provider.to_sym
       when :stripe_connect
-        charge = (payment[:charge] || payment['charge'])
-        charge['id'] && charge['customer'] && charge['application_fee'].present? if charge.present?
+        charge = (payment[:charge] || payment['charge'] || {})
+        charge['id'] && charge['customer'] && charge['application_fee'].present?
       when :stripe
-        charge = (payment[:charge] || payment['charge'])
-        charge['id'] && charge['customer'] if charge.present?
+        charge = (payment[:charge] || payment['charge'] || {})
+        charge['id'] && charge['customer']
       when :moneris
         (payment[:response_code] || payment['response_code']) &&
         (payment[:transactionKey] || payment['transactionKey'])

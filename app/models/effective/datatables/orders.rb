@@ -24,7 +24,7 @@ if defined?(EffectiveDatatables)
 
           table_column :items, label: 'Order Items', sortable: false, column: query_items_list do |order|
             content_tag(:ul) do
-              (order[:items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi) }.join.html_safe
+              (order[:items] || '').split('!!SEP!!').map { |oi| content_tag(:li, oi.to_s.html_safe) }.join.html_safe
             end
           end
 
