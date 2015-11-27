@@ -487,6 +487,12 @@ If you are using effective_orders to roll your own custom payment workflow, you 
 - `order_summary(order)` to display some quick details of an Order and its OrderItems.
 - `order_payment_to_html(order)` to display the payment processor details for an order's payment transaction.
 
+#### Send Order Receipts in the Background
+
+Emails will be sent immediately unless `config.mailer[:deliver_method] == :deliver_later`.
+
+If you are using [Delayed::Job](https://github.com/collectiveidea/delayed_job) to send emails in a background process then you should set the `delayed_job_deliver` option so that `config.mailer[:delayed_job_deliver] == true`.
+
 
 ### Effective::Order Model
 
