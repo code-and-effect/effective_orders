@@ -42,7 +42,7 @@ FactoryGirl.define do
 
     before(:create) do |subscription|
       stripe_plan = Stripe::Plan.create(:id => "stripe_plan_#{subscription.object_id}", :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
-      stripe_coupon = Stripe::Coupon.create()
+      stripe_coupon = FactoryGirl.create(:stripe_coupon)
 
       subscription.stripe_plan_id = stripe_plan.id
       subscription.stripe_coupon_id = stripe_coupon.id
@@ -108,11 +108,15 @@ FactoryGirl.define do
   end
 
   factory :purchased_order, :parent => :order do
-    after(:create) { |order| order.purchase! }
+    after(:create) { |order| order.purchase!('by a test') }
   end
 
   factory :declined_order, :parent => :order do
     after(:create) { |order| order.decline! }
   end
 
+  factory :stripe_coupon, :class => Stripe::Coupon do
+    to_create {|c| c.save}
+    duration 'once'
+  end
 end

@@ -116,7 +116,7 @@ module EffectiveOrdersHelper
               content_tag((options[:th] ? :th : :td), k) +
               content_tag(:td) do
                 if v.kind_of?(Hash)
-                  tableize_hash(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
+                  tableize_order_payment(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
                 elsif v.kind_of?(Array)
                   '[' + v.join(', ') + ']'
                 else

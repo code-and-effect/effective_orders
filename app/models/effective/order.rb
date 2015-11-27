@@ -305,35 +305,36 @@ module Effective
 
     def send_order_receipt_to_admin!
       return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_admin]
-
-      if Rails.env.production?
-        (OrdersMailer.order_receipt_to_admin(self).deliver rescue false)
-      else
-        OrdersMailer.order_receipt_to_admin(self).deliver
-      end
+      send_email(:order_receipt_to_admin, self)
     end
 
     def send_order_receipt_to_buyer!
       return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_buyer]
 
-      if Rails.env.production?
-        (OrdersMailer.order_receipt_to_buyer(self).deliver rescue false)
-      else
-        OrdersMailer.order_receipt_to_buyer(self).deliver
-      end
+      send_email(:order_receipt_to_buyer, self)
     end
 
     def send_order_receipt_to_seller!
       return false unless purchased?(:stripe_connect) && EffectiveOrders.mailer[:send_order_receipt_to_seller]
 
       order_items.group_by(&:seller).each do |seller, order_items|
-        if Rails.env.production?
-          (OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver rescue false)
-        else
-          OrdersMailer.order_receipt_to_seller(self, seller, order_items).deliver
-        end
+        send_email(:order_receipt_to_seller, self, seller, order_items)
       end
     end
 
+  private
+
+    def send_email(email, *mailer_args)
+      begin
+        if EffectiveOrders.mailer[:delayed_job_deliver] && EffectiveOrders.mailer[:deliver_method] == :deliver_later
+          (OrdersMailer.delay.public_send(email, *mailer_args) rescue false)
+        else
+          (OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method]) rescue false)
+        end
+      rescue => e
+        raise e unless Rails.env.production?
+        return false
+      end
+    end
   end
 end

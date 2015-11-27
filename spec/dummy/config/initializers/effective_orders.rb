@@ -137,7 +137,8 @@ EffectiveOrders.setup do |config|
     :subject_prefix => '[example]',
     :subject_for_admin_receipt => '',
     :subject_for_buyer_receipt => '',
-    :subject_for_seller_receipt => ''
+    :subject_for_seller_receipt => '',
+    :delayed_job_deliver => false
   }
 
   # Moneris configuration

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Effective::CartsController do
+describe Effective::CartsController, type: :controller do
   routes { EffectiveOrders::Engine.routes }
 
   let(:user) { FactoryGirl.create(:user) }
@@ -77,7 +77,7 @@ describe Effective::CartsController do
         assigns(:cart).size.should eq 1
         assigns(:cart).find(product).present?.should eq true
 
-        sign_in user 
+        sign_in user
         controller.instance_variable_set(:@cart, nil) # This is what happens in a real RailsController. zzz.
 
         get :show
@@ -100,7 +100,7 @@ describe Effective::CartsController do
         assigns(:cart).size.should eq 1
         assigns(:cart).find(product).present?.should eq true
 
-        sign_in cart.user 
+        sign_in cart.user
         controller.instance_variable_set(:@cart, nil) # This is what happens in a real RailsController. zzz.
 
         get :show

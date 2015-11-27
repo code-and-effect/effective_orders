@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Effective::WebhooksController do
+describe Effective::WebhooksController, type: :controller do
   routes { EffectiveOrders::Engine.routes }
 
   before { StripeMock.start }

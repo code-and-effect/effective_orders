@@ -2,7 +2,7 @@ require 'spec_helper'
 
 # We're testing the effective/providers/moneris.rb file, which is included into the OrdersController at runtime
 
-describe Effective::OrdersController do
+describe Effective::OrdersController, type: :controller do
   routes { EffectiveOrders::Engine.routes }
 
   let(:order) { FactoryGirl.create(:order) }

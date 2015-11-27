@@ -40,10 +40,14 @@ module Effective
 
     def update_card!(token)
       if token.present? # Oh, so they want to use a new credit card...
-        stripe_customer.card = token  # This sets the default_card to the new card
+        if stripe_customer.respond_to?(:cards)
+          stripe_customer.card = token  # This sets the default_card to the new card
+        elsif stripe_customer.respond_to?(:sources)
+          stripe_customer.source = token
+        end
 
-        if stripe_customer.save && stripe_customer.default_card.present?
-          card = stripe_customer.cards.retrieve(stripe_customer.default_card)
+        if stripe_customer.save && default_card.present?
+          card = cards.retrieve(default_card)
 
           self.stripe_active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
           self.save!
@@ -57,5 +61,24 @@ module Effective
       stripe_connect_access_token.present?
     end
 
+    private
+
+    def default_card
+      case
+      when stripe_customer.respond_to?(:default_card)
+        stripe_customer.default_card
+      when stripe_customer.respond_to?(:default_source)
+        stripe_customer.default_source
+      end
+    end
+
+    def cards
+      case
+      when stripe_customer.respond_to?(:cards)
+        stripe_customer.cards
+      when stripe_customer.respond_to?(:sources)
+        stripe_customer.sources
+      end
+    end
   end
 end

@@ -53,7 +53,7 @@ describe Effective::Subscription do
     it 'sets the stripe coupon' do
       subscription = Effective::Subscription.new()
 
-      coupon = ::Stripe::Coupon.create()
+      coupon = FactoryGirl.create(:stripe_coupon)
       subscription.stripe_coupon_id = coupon.id
       subscription.stripe_coupon.id.should eq coupon.id
     end
@@ -76,7 +76,7 @@ describe Effective::Subscription do
       subscription = Effective::Subscription.new()
 
       plan = ::Stripe::Plan.create(:id => 'stripe_plan', :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
-      coupon = ::Stripe::Coupon.create(:percent_off => 25)
+      coupon = FactoryGirl.create(:stripe_coupon, :percent_off => 25)
 
       subscription.stripe_plan_id = plan.id
       subscription.stripe_coupon_id = coupon.id
@@ -89,7 +89,7 @@ describe Effective::Subscription do
       subscription = Effective::Subscription.new()
 
       plan = ::Stripe::Plan.create(:id => 'stripe_plan', :name => 'Stripe Plan', :amount => 1000, :currency => 'USD', :interval => 'month')
-      coupon = ::Stripe::Coupon.create(:percent_off => nil, :amount_off => 100)
+      coupon = FactoryGirl.create(:stripe_coupon, :percent_off => nil, :amount_off => 100)
 
       subscription.stripe_plan_id = plan.id
       subscription.stripe_coupon_id = coupon.id
