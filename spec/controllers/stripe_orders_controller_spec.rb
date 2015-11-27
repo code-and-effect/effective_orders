@@ -29,7 +29,7 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'renders the :create action on validation failure' do
-        subject.should_not_receive(:process_stripe_charge)
+        expect(subject).not_to receive(:process_stripe_charge)
 
         post :stripe_charge, stripe_charge_params.tap { |x| x[:effective_stripe_charge]['token'] = nil }
 
@@ -58,7 +58,7 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'calls process_stripe_charge when the stripe_charge form object is valid' do
-        subject.should_receive(:process_stripe_charge)
+        expect(subject).to receive(:process_stripe_charge)
         post :stripe_charge, stripe_charge_params
       end
 

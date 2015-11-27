@@ -15,7 +15,7 @@ describe Effective::WebhooksController, type: :controller do
     let(:event) { StripeMock.mock_webhook_event('customer.subscription.created') }
 
     it 'retrieves the real event from Stripe based on passed ID' do
-      Stripe::Event.should_receive(:retrieve).with(event_hash[:id])
+      expect(Stripe::Event).to receive(:retrieve) { event_hash[:id] }
       post :stripe, event_hash
       response.code.should eq '200'
     end
@@ -96,7 +96,7 @@ describe Effective::WebhooksController, type: :controller do
       end
 
       it 'should invoke subscription_deleted_callback' do
-        controller.should_receive(:subscription_deleted_callback).with(kind_of(Stripe::Event)).once
+        expect(controller).to receive(:subscription_deleted_callback)
         post :stripe, event_hash
       end
     end
@@ -107,7 +107,7 @@ describe Effective::WebhooksController, type: :controller do
       end
 
       it 'should not invoke subscription_deleted_callback' do
-        controller.should_not_receive(:subscription_deleted_callback)
+        expect(controller).not_to receive(:subscription_deleted_callback)
         post :stripe, event_hash
       end
     end
@@ -124,7 +124,7 @@ describe Effective::WebhooksController, type: :controller do
           let(:subscription_mock) { double('subscription', status: 'active', start: 1383672652) }
           let(:subscriptions) { double('subscriptions', retrieve: subscription_mock) }
 
-          before { Stripe::Customer.should_receive(:retrieve).and_return(double('customer', subscriptions: subscriptions)) }
+          before { allow(Stripe::Customer).to receive(:retrieve).and_return(double('customer', subscriptions: subscriptions)) }
 
           it 'assigns the existing customer, if exists' do
             post :stripe, event_hash
@@ -144,7 +144,7 @@ describe Effective::WebhooksController, type: :controller do
           before { Stripe::Customer.should_receive(:retrieve).and_return(double('customer', subscriptions: subscriptions)) }
 
           it 'should not invoke subscription_renewed_callback' do
-            controller.should_not_receive(:subscription_renewed_callback)
+            expect(controller).not_to receive(:subscription_renewed_callback)
             post :stripe, event_hash
           end
         end
@@ -154,7 +154,7 @@ describe Effective::WebhooksController, type: :controller do
         let(:event) { StripeMock.mock_webhook_event('invoice.payment_succeeded.without_renewals') }
 
         it 'should not invoke subscription_renewed_callback' do
-          controller.should_not_receive(:subscription_renewed_callback)
+          expect(controller).not_to receive(:subscription_renewed_callback)
           post :stripe, event_hash
         end
       end
@@ -162,7 +162,7 @@ describe Effective::WebhooksController, type: :controller do
 
     context 'when customer does not exist' do
       it 'should not invoke subscription_renewed_callback' do
-        controller.should_not_receive(:subscription_renewed_callback)
+        expect(controller).not_to receive(:subscription_renewed_callback)
         post :stripe, event_hash
       end
     end

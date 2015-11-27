@@ -30,7 +30,7 @@ describe Effective::OrdersController, type: :controller do
 
   describe 'moneris_postback' do
     before do
-      subject.stub(:send_moneris_verify_request).and_return('')  # Dont actually make Moneris requests
+      allow(subject).to receive(:send_moneris_verify_request).and_return('') # Don't actually make Moneris requests
       sign_in order.user
     end
 
@@ -72,7 +72,7 @@ describe Effective::OrdersController, type: :controller do
 
     describe 'transaction verification step' do
       it 'marks the order as purchased when response code is valid' do
-        subject.stub(:parse_moneris_response).and_return({:response_code => 1}) # success
+        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 1}) # success
 
         post :moneris_postback, moneris_params
 
@@ -81,7 +81,7 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'marks order declined when response_code = null' do
-        subject.stub(:parse_moneris_response).and_return({:response_code => 'null'}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 'null'}) # failure
 
         post :moneris_postback, moneris_params
 
@@ -91,7 +91,7 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'marks order declined when response_code blank' do
-        subject.stub(:parse_moneris_response).and_return({}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({}) # failure
 
         post :moneris_postback, moneris_params
 
@@ -101,14 +101,14 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'marks order declined when response_code = 0' do
-        subject.stub(:parse_moneris_response).and_return({:response_code => 0}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 0}) # failure
         post :moneris_postback, moneris_params
         response.should redirect_to "/orders/#{order.to_param}/declined"
         assigns(:order).purchased?.should eq false
       end
 
       it 'marks order declined when response_code = 50' do
-        subject.stub(:parse_moneris_response).and_return({:response_code => 50}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 50}) # failure
         post :moneris_postback, moneris_params
         response.should redirect_to "/orders/#{order.to_param}/declined"
         assigns(:order).purchased?.should eq false
@@ -117,13 +117,13 @@ describe Effective::OrdersController, type: :controller do
 
     describe 'redirect urls' do
       it 'redirects to the purchased_redirect_url on purchase' do
-        subject.stub(:parse_moneris_response).and_return({:response_code => 1}) # success
+        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 1}) # success
         post :moneris_postback, moneris_params.tap { |x| x[:rvar_purchased_redirect_url] = '/something' }
         response.should redirect_to '/something'
       end
 
       it 'redirects to the declined_redirect_url on decline' do
-        subject.stub(:parse_moneris_response).and_return({:response_code => 'null'}) # nope
+        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 'null'}) # failure
         post :moneris_postback, moneris_params.tap { |x| x[:rvar_declined_redirect_url] = '/something' }
         response.should redirect_to '/something'
       end

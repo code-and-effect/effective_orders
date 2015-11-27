@@ -37,7 +37,7 @@ EffectiveOrders.setup do |config|
   config.obfuscate_order_ids = true
 
   # Silence the price deprecation warnings
-  config.silence_deprecation_warnings = false
+  config.silence_deprecation_warnings = true
 
   # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.require_billing_address = true

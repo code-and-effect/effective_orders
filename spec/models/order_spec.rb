@@ -58,21 +58,21 @@ describe Effective::Order do
 
   describe 'minimum zero math' do
     it 'has a minimum order total of 0' do
-      order.order_items.each { |order_item| order_item.stub(:total).and_return(-1000) }
+      order.order_items.each { |order_item| allow(order_item).to receive(:total).and_return(-1000) }
 
       order.order_items.collect(&:total).sum.should eq -3000
       order.total.should eq 0
     end
 
     it 'has no minimum subtotal' do
-      order.order_items.each { |order_item| order_item.stub(:subtotal).and_return(-1000) }
+      order.order_items.each { |order_item| allow(order_item).to receive(:subtotal).and_return(-1000) }
 
       order.order_items.collect(&:subtotal).sum.should eq -3000
       order.subtotal.should eq -3000
     end
 
     it 'has a minimum order tax of 0.00' do
-      order.order_items.each { |order_item| order_item.stub(:tax).and_return(-1000) }
+      order.order_items.each { |order_item| allow(order_item).to receive(:tax).and_return(-1000) }
 
       order.order_items.collect(&:tax).sum.should eq -3000
       order.tax.should eq 0
@@ -112,21 +112,21 @@ describe Effective::Order do
     end
 
     it 'should be invalid when user is invalid' do
-      order.user.stub(:valid?).and_return(false)
+      allow(order.user).to receive(:valid?).and_return(false)
       order.valid?.should eq false
 
       order.errors[:user].present?.should eq true
     end
 
     it 'should be invalid when an order_item is invalid' do
-      order.order_items.first.stub(:valid?).and_return(false)
+      allow(order.order_items.first).to receive(:valid?).and_return(false)
       order.valid?.should eq false
 
       order.errors[:order_items].present?.should eq true
     end
 
     it 'should be invalid when less than the minimum charge' do
-      order.stub(:total).and_return(49)
+      allow(order).to receive(:total).and_return(49)
 
       order.valid?.should eq false
 
@@ -135,15 +135,15 @@ describe Effective::Order do
     end
 
     it 'should be valid when >= minimum charge' do
-      order.stub(:total).and_return(50)
+      allow(order).to receive(:total).and_return(50)
       order.valid?.should eq true
 
-      order.stub(:total).and_return(51)
+      allow(order).to receive(:total).and_return(51)
       order.valid?.should eq true
     end
 
     it 'should be valid for a free order' do
-      order.order_items.each { |order_item| order_item.stub(:total).and_return(0) }
+      order.order_items.each { |order_item| allow(order_item).to receive(:total).and_return(0) }
 
       order.valid?.should eq true
       order.errors[:total].present?.should eq false
@@ -203,12 +203,12 @@ describe Effective::Order do
     end
 
     it 'should return false when the Order is invalid' do
-      order.stub(:valid?).and_return(false)
-      expect { order.purchase!('by a test') }.to raise_exception
+      allow(order).to receive(:valid?).and_return(false)
+      expect { order.purchase!('by a test') }.to raise_exception(Exception)
     end
 
     it 'should return true when the Order is invalid and :validate => false is passed' do
-      order.stub(:valid?).and_return(false)
+      allow(order).to receive(:valid?).and_return(false)
       order.purchase!('by a test', :validate => false).should eq true
     end
 

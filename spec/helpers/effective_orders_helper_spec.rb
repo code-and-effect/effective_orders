@@ -11,11 +11,11 @@ describe EffectiveOrdersHelper, :type => :helper do
     end
 
     it 'raises an error when passed a decimal' do
-      expect { price_to_currency(10.00) }.to raise_exception
+      expect { price_to_currency(10.00) }.to raise_exception(Exception)
     end
 
     it 'raises an error when passed nil' do
-      expect { price_to_currency(nil) }.to raise_exception
+      expect { price_to_currency(nil) }.to raise_exception(Exception)
     end
   end
 end
