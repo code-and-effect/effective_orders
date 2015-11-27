@@ -15,7 +15,9 @@ module ActsAsPurchasable
 
     validates_with Effective::SoldOutValidator, :on => :create
 
-    validates :price, :presence => true, :numericality => true
+    # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
+    validates :price, :presence => true, :numericality => { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
+
     validates :tax_exempt, :inclusion => {:in => [true, false]}
 
     # These are breaking on the check for quanitty_enabled?.  More research is due
