@@ -28,18 +28,19 @@
           %td.price= price_to_currency(item.subtotal)
 
     %tfoot
-      %tr
-        %th.quantity
-        - if include_download_column
-          %th.download
-        %th.subtotal Subtotal
-        %td.price.subtotal-price= price_to_currency(order.subtotal)
-      %tr
-        %th.quantity
-        - if include_download_column
-          %th.download
-        %th.tax Tax
-        %td.price.tax-price= price_to_currency(order.tax)
+      - if order.tax > 0
+        %tr
+          %th.quantity
+          - if include_download_column
+            %th.download
+          %th.subtotal Subtotal
+          %td.price.subtotal-price= price_to_currency(order.subtotal)
+        %tr
+          %th.quantity
+          - if include_download_column
+            %th.download
+          %th.tax Tax
+          %td.price.tax-price= price_to_currency(order.tax)
       %tr
         %th.quantity
         - if include_download_column
