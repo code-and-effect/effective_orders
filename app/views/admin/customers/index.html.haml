@@ -2,9 +2,14 @@
 
 %p.text-right= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
 
-= render_datatable @datatable do
-  %p There are no customers
+- if @datatable.nil?
+  %p
+    Please install
+    = link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'
+    to see this page.
+- elsif @datatable.present?
+  = render_datatable @datatable
+- else
+  %p There are no customers present
 
-- if @datatable.present?
-  %p.text-right= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
-
+%p.text-right= link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
