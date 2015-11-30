@@ -2,7 +2,7 @@
   %table.table
     %thead
       %tr
-        %th.quantity Quantity
+        %th.quantity Qty
         %th.item Item
         %th.price Price
     %tbody
@@ -22,12 +22,16 @@
           %td.item There are no items in your shopping cart
           %td.price
     %tfoot
+      - if cart.tax > 0
+        %tr
+          %th.quantity
+          %th.subtotal Subtotal
+          %td.price.subtotal-price= price_to_currency(cart.subtotal)
+        %tr
+          %th.quantity
+          %th.tax Tax
+          %td.price.tax-price= price_to_currency(cart.tax)
       %tr
-        %th{:colspan => 2} Subtotal
-        %td.price= price_to_currency(cart.subtotal)
-      %tr
-        %th{:colspan => 2} Tax
-        %td.price= price_to_currency(cart.tax)
-      %tr
-        %th{:colspan => 2} Total Due
-        %td.price= price_to_currency(cart.total)
+        %th.quantity
+        %th.total Total Due
+        %td.price.total-price= price_to_currency(cart.total)

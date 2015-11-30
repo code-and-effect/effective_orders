@@ -51,15 +51,15 @@ module Effective
     end
 
     def subtotal
-      cart_items.map(&:subtotal).sum
+      cart_items.map { |ci| ci.subtotal }.sum
     end
 
     def tax
-      cart_items.map(&:tax).sum
+      cart_items.map { |ci| ci.tax }.sum
     end
 
     def total
-      cart_items.map(&:total).sum
+      cart_items.map { |ci| ci.total }.sum
     end
   end
 end
