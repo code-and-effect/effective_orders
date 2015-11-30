@@ -18,8 +18,9 @@ module Effective
       @order = order
       @user = seller.user
       @order_items = order_items
+      @subject = receipt_to_seller_subject(order, order_items, seller.user)
 
-      mail(:to => @user.email, :subject => receipt_to_seller_subject(order, order_items, seller.user))
+      mail(:to => @user.email, :subject => @subject)
     end
 
     private
@@ -51,7 +52,7 @@ module Effective
         string_or_callable = self.instance_exec(order, order_items, seller, &string_or_callable)
       end
 
-      prefix_subject(string_or_callable.presence || "#{order_items.count} of your products #{order_items.count > 1 ? 'have' : 'has'} been purchased")
+      prefix_subject(string_or_callable.presence || "#{order_items.length} of your products #{order_items.length > 1 ? 'have' : 'has'} been purchased")
     end
 
     def prefix_subject(text)

@@ -21,10 +21,10 @@
       %tfoot
         %tr
           %th Subtotal
-          %td= price_to_currency(@order_items.sum(&:subtotal))
+          %td= price_to_currency(@order_items.map { |oi| oi.subtotal }.sum)
         %tr
           %th Tax
-          %td= price_to_currency(@order_items.sum(&:tax))
+          %td= price_to_currency(@order_items.map { |oi| oi.tax }.sum)
         %tr
           %th Total
-          %td= price_to_currency(@order_items.sum(&:total))
+          %td= price_to_currency(@order_items.map { |oi| oi.total }.sum)
