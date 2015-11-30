@@ -27,6 +27,25 @@ module EffectiveOrdersHelper
     end
   end
 
+  def order_checkout_label(processor = nil)
+    return 'Checkout' if (EffectiveOrders.single_payment_processor? && processor != :pretend)
+
+    case processor
+    when :free
+      'Checkout'
+    when :moneris
+      'Checkout with Moneris'
+    when :paypal
+      'Checkout with PayPal'
+    when :pretend  # The logic for this is in orders/views/_checkout_step_2.html.haml
+      EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
+    when :stripe
+      'Checkout with Stripe'
+    else
+      'Checkout'
+    end
+  end
+
   # This is called on the My Sales Page and is intended to be overridden in the app if needed
   def acts_as_purchasable_path(purchasable, action = :show)
     polymorphic_path(purchasable)

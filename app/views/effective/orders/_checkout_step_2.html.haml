@@ -2,10 +2,10 @@
 
 .effective-order.effective-order-purchase-actions
   - if (Rails.env.production? == false && EffectiveOrders.allow_pretend_purchase_in_development)
-    = render :partial => '/effective/orders/pretend/form', locals: {label: 'Purchase Order (development only)', order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+    = render :partial => '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
 
   - if (Rails.env.production? == true && EffectiveOrders.allow_pretend_purchase_in_production)
-    = render :partial => '/effective/orders/pretend/form', locals: {label: 'Purchase Order', order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+    = render :partial => '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
 
   - if EffectiveOrders.moneris_enabled
     = render :partial => '/effective/orders/moneris/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
