@@ -40,7 +40,7 @@ module Effective
       EffectiveOrders.authorized?(self, :create, @subscription)
 
       if @subscription.update_attributes(subscription_params) && (current_cart.find(@subscription).present? || current_cart.add(@subscription))
-        flash[:success] = "Successfully added subscription to cart"
+        flash[:success] = "Successfully added subscription to cart."
         redirect_to effective_orders.new_order_path
       else
         purchased_plans = @customer.subscriptions.purchased.map(&:stripe_plan_id)
@@ -75,7 +75,7 @@ module Effective
 
       EffectiveOrders.authorized?(self, :show, @subscription)
 
-      @invoices = @customer.stripe_customer.invoices.all.select do |invoice| 
+      @invoices = @customer.stripe_customer.invoices.all.select do |invoice|
         invoice.lines.any? { |line| line.id == @stripe_subscription.id }
       end
 

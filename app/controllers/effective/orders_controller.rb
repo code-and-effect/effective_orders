@@ -56,7 +56,7 @@ module Effective
           @order.save!
 
           if @order.total == 0 && EffectiveOrders.allow_free_orders
-            order_purchased('zero-dollar order')
+            order_purchased('automatic purchase of free order.')
           else
             redirect_to(effective_orders.order_path(@order))
           end
@@ -64,7 +64,7 @@ module Effective
           return
         rescue => e
           Rails.logger.info e.message
-          flash.now[:danger] = "An error has ocurred. Please try again. Message: #{e.message}"
+          flash.now[:danger] = "An error has occurred: #{e.message}. Please try again."
           raise ActiveRecord::Rollback
         end
       end
@@ -118,7 +118,7 @@ module Effective
       if @order.send_order_receipt_to_buyer!
         flash[:success] = "Successfully resent order receipt to #{@order.user.email}"
       else
-        flash[:danger] = "Unable to send order receipt"
+        flash[:danger] = "Unable to send order receipt."
       end
 
       redirect_to(:back) rescue effective_orders.order_path(@order)
@@ -145,11 +145,15 @@ module Effective
         @order.purchase!(details)
         current_cart.try(:destroy)
 
-        flash[:success] = "Successfully purchased order"
+        if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+          flash[:success] = "Payment successful! Please check your email for a receipt."
+        else
+          flash[:success] = "Payment successful!"
+        end
 
         redirect_to (redirect_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
       rescue => e
-        flash[:danger] = "Unable to process your order.  Your card has not been charged.  Your Cart items have been restored.  Please try again.  Error Message: #{e.message}"
+        flash[:danger] = "An error occurred while processing your payment: #{e.message}.  Please try again."
         redirect_to (declined_redirect_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
       end
     end
@@ -157,7 +161,7 @@ module Effective
     def order_declined(details = nil, redirect_url = nil)
       @order.decline!(details) rescue nil
 
-      flash[:danger] = "Unable to purchase order.  Your credit card was declined by the payment processor.  Your cart items have been restored.  Please try again."
+      flash[:danger] = "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again."
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
