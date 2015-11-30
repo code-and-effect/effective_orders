@@ -25,7 +25,7 @@
                 = link_to 'download', item.purchased_download_url
               - else
                 = '-'
-          %td.price= price_to_currency(item.subtotal)
+          %td.price= price_to_currency(item.price)
 
     %tfoot
       - if order.tax > 0

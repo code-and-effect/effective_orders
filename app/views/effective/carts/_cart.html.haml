@@ -15,7 +15,7 @@
             = ' - '
             = link_to_remove_from_cart(item)
           %td.price
-            = price_to_currency(item.subtotal)
+            = price_to_currency(item.price)
       - if cart.empty?
         %tr
           %td.quantity
