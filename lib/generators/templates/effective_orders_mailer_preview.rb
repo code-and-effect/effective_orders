@@ -1,4 +1,6 @@
-# Visit http://localhost:3000/rails/mailers to see a preview of the following 3 emails:
+# In Rails 4.1 and above, visit:
+# http://localhost:3000/rails/mailers
+# to see a preview of the following 3 emails:
 
 class EffectiveOrdersMailerPreview < ActionMailer::Preview
   def order_receipt_to_buyer
@@ -26,8 +28,8 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
 
   private
 
-  # We're building the OrderItem attributes directly
-  # so that we don't have to guess at your acts_as_purchasable object
+  # We're building Effective::OrderItems directly rather than creating acts_as_purchasable objects
+  # so that this mailer will not have to guess at your app's acts_as_purchasable objects
   def preview_order_items
     tax_rate = (EffectiveOrders.tax_rate_method.call(Object.new()) rescue -1)
     tax_rate = 0.05 if tax_rate < 0.0
