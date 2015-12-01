@@ -852,7 +852,7 @@ Register an additional Webhook, to accept Stripe subscription creation events fr
 root_url/webhooks/stripe
 
 
-## Paying via PayPal
+## Paying Via PayPal
 
 Use the following to set up a PayPal sandbox store.
 
@@ -867,7 +867,7 @@ _During sign up of a business account, you may go to the next step in these dire
 Confirm your email address using the email sent to you by PayPal.
 
 
-### Configuring your App with a PayPal sandbox
+### Configuring Your App With a PayPal Sandbox
 
 PayPal uses a series of public and private certificates and keys to communicate with third party applications.
 
@@ -928,7 +928,7 @@ The secret can be any string. Here's a good way to come up with a secret:
 => "KWidsksL/KR4LAf2EcRSdQ=="
 ```
 
-### Configuring PayPal for use with Real Payments
+### Configuring PayPal For Use With Real Payments
 
 This process should be very similar although you'll create and configure a seller account on paypal.com rather than the sandbox site.
 You should generate separate private and public certificates/keys for this and it is advisable to not keep production certificates/keys in version control.
