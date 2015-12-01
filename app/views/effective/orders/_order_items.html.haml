@@ -1,48 +1,54 @@
 - include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
+- include_quantity_column = order.order_items.any? { |order_item| order_item.quantity > 1 }
 
-.effective-order
+.effective-order-items
   %table.table
     %thead
       %tr
-        %th.quantity Qty
-        %th.item= order.order_items.length > 1 ? 'Items' : 'Item'
+        - if include_quantity_column
+          %th.quantity Qty
         - if include_download_column
           %th.download Download
+        %th.item= order.order_items.length > 1 ? 'Items' : 'Item'
         %th.price Price
 
     %tbody
       - order.order_items.each do |item|
         %tr
-          %td.quantity= item.quantity
-          %td.item
-            = item.title.html_safe
-            - if order.new_record? && item.purchasable.kind_of?(Effective::Subscription)
-              = render :partial => 'effective/orders/stripe/subscription_fields', :locals => {:form => form, :subscription => item.purchasable }
-
+          - if include_quantity_column
+            %td.quantity= item.quantity
           - if include_download_column
             %td.download
               - if item.purchased? && (item.purchased_download_url rescue nil).present?
                 = link_to 'download', item.purchased_download_url
               - else
                 = '-'
+          %td.item
+            = item.title.html_safe
+            - if order.new_record? && item.purchasable.kind_of?(Effective::Subscription)
+              = render :partial => 'effective/orders/stripe/subscription_fields', :locals => {:form => form, :subscription => item.purchasable }
+
           %td.price= price_to_currency(item.price)
 
     %tfoot
       - if order.tax > 0
         %tr
-          %th.quantity
+          - if include_quantity_column
+            %th.quantity
           - if include_download_column
             %th.download
           %th.subtotal Subtotal
           %td.price.subtotal-price= price_to_currency(order.subtotal)
         %tr
-          %th.quantity
+          - if include_quantity_column
+            %th.quantity
           - if include_download_column
             %th.download
           %th.tax Tax
           %td.price.tax-price= price_to_currency(order.tax)
       %tr
-        %th.quantity
+        - if include_quantity_column
+          %th.quantity
         - if include_download_column
           %th.download
         %th.total Total Due

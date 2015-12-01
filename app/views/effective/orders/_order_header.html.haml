@@ -14,10 +14,7 @@
     .col-sm-6
       - if order.purchased?
         %p Receipt: ##{order.to_param}
+        %p Purchased at: #{order.purchased_at.strftime("%Y-%m-%d %H:%M")}
       - elsif order.persisted?
         %p Order: ##{order.to_param}
-
-      - if order.purchased?
-        %p Purchased at: #{order.purchased_at.strftime("%Y-%m-%d %H:%M")}
-      - else
         %p Date: #{Time.zone.now.strftime("%Y-%m-%d %H:%M")}
