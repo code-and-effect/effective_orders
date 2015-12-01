@@ -122,11 +122,6 @@ module ActsAsPurchasable
   end
 
   def purchased!(order = nil, order_item = nil)
-    # begin
-    #   self.quantity_purchased = (self.quantity_purchased + 1)
-    # rescue
-    # end
-
     after_purchase(order, order_item) if self.respond_to?(:after_purchase)
     save!
   end
