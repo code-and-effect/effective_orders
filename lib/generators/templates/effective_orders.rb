@@ -139,6 +139,7 @@ EffectiveOrders.setup do |config|
     :send_order_receipt_to_admin => true,
     :send_order_receipt_to_buyer => true,
     :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
+    :layout => 'effective_orders_mailer_layout',
     :admin_email => 'admin@example.com',
     :default_from => 'info@example.com',
     :subject_prefix => '[example]',

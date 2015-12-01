@@ -1,8 +1,9 @@
 module Effective
   class OrdersMailer < ActionMailer::Base
     helper EffectiveOrdersHelper
-
     default :from => EffectiveOrders.mailer[:default_from]
+
+    layout EffectiveOrders.mailer[:layout].presence || 'effective_orders_mailer_layout'
 
     def order_receipt_to_admin(order)
       @order = order

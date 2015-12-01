@@ -1,8 +1,2 @@
-!!!
-%html
-  %head
-    %meta{:content => 'text/html; charset=UTF-8', 'http-equiv' => "Content-Type"}
-  %body
-    %p An order has been successfully purchased:
-
-    = render(@order, no_order_actions: true)
+%p.effective-orders-receipt-info An order has been successfully purchased:
+= render(@order, no_order_actions: true)

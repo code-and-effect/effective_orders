@@ -1,0 +1,27 @@
+!!!
+%html{style: 'background: #fff;'}
+  %head
+    %meta{:content => 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type'}
+  :css
+    .effective-order table.table { min-width: 650px; }
+    .effective-order { text-align: left; }
+    .effective-order .price { text-align: right; }
+    .effective-order tfoot th { text-align: right; }
+    .effective-order tfoot tr:first-child td { padding-top: 24px; }
+    .effective-order tfoot tr:first-child th { padding-top: 24px; }
+    .effective-order-shipping { padding-top: 12px; padding-bottom: 12px; }
+
+  %body{style: 'background: #fff;'}
+    %table{style: 'width: 100%;'}
+      %tr
+        %td
+          %table{style: 'max-width: 650px; margin: 4px auto 30px;'}
+            %thead{style: 'border-bottom: 2px solid transparent; width: 100%;'}
+              %tr{style: 'background: #000; color: #fff;'}
+                %th{style: 'padding-top: 2px;'}
+            %tbody{style: 'background: #fff; width: 100%; margin-bottom: 4px;'}
+              %tr
+                %td= yield
+            %tfoot{style: 'border-bottom: 2px solid transparent; width: 100%;'}
+              %tr{style: 'background: #000; color: #fff;'}
+                %th{style: 'padding-top: 2px;'}
