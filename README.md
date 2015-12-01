@@ -852,9 +852,86 @@ Register an additional Webhook, to accept Stripe subscription creation events fr
 root_url/webhooks/stripe
 
 
-### PayPal
+## Paying via PayPal
 
-TODO
+Use the following to set up a PayPal sandbox store.
+
+### PayPal Account
+
+Start by creating a PayPal Account. [Sign up or login](http://paypal.com/). You'll need a business account for use in production but a personal account is fine for creating sandbox apps.
+
+_During sign up of a personal account, you may go to the next step in these directions when PayPal asks you to link a credit card or bank with your account._
+
+_During sign up of a business account, you may go to the next step in these directions when PayPal asks "How do you want to set up PayPal on your website?"._
+
+Confirm your email address using the email sent to you by PayPal.
+
+
+### Configuring your App with a PayPal sandbox
+
+PayPal uses a series of public and private certificates and keys to communicate with third party applications.
+
+You need to generate your application's private key (so that it is private!). To generate these, we'll use OpenSSL. If you're on Mac/Linux, you can run these commands inside `#{Rails.root}/config/paypalcerts/development/`:
+
+```
+openssl genrsa -out app_key.pem 1024
+openssl req -new -key app_key.pem -x509 -days 999 -out app_cert.pem
+```
+
+The app_key.pem file is your private key and the app_cert.pem is the public certificate. We require one more certificate, the PayPal public certificate. This certificate will come from your sandbox seller account.
+
+To login to the sandbox seller account:
+
+1. Visit the [PayPal developer portal](https://developer.paypal.com/) and click on "Sandbox" -> "Accounts".
+   It might take some time for the two default sandbox accounts to show up here if you just created your account (~10 minutes).
+2. Click on the facilitator account accordion, then click 'Profile'.
+3. Change the password of the facilitator account to whatever you want and copy the facilitator account email address.
+4. Go to the [PayPal sandbox site](https://www.sandbox.paypal.com/).
+5. Sign in using the facilitator account credentials
+
+**If the seller account is from Canada, you can follow these directions:**
+
+1. Click "Profile". Then click "Encrypted Payment Settings" under the "Selling Preferences" column.
+2. Download the PayPal public certicate in the middle of the page and save it as `#{Rails.root}/config/paypalcerts/development/paypal_cert.pem`.
+3. Upload the public certificate that you generated earlier, `app_cert.pem`, at the bottom of the page.
+4. Copy the new `Cert ID` of the new public certificiate and add it to the effective_orders initializer with other PayPal settings as the `:cert_id`.
+
+While you're logged in to the seller account, you should disable non-encrypted instant payment notifications (IPNs):
+
+1. Click on "Profile".
+2. Click on "Website Payment Preferences" under the "Selling Preferences" column.
+3. Under "Encrypted Website Payments", turn "Block Non-encrypted Website Payment" to "On"
+
+**If the seller account is from elsewhere, please contribute what you find. =)**
+
+Make sure all of the certificates/keys are available in the proper config directory (i.e. `#{Rails.root}/config/paypalcerts/development/paypal_cert.pem`)
+or set up environment variables to hold the full text or file location.
+
+Finally, finish adding config values in the effective_orders initializer. Set `config.paypal_enabled = true` and fill out the `config.paypal` settings:
+
+* seller_email - email that you logged into the sandbox site with above
+* secret - can be any string (see below)
+* cert_id - provided by PayPal after uploading your public `app_cert.pem`
+* paypal_url - https://www.sandbox.paypal.com/cgi-bin/webscr for sandbox or https://www.paypal.com/cgi-bin/webscr for real payments
+* currency - [choose your preference](https://developer.paypal.com/docs/integration/direct/rest-api-payment-country-currency-support/)
+* paypal_cert - PayPal's public certificate for your app, downloaded from PayPal earlier (this can be a string with `\n` in it or a path to the file)
+* app_cert - Your generated public certificate (this can be a string with `\n` in it or a path to the file)
+* app_key - Your generated private key (this can be a string with `\n` in it or a path to the file)
+
+The secret can be any string. Here's a good way to come up with a secret:
+
+```irb
+ & irb
+ > require 'securerandom'
+=> true
+ > SecureRandom.base64
+=> "KWidsksL/KR4LAf2EcRSdQ=="
+```
+
+### Configuring PayPal for use with Real Payments
+
+This process should be very similar although you'll create and configure a seller account on paypal.com rather than the sandbox site.
+You should generate separate private and public certificates/keys for this and it is advisable to not keep production certificates/keys in version control.
 
 
 ## License
