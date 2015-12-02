@@ -1,8 +1,18 @@
 module EffectivePaypalHelper
+  class ConfigReader
+    def self.cert_or_key(config)
+      if File.exist?(EffectiveOrders.paypal[config])
+        File.read(EffectiveOrders.paypal[config]) rescue {}
+      else
+        EffectiveOrders.paypal[config] || {}
+      end
+    end
+  end
+
   # These're constants so they only get read once, not every order request
-  PAYPAL_CERT_PEM = (File.read(EffectiveOrders.paypal[:paypal_cert]) rescue {})
-  APP_CERT_PEM = (File.read(EffectiveOrders.paypal[:app_cert]) rescue {})
-  APP_KEY_PEM = (File.read(EffectiveOrders.paypal[:app_key]) rescue {})
+  PAYPAL_CERT_PEM = ConfigReader.cert_or_key(:paypal_cert)
+  APP_CERT_PEM    = ConfigReader.cert_or_key(:app_cert)
+  APP_KEY_PEM     = ConfigReader.cert_or_key(:app_key)
 
   def paypal_encrypted_payload(order)
     raise ArgumentError.new("unable to read EffectiveOrders PayPal paypal_cert #{EffectiveOrders.paypal[:paypal_cert]}") unless PAYPAL_CERT_PEM.present?
