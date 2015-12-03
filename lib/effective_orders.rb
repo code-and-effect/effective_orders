@@ -4,6 +4,7 @@ require 'simple_form'
 require 'effective_addresses'
 require 'effective_obfuscation'
 require 'effective_orders/engine'
+require 'effective_orders/config_defaults'
 
 module EffectiveOrders
   PURCHASED = 'purchased'
@@ -66,14 +67,7 @@ module EffectiveOrders
   def self.setup
     yield self
 
-    unless mailer[:deliver_method].present?
-      self.mailer[:deliver_method] = case
-                            when Rails.gem_version >= Gem::Version.new('4.2')
-                              :deliver_now
-                            else
-                              :deliver
-                            end
-    end
+    EffectiveOrders::ConfigDefaults.after_setup
   end
 
   def self.authorized?(controller, action, resource)
