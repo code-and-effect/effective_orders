@@ -45,6 +45,16 @@ module EffectiveOrders
       end
     end
 
+    initializer 'effective_orders.moneris_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.moneris_enabled
+        missing = EffectiveOrders.moneris.select do |config, value|
+          value.blank?
+        end
+
+        raise "Missing effective_orders Moneris configuration values: #{missing.keys.join(', ')}" if missing.present?
+      end
+    end
+
     initializer 'effective_orders.paypal_config_validation', :after => :load_config_initializers do
       if EffectiveOrders.paypal_enabled
         missing = EffectiveOrders.paypal.select do |config, value|
@@ -52,6 +62,21 @@ module EffectiveOrders
         end
 
         raise "Missing effective_orders PayPal configuration values: #{missing.keys.join(', ')}" if missing.present?
+      end
+    end
+
+    initializer 'effective_orders.stripe_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.stripe_enabled
+        missing = EffectiveOrders.stripe.select do |config, value|
+          value.blank?
+        end
+        required = [:secret_key, :publishable_key, :currency, :site_title]
+        stripe_connect_required = [:connect_client_id]
+        required += stripe_connect_required if EffectiveOrders.stripe_connect_enabled
+
+        # perform an intersection operation between missing and required configs
+        missing_required = missing.keys & required
+        raise "Missing effective_orders Stripe configuration values: #{missing_required.join(', ')}" if missing_required.present?
       end
     end
 
