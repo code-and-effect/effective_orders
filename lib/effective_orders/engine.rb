@@ -47,9 +47,10 @@ module EffectiveOrders
 
     initializer 'effective_orders.moneris_config_validation', :after => :load_config_initializers do
       if EffectiveOrders.moneris_enabled
-        missing = EffectiveOrders.moneris.select do |config, value|
-          value.blank?
+        unless EffectiveOrders.moneris.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.moneris to be a Hash but it is a #{EffectiveOrders.moneris.class}"
         end
+        missing = EffectiveOrders.moneris.select {|_config, value| value.blank? }
 
         raise "Missing effective_orders Moneris configuration values: #{missing.keys.join(', ')}" if missing.present?
       end
@@ -57,9 +58,10 @@ module EffectiveOrders
 
     initializer 'effective_orders.paypal_config_validation', :after => :load_config_initializers do
       if EffectiveOrders.paypal_enabled
-        missing = EffectiveOrders.paypal.select do |config, value|
-          value.blank?
+        unless EffectiveOrders.paypal.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.paypal to be a Hash but it is a #{EffectiveOrders.paypal.class}"
         end
+        missing = EffectiveOrders.paypal.select {|_config, value| value.blank? }
 
         raise "Missing effective_orders PayPal configuration values: #{missing.keys.join(', ')}" if missing.present?
       end
@@ -67,9 +69,10 @@ module EffectiveOrders
 
     initializer 'effective_orders.stripe_config_validation', :after => :load_config_initializers do
       if EffectiveOrders.stripe_enabled
-        missing = EffectiveOrders.stripe.select do |config, value|
-          value.blank?
+        unless EffectiveOrders.stripe.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.stripe to be a Hash but it is a #{EffectiveOrders.stripe.class}"
         end
+        missing = EffectiveOrders.stripe.select {|_config, value| value.blank? }
         required = [:secret_key, :publishable_key, :currency, :site_title]
         stripe_connect_required = [:connect_client_id]
         required += stripe_connect_required if EffectiveOrders.stripe_connect_enabled
