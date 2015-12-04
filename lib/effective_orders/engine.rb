@@ -30,6 +30,13 @@ module EffectiveOrders
     # Set up our default configuration options.
     initializer "effective_orders.defaults", :before => :load_config_initializers do |app|
       eval File.read("#{config.root}/lib/generators/templates/effective_orders.rb")
+
+      EffectiveOrders.mailer[:deliver_method] = case
+                            when Rails.gem_version >= Gem::Version.new('4.2')
+                              :deliver_now
+                            else
+                              :deliver
+                            end
     end
 
     # Set up our Stripe API Key
@@ -42,6 +49,44 @@ module EffectiveOrders
         end
 
         ::Stripe.api_key = EffectiveOrders.stripe[:secret_key]
+      end
+    end
+
+    initializer 'effective_orders.moneris_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.moneris_enabled
+        unless EffectiveOrders.moneris.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.moneris to be a Hash but it is a #{EffectiveOrders.moneris.class}"
+        end
+        missing = EffectiveOrders.moneris.select {|_config, value| value.blank? }
+
+        raise "Missing effective_orders Moneris configuration values: #{missing.keys.join(', ')}" if missing.present?
+      end
+    end
+
+    initializer 'effective_orders.paypal_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.paypal_enabled
+        unless EffectiveOrders.paypal.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.paypal to be a Hash but it is a #{EffectiveOrders.paypal.class}"
+        end
+        missing = EffectiveOrders.paypal.select {|_config, value| value.blank? }
+
+        raise "Missing effective_orders PayPal configuration values: #{missing.keys.join(', ')}" if missing.present?
+      end
+    end
+
+    initializer 'effective_orders.stripe_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.stripe_enabled
+        unless EffectiveOrders.stripe.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.stripe to be a Hash but it is a #{EffectiveOrders.stripe.class}"
+        end
+        missing = EffectiveOrders.stripe.select {|_config, value| value.blank? }
+        required = [:secret_key, :publishable_key, :currency, :site_title]
+        stripe_connect_required = [:connect_client_id]
+        required += stripe_connect_required if EffectiveOrders.stripe_connect_enabled
+
+        # perform an intersection operation between missing and required configs
+        missing_required = missing.keys & required
+        raise "Missing effective_orders Stripe configuration values: #{missing_required.join(', ')}" if missing_required.present?
       end
     end
 

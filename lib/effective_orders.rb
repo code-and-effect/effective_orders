@@ -65,15 +65,6 @@ module EffectiveOrders
 
   def self.setup
     yield self
-
-    unless mailer[:deliver_method].present?
-      self.mailer[:deliver_method] = case
-                            when Rails.gem_version >= Gem::Version.new('4.2')
-                              :deliver_now
-                            else
-                              :deliver
-                            end
-    end
   end
 
   def self.authorized?(controller, action, resource)
