@@ -45,6 +45,27 @@ module EffectiveOrders
       end
     end
 
+    initializer 'effective_orders.paypal_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.paypal_enabled
+        missing = EffectiveOrders.paypal.select do |config, value|
+          value.blank?
+        end
+
+        raise "Missing effective_orders PayPal configuration values: #{missing.keys.join(', ')}" if missing.present?
+      end
+    end
+
+    initializer 'effective_orders.default_configs', :after => :load_config_initializers do
+      unless EffectiveOrders.mailer[:deliver_method].present?
+        EffectiveOrders.mailer[:deliver_method] = case
+                              when Rails.gem_version >= Gem::Version.new('4.2')
+                                :deliver_now
+                              else
+                                :deliver
+                              end
+      end
+    end
+
     # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin?
