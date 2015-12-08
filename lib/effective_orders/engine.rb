@@ -99,7 +99,7 @@ module EffectiveOrders
           raise "unable to load activeadmin.  Plese add gem 'activeadmin' to your Gemfile and then 'bundle install'"
         end
 
-        ActiveAdmin.application.load_paths.unshift Dir["#{config.root}/active_admin"]
+        ActiveAdmin.application.load_paths.unshift *Dir["#{config.root}/active_admin"]
 
         Rails.application.config.to_prepare do
           ActiveSupport.on_load :action_controller do
