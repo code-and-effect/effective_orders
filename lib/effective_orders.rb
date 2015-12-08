@@ -4,6 +4,7 @@ require 'simple_form'
 require 'effective_addresses'
 require 'effective_obfuscation'
 require 'effective_orders/engine'
+require 'effective_orders/version'
 
 module EffectiveOrders
   PURCHASED = 'purchased'
