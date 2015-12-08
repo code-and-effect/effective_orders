@@ -1,5 +1,3 @@
-require 'stripe'
-
 module Effective
   module Providers
     module Stripe
