@@ -13,7 +13,7 @@ module ActsAsActiveAdminController
     include ActiveAdmin::BaseController::Authorization
 
     helper ActiveAdmin::ViewHelpers
-    helper_method :active_admin_config, :active_admin_namespace, :current_active_admin_user
+    helper_method :active_admin_config, :active_admin_namespace, :current_active_admin_user, :current_active_admin_user?, :env
 
     resource_key = @active_admin_resource_element_lookup_key.to_s
     self.send(:define_method, :active_admin_resource_element_key) { resource_key }
@@ -50,9 +50,19 @@ module ActsAsActiveAdminController
     end
   end
 
+  # Calls the authentication method as defined in ActiveAdmin.authentication_method
+  def authenticate_active_admin_user
+    send(active_admin_namespace.authentication_method) if active_admin_namespace.authentication_method
+  end
+
   def current_active_admin_user
     send(active_admin_namespace.current_user_method) if active_admin_namespace.current_user_method
   end
+
+  def current_active_admin_user?
+    !!current_active_admin_user
+  end
+
 
 end
 
