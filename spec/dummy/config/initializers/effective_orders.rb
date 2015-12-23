@@ -84,6 +84,15 @@ EffectiveOrders.setup do |config|
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
 
+  # Pay via Invoice
+  # Allow user to create pending orders in order to pay for it via invoice offline. Pending orders are not
+  # considered purchased and have 'pending' purchase state
+  #
+  # When true, there will be a 'Pay via Invoice' button on the Checkout screen.
+  # Clicking this button will mark an Order pending and redirect the user to the
+  # pending order page.
+  config.allow_pay_via_invoice = true
+
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
 
@@ -153,8 +162,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.moneris = {
-      :ps_store_id => '',
-      :hpp_key => '',
+      :ps_store_id => 'h',
+      :hpp_key => 'h',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
       :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
@@ -176,9 +185,9 @@ EffectiveOrders.setup do |config|
     }
   else
     config.paypal = {
-      :seller_email => '',
-      :secret => '',
-      :cert_id => '',
+      :seller_email => 'h',
+      :secret => 'h',
+      :cert_id => 'h',
       :paypal_url => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
       :currency => 'CAD',
       :paypal_cert => "#{Rails.root}/config/paypalcerts/#{Rails.env}/paypal_cert.pem",
@@ -204,8 +213,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.stripe = {
-      :secret_key => '',
-      :publishable_key => '',
+      :secret_key => 'h',
+      :publishable_key => 'h',
       :currency => 'usd',
       :site_title => 'My Development Site',  # Displayed on the Embedded Stripe Form
       :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.

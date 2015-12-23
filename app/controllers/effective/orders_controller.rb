@@ -76,10 +76,29 @@ module Effective
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      if @order.purchased? == false
+      if @order.purchase_state.blank?
         @page_title = 'Checkout'
-        render(:checkout) and return
+        render :checkout and return
       end
+
+      if @order.pending?
+        @page_title = 'Pending Order'
+        render :pending and return
+      end
+    end
+
+    def pay_via_invoice
+      @order = Order.find(params[:id])
+      EffectiveOrders.authorized?(self, :pay_via_invoice, @order)
+
+      if @order.update_attributes(purchase_state: EffectiveOrders::PENDING)
+        current_cart.try(:destroy)
+        flash.now[:success] = 'Created pending order successfully!'
+      else
+        flash.now[:danger] = 'Unable to create your pending order. Please check your order details and try again.'
+      end
+
+      redirect_to effective_orders.order_path(@order)
     end
 
     def index

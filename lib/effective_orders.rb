@@ -9,6 +9,7 @@ require 'effective_orders/version'
 module EffectiveOrders
   PURCHASED = 'purchased'
   DECLINED = 'declined'
+  PENDING = 'pending'
 
   # The following are all valid config keys
   mattr_accessor :orders_table_name
@@ -33,6 +34,8 @@ module EffectiveOrders
   mattr_accessor :allow_pretend_purchase_in_development
   mattr_accessor :allow_pretend_purchase_in_production
   mattr_accessor :allow_pretend_purchase_in_production_message
+
+  mattr_accessor :allow_pay_via_invoice
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address

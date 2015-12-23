@@ -45,3 +45,5 @@
     = hidden_field_tag(:ship_country, address.country)
 
   = submit_tag order_checkout_label(:moneris), :class => 'btn btn-primary', :data => {'disable_with' => 'Continuing...' }
+  - if EffectiveOrders.allow_pay_via_invoice
+    = pay_via_invoice_link order, :class => 'btn btn-primary'

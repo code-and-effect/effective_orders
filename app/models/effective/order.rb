@@ -14,7 +14,7 @@ module Effective
 
     structure do
       payment         :text   # serialized hash, see below
-      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED]}]
+      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING]}]
       purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchase_state == EffectiveOrders::PURCHASED}}]
 
       timestamps
@@ -295,6 +295,10 @@ module Effective
 
     def declined?
       purchase_state == EffectiveOrders::DECLINED
+    end
+
+    def pending?
+      purchase_state == EffectiveOrders::PENDING
     end
 
     def send_order_receipts!
