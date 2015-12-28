@@ -74,6 +74,18 @@ To upgrade, use this generator to create a migration on table `products` with co
 bundle exec rails generate effective_orders:upgrade_price_column products price
 ```
 
+### Upgrading from 1.7.x
+
+Since 1.8.0 version Custom Orders feature is available. This feature requires adding new custom products DB table.
+
+If you are running earlier version than 1.8.0, please upgrade to 1.8.* with this command:
+
+```ruby
+rails generate effective_orders:upgrade_from17x
+```
+
+the above command will add `custom_products` table to you DB and `custom` boolean flag to `orders` table.
+
 ## High Level Overview
 
 Your rails app creates and displays a list of `acts_as_purchsable` objects, each with a `link_to_add_to_cart(object)`.

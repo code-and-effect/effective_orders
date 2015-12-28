@@ -9,6 +9,8 @@ module ActsAsPurchasable
   end
 
   included do
+    attr_accessor :tax_exempt
+
     has_many :orders, :through => :order_items, :class_name => 'Effective::Order'
     has_many :order_items, :as => :purchasable, :class_name => 'Effective::OrderItem'
     has_many :cart_items, :as => :purchasable, :dependent => :delete_all, :class_name => 'Effective::CartItem'
@@ -17,8 +19,6 @@ module ActsAsPurchasable
 
     # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
     validates :price, :presence => true, :numericality => { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
-
-    validates :tax_exempt, :inclusion => {:in => [true, false]}
 
     # These are breaking on the check for quanitty_enabled?.  More research is due
     validates :quantity_purchased, :numericality => {:allow_nil => true}, :if => proc { |purchasable| (purchasable.quantity_enabled? rescue false) }

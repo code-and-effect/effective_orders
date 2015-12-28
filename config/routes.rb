@@ -54,7 +54,7 @@ EffectiveOrders::Engine.routes.draw do
   if defined?(EffectiveDatatables) && !EffectiveOrders.use_active_admin? || Rails.env.test?
     namespace :admin do
       resources :customers, :only => [:index]
-      resources :orders, :only => [:index, :show] do
+      resources :orders, :only => [:index, :show, ([:new, :create] if EffectiveOrders.allow_custom_orders)].compact.flatten do
         post :mark_as_paid, :on => :member if EffectiveOrders.allow_pay_via_invoice
       end
       resources :order_items, :only => [:index]

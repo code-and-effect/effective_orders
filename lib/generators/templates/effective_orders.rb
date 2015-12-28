@@ -8,6 +8,7 @@ EffectiveOrders.setup do |config|
   config.cart_items_table_name = :cart_items
   config.customers_table_name = :customers
   config.subscriptions_table_name = :subscriptions
+  config.custom_products_table_name = :custom_products
 
   # Authorization Method
   #
@@ -99,6 +100,10 @@ EffectiveOrders.setup do |config|
   # Clicking this button will mark an Order pending and redirect the user to the
   # pending order page.
   config.allow_pay_via_invoice = false
+
+  # Create Custom Orders
+  # Allow admin to create custom orders with custom products for being payed by user with credit card or via invoice
+  config.allow_custom_orders = false
 
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true

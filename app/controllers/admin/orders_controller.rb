@@ -19,6 +19,39 @@ module Admin
       EffectiveOrders.authorized?(self, :show, @order)
     end
 
+    def new
+      @order = Effective::Order.new
+      @page_title = 'New Order'
+
+      EffectiveOrders.authorized?(self, :new, @order)
+    end
+
+    def create
+      @user = User.find_by_id(order_params[:user_id])
+      @order = Effective::Order.new({}, @user)
+      @order.assign_attributes(custom: true, purchase_state: EffectiveOrders::PENDING)
+
+      EffectiveOrders.authorized?(self, :create, @order)
+
+      if order_params[:order_items_attributes].present?
+        order_params[:order_items_attributes].each do |_, item_attrs|
+          purchasable = Effective::CustomProduct.new(item_attrs[:purchasable_attributes])
+          purchasable.tax_exempt = ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(item_attrs[:tax_exempt])
+          @order.add(purchasable, item_attrs[:quantity].to_i)
+        end
+      end
+
+      if @order.save
+        path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_orders_path
+        flash.now[:success] = 'Successfully created custom order'
+        redirect_to path_for_redirect
+      else
+        @page_title = 'New Order'
+        flash.now[:danger] = 'Unable to create custom order'
+        render :new
+      end
+    end
+
     def mark_as_paid
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :mark_as_paid, @order)
@@ -30,6 +63,18 @@ module Admin
         flash.now[:danger] = 'Unable to mark order as paid.'
         redirect_to :back
       end
+    end
+
+    private
+
+    def order_params
+      params.require(:effective_order).permit(
+        :user_id,
+        order_items_attributes: [
+          :quantity, :tax_exempt,
+          purchasable_attributes: [:description, :price]
+        ]
+      )
     end
   end
 end

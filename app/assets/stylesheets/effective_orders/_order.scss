@@ -42,6 +42,18 @@
   }
 }
 
+.admin-orders form {
+  .form-inline.order-item .form-group {
+    margin-right: 10px;
+
+    &.has-error span.help-block { display: none; }
+    label { margin-right: 15px; }
+    .checkbox input.boolean { margin-right: 5px; }
+  }
+
+  .effective_price .input-group-addon { font-size: 15px; }
+}
+
 @media print {
   .effective-order-purchase-actions { display: none; }
   .print-button { display: none; }

@@ -18,6 +18,7 @@ module EffectiveOrders
   mattr_accessor :cart_items_table_name
   mattr_accessor :customers_table_name
   mattr_accessor :subscriptions_table_name
+  mattr_accessor :custom_products_table_name
 
   mattr_accessor :authorization_method
   mattr_accessor :tax_rate_method
@@ -36,6 +37,7 @@ module EffectiveOrders
   mattr_accessor :allow_pretend_purchase_in_production_message
 
   mattr_accessor :allow_pay_via_invoice
+  mattr_accessor :allow_custom_orders
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
