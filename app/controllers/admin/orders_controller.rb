@@ -8,22 +8,21 @@ module Admin
       @datatable = Effective::Datatables::Orders.new() if defined?(EffectiveDatatables)
       @page_title = 'Orders'
 
-      EffectiveOrders.authorized?(self, :admin, :effective_orders)
-      EffectiveOrders.authorized?(self, :index, Effective::Order)
+      authorize_action_upon_order(Effective::Order)
     end
 
     def show
       @order = Effective::Order.find(params[:id])
       @page_title = "Order ##{@order.to_param}"
 
-      EffectiveOrders.authorized?(self, :show, @order)
+      authorize_action_upon_order
     end
 
     def new
       @order = Effective::Order.new
       @page_title = 'New Order'
 
-      EffectiveOrders.authorized?(self, :new, @order)
+      authorize_action_upon_order
     end
 
     def create
@@ -31,7 +30,7 @@ module Admin
       @order = Effective::Order.new({}, @user)
       @order.assign_attributes(custom: true, purchase_state: EffectiveOrders::PENDING)
 
-      EffectiveOrders.authorized?(self, :create, @order)
+      authorize_action_upon_order
 
       if order_params[:order_items_attributes].present?
         order_params[:order_items_attributes].each do |_, item_attrs|
@@ -54,7 +53,7 @@ module Admin
 
     def mark_as_paid
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :mark_as_paid, @order)
+      authorize_action_upon_order
 
       if @order.purchase!('Paid by invoice', email: false)
         flash.now[:success] = 'Order marked as paid successfully.'
@@ -67,7 +66,7 @@ module Admin
 
     def send_buyer_invoice
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :show, @order)
+      authorize_action_upon_order
 
       if @order.send_custom_order_invoice_to_buyer!
         flash[:success] = "Successfully sent order invoice to #{@order.user.email}"
@@ -88,6 +87,11 @@ module Admin
           purchasable_attributes: [:description, :price]
         ]
       )
+    end
+
+    def authorize_action_upon_order(order = @order)
+      EffectiveOrders.authorized?(self, :admin, :effective_orders)
+      EffectiveOrders.authorized?(self, action_name.to_sym, order)
     end
   end
 end
