@@ -65,6 +65,19 @@ module Admin
       end
     end
 
+    def send_buyer_invoice
+      @order = Effective::Order.find(params[:id])
+      EffectiveOrders.authorized?(self, :show, @order)
+
+      if @order.send_custom_order_invoice_to_buyer!
+        flash[:success] = "Successfully sent order invoice to #{@order.user.email}"
+      else
+        flash[:danger] = 'Unable to send order invoice'
+      end
+
+      redirect_to(request.referrer.present? ? :back : effective_orders.admin_order_path(@order))
+    end
+
     private
 
     def order_params

@@ -5,5 +5,5 @@
     = f.input :effective_order_id, :as => :hidden
     = f.input :token, :as => :hidden
     = f.submit order_checkout_label(:stripe), :class => 'stripe-button', :data => {'disable_with' => 'Continuing...' }
-    - if EffectiveOrders.allow_pay_via_invoice
-      = pay_via_invoice_link order, :class => 'btn btn-primary'
+
+    = render partial: 'effective/orders/pay_via_invoice_actions', locals: { order: order }

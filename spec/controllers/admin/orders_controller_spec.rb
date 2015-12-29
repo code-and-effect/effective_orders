@@ -183,4 +183,61 @@ describe Admin::OrdersController, type: :controller do
       end
     end
   end
+
+  describe 'POST #send_buyer_invoice' do
+    let(:user) { FactoryGirl.create(:user, email: 'user@example.com') }
+    let(:order) { FactoryGirl.create(:order, user: user) }
+
+    context 'when success' do
+      before { Effective::Order.any_instance.should_receive(:send_custom_order_invoice_to_buyer!).once.and_return(true) }
+
+      context 'when referrer page is present' do
+        before { request.env['HTTP_REFERER'] = 'where_i_came_from' }
+
+        it 'should redirect to previous page with success message' do
+          post :send_buyer_invoice, id: order.to_param
+
+          expect(response).to be_redirect
+          expect(response).to redirect_to 'where_i_came_from'
+          expect(flash[:success]).to eq 'Successfully sent order invoice to user@example.com'
+        end
+      end
+
+      context 'when referrer page is not present' do
+        it 'should redirect to admin order show page with success message' do
+          post :send_buyer_invoice, id: order.to_param
+
+          expect(response).to be_redirect
+          expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(order)
+          expect(flash[:success]).to eq 'Successfully sent order invoice to user@example.com'
+        end
+      end
+    end
+
+    context 'when failed' do
+      before { Effective::Order.any_instance.should_receive(:send_custom_order_invoice_to_buyer!).once.and_return(false) }
+
+      context 'when referrer page is present' do
+        before { request.env['HTTP_REFERER'] = 'where_i_came_from' }
+
+        it 'should redirect to previous page with danger message' do
+          post :send_buyer_invoice, id: order.to_param
+
+          expect(response).to be_redirect
+          expect(response).to redirect_to 'where_i_came_from'
+          expect(flash[:danger]).to eq 'Unable to send order invoice'
+        end
+      end
+
+      context 'when referrer page is not present' do
+        it 'should redirect to admin order show page with danger message' do
+          post :send_buyer_invoice, id: order.to_param
+
+          expect(response).to be_redirect
+          expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(order)
+          expect(flash[:danger]).to eq 'Unable to send order invoice'
+        end
+      end
+    end
+  end
 end

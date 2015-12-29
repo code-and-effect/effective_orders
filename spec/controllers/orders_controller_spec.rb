@@ -395,15 +395,30 @@ describe Effective::OrdersController, type: :controller do
       end
 
       context 'when pending order' do
-        let(:order) { FactoryGirl.create(:pending_order, user: user) }
+        context 'when custom order' do
+          let(:order) { FactoryGirl.create(:pending_order, user: user, custom: true) }
 
-        it 'should render pending order page successfully' do
-          get :show, id: order.to_param
+          it 'should render pending order page successfully' do
+            get :show, id: order.to_param
 
-          expect(response).to be_successful
-          expect(response).to render_template :pending
-          expect(assigns(:order)).to eq order
-          expect(assigns(:page_title)).to eq 'Pending Order'
+            expect(response).to be_successful
+            expect(response).to render_template :pending_custom
+            expect(assigns(:order)).to eq order
+            expect(assigns(:page_title)).to eq 'Pending Order'
+          end
+        end
+
+        context 'when regular order' do
+          let(:order) { FactoryGirl.create(:pending_order, user: user, custom: false) }
+
+          it 'should render pending order page successfully' do
+            get :show, id: order.to_param
+
+            expect(response).to be_successful
+            expect(response).to render_template :pending
+            expect(assigns(:order)).to eq order
+            expect(assigns(:page_title)).to eq 'Pending Order'
+          end
         end
       end
 

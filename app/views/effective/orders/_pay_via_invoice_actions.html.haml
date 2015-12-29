@@ -1,0 +1,5 @@
+- if EffectiveOrders.allow_pay_via_invoice
+  - if order.pending?
+    = link_to 'Print', 'javascript:;', class: 'btn btn-default print-button', 'data-role' => 'print-button', onClick: 'window.print(); false;'
+  - else
+    = pay_via_invoice_link order, class: 'btn btn-primary'

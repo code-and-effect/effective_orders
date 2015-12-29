@@ -55,7 +55,12 @@ EffectiveOrders::Engine.routes.draw do
     namespace :admin do
       resources :customers, :only => [:index]
       resources :orders, :only => [:index, :show, ([:new, :create] if EffectiveOrders.allow_custom_orders)].compact.flatten do
-        post :mark_as_paid, :on => :member if EffectiveOrders.allow_pay_via_invoice
+        member do
+          if EffectiveOrders.allow_pay_via_invoice
+            post :mark_as_paid
+            post :send_buyer_invoice
+          end
+        end
       end
       resources :order_items, :only => [:index]
     end

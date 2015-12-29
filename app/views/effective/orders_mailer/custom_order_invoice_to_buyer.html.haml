@@ -1,0 +1,5 @@
+%p.effective-orders-receipt-info Pending order created:
+
+= render(@order, no_order_actions: true)
+
+%p You can review and pay for this order via credit cart or by invoice #{link_to('here', effective_orders.order_url(@order))}.

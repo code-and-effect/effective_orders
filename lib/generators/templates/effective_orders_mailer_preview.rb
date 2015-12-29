@@ -7,6 +7,10 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
   end
 
+  def custom_order_invoice_to_buyer
+    Effective::OrdersMailer.custom_order_invoice_to_buyer(build_preview_order)
+  end
+
   def order_receipt_to_admin
     Effective::OrdersMailer.order_receipt_to_admin(build_preview_order)
   end
@@ -20,7 +24,7 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   protected
 
   def build_preview_order
-    order = Effective::Order.new()
+    order = Effective::Order.new
     order.user = preview_user
     preview_order_items.each { |atts| order.order_items.build(atts) }
     order
@@ -51,11 +55,14 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
         user.first_name = 'Valued'
         user.last_name = 'Customer'
       end
+
+      if user.respond_to?(:billing_address=)
+        user.billing_address = Effective::Address.new(category: 'billing', full_name: 'Test Full Address', address1: 'Test Address 1', address2: 'Test Address 2', city: 'Test City', state_code: 'AB', country_code: 'CA', postal_code: 'AAA AAA')
+      end
     end
   end
 
   def preview_customer
     Effective::Customer.new(user: preview_user)
   end
-
 end
