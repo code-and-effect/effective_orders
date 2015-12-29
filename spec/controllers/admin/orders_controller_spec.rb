@@ -165,7 +165,7 @@ describe Admin::OrdersController, type: :controller do
         expect(assigns(:order)).to eq order
         expect(assigns(:order).purchased?).to be_truthy
         expect(assigns(:order).payment).to eq(details: 'Paid by invoice')
-        expect(flash[:success]).to eq 'Order marked as paid successfully.'
+        expect(flash[:success]).to eq 'Order marked as paid successfully'
       end
     end
 
@@ -179,7 +179,7 @@ describe Admin::OrdersController, type: :controller do
         expect(response).to redirect_to 'where_i_came_from'
         expect(assigns(:order)).to eq order
         expect(assigns(:order).purchased?).to be_falsey
-        expect(flash[:danger]).to eq 'Unable to mark order as paid.'
+        expect(flash[:danger]).to eq 'Unable to mark order as paid'
       end
     end
   end

@@ -56,10 +56,10 @@ module Admin
       authorize_action_upon_order
 
       if @order.purchase!('Paid by invoice', email: false)
-        flash.now[:success] = 'Order marked as paid successfully.'
+        flash[:success] = 'Order marked as paid successfully'
         redirect_to effective_orders.admin_orders_path
       else
-        flash.now[:danger] = 'Unable to mark order as paid.'
+        flash[:danger] = 'Unable to mark order as paid'
         redirect_to :back
       end
     end
