@@ -1,5 +1,5 @@
 .col-sm-12.nested-fields.form-inline.order-item
-  - f.object.purchasable = Effective::CustomProduct.new unless f.object.purchasable.present?
+  - f.object.purchasable = Effective::Product.new unless f.object.purchasable.present?
 
   - errors = f.object.errors.full_messages
   - if errors.present?

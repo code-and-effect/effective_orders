@@ -22,7 +22,7 @@ module EffectiveOrders
         @cart_items_table_name = ':' + EffectiveOrders.cart_items_table_name.to_s
         @customers_table_name = ':' + EffectiveOrders.customers_table_name.to_s
         @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
-        @custom_products_table_name = ':' + EffectiveOrders.custom_products_table_name.to_s
+        @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
 
         migration_template '../../../db/upgrade/03_upgrade_effective_orders_from17x.rb.erb', 'db/migrate/upgrade_effective_orders_from17x.rb'
       end

@@ -18,7 +18,7 @@ module EffectiveOrders
   mattr_accessor :cart_items_table_name
   mattr_accessor :customers_table_name
   mattr_accessor :subscriptions_table_name
-  mattr_accessor :custom_products_table_name
+  mattr_accessor :products_table_name
 
   mattr_accessor :authorization_method
   mattr_accessor :tax_rate_method

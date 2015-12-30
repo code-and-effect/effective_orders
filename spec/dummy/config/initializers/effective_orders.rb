@@ -8,7 +8,7 @@ EffectiveOrders.setup do |config|
   config.cart_items_table_name = :cart_items
   config.customers_table_name = :customers
   config.subscriptions_table_name = :subscriptions
-  config.custom_products_table_name = :custom_products
+  config.products_table_name = :custom_products
 
   # Authorization Method
   #

@@ -1,6 +1,6 @@
 module Effective
-  class CustomProduct < ActiveRecord::Base
-    self.table_name = EffectiveOrders.custom_products_table_name.to_s
+  class Product < ActiveRecord::Base
+    self.table_name = EffectiveOrders.products_table_name.to_s
 
     acts_as_purchasable
 

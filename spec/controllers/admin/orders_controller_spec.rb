@@ -56,13 +56,13 @@ describe Admin::OrdersController, type: :controller do
         end
 
         it 'should create new custom products' do
-          expect { post :create, order_params.merge(commit: button_pressed) }.to change { Effective::CustomProduct.count }.from(0).to(2)
+          expect { post :create, order_params.merge(commit: button_pressed) }.to change { Effective::Product.count }.from(0).to(2)
 
-          first_product = Effective::CustomProduct.all.sort.first
+          first_product = Effective::Product.all.sort.first
           expect(first_product.description).to eq 'test product 1'
           expect(first_product.price).to eq 10000
 
-          second_product = Effective::CustomProduct.all.sort.last
+          second_product = Effective::Product.all.sort.last
           expect(second_product.description).to eq 'test product 2'
           expect(second_product.price).to eq 30000
         end
@@ -125,7 +125,7 @@ describe Admin::OrdersController, type: :controller do
         end
 
         it 'should not create product' do
-          expect { post :create, order_params.merge(commit: button_pressed) }.not_to change { Effective::CustomProduct.count }
+          expect { post :create, order_params.merge(commit: button_pressed) }.not_to change { Effective::Product.count }
         end
 
         it 'should render admin new order page with danger message' do

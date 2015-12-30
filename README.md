@@ -84,7 +84,7 @@ If you are running earlier version than 1.8.0, please upgrade to 1.8.* with this
 rails generate effective_orders:upgrade_from17x
 ```
 
-the above command will add `custom_products` table to you DB and `custom` boolean flag to `orders` table.
+the above command will add `products` table to you DB and `custom` boolean flag to `orders` table.
 
 ## High Level Overview
 

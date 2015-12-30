@@ -1,6 +1,6 @@
 class UpgradeEffectiveOrdersFrom17x < ActiveRecord::Migration
   def self.up
-    create_table :custom_products do |t|
+    create_table :products do |t|
       t.text      :description
       t.integer   :price, :default => 0
 
@@ -12,6 +12,6 @@ class UpgradeEffectiveOrdersFrom17x < ActiveRecord::Migration
 
   def self.down
     remove_column :orders, :custom
-    drop_table :custom_products
+    drop_table :products
   end
 end
