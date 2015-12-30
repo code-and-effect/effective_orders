@@ -55,7 +55,7 @@ module Admin
       @order = Effective::Order.find(params[:id])
       authorize_action_upon_order
 
-      if @order.purchase!('Paid by invoice', email: false)
+      if @order.purchase!('Paid by invoice', email: EffectiveOrders.mailer[:send_order_receipt_to_buyer_when_marked_paid])
         flash[:success] = 'Order marked as paid successfully'
         redirect_to effective_orders.admin_orders_path
       else
