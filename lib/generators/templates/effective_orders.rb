@@ -222,4 +222,30 @@ EffectiveOrders.setup do |config|
     }
   end
 
+  # CCBill configuration
+  config.ccbill_enabled = false
+
+  # CCBill Dynamic Pricing documentation describes these variables:
+  # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide
+  if Rails.env.production?
+    config.ccbill = {
+      :client_accnum => '',
+      :client_subacc => '',
+      # Get this from CCBill Admin dashboard after setting up a form
+      :form_name => '',
+      # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Webhooks+User+Guide#Appendix_A:_Currency_Codes
+      :currency_code => '',
+      # You'll get this salt value from CCBill tech support
+      # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide#Generating_the_MD5_Hash
+      :dynamic_pricing_salt => ''
+    }
+  else
+    config.ccbill = {
+      :client_accnum => '',
+      :client_subacc => '',
+      :form_name => '',
+      :currency_code => '',
+      :dynamic_pricing_salt => ''
+    }
+  end
 end

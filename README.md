@@ -933,6 +933,20 @@ The secret can be any string. Here's a good way to come up with a secret:
 This process should be very similar although you'll create and configure a seller account on paypal.com rather than the sandbox site.
 You should generate separate private and public certificates/keys for this and it is advisable to not keep production certificates/keys in version control.
 
+## Paying via CCBill
+
+You need a merchant account with CCBill so go sign up or login.
+
+Get/set the config values
+
+:referer
+:form_name
+:confirm_password
+:subscriptionTypeId
+:allowedTypes
+
+
+
 
 ## License
 

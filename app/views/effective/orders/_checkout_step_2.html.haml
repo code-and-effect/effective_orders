@@ -16,6 +16,9 @@
   - if EffectiveOrders.stripe_enabled
     = render :partial => '/effective/orders/stripe/form', locals: {order: order}
 
+  - if EffectiveOrders.ccbill_enabled
+    = render :partial => '/effective/orders/ccbill/form', locals: {order: order}
+
   - if (Rails.env.production? == true && EffectiveOrders.allow_pretend_purchase_in_production)
     %p= EffectiveOrders.allow_pretend_purchase_in_production_message
 

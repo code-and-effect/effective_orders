@@ -46,6 +46,7 @@ module EffectiveOrders
 
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
+  mattr_accessor :ccbill_enabled
 
   mattr_accessor :show_order_history_button
 
@@ -61,6 +62,7 @@ module EffectiveOrders
   mattr_accessor :paypal
   mattr_accessor :moneris
   mattr_accessor :stripe
+  mattr_accessor :ccbill
 
   mattr_accessor :deliver_method
 
@@ -89,7 +91,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris_enabled, paypal_enabled, stripe_enabled].select { |enabled| enabled }.length == 1
+    [moneris_enabled, paypal_enabled, stripe_enabled, ccbill_enabled].select { |enabled| enabled }.length == 1
   end
 
   class SoldOutException < Exception; end

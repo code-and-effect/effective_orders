@@ -1,0 +1,11 @@
+= form_tag('https://bill.ccbill.com/jpost/signup.cgi', :method => :post) do
+  = hidden_field_tag(:clientAccnum, EffectiveOrders.ccbill[:client_accnum])
+  = hidden_field_tag(:clientSubacc, EffectiveOrders.ccbill[:client_subacc])
+  = hidden_field_tag(:formName, EffectiveOrders.ccbill[:form_name])
+  = hidden_field_tag(:formPrice, ccbill_price(order.total))
+  = hidden_field_tag(:formPeriod, EffectiveOrders.ccbill[:form_period])
+  = hidden_field_tag(:currencyCode, EffectiveOrders.ccbill[:currency_code])
+  = hidden_field_tag(:formDigest, ccbill_form_digest(order))
+
+  = submit_tag(order_checkout_label(:ccbill), :class => 'btn btn-primary', :data => {'disable_with' => 'Continuing...' })
+
