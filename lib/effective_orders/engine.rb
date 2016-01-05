@@ -99,7 +99,7 @@ module EffectiveOrders
         EffectiveOrders.ccbill[:form_period] ||= 365
 
         missing = EffectiveOrders.stripe.select {|_config, value| value.blank? }
-        required = [:client_accnum, :client_subacc, :form_name, :currency_code]
+        required = [:client_accnum, :client_subacc, :form_name, :currency_code, :dynamic_pricing_salt]
 
         # perform an intersection operation between missing and required configs
         missing_required = missing.keys & required
