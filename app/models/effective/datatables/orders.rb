@@ -30,6 +30,7 @@ if defined?(EffectiveDatatables)
 
           table_column(:total) { |order| price_to_currency(order[:total].to_i) }
           table_column :payment_method_abbr, label: 'Payment Method'
+          table_column :note, visible: false
 
           table_column :created_at, :visible => false
           table_column :updated_at, :visible => false

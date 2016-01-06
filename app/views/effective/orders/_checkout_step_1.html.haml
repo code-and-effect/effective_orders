@@ -11,6 +11,7 @@
     - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
       %h3 User Information
       = render :partial => 'effective/orders/order_user_fields', :locals => {:form => f, :user => f.object.user }
+      = f.input :note
 
     - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
 

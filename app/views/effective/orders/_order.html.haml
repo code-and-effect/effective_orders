@@ -4,6 +4,7 @@
 
   = render partial: 'effective/orders/order_header', locals: {order: order}
   = render partial: 'effective/orders/order_shipping', locals: {order: order}
+  = render partial: 'effective/orders/order_note', locals: {order: order}
   = render partial: 'effective/orders/order_items', locals: {order: order}
 
   - if (EffectiveOrders.authorized?(controller, :show, :payment_details) rescue false)
