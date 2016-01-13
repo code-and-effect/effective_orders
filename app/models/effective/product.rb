@@ -7,6 +7,7 @@ module Effective
     structure do
       description   :text, validates: [:presence]
       price         :integer, default: 0, validates: [numericality: { greater_than: 0 }]
+      tax_exempt    :boolean
 
       timestamps
     end

@@ -55,6 +55,7 @@ ActiveRecord::Schema.define(:version => 4) do
   create_table "custom_products", force: :true do |t|
     t.text     "description"
     t.integer  "price",       default: 0
+    t.boolean  "tax_exempt"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

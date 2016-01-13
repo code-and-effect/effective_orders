@@ -11,8 +11,7 @@
   = f.input :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
   = f.simple_fields_for :purchasable do |purchasable|
     = purchasable.input :price, as: :effective_price
-  = f.input :tax_exempt, label: 'Tax Exempt'
-  = f.simple_fields_for :purchasable do |purchasable|
+    = purchasable.input :tax_exempt, label: 'Tax Exempt'
     = purchasable.input :description, input_html: { rows: 1, cols: 35 }
   = link_to_remove_association('Remove Item', f)
 

@@ -37,7 +37,6 @@ module Admin
       if order_params[:order_items_attributes].present?
         order_params[:order_items_attributes].each do |_, item_attrs|
           purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
-          purchasable.tax_exempt = ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(item_attrs[:tax_exempt])
           @order.add(purchasable, item_attrs[:quantity].to_i)
         end
       end
@@ -86,8 +85,9 @@ module Admin
       params.require(:effective_order).permit(
         :user_id,
         order_items_attributes: [
-          :quantity, :tax_exempt,
-          purchasable_attributes: [:description, :price]
+          :quantity, purchasable_attributes: [
+            :description, :price, :tax_exempt
+          ]
         ]
       )
     end

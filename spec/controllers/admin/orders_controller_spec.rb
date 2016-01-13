@@ -27,7 +27,7 @@ describe Admin::OrdersController, type: :controller do
     let(:user1) { FactoryGirl.create(:user, email: 'bbb@example.com', billing_address: FactoryGirl.create(:address), shipping_address: FactoryGirl.create(:address)) }
 
     context 'when success' do
-      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '10000' }, quantity: '2', tax_exempt: '1', '_destroy' => 'false' }, '1' => { purchasable_attributes: { description: 'test product 2', price: '30000' }, quantity: '3', tax_exempt: '0', '_destroy' => 'false' } } } } }
+      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '10000', tax_exempt: '1' }, quantity: '2', '_destroy' => 'false' }, '1' => { purchasable_attributes: { description: 'test product 2', price: '30000', tax_exempt: '0' }, quantity: '3', '_destroy' => 'false' } } } } }
 
       shared_context 'creates objects in db correctly' do
         it 'should create new custom order with pending state' do
@@ -102,7 +102,7 @@ describe Admin::OrdersController, type: :controller do
     end
 
     context 'when failed' do
-      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '0' }, quantity: '2', tax_exempt: '1', '_destroy' => 'false' } } } } }
+      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '0', tax_exempt: '1' }, quantity: '2', '_destroy' => 'false' } } } } }
 
       shared_context 'does not create objects in db and redirects to admin new order page with danger message' do
         it 'should not create order' do
