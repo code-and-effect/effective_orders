@@ -44,12 +44,12 @@ module Admin
 
       if @order.save
         path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_orders_path
-        flash.now[:success] = 'Successfully created custom order'
+        flash[:success] = 'Successfully created custom order'
         redirect_to path_for_redirect
       else
         @page_title = 'New Order'
         assign_users
-        flash.now[:danger] = 'Unable to create custom order'
+        flash[:danger] = 'Unable to create custom order'
         render :new
       end
     end

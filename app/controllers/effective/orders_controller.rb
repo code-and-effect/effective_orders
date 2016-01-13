@@ -64,7 +64,7 @@ module Effective
           return
         rescue => e
           Rails.logger.info e.message
-          flash.now[:danger] = "An error has occurred: #{e.message}. Please try again."
+          flash[:danger] = "An error has occurred: #{e.message}. Please try again."
           raise ActiveRecord::Rollback
         end
       end
@@ -97,9 +97,9 @@ module Effective
 
       if @order.update_attributes(purchase_state: EffectiveOrders::PENDING)
         current_cart.try(:destroy)
-        flash.now[:success] = 'Created pending order successfully!'
+        flash[:success] = 'Created pending order successfully!'
       else
-        flash.now[:danger] = 'Unable to create your pending order. Please check your order details and try again.'
+        flash[:danger] = 'Unable to create your pending order. Please check your order details and try again.'
       end
 
       redirect_to effective_orders.order_path(@order)
