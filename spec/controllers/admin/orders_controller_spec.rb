@@ -3,7 +3,10 @@ require 'spec_helper'
 describe Admin::OrdersController, type: :controller do
   routes { EffectiveOrders::Engine.routes }
 
-  let(:cart) { FactoryGirl.create(:cart) }
+  let!(:user1) { FactoryGirl.create(:user, email: 'bbb@example.com') }
+  let!(:user2) { FactoryGirl.create(:user, email: 'ccc@example.com') }
+  let!(:user3) { FactoryGirl.create(:user, email: 'aaa@example.com') }
+  let(:cart) { FactoryGirl.create(:cart, user: user1) }
 
   before { sign_in cart.user }
 
@@ -16,14 +19,15 @@ describe Admin::OrdersController, type: :controller do
       expect(assigns(:order)).to be_an Effective::Order
       expect(assigns(:order)).to be_new_record
       expect(assigns(:page_title)).to eq 'New Order'
+      expect(assigns(:users)).to eq [user3, user1, user2]
     end
   end
 
   describe 'POST #create' do
-    let(:user) { FactoryGirl.create(:user, billing_address: FactoryGirl.create(:address), shipping_address: FactoryGirl.create(:address)) }
+    let(:user1) { FactoryGirl.create(:user, email: 'bbb@example.com', billing_address: FactoryGirl.create(:address), shipping_address: FactoryGirl.create(:address)) }
 
     context 'when success' do
-      let(:order_params) { { effective_order: { user_id: user.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '10000' }, quantity: '2', tax_exempt: '1', '_destroy' => 'false' }, '1' => { purchasable_attributes: { description: 'test product 2', price: '30000' }, quantity: '3', tax_exempt: '0', '_destroy' => 'false' } } } } }
+      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '10000' }, quantity: '2', tax_exempt: '1', '_destroy' => 'false' }, '1' => { purchasable_attributes: { description: 'test product 2', price: '30000' }, quantity: '3', tax_exempt: '0', '_destroy' => 'false' } } } } }
 
       shared_context 'creates objects in db correctly' do
         it 'should create new custom order with pending state' do
@@ -32,9 +36,9 @@ describe Admin::OrdersController, type: :controller do
           expect(assigns(:order)).to be_persisted
           expect(assigns(:order).custom?).to be_truthy
           expect(assigns(:order).pending?).to be_truthy
-          expect(assigns(:order).user).to eq user
-          expect(assigns(:order).billing_address).to eq user.billing_address
-          expect(assigns(:order).shipping_address).to eq user.shipping_address
+          expect(assigns(:order).user).to eq user1
+          expect(assigns(:order).billing_address).to eq user1.billing_address
+          expect(assigns(:order).shipping_address).to eq user1.shipping_address
 
           expect(assigns(:order).order_items.count).to eq 2
 
@@ -98,7 +102,7 @@ describe Admin::OrdersController, type: :controller do
     end
 
     context 'when failed' do
-      let(:order_params) { { effective_order: { user_id: user.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '0' }, quantity: '2', tax_exempt: '1', '_destroy' => 'false' } } } } }
+      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { description: 'test product 1', price: '0' }, quantity: '2', tax_exempt: '1', '_destroy' => 'false' } } } } }
 
       shared_context 'does not create objects in db and redirects to admin new order page with danger message' do
         it 'should not create order' do
@@ -108,9 +112,9 @@ describe Admin::OrdersController, type: :controller do
           expect(assigns(:order).valid?).to be_falsey
           expect(assigns(:order).custom?).to be_truthy
           expect(assigns(:order).pending?).to be_truthy
-          expect(assigns(:order).user).to eq user
-          expect(assigns(:order).billing_address).to eq user.billing_address
-          expect(assigns(:order).shipping_address).to eq user.shipping_address
+          expect(assigns(:order).user).to eq user1
+          expect(assigns(:order).billing_address).to eq user1.billing_address
+          expect(assigns(:order).shipping_address).to eq user1.shipping_address
 
           expect(assigns(:order).order_items.to_a.count).to eq 1
 
@@ -133,6 +137,8 @@ describe Admin::OrdersController, type: :controller do
 
           expect(response).to be_successful
           expect(response).to render_template :new
+          expect(assigns(:page_title)).to eq 'New Order'
+          expect(assigns(:users)).to eq [user3, user1, user2]
           expect(flash[:danger]).to eq 'Unable to create custom order'
         end
       end

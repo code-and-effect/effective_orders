@@ -23,6 +23,8 @@ module Admin
       @page_title = 'New Order'
 
       authorize_action_upon_order
+
+      assign_users
     end
 
     def create
@@ -46,6 +48,7 @@ module Admin
         redirect_to path_for_redirect
       else
         @page_title = 'New Order'
+        assign_users
         flash.now[:danger] = 'Unable to create custom order'
         render :new
       end
@@ -92,6 +95,10 @@ module Admin
     def authorize_action_upon_order(order = @order)
       EffectiveOrders.authorized?(self, :admin, :effective_orders)
       EffectiveOrders.authorized?(self, action_name.to_sym, order)
+    end
+
+    def assign_users
+      @users = User.all.sort { |user1, user2| user1.to_s <=> user2.to_s }
     end
   end
 end
