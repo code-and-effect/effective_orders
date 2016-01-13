@@ -48,7 +48,11 @@
 
     &.has-error span.help-block { display: none; }
     label { margin-right: 15px; }
-    .checkbox input.boolean { margin-right: 5px; }
+
+    .checkbox {
+      input.boolean { margin-right: 5px; }
+      label.boolean { margin-top: 2px; }
+    }
   }
 
   .effective_price .input-group-addon { font-size: 15px; }
