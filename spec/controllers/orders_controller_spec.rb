@@ -398,11 +398,11 @@ describe Effective::OrdersController, type: :controller do
         context 'when custom order' do
           let(:order) { FactoryGirl.create(:pending_order, user: user, custom: true) }
 
-          it 'should render pending order page successfully' do
+          it 'should render checkout page successfully' do
             get :show, id: order.to_param
 
             expect(response).to be_successful
-            expect(response).to render_template :show
+            expect(response).to render_template :checkout
             expect(assigns(:order)).to eq order
             expect(assigns(:page_title)).to eq 'Pending Order'
           end
@@ -415,7 +415,7 @@ describe Effective::OrdersController, type: :controller do
             get :show, id: order.to_param
 
             expect(response).to be_successful
-            expect(response).to render_template :show
+            expect(response).to render_template :checkout
             expect(assigns(:order)).to eq order
             expect(assigns(:page_title)).to eq 'Pending Order'
           end

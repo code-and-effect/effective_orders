@@ -1,6 +1,3 @@
 %h2.effective-orders-page-title= @page_title
 
-- if @order.pending? && @order.custom?
-  = render_checkout @order
-- else
-  = render @order
+= render @order

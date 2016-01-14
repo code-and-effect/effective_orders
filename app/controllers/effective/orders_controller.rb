@@ -76,16 +76,15 @@ module Effective
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      if @order.purchase_state.blank?
-        @page_title = 'Checkout'
-        render :checkout and return
-      end
-
       @page_title = case
                     when @order.purchased? then 'Order Receipt'
                     when @order.pending? then 'Pending Order'
                     else 'Checkout'
                     end
+
+      if @order.purchase_state.blank? || @order.pending?
+        render :checkout and return
+      end
     end
 
     def pay_via_invoice

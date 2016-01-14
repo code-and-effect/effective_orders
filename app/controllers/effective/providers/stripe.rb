@@ -16,6 +16,7 @@ module Effective
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(response) # orders_controller#order_purchased
         else
+          @page_title = 'Checkout'
           flash[:danger] = @stripe_charge.errors.full_messages.join(',')
           render 'checkout'
         end
