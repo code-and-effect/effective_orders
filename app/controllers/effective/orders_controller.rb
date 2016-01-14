@@ -9,8 +9,8 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
-    before_filter :authenticate_user!, :except => [:paypal_postback]
-    before_filter :set_page_title
+    before_filter :authenticate_user!, except: [:paypal_postback]
+    before_filter :set_page_title, except: [:show]
 
     # This is the entry point for the "Checkout" buttons
     def new
@@ -81,14 +81,11 @@ module Effective
         render :checkout and return
       end
 
-      if @order.pending?
-        @page_title = 'Pending Order'
-        if @order.custom?
-          render :pending_custom and return
-        else
-          render :pending and return
-        end
-      end
+      @page_title = case
+                    when @order.purchased? then 'Order Receipt'
+                    when @order.pending? then 'Pending Order'
+                    else 'Checkout'
+                    end
     end
 
     def pay_via_invoice
@@ -212,7 +209,6 @@ module Effective
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'
         when 'declined'     ; 'Payment Declined'
-        when 'show'         ; 'Order Receipt'
         else 'Checkout'
       end
     end

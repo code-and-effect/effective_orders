@@ -402,7 +402,7 @@ describe Effective::OrdersController, type: :controller do
             get :show, id: order.to_param
 
             expect(response).to be_successful
-            expect(response).to render_template :pending_custom
+            expect(response).to render_template :show
             expect(assigns(:order)).to eq order
             expect(assigns(:page_title)).to eq 'Pending Order'
           end
@@ -415,7 +415,7 @@ describe Effective::OrdersController, type: :controller do
             get :show, id: order.to_param
 
             expect(response).to be_successful
-            expect(response).to render_template :pending
+            expect(response).to render_template :show
             expect(assigns(:order)).to eq order
             expect(assigns(:page_title)).to eq 'Pending Order'
           end

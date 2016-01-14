@@ -1,3 +1,6 @@
-%h2.effective-orders-page-title= (@order.purchased? ? 'Receipt' : 'Order')
+%h2.effective-orders-page-title= @page_title
 
-= render @order
+- if @order.pending? && @order.custom?
+  = render_checkout @order
+- else
+  = render @order
