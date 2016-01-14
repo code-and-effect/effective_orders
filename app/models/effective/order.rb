@@ -324,9 +324,9 @@ module Effective
       send_email(:order_receipt_to_buyer, self)
     end
 
-    def send_custom_order_invoice_to_buyer!
-      return false unless pending? && custom? && EffectiveOrders.mailer[:send_custom_order_invoice_to_buyer]
-      send_email(:custom_order_invoice_to_buyer, self)
+    def send_payment_request_to_buyer!
+      return false unless pending? && custom? && EffectiveOrders.mailer[:send_payment_request_to_buyer]
+      send_email(:payment_request_to_buyer, self)
     end
 
     def send_order_receipt_to_seller!

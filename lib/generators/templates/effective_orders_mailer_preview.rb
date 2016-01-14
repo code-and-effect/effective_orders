@@ -7,8 +7,8 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
   end
 
-  def custom_order_invoice_to_buyer
-    Effective::OrdersMailer.custom_order_invoice_to_buyer(build_preview_order)
+  def payment_request_to_buyer
+    Effective::OrdersMailer.payment_request_to_buyer(build_preview_order)
   end
 
   def order_receipt_to_admin

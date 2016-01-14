@@ -15,7 +15,7 @@ module Effective
       mail(:to => order.user.email, :subject => receipt_to_buyer_subject(order))
     end
 
-    def custom_order_invoice_to_buyer(order)
+    def payment_request_to_buyer(order)
       @order = order
       mail(:to => order.user.email, :subject => invoice_to_buyer_subject(order))
     end

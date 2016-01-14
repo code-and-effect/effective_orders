@@ -195,7 +195,7 @@ describe Admin::OrdersController, type: :controller do
     let(:order) { FactoryGirl.create(:order, user: user) }
 
     context 'when success' do
-      before { Effective::Order.any_instance.should_receive(:send_custom_order_invoice_to_buyer!).once.and_return(true) }
+      before { Effective::Order.any_instance.should_receive(:send_payment_request_to_buyer!).once.and_return(true) }
 
       context 'when referrer page is present' do
         before { request.env['HTTP_REFERER'] = 'where_i_came_from' }
@@ -221,7 +221,7 @@ describe Admin::OrdersController, type: :controller do
     end
 
     context 'when failed' do
-      before { Effective::Order.any_instance.should_receive(:send_custom_order_invoice_to_buyer!).once.and_return(false) }
+      before { Effective::Order.any_instance.should_receive(:send_payment_request_to_buyer!).once.and_return(false) }
 
       context 'when referrer page is present' do
         before { request.env['HTTP_REFERER'] = 'where_i_came_from' }

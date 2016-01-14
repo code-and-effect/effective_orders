@@ -70,7 +70,7 @@ module Admin
       @order = Effective::Order.find(params[:id])
       authorize_action_upon_order
 
-      if @order.send_custom_order_invoice_to_buyer!
+      if @order.send_payment_request_to_buyer!
         flash[:success] = "Successfully sent order invoice to #{@order.user.email}"
       else
         flash[:danger] = 'Unable to send order invoice'
