@@ -30,7 +30,7 @@ module Admin
     def create
       @user = User.find_by_id(order_params[:user_id])
       @order = Effective::Order.new({}, @user)
-      @order.assign_attributes(custom: true, purchase_state: EffectiveOrders::PENDING)
+      @order.purchase_state = EffectiveOrders::PENDING
 
       authorize_action_upon_order
 

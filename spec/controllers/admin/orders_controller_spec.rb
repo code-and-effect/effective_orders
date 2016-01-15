@@ -34,7 +34,6 @@ describe Admin::OrdersController, type: :controller do
           expect { post :create, order_params.merge(commit: button_pressed) }.to change { Effective::Order.count }.from(0).to(1)
 
           expect(assigns(:order)).to be_persisted
-          expect(assigns(:order).custom?).to be_truthy
           expect(assigns(:order).pending?).to be_truthy
           expect(assigns(:order).user).to eq user1
           expect(assigns(:order).billing_address).to eq user1.billing_address
@@ -110,7 +109,6 @@ describe Admin::OrdersController, type: :controller do
 
           expect(assigns(:order)).to be_new_record
           expect(assigns(:order).valid?).to be_falsey
-          expect(assigns(:order).custom?).to be_truthy
           expect(assigns(:order).pending?).to be_truthy
           expect(assigns(:order).user).to eq user1
           expect(assigns(:order).billing_address).to eq user1.billing_address

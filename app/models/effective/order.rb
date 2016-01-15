@@ -16,7 +16,6 @@ module Effective
       payment         :text   # serialized hash, see below
       purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING]}]
       purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchase_state == EffectiveOrders::PURCHASED}}]
-      custom          :boolean
       note            :text
 
       timestamps
@@ -325,7 +324,7 @@ module Effective
     end
 
     def send_payment_request_to_buyer!
-      return false unless pending? && custom? && EffectiveOrders.mailer[:send_payment_request_to_buyer]
+      return false unless !purchased? && EffectiveOrders.mailer[:send_payment_request_to_buyer]
       send_email(:payment_request_to_buyer, self)
     end
 

@@ -9,11 +9,9 @@ class UpgradeEffectiveOrdersFrom17x < ActiveRecord::Migration
     end
 
     add_column <%= @orders_table_name %>, :note, :text
-    add_column <%= @orders_table_name %>, :custom, :boolean
   end
 
   def self.down
-    remove_column <%= @orders_table_name %>, :custom
     remove_column <%= @orders_table_name %>, :note
     drop_table <%= @products_table_name %>
   end
