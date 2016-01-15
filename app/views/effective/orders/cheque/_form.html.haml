@@ -1,2 +1,2 @@
 = form_tag(effective_orders.pay_by_cheque_path(order), method: :post) do
-  = submit_tag order_checkout_label(:cheque), class: 'btn btn-primary', data: { 'disable_with' => 'Continuing...', confirm: 'Are you sure you want to pay by cheque? Pending order will be created.' }
+  = submit_tag order_checkout_label(:cheque), class: 'btn btn-primary', data: { confirm: 'Are you sure you want to pay by cheque? Pending order will be created.', disable_with: 'Continuing...' }
