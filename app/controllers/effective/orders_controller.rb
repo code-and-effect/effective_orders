@@ -82,7 +82,7 @@ module Effective
                     else 'Checkout'
                     end
 
-      if @order.purchase_state.blank? || @order.pending?
+      if @order.purchase_state.blank?
         render :checkout and return
       end
     end
