@@ -76,7 +76,7 @@ if defined?(EffectiveDatatables)
         end
 
         def query_payment_method
-          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'), SUBSTRING(payment FROM 'details: (Paid by invoice)\\n'))"
+          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'), SUBSTRING(payment FROM 'details: (Paid by cheque)\\n'))"
         end
 
         def search_column(collection, table_column, search_term)
@@ -99,13 +99,12 @@ if defined?(EffectiveDatatables)
         end
 
         def purchase_state_dropdown_options
-          options = [
+          [
             %w(abandoned abandoned),
             [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED],
             [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED],
+            [EffectiveOrders::PENDING, EffectiveOrders::PENDING]
           ]
-          options << [EffectiveOrders::PENDING, EffectiveOrders::PENDING] if EffectiveOrders.allow_pay_via_invoice
-          options
         end
       end
     end

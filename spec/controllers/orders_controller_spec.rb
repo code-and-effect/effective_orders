@@ -467,7 +467,7 @@ describe Effective::OrdersController, type: :controller do
     end
   end
 
-  describe 'POST #pay_via_invoice' do
+  describe 'POST #pay_by_cheque' do
     let(:user) { FactoryGirl.create(:user) }
     let(:order) { FactoryGirl.create(:order, user: user) }
     let!(:cart) { FactoryGirl.create(:cart_with_items, user: user) }
@@ -476,7 +476,7 @@ describe Effective::OrdersController, type: :controller do
 
     context 'when success' do
       it 'should update order state, empty cart and redirect to order show page with success message' do
-        post :pay_via_invoice, id: order.to_param
+        post :pay_by_cheque, id: order.to_param
 
         expect(response).to be_redirect
         expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.order_path(order)
@@ -490,7 +490,7 @@ describe Effective::OrdersController, type: :controller do
       before { Effective::Order.any_instance.stub(:update_attributes).and_return(false) }
 
       it 'should not empty cart and redirect to order show page with danger message' do
-        post :pay_via_invoice, id: order.to_param
+        post :pay_by_cheque, id: order.to_param
 
         expect(response).to be_redirect
         expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.order_path(order)

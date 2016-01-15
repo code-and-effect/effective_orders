@@ -36,7 +36,7 @@ module EffectiveOrders
   mattr_accessor :allow_pretend_purchase_in_production
   mattr_accessor :allow_pretend_purchase_in_production_message
 
-  mattr_accessor :allow_pay_via_invoice
+  mattr_accessor :cheque_enabled
   mattr_accessor :allow_custom_orders
 
   mattr_accessor :require_billing_address

@@ -57,7 +57,7 @@ module Admin
       @order = Effective::Order.find(params[:id])
       authorize_action_upon_order
 
-      if @order.purchase!('Paid by invoice', email: EffectiveOrders.mailer[:send_order_receipt_to_buyer_when_marked_paid])
+      if @order.purchase!('Paid by cheque', email: EffectiveOrders.mailer[:send_order_receipt_to_buyer_when_marked_paid])
         flash[:success] = 'Order marked as paid successfully'
         redirect_to effective_orders.admin_orders_path
       else
@@ -66,14 +66,14 @@ module Admin
       end
     end
 
-    def send_buyer_invoice
+    def send_payment_request
       @order = Effective::Order.find(params[:id])
       authorize_action_upon_order
 
       if @order.send_payment_request_to_buyer!
-        flash[:success] = "Successfully sent order invoice to #{@order.user.email}"
+        flash[:success] = "Successfully sent payment request to #{@order.user.email}"
       else
-        flash[:danger] = 'Unable to send order invoice'
+        flash[:danger] = 'Unable to send payment request'
       end
 
       redirect_to(request.referrer.present? ? :back : effective_orders.admin_order_path(@order))

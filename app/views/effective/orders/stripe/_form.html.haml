@@ -6,4 +6,4 @@
     = f.input :token, :as => :hidden
     = f.submit order_checkout_label(:stripe), :class => 'stripe-button', :data => {'disable_with' => 'Continuing...' }
 
-    = render partial: 'effective/orders/pay_via_invoice_actions', locals: { order: order }
+    = render partial: 'effective/orders/pay_by_cheque_actions', locals: { order: order }

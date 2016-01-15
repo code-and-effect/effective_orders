@@ -10,8 +10,8 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/:id/resend_buyer_receipt', :to => 'orders#resend_buyer_receipt', :via => :get, :as => 'resend_buyer_receipt'
     match 'orders/my_purchases', :to => 'orders#my_purchases', :as => 'my_purchases', :via => :get
 
-    if EffectiveOrders.allow_pay_via_invoice
-      match 'orders/:id/pay_via_invoice', :to => 'orders#pay_via_invoice', :via => :post, :as => 'pay_via_invoice'
+    if EffectiveOrders.cheque_enabled
+      match 'orders/:id/pay_by_cheque', :to => 'orders#pay_by_cheque', :via => :post, :as => 'pay_by_cheque'
     end
 
     if EffectiveOrders.paypal_enabled
@@ -54,11 +54,11 @@ EffectiveOrders::Engine.routes.draw do
   if defined?(EffectiveDatatables) && !EffectiveOrders.use_active_admin? || Rails.env.test?
     namespace :admin do
       resources :customers, :only => [:index]
-      resources :orders, :only => [:index, :show, ([:new, :create] if EffectiveOrders.allow_custom_orders)].compact.flatten do
+      resources :orders, :only => [:index, :show, :new, :create] do
         member do
-          if EffectiveOrders.allow_pay_via_invoice
+          if EffectiveOrders.cheque_enabled
+            post :send_payment_request
             post :mark_as_paid
-            post :send_buyer_invoice
           end
         end
       end

@@ -170,7 +170,7 @@ describe Admin::OrdersController, type: :controller do
         expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_orders_path
         expect(assigns(:order)).to eq order
         expect(assigns(:order).purchased?).to be_truthy
-        expect(assigns(:order).payment).to eq(details: 'Paid by invoice')
+        expect(assigns(:order).payment).to eq(details: 'Paid by cheque')
         expect(flash[:success]).to eq 'Order marked as paid successfully'
       end
     end
@@ -190,7 +190,7 @@ describe Admin::OrdersController, type: :controller do
     end
   end
 
-  describe 'POST #send_buyer_invoice' do
+  describe 'POST #send_payment_request' do
     let(:user) { FactoryGirl.create(:user, email: 'user@example.com') }
     let(:order) { FactoryGirl.create(:order, user: user) }
 
@@ -201,21 +201,21 @@ describe Admin::OrdersController, type: :controller do
         before { request.env['HTTP_REFERER'] = 'where_i_came_from' }
 
         it 'should redirect to previous page with success message' do
-          post :send_buyer_invoice, id: order.to_param
+          post :send_payment_request, id: order.to_param
 
           expect(response).to be_redirect
           expect(response).to redirect_to 'where_i_came_from'
-          expect(flash[:success]).to eq 'Successfully sent order invoice to user@example.com'
+          expect(flash[:success]).to eq 'Successfully sent payment request to user@example.com'
         end
       end
 
       context 'when referrer page is not present' do
         it 'should redirect to admin order show page with success message' do
-          post :send_buyer_invoice, id: order.to_param
+          post :send_payment_request, id: order.to_param
 
           expect(response).to be_redirect
           expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(order)
-          expect(flash[:success]).to eq 'Successfully sent order invoice to user@example.com'
+          expect(flash[:success]).to eq 'Successfully sent payment request to user@example.com'
         end
       end
     end
@@ -227,21 +227,21 @@ describe Admin::OrdersController, type: :controller do
         before { request.env['HTTP_REFERER'] = 'where_i_came_from' }
 
         it 'should redirect to previous page with danger message' do
-          post :send_buyer_invoice, id: order.to_param
+          post :send_payment_request, id: order.to_param
 
           expect(response).to be_redirect
           expect(response).to redirect_to 'where_i_came_from'
-          expect(flash[:danger]).to eq 'Unable to send order invoice'
+          expect(flash[:danger]).to eq 'Unable to send payment request'
         end
       end
 
       context 'when referrer page is not present' do
         it 'should redirect to admin order show page with danger message' do
-          post :send_buyer_invoice, id: order.to_param
+          post :send_payment_request, id: order.to_param
 
           expect(response).to be_redirect
           expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(order)
-          expect(flash[:danger]).to eq 'Unable to send order invoice'
+          expect(flash[:danger]).to eq 'Unable to send payment request'
         end
       end
     end

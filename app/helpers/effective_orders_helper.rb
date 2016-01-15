@@ -46,9 +46,9 @@ module EffectiveOrdersHelper
     end
   end
 
-  def pay_via_invoice_link(order, options)
-    options = { method: :post, data: { disable_with: 'Proceeding...', confirm: 'Are you sure you want to pay via invoice? Pending order will be created.' } }.merge(options)
-    link_to('Pay via Invoice', effective_orders.pay_via_invoice_path(order), options).html_safe
+  def pay_by_cheque_link(order, options)
+    options = { method: :post, data: { disable_with: 'Proceeding...', confirm: 'Are you sure you want to pay by cheque? Pending order will be created.' } }.merge(options)
+    link_to('Pay by Cheque', effective_orders.pay_by_cheque_path(order), options).html_safe
   end
 
   # This is called on the My Sales Page and is intended to be overridden in the app if needed

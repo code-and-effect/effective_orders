@@ -92,17 +92,17 @@ EffectiveOrders.setup do |config|
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
 
-  # Pay via Invoice
-  # Allow user to create pending orders in order to pay for it via invoice offline. Pending orders are not
+  # Pay by Cheque
+  # Allow user to create pending orders in order to pay for it by cheque offline. Pending orders are not
   # considered purchased and have 'pending' purchase state
   #
-  # When true, there will be a 'Pay via Invoice' button on the Checkout screen.
+  # When true, there will be a 'Pay by Cheque' button on the Checkout screen.
   # Clicking this button will mark an Order pending and redirect the user to the
   # pending order page.
-  config.allow_pay_via_invoice = false
+  config.cheque_enabled = false
 
   # Create Custom Orders
-  # Allow admin to create custom orders with custom products for being payed by user with credit card or via invoice
+  # Allow admin to create custom orders with custom products for being payed by user with credit card or by cheque
   config.allow_custom_orders = false
 
   # Show/hide the 'Order History' button on the 'Cart Page'
