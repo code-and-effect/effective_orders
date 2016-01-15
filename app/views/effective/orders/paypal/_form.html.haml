@@ -3,5 +3,3 @@
   = hidden_field_tag :encrypted, paypal_encrypted_payload(order)
 
   = submit_tag order_checkout_label(:paypal), :class => 'btn btn-primary', :data => {'disable_with' => 'Continuing...' }
-
-  = render partial: 'effective/orders/pay_by_cheque_actions', locals: { order: order }

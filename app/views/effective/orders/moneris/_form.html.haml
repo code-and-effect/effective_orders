@@ -45,5 +45,3 @@
     = hidden_field_tag(:ship_country, address.country)
 
   = submit_tag order_checkout_label(:moneris), :class => 'btn btn-primary', :data => {'disable_with' => 'Continuing...' }
-
-  = render partial: 'effective/orders/pay_by_cheque_actions', locals: { order: order }

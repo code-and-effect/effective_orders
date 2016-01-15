@@ -41,14 +41,11 @@ module EffectiveOrdersHelper
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
     when :stripe
       'Checkout with Stripe'
+    when :cheque
+      'Pay by Cheque'
     else
       'Checkout'
     end
-  end
-
-  def pay_by_cheque_link(order, options)
-    options = { method: :post, data: { disable_with: 'Proceeding...', confirm: 'Are you sure you want to pay by cheque? Pending order will be created.' } }.merge(options)
-    link_to('Pay by Cheque', effective_orders.pay_by_cheque_path(order), options).html_safe
   end
 
   # This is called on the My Sales Page and is intended to be overridden in the app if needed

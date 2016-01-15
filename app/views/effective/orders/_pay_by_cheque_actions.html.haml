@@ -1,5 +1,0 @@
-- if EffectiveOrders.cheque_enabled
-  - if order.pending?
-    = link_to 'Print', 'javascript:;', class: 'btn btn-default print-button', 'data-role' => 'print-button', onClick: 'window.print(); false;'
-  - else
-    = pay_by_cheque_link order, class: 'btn btn-primary'

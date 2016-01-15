@@ -5,5 +5,3 @@
     = f.input :effective_order_id, :as => :hidden
     = f.input :token, :as => :hidden
     = f.submit order_checkout_label(:stripe), :class => 'stripe-button', :data => {'disable_with' => 'Continuing...' }
-
-    = render partial: 'effective/orders/pay_by_cheque_actions', locals: { order: order }
