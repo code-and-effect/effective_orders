@@ -94,7 +94,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris_enabled, paypal_enabled, stripe_enabled].select { |enabled| enabled }.length == 1
+    [moneris_enabled, paypal_enabled, stripe_enabled, cheque_enabled].select { |enabled| enabled }.length == 1
   end
 
   class SoldOutException < Exception; end
