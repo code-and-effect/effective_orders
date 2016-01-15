@@ -131,7 +131,7 @@ EffectiveOrders.setup do |config|
   # effective_orders will send out receipts to the buyer, seller and admins.
   # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
   #
-  # The subject_for_admin_receipt, subject_for_buyer_receipt, subject_for_buyer_invoice and
+  # The subject_for_admin_receipt, subject_for_buyer_receipt, subject_for_payment_request and
   # subject_for_seller_receipt can be one of:
   # - nil / empty string to use the built in defaults
   # - A string with the full subject line for this email
@@ -141,7 +141,7 @@ EffectiveOrders.setup do |config|
   # The Procs are the same for admin & buyer receipt, the seller Proc is different
   # :subject_for_admin_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
   # :subject_for_buyer_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # :subject_for_buyer_invoice => Proc.new { |order| "Pending Order #{order.to_param}"}
+  # :subject_for_payment_request => Proc.new { |order| "Pending Order #{order.to_param}"}
   # :subject_for_seller_receipt => Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
 
   config.mailer = {
@@ -156,7 +156,7 @@ EffectiveOrders.setup do |config|
     :subject_prefix => '[example]',
     :subject_for_admin_receipt => '',
     :subject_for_buyer_receipt => '',
-    :subject_for_buyer_invoice => '',
+    :subject_for_payment_request => '',
     :subject_for_seller_receipt => '',
     :deliver_method => nil,
     :delayed_job_deliver => false
