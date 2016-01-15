@@ -1,13 +1,11 @@
-- if order.purchased?
-  .effective-order-actions.pull-right
-    %p
-      = link_to 'Print', '#', :class => 'btn btn-default print-button', 'data-role' => 'print-button', :onClick => 'window.print(); false;'
-      = link_to 'Resend Receipt', effective_orders.resend_buyer_receipt_path(order), :class => 'btn btn-default resend-receipt-button', :data => {'confirm' => 'This action will email you a copy of the original email receipt.  Send receipt now?', 'disable_with' => 'Resending...'}
+.effective-order-actions.pull-right
+  %p
+    = link_to 'Print', '#', :class => 'btn btn-default print-button', 'data-role' => 'print-button', :onClick => 'window.print(); false;'
 
-- if order.pending?
-  .effective-order-actions.pull-right
-    %p
-      = link_to 'Print', '#', :class => 'btn btn-default print-button', 'data-role' => 'print-button', :onClick => 'window.print(); false;'
+    - if order.purchased?
+      = link_to 'Resend Receipt', effective_orders.resend_buyer_receipt_path(order), :class => 'btn btn-default resend-receipt-button', :data => { 'confirm' => 'This action will email you a copy of the original email receipt.  Send receipt now?', 'disable_with' => 'Resending...' }
+
+    - elsif order.pending?
       - if EffectiveOrders.cheque_enabled && (EffectiveOrders.authorized?(controller, :show, :mark_as_paid) rescue false) && controller_path == 'admin/orders'
-        = link_to 'Mark as Paid', effective_orders.mark_as_paid_admin_order_path(order), :class => 'btn btn-default', :method => :post, :data => {'confirm' => 'Are you sure you want to mark this order as paid?', 'disable_with' => 'Marking...'}
-        = link_to 'Send Payment Request', effective_orders.send_payment_request_admin_order_path(order), :class => 'btn btn-default', :method => :post, :data => {'confirm' => 'This action will email buyer a payment request. Send it now?', 'disable_with' => 'Sending...'}
+        = link_to 'Mark as Paid', effective_orders.mark_as_paid_admin_order_path(order), :class => 'btn btn-default', :method => :post, :data => { 'confirm' => 'Are you sure you want to mark this order as paid?', 'disable_with' => 'Marking...' }
+        = link_to 'Send Payment Request', effective_orders.send_payment_request_admin_order_path(order), :class => 'btn btn-default', :method => :post, :data => { 'confirm' => 'This action will email buyer a payment request. Send it now?', 'disable_with' => 'Sending...' }
