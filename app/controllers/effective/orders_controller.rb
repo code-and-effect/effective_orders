@@ -149,7 +149,7 @@ module Effective
     def order_purchased(details = nil, redirect_url = nil, declined_redirect_url = nil)
       begin
         @order.purchase!(details)
-        Cart.where(user_id: @order.user_id).try(:destroy_all) # current_cart won't work for provider post backs here
+        view_context.current_cart.destroy!
 
         if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
           flash[:success] = "Payment successful! Please check your email for a receipt."
