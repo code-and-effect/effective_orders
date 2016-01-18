@@ -89,7 +89,7 @@ module Effective
 
     def pay_by_cheque
       @order = Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :pay_by_cheque, @order)
+      EffectiveOrders.authorized?(self, :update, @order)
 
       if @order.update_attributes(purchase_state: EffectiveOrders::PENDING)
         current_cart.try(:destroy)
