@@ -2,6 +2,7 @@ module Effective
   class OrdersController < ApplicationController
     include EffectiveCartsHelper
 
+    include Providers::Cheque if EffectiveOrders.cheque_enabled
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Stripe if EffectiveOrders.stripe_enabled
@@ -85,20 +86,6 @@ module Effective
       if @order.purchase_state.blank?
         render :checkout and return
       end
-    end
-
-    def pay_by_cheque
-      @order = Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :update, @order)
-
-      if @order.update_attributes(purchase_state: EffectiveOrders::PENDING)
-        current_cart.try(:destroy)
-        flash[:success] = 'Created pending order successfully!'
-      else
-        flash[:danger] = 'Unable to create your pending order. Please check your order details and try again.'
-      end
-
-      redirect_to effective_orders.order_path(@order)
     end
 
     def index
