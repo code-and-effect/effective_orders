@@ -101,10 +101,6 @@ EffectiveOrders.setup do |config|
   # pending order page.
   config.cheque_enabled = false
 
-  # Create Custom Orders
-  # Allow admin to create custom orders with custom products for being payed by user with credit card or by cheque
-  config.allow_custom_orders = true
-
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
 
