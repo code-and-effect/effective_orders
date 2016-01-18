@@ -48,7 +48,7 @@ module Admin
       else
         @page_title = 'New Order'
         assign_users
-        flash[:danger] = 'Unable to create custom order'
+        flash.now[:danger] = 'Unable to create custom order'
         render :new
       end
     end

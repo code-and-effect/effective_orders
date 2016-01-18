@@ -17,7 +17,7 @@ module Effective
           order_purchased(response) # orders_controller#order_purchased
         else
           @page_title = 'Checkout'
-          flash[:danger] = @stripe_charge.errors.full_messages.join(',')
+          flash.now[:danger] = @stripe_charge.errors.full_messages.join(',')
           render 'checkout'
         end
       end
