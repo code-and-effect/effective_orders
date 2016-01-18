@@ -62,7 +62,7 @@ module Admin
         redirect_to effective_orders.admin_orders_path
       else
         flash[:danger] = 'Unable to mark order as paid'
-        redirect_to :back
+        request.referrer ? (redirect_to :back) : (redirect_to effective_orders.admin_orders_path)
       end
     end
 
@@ -76,7 +76,7 @@ module Admin
         flash[:danger] = 'Unable to send payment request'
       end
 
-      redirect_to(request.referrer.present? ? :back : effective_orders.admin_order_path(@order))
+      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.admin_order_path(@order))
     end
 
     private
