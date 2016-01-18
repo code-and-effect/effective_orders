@@ -9,9 +9,10 @@
       %p.inline-errors= order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, price_to_currency(EffectiveOrders.minimum_charge.to_i))
 
     - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
-      %h3 User Information
       = render :partial => 'effective/orders/order_user_fields', :locals => {:form => f, :user => f.object.user }
-      = f.input :note
+
+    - if EffectiveOrders.collect_note
+      = render :partial => 'effective/orders/order_note_fields', :locals => {:form => f}
 
     - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
 

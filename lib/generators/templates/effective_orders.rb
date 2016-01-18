@@ -51,13 +51,18 @@ EffectiveOrders.setup do |config|
   # Works with effective_addresses gem
   config.use_address_full_name = true
 
-  # If set, the orders#new screen will render effective/orders/user_fields partial and capture this User Info
+  # If set, the orders#new screen will render effective/orders/_order_user_fields to capture this User Info
   # The partial can be overridden to customize the form, but the following fields are also fed into strong_paramters
   config.collect_user_fields = []
   #config.collect_user_fields = [:salutation, :first_name, :last_name] # Must be valid fields on the User object
 
   # Don't validate_associated :user when saving an Order
   config.skip_user_validation = false
+
+  # If set, the orders#new screen will render effective/orders/_order_note_fields to capture any Note info
+  config.collect_note = false
+  config.collect_note_required = false   # just required for the form, not a true Order model validation
+  config.collect_note_message = ''
 
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)

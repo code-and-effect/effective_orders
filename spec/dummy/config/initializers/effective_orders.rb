@@ -56,6 +56,9 @@ EffectiveOrders.setup do |config|
   # Don't validate_associated :user when saving an Order
   config.skip_user_validation = false
 
+  config.collect_note = true
+  config.collect_note_message = 'please enter a note'
+
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
 

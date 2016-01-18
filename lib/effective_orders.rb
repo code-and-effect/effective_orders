@@ -36,8 +36,6 @@ module EffectiveOrders
   mattr_accessor :allow_pretend_purchase_in_production
   mattr_accessor :allow_pretend_purchase_in_production_message
 
-  mattr_accessor :cheque_enabled
-
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
   mattr_accessor :use_address_full_name
@@ -45,19 +43,22 @@ module EffectiveOrders
   mattr_accessor :collect_user_fields
   mattr_accessor :skip_user_validation
 
+  mattr_accessor :collect_note
+  mattr_accessor :collect_note_required
+  mattr_accessor :collect_note_message
+
   mattr_accessor :minimum_charge
   mattr_accessor :allow_free_orders
-
-  mattr_accessor :paypal_enabled
-  mattr_accessor :moneris_enabled
-
   mattr_accessor :show_order_history_button
 
-  # application fee  is required if stripe_connect_enabled is true
+  mattr_accessor :cheque_enabled
+  mattr_accessor :paypal_enabled
+  mattr_accessor :moneris_enabled
   mattr_accessor :stripe_enabled
-
   mattr_accessor :stripe_subscriptions_enabled
   mattr_accessor :stripe_connect_enabled
+
+  # application fee is required if stripe_connect_enabled is true
   mattr_accessor :stripe_connect_application_fee_method
 
   # These are hashes of configs
