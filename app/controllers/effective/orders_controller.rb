@@ -8,6 +8,9 @@ module Effective
     include Providers::Stripe if EffectiveOrders.stripe_enabled
     include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
 
+    include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
+    include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
+
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
     before_filter :authenticate_user!, except: [:paypal_postback]
@@ -35,6 +38,7 @@ module Effective
     def create
       @order ||= Order.new(current_cart, current_user)
       @order.attributes = order_params
+      @order.user_id = current_user.try(:id)
 
       if EffectiveOrders.require_shipping_address
         if @order.shipping_address_same_as_billing? && @order.billing_address.present?
@@ -57,7 +61,7 @@ module Effective
           @order.save!
 
           if @order.total == 0 && EffectiveOrders.allow_free_orders
-            order_purchased('automatic purchase of free order.')
+            order_purchased('automatic purchase of free order')
           else
             redirect_to(effective_orders.order_path(@order))
           end
@@ -128,20 +132,6 @@ module Effective
       end
 
       redirect_to(:back) rescue effective_orders.order_path(@order)
-    end
-
-    def pretend_purchase
-      @order = Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :update, @order)
-
-      if (Rails.env.production? == false && EffectiveOrders.allow_pretend_purchase_in_development)
-        order_purchased('for pretend', params[:purchased_redirect_url], params[:declined_redirect_url])
-      end
-
-      if (Rails.env.production? == true && EffectiveOrders.allow_pretend_purchase_in_production)
-        order_purchased('for pretend', params[:purchased_redirect_url], params[:declined_redirect_url])
-      end
-
     end
 
     protected
