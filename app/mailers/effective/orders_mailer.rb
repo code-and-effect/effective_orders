@@ -15,6 +15,11 @@ module Effective
       mail(:to => order.user.email, :subject => receipt_to_buyer_subject(order))
     end
 
+    def payment_request_to_buyer(order)
+      @order = order
+      mail(:to => order.user.email, :subject => payment_request_to_buyer_subject(order))
+    end
+
     def order_receipt_to_seller(order, seller, order_items)
       @order = order
       @user = seller.user
@@ -46,6 +51,16 @@ module Effective
       prefix_subject(string_or_callable.presence || "Order ##{order.to_param} Receipt")
     end
 
+    def payment_request_to_buyer_subject(order)
+      string_or_callable = EffectiveOrders.mailer[:subject_for_payment_request]
+
+      if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
+        string_or_callable = self.instance_exec(order, &string_or_callable)
+      end
+
+      prefix_subject(string_or_callable.presence || "Order ##{order.to_param} Invoice")
+    end
+
     def receipt_to_seller_subject(order, order_items, seller)
       string_or_callable = EffectiveOrders.mailer[:subject_for_seller_receipt]
 
@@ -60,7 +75,5 @@ module Effective
       prefix = (EffectiveOrders.mailer[:subject_prefix].to_s rescue '')
       prefix.present? ? (prefix.chomp(' ') + ' ' + text) : text
     end
-
   end
 end
-

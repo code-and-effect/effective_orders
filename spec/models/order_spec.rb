@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Effective::Order do
+describe Effective::Order, :type => :model do
   let(:cart) { FactoryGirl.create(:cart) }
   let(:order) { FactoryGirl.create(:order) }
   let(:user) { FactoryGirl.create(:user) }
@@ -12,6 +12,12 @@ describe Effective::Order do
     order.subtotal.should eq order.order_items.collect(&:subtotal).sum
     order.tax.should eq order.order_items.collect(&:tax).sum
     order.num_items.should eq order.order_items.collect(&:quantity).sum
+  end
+
+  describe 'validations' do
+    it 'should validate inclusion of purchase state' do
+      expect(subject).to validate_inclusion_of(:purchase_state).in_array([nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING])
+    end
   end
 
   describe '#initialize' do
@@ -322,5 +328,11 @@ describe Effective::Order do
     end
   end
 
-
+  describe '#pending?' do
+    it 'should return true for pending orders only' do
+      expect(FactoryGirl.create(:purchased_order).pending?).to be_falsey
+      expect(FactoryGirl.create(:declined_order).pending?).to be_falsey
+      expect(FactoryGirl.create(:pending_order).pending?).to be_truthy
+    end
+  end
 end

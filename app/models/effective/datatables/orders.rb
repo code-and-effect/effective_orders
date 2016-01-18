@@ -18,7 +18,7 @@ if defined?(EffectiveDatatables)
             end
           end
 
-          table_column :purchase_state, filter: { type: :select, values: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order|
+          table_column :purchase_state, filter: { type: :select, values: purchase_state_dropdown_options, selected: EffectiveOrders::PURCHASED } do |order|
             order.purchase_state || 'abandoned'
           end
 
@@ -29,14 +29,13 @@ if defined?(EffectiveDatatables)
           end
 
           table_column(:total) { |order| price_to_currency(order[:total].to_i) }
-          table_column :payment_method
+          table_column :payment_method_abbr, label: 'Payment Method'
+          table_column :note, visible: false
 
           table_column :created_at, :visible => false
           table_column :updated_at, :visible => false
 
-          table_column :actions, sortable: false, filter: false do |order|
-            link_to('View', (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)))
-          end
+          table_column :actions, sortable: false, filter: false, partial: 'admin/orders/actions'
         end
 
         def collection
@@ -46,7 +45,7 @@ if defined?(EffectiveDatatables)
             .select('orders.*, users.email AS email')
             .select("#{query_total} AS total")
             .select("#{query_items_list} AS items")
-            .select("#{query_payment_method} AS payment_method")
+            .select("#{query_payment_method} AS payment_method_abbr")
 
           if EffectiveOrders.require_billing_address && defined?(EffectiveAddresses)
             addresses_tbl = EffectiveAddresses.addresses_table_name
@@ -77,7 +76,7 @@ if defined?(EffectiveDatatables)
         end
 
         def query_payment_method
-          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'))"
+          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'), SUBSTRING(payment FROM 'details: (Paid by cheque)\\n'))"
         end
 
         def search_column(collection, table_column, search_term)
@@ -97,6 +96,15 @@ if defined?(EffectiveDatatables)
           else
             super
           end
+        end
+
+        def purchase_state_dropdown_options
+          [
+            %w(abandoned abandoned),
+            [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED],
+            [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED],
+            [EffectiveOrders::PENDING, EffectiveOrders::PENDING]
+          ]
         end
       end
     end

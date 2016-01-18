@@ -14,8 +14,9 @@ module Effective
 
     structure do
       payment         :text   # serialized hash, see below
-      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED]}]
+      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING]}]
       purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchase_state == EffectiveOrders::PURCHASED}}]
+      note            :text
 
       timestamps
     end
@@ -76,6 +77,11 @@ module Effective
         cart_items = purchasables.map do |purchasable|
           CartItem.new(:quantity => quantity).tap { |cart_item| cart_item.purchasable = purchasable }
         end
+
+        # Initialize cart with user associated to order
+        # This is useful when it is needed to get to associated user through cart object within application,
+        # ex. in order to update tax rate considering associated user location (billing/shipping address)
+        Cart.new(cart_items: cart_items, user: user) if user.present?
       end
 
       retval = cart_items.map do |item|
@@ -83,7 +89,7 @@ module Effective
           :title => item.title,
           :quantity => item.quantity,
           :price => item.price,
-          :tax_exempt => item.tax_exempt,
+          :tax_exempt => item.tax_exempt || false,
           :tax_rate => item.tax_rate,
           :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
         ).tap { |order_item| order_item.purchasable = item.purchasable }
@@ -297,6 +303,10 @@ module Effective
       purchase_state == EffectiveOrders::DECLINED
     end
 
+    def pending?
+      purchase_state == EffectiveOrders::PENDING
+    end
+
     def send_order_receipts!
       send_order_receipt_to_admin!
       send_order_receipt_to_buyer!
@@ -310,8 +320,12 @@ module Effective
 
     def send_order_receipt_to_buyer!
       return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_buyer]
-
       send_email(:order_receipt_to_buyer, self)
+    end
+
+    def send_payment_request_to_buyer!
+      return false unless !purchased? && EffectiveOrders.mailer[:send_payment_request_to_buyer]
+      send_email(:payment_request_to_buyer, self)
     end
 
     def send_order_receipt_to_seller!

@@ -9,3 +9,5 @@
   = render_datatable @datatable
 - else
   %p There are no orders present
+
+%p.text-right= link_to 'New Order', effective_orders.new_admin_order_path, class: 'btn btn-primary'

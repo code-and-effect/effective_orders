@@ -25,4 +25,8 @@ class User < ActiveRecord::Base
 
     timestamps
   end
+
+  def to_s
+    email
+  end
 end

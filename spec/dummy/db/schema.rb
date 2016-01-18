@@ -52,6 +52,14 @@ ActiveRecord::Schema.define(:version => 4) do
 
   add_index "carts", ["user_id"], :name => "index_carts_on_user_id"
 
+  create_table "custom_products", force: :true do |t|
+    t.text     "description"
+    t.integer  "price",       default: 0
+    t.boolean  "tax_exempt"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "customers", force: true do |t|
     t.integer  "user_id"
     t.string   "stripe_customer_id"
@@ -87,6 +95,7 @@ ActiveRecord::Schema.define(:version => 4) do
     t.text     "details"
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
+    t.text     "note"
   end
 
   add_index "orders", ["user_id"], :name => "index_orders_on_user_id"

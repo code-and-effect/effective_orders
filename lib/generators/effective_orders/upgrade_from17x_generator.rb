@@ -1,17 +1,17 @@
 module EffectiveOrders
   module Generators
-    class UpgradeFrom03xGenerator < Rails::Generators::Base
+    class UpgradeFrom17xGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
 
-      desc "Upgrade effective_orders from the 0.3.x branch"
+      desc 'Upgrade effective_orders from the 1.7.x branch'
 
-      source_root File.expand_path("../../templates", __FILE__)
+      source_root File.expand_path('../../templates', __FILE__)
 
       def self.next_migration_number(dirname)
         if not ActiveRecord::Base.timestamped_migrations
-          Time.new.utc.strftime("%Y%m%d%H%M%S")
+          Time.new.utc.strftime('%Y%m%d%H%M%S')
         else
-          "%.3d" % (current_migration_number(dirname) + 1)
+          '%.3d' % (current_migration_number(dirname) + 1)
         end
       end
 
@@ -24,11 +24,11 @@ module EffectiveOrders
         @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
         @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
 
-        migration_template '../../../db/upgrade/02_upgrade_effective_orders_from03x.rb.erb', 'db/migrate/upgrade_effective_orders_from03x.rb'
+        migration_template '../../../db/upgrade/03_upgrade_effective_orders_from17x.rb.erb', 'db/migrate/upgrade_effective_orders_from17x.rb'
       end
 
       def show_readme
-        readme "README" if behavior == :invoke
+        readme 'README' if behavior == :invoke
       end
     end
   end

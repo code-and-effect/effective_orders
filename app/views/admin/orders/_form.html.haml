@@ -1,0 +1,28 @@
+- unless defined?(Cocoon)
+  Please install
+  = link_to 'cocoon', 'https://github.com/nathanvda/cocoon'
+  to see this page.
+- else
+  = simple_form_for [:admin, order], (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.admin_orders_path) do |f|
+    = f.association :user, label: 'Customer', collection: users, as: (defined?(EffectiveFormInputs) ? :effective_select : :select)
+
+    - f.object.order_items.build unless f.object.order_items.present?
+
+    .row
+      .col-xs-12
+        %h3 Order Items
+
+    .row.order_items
+      = f.simple_fields_for :order_items do |order_item|
+        = render 'order_item_fields', f: order_item
+
+      .col-xs-12.links
+        = link_to_add_association '+ Add Product', f, :order_items, partial: 'order_item_fields'
+
+    .form-group
+      .col-xs-12
+        .form-group
+          .pull-right
+            = f.button :submit, 'Save', data: { disable_with: 'Saving...' }
+            = f.button :submit, 'Save and Add New', data: { disable_with: 'Saving...' }
+            = link_to 'Cancel', effective_orders.admin_orders_path

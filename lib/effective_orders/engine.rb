@@ -30,13 +30,12 @@ module EffectiveOrders
     # Set up our default configuration options.
     initializer "effective_orders.defaults", :before => :load_config_initializers do |app|
       eval File.read("#{config.root}/lib/generators/templates/effective_orders.rb")
+    end
 
-      EffectiveOrders.mailer[:deliver_method] = case
-                            when Rails.gem_version >= Gem::Version.new('4.2')
-                              :deliver_now
-                            else
-                              :deliver
-                            end
+    # Set up mail delivering config option
+    initializer "effective_orders.mailer", :after => :load_config_initializers do |app|
+      deliver_method = Rails.gem_version >= Gem::Version.new('4.2') ? :deliver_now : :deliver
+      EffectiveOrders.mailer[:deliver_method] = deliver_method
     end
 
     # Set up our Stripe API Key

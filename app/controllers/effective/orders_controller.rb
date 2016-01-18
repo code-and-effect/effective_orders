@@ -2,6 +2,7 @@ module Effective
   class OrdersController < ApplicationController
     include EffectiveCartsHelper
 
+    include Providers::Cheque if EffectiveOrders.cheque_enabled
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Stripe if EffectiveOrders.stripe_enabled
@@ -9,8 +10,8 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
-    before_filter :authenticate_user!, :except => [:paypal_postback]
-    before_filter :set_page_title
+    before_filter :authenticate_user!, except: [:paypal_postback]
+    before_filter :set_page_title, except: [:show]
 
     # This is the entry point for the "Checkout" buttons
     def new
@@ -45,11 +46,11 @@ module Effective
 
       Effective::Order.transaction do
         begin
-          if @order.save_billing_address? && @order.user.respond_to?(:billing_address) && @order.billing_address.try(:empty?) == false
+          if @order.save_billing_address? && @order.user.respond_to?(:billing_address=) && @order.billing_address.try(:empty?) == false
             @order.user.billing_address = @order.billing_address
           end
 
-          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address) && @order.shipping_address.try(:empty?) == false
+          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address=) && @order.shipping_address.try(:empty?) == false
             @order.user.shipping_address = @order.shipping_address
           end
 
@@ -64,7 +65,7 @@ module Effective
           return
         rescue => e
           Rails.logger.info e.message
-          flash.now[:danger] = "An error has occurred: #{e.message}. Please try again."
+          flash[:danger] = "An error has occurred: #{e.message}. Please try again."
           raise ActiveRecord::Rollback
         end
       end
@@ -76,9 +77,14 @@ module Effective
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      if @order.purchased? == false
-        @page_title = 'Checkout'
-        render(:checkout) and return
+      @page_title = case
+                    when @order.purchased? then 'Order Receipt'
+                    when @order.pending? then 'Pending Order'
+                    else 'Checkout'
+                    end
+
+      if @order.purchase_state.blank?
+        render :checkout and return
       end
     end
 
@@ -143,7 +149,7 @@ module Effective
     def order_purchased(details = nil, redirect_url = nil, declined_redirect_url = nil)
       begin
         @order.purchase!(details)
-        Cart.where(user_id: @order.user_id).try(:destroy_all) # current_cart won't work for provider post backs here
+        view_context.current_cart.destroy!
 
         if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
           flash[:success] = "Payment successful! Please check your email for a receipt."
@@ -172,7 +178,7 @@ module Effective
     def order_params
       begin
         params.require(:effective_order).permit(
-          :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
+          :note, :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
           :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
           :user_attributes => (EffectiveOrders.collect_user_fields || []),
@@ -189,7 +195,6 @@ module Effective
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'
         when 'declined'     ; 'Payment Declined'
-        when 'show'         ; 'Order Receipt'
         else 'Checkout'
       end
     end

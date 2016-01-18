@@ -9,6 +9,7 @@ require 'effective_orders/version'
 module EffectiveOrders
   PURCHASED = 'purchased'
   DECLINED = 'declined'
+  PENDING = 'pending'
 
   # The following are all valid config keys
   mattr_accessor :orders_table_name
@@ -17,6 +18,7 @@ module EffectiveOrders
   mattr_accessor :cart_items_table_name
   mattr_accessor :customers_table_name
   mattr_accessor :subscriptions_table_name
+  mattr_accessor :products_table_name
 
   mattr_accessor :authorization_method
   mattr_accessor :tax_rate_method
@@ -33,6 +35,8 @@ module EffectiveOrders
   mattr_accessor :allow_pretend_purchase_in_development
   mattr_accessor :allow_pretend_purchase_in_production
   mattr_accessor :allow_pretend_purchase_in_production_message
+
+  mattr_accessor :cheque_enabled
 
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
@@ -89,7 +93,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris_enabled, paypal_enabled, stripe_enabled].select { |enabled| enabled }.length == 1
+    [moneris_enabled, paypal_enabled, stripe_enabled, cheque_enabled].select { |enabled| enabled }.length == 1
   end
 
   class SoldOutException < Exception; end

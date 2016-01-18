@@ -1,0 +1,18 @@
+class UpgradeEffectiveOrdersFrom17x < ActiveRecord::Migration
+  def self.up
+    create_table <%= @products_table_name %> do |t|
+      t.text      :description
+      t.integer   :price, :default => 0
+      t.boolean   :tax_exempt
+
+      t.timestamps
+    end
+
+    add_column <%= @orders_table_name %>, :note, :text
+  end
+
+  def self.down
+    remove_column <%= @orders_table_name %>, :note
+    drop_table <%= @products_table_name %>
+  end
+end

@@ -1,0 +1,18 @@
+.col-sm-12.nested-fields.form-inline.order-item
+  - f.object.purchasable = Effective::Product.new unless f.object.purchasable.present?
+
+  - errors = f.object.errors.full_messages
+  - if errors.present?
+    .row
+      .col-sm-12.has-error
+        - errors.each do |error|
+          %span.help-block.has-error= error
+
+  = f.input :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
+  = f.simple_fields_for :purchasable do |purchasable|
+    = purchasable.input :price, as: :effective_price
+    = purchasable.input :tax_exempt, label: 'Tax Exempt'
+    = purchasable.input :description, input_html: { rows: 1, cols: 35 }
+  = link_to_remove_association('Remove Item', f)
+
+  %hr

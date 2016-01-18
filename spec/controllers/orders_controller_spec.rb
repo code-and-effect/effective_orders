@@ -362,28 +362,63 @@ describe Effective::OrdersController, type: :controller do
   end
 
   describe '#show' do
+    context 'when finding order' do
+      before { sign_in purchased_order.user }
 
-    it 'finds the order by obfuscated ID' do
-      sign_in purchased_order.user
-      get :show, :id => purchased_order.to_param
-      assigns(:order).id.should eq purchased_order.id
+      it 'should find the order by obfuscated ID' do
+        get :show, id: purchased_order.to_param
+
+        expect(assigns(:order).id).to eq purchased_order.id
+      end
+
+      it 'should not find an order by regular ID' do
+        expect { get :show, id: purchased_order.id }.to raise_error(ActiveRecord::RecordNotFound)
+      end
     end
 
-    it 'does not find an order by regular ID' do
-      sign_in purchased_order.user
-      expect { get :show, :id => purchased_order.id }.to raise_error(ActiveRecord::RecordNotFound)
-    end
+    context 'when rendering template' do
+      let(:user) { FactoryGirl.create(:user) }
 
-    it 'renders the show template for a purchased order' do
-      sign_in purchased_order.user
-      get :show, :id => purchased_order.to_param
-      response.should render_template(:show)
-    end
+      before { sign_in user }
 
-    it 'renders the checkout template for a non-purchased order' do
-      sign_in order.user
-      get :show, :id => order.to_param
-      response.should render_template(:checkout)
+      context 'when not purchased order' do
+        let(:order) { FactoryGirl.create(:order, user: user) }
+
+        it 'should render checkout page successfully' do
+          get :show, id: order.to_param
+
+          expect(response).to be_successful
+          expect(response).to render_template :checkout
+          expect(assigns(:order)).to eq order
+          expect(assigns(:page_title)).to eq 'Checkout'
+        end
+      end
+
+      context 'when pending order' do
+        let(:order) { FactoryGirl.create(:pending_order, user: user) }
+
+        it 'should render checkout page successfully' do
+          get :show, id: order.to_param
+
+          expect(response).to be_successful
+          expect(response).to render_template :show
+          expect(assigns(:order)).to eq order
+          expect(assigns(:page_title)).to eq 'Pending Order'
+        end
+      end
+
+      context 'when purchased order' do
+        let(:order) { FactoryGirl.create(:purchased_order, user: user) }
+
+        it 'should render order show page successfully' do
+          get :show, id: order.to_param
+
+          expect(response).to be_successful
+          expect(response).to render_template :show
+          expect(assigns(:order)).to eq order
+          expect(assigns(:page_title)).to eq 'Order Receipt'
+        end
+      end
     end
   end
 
@@ -417,4 +452,37 @@ describe Effective::OrdersController, type: :controller do
     end
   end
 
+  describe 'POST #pay_by_cheque' do
+    let(:user) { FactoryGirl.create(:user) }
+    let(:order) { FactoryGirl.create(:order, user: user) }
+    let!(:cart) { FactoryGirl.create(:cart_with_items, user: user) }
+
+    before { sign_in user }
+
+    context 'when success' do
+      it 'should update order state, empty cart and redirect to order show page with success message' do
+        post :pay_by_cheque, id: order.to_param
+
+        expect(response).to be_redirect
+        expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.order_path(order)
+        expect(assigns(:order).pending?).to be_truthy
+        expect(Effective::Cart.first).to be_nil
+        expect(flash[:success]).to eq 'Created pending order successfully!'
+      end
+    end
+
+    context 'when failed' do
+      before { Effective::Order.any_instance.stub(:update_attributes).and_return(false) }
+
+      it 'should not empty cart and redirect to order show page with danger message' do
+        post :pay_by_cheque, id: order.to_param
+
+        expect(response).to be_redirect
+        expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.order_path(order)
+        expect(assigns(:order).pending?).to be_falsey
+        expect(Effective::Cart.first.empty?).to be_falsey
+        expect(flash[:danger]).to eq 'Unable to create your pending order. Please check your order details and try again.'
+      end
+    end
+  end
 end

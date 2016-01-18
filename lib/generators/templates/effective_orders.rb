@@ -8,6 +8,7 @@ EffectiveOrders.setup do |config|
   config.cart_items_table_name = :cart_items
   config.customers_table_name = :customers
   config.subscriptions_table_name = :subscriptions
+  config.products_table_name = :products
 
   # Authorization Method
   #
@@ -91,6 +92,15 @@ EffectiveOrders.setup do |config|
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
 
+  # Pay by Cheque
+  # Allow user to create pending orders in order to pay for it by cheque offline. Pending orders are not
+  # considered purchased and have 'pending' purchase state
+  #
+  # When true, there will be a 'Pay by Cheque' button on the Checkout screen.
+  # Clicking this button will mark an Order pending and redirect the user to the
+  # pending order page.
+  config.cheque_enabled = false
+
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
 
@@ -124,7 +134,8 @@ EffectiveOrders.setup do |config|
   # effective_orders will send out receipts to the buyer, seller and admins.
   # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
   #
-  # The subject_for_admin_receipt, subject_for_buyer_receipt and subject_for_seller_receipt can be one of:
+  # The subject_for_admin_receipt, subject_for_buyer_receipt, subject_for_payment_request and
+  # subject_for_seller_receipt can be one of:
   # - nil / empty string to use the built in defaults
   # - A string with the full subject line for this email
   # - A Proc to create the subject line based on the email
@@ -133,11 +144,14 @@ EffectiveOrders.setup do |config|
   # The Procs are the same for admin & buyer receipt, the seller Proc is different
   # :subject_for_admin_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
   # :subject_for_buyer_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # :subject_for_payment_request => Proc.new { |order| "Pending Order #{order.to_param}"}
   # :subject_for_seller_receipt => Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
 
   config.mailer = {
     :send_order_receipt_to_admin => true,
     :send_order_receipt_to_buyer => true,
+    :send_payment_request_to_buyer => true,
+    :send_order_receipt_to_buyer_when_marked_paid => false,
     :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
     :layout => 'effective_orders_mailer_layout',
     :admin_email => 'admin@example.com',
@@ -145,6 +159,7 @@ EffectiveOrders.setup do |config|
     :subject_prefix => '[example]',
     :subject_for_admin_receipt => '',
     :subject_for_buyer_receipt => '',
+    :subject_for_payment_request => '',
     :subject_for_seller_receipt => '',
     :deliver_method => nil,
     :delayed_job_deliver => false
