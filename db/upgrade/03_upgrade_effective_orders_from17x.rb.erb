@@ -1,9 +1,9 @@
 class UpgradeEffectiveOrdersFrom17x < ActiveRecord::Migration
   def self.up
     create_table <%= @products_table_name %> do |t|
-      t.text      :description
+      t.string    :title
       t.integer   :price, :default => 0
-      t.boolean   :tax_exempt
+      t.boolean   :tax_exempt, :default => false
 
       t.timestamps
     end

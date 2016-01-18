@@ -5,15 +5,16 @@ module Effective
     acts_as_purchasable
 
     structure do
-      description   :text, validates: [:presence]
+      title         :string, validates: [:presence]
       price         :integer, default: 0, validates: [numericality: { greater_than: 0 }]
-      tax_exempt    :boolean
+      tax_exempt    :boolean, default: false
 
       timestamps
     end
 
     def to_s
-      description
+      self[:title] || 'New Product'
     end
+
   end
 end

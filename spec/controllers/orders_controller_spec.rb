@@ -345,7 +345,7 @@ describe Effective::OrdersController, type: :controller do
     it 'creates a purchased order' do
       post :create, valid_order_attributes
       assigns(:order).purchased?.should eq true
-      assigns(:order).payment[:details].should eq 'automatic purchase of free order.'
+      assigns(:order).payment[:details].should eq 'automatic purchase of free order'
     end
 
     it 'destroys the current user cart' do
