@@ -6,7 +6,18 @@ module Effective
       acts_as_obfuscated :format => '###-####-###'
     end
 
-    acts_as_addressable :billing => {:singular => true, :presence => EffectiveOrders.require_billing_address, :use_full_name => EffectiveOrders.use_address_full_name}, :shipping => {:singular => true, :presence => EffectiveOrders.require_shipping_address, :use_full_name => EffectiveOrders.use_address_full_name}
+    acts_as_addressable(
+      :billing => {
+        :singular => true,
+        :presence => EffectiveOrders.require_billing_address,
+        :use_full_name => EffectiveOrders.use_address_full_name
+      },
+      :shipping => {
+        :singular => true,
+        :presence => EffectiveOrders.require_shipping_address,
+        :use_full_name => EffectiveOrders.use_address_full_name
+    })
+
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
 
     belongs_to :user  # This is the user who purchased the order

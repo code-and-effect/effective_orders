@@ -4,7 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       def pay_by_cheque
-        @order = Order.find(params[:id])
+        @order ||= Order.find(params[:id])
         EffectiveOrders.authorized?(self, :update, @order)
 
         if @order.update_attributes(purchase_state: EffectiveOrders::PENDING)

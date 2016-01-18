@@ -3,9 +3,6 @@ module Effective
     module Stripe
       extend ActiveSupport::Concern
 
-      included do
-      end
-
       def stripe_charge
         @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
         @stripe_charge = Effective::StripeCharge.new(stripe_charge_params)

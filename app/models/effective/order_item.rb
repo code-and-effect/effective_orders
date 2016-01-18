@@ -8,7 +8,7 @@ module Effective
 
     structure do
       title                 :string, :validates => [:presence]
-      quantity              :integer, :validates => [:presence, :numericality]
+      quantity              :integer, :validates => [:presence, numericality: { greater_than: 0 }]
       price                 :integer, :default => 0, :validates => [:numericality]
       tax_exempt            :boolean, :validates => [:inclusion => {:in => [true, false]}]
       tax_rate              :decimal, :precision => 5, :scale => 3, :default => 0.000, :validates => [:presence]
