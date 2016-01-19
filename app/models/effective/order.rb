@@ -7,17 +7,9 @@ module Effective
     end
 
     acts_as_addressable(
-      :billing => {
-        :singular => true,
-        :presence => EffectiveOrders.require_billing_address,
-        :use_full_name => EffectiveOrders.use_address_full_name
-      },
-      :shipping => {
-        :singular => true,
-        :presence => EffectiveOrders.require_shipping_address,
-        :use_full_name => EffectiveOrders.use_address_full_name
-    })
-
+      :billing => { :singular => true, :use_full_name => EffectiveOrders.use_address_full_name },
+      :shipping => { :singular => true, :use_full_name => EffectiveOrders.use_address_full_name }
+    )
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
     attr_accessor :suppress_effective_address_presence_validation # We set this to true when creating a pending order (the admin action)
@@ -40,6 +32,14 @@ module Effective
     unless EffectiveOrders.skip_user_validation
       validates_presence_of :user_id
       validates_associated :user
+    end
+
+    if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
+      validates :billing_address, :presence => true, :unless => Proc.new { |order| order.new_record? && order.pending? }
+    end
+
+    if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
+      validates :shipping_address, :presence => true, :unless => Proc.new { |order| order.new_record? && order.pending? }
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
@@ -148,10 +148,7 @@ module Effective
     # This is called from admin/orders#create
     def save_as_pending
       self.purchase_state = EffectiveOrders::PENDING
-
       addresses.each { |address| address.delete unless address.valid? }
-
-      self.suppress_effective_address_presence_validation = true
 
       save
     end
@@ -332,28 +329,28 @@ module Effective
     end
 
     def send_order_receipts!
-      send_order_receipt_to_admin!
-      send_order_receipt_to_buyer!
-      send_order_receipt_to_seller!
+      send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
+      send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      send_order_receipt_to_seller! if EffectiveOrders.mailer[:send_order_receipt_to_seller]
     end
 
     def send_order_receipt_to_admin!
-      return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_admin]
+      return false unless purchased?
       send_email(:order_receipt_to_admin, self)
     end
 
     def send_order_receipt_to_buyer!
-      return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      return false unless purchased?
       send_email(:order_receipt_to_buyer, self)
     end
 
     def send_payment_request_to_buyer!
-      return false unless !purchased? && EffectiveOrders.mailer[:send_payment_request_to_buyer]
+      return false if purchased?
       send_email(:payment_request_to_buyer, self)
     end
 
     def send_order_receipt_to_seller!
-      return false unless purchased?(:stripe_connect) && EffectiveOrders.mailer[:send_order_receipt_to_seller]
+      return false unless purchased?(:stripe_connect)
 
       order_items.group_by(&:seller).each do |seller, order_items|
         send_email(:order_receipt_to_seller, self, seller, order_items)
