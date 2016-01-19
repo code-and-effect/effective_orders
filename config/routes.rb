@@ -10,6 +10,10 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/:id/resend_buyer_receipt', :to => 'orders#resend_buyer_receipt', :via => :get, :as => 'resend_buyer_receipt'
     match 'orders/my_purchases', :to => 'orders#my_purchases', :as => 'my_purchases', :via => :get
 
+    if EffectiveOrders.cheque_enabled
+      match 'orders/:id/pay_by_cheque', :to => 'orders#pay_by_cheque', :via => :post, :as => 'pay_by_cheque'
+    end
+
     if EffectiveOrders.paypal_enabled
       match 'orders/paypal_postback', :to => 'orders#paypal_postback', :as => 'paypal_postback', :via => :post
     end
@@ -47,10 +51,17 @@ EffectiveOrders::Engine.routes.draw do
     match 'webhooks/stripe', :to => 'webhooks#stripe', :via => [:post, :put]
   end
 
-  if defined?(EffectiveDatatables) && !EffectiveOrders.use_active_admin?
+  if defined?(EffectiveDatatables) && !EffectiveOrders.use_active_admin? || Rails.env.test?
     namespace :admin do
       resources :customers, :only => [:index]
-      resources :orders, :only => [:index, :show]
+      resources :orders, :only => [:index, :show, :new, :create] do
+        member do
+          if EffectiveOrders.cheque_enabled
+            post :send_payment_request
+            post :mark_as_paid
+          end
+        end
+      end
       resources :order_items, :only => [:index]
     end
   end

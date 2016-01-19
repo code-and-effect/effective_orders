@@ -9,6 +9,7 @@ require 'effective_orders/version'
 module EffectiveOrders
   PURCHASED = 'purchased'
   DECLINED = 'declined'
+  PENDING = 'pending'
 
   # The following are all valid config keys
   mattr_accessor :orders_table_name
@@ -17,6 +18,7 @@ module EffectiveOrders
   mattr_accessor :cart_items_table_name
   mattr_accessor :customers_table_name
   mattr_accessor :subscriptions_table_name
+  mattr_accessor :products_table_name
 
   mattr_accessor :authorization_method
   mattr_accessor :tax_rate_method
@@ -41,19 +43,22 @@ module EffectiveOrders
   mattr_accessor :collect_user_fields
   mattr_accessor :skip_user_validation
 
+  mattr_accessor :collect_note
+  mattr_accessor :collect_note_required
+  mattr_accessor :collect_note_message
+
   mattr_accessor :minimum_charge
   mattr_accessor :allow_free_orders
-
-  mattr_accessor :paypal_enabled
-  mattr_accessor :moneris_enabled
-
   mattr_accessor :show_order_history_button
 
-  # application fee  is required if stripe_connect_enabled is true
+  mattr_accessor :cheque_enabled
+  mattr_accessor :paypal_enabled
+  mattr_accessor :moneris_enabled
   mattr_accessor :stripe_enabled
-
   mattr_accessor :stripe_subscriptions_enabled
   mattr_accessor :stripe_connect_enabled
+
+  # application fee is required if stripe_connect_enabled is true
   mattr_accessor :stripe_connect_application_fee_method
 
   # These are hashes of configs
@@ -89,7 +94,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris_enabled, paypal_enabled, stripe_enabled].select { |enabled| enabled }.length == 1
+    [moneris_enabled, paypal_enabled, stripe_enabled, cheque_enabled].select { |enabled| enabled }.length == 1
   end
 
   class SoldOutException < Exception; end

@@ -6,16 +6,22 @@ module Effective
       acts_as_obfuscated :format => '###-####-###'
     end
 
-    acts_as_addressable :billing => {:singular => true, :presence => EffectiveOrders.require_billing_address, :use_full_name => EffectiveOrders.use_address_full_name}, :shipping => {:singular => true, :presence => EffectiveOrders.require_shipping_address, :use_full_name => EffectiveOrders.use_address_full_name}
+    acts_as_addressable(
+      :billing => { :singular => true, :use_full_name => EffectiveOrders.use_address_full_name },
+      :shipping => { :singular => true, :use_full_name => EffectiveOrders.use_address_full_name }
+    )
+
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
+    attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
 
     belongs_to :user  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
 
     structure do
       payment         :text   # serialized hash, see below
-      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED]}]
+      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING]}]
       purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchase_state == EffectiveOrders::PURCHASED}}]
+      note            :text
 
       timestamps
     end
@@ -26,6 +32,14 @@ module Effective
     unless EffectiveOrders.skip_user_validation
       validates_presence_of :user_id
       validates_associated :user
+    end
+
+    if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
+      validates :billing_address, :presence => true, :unless => Proc.new { |order| order.new_record? && order.pending? }
+    end
+
+    if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
+      validates :shipping_address, :presence => true, :unless => Proc.new { |order| order.new_record? && order.pending? }
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
@@ -76,6 +90,11 @@ module Effective
         cart_items = purchasables.map do |purchasable|
           CartItem.new(:quantity => quantity).tap { |cart_item| cart_item.purchasable = purchasable }
         end
+
+        # Initialize cart with user associated to order
+        # This is useful when it is needed to get to associated user through cart object within application,
+        # ex. in order to update tax rate considering associated user location (billing/shipping address)
+        Cart.new(cart_items: cart_items, user: user) if user.present?
       end
 
       retval = cart_items.map do |item|
@@ -83,7 +102,7 @@ module Effective
           :title => item.title,
           :quantity => item.quantity,
           :price => item.price,
-          :tax_exempt => item.tax_exempt,
+          :tax_exempt => item.tax_exempt || false,
           :tax_rate => item.tax_rate,
           :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
         ).tap { |order_item| order_item.purchasable = item.purchasable }
@@ -124,6 +143,17 @@ module Effective
       if shipping_address.nil? == false && shipping_address.full_name.blank?
         self.shipping_address.full_name = billing_name
       end
+    end
+
+    # This is called from admin/orders#create
+    def create_as_pending
+      self.purchase_state = EffectiveOrders::PENDING
+      self.addresses.clear if addresses.any? { |address| address.valid? == false }
+
+      return false unless save
+
+      send_payment_request_to_buyer! if send_payment_request_to_buyer?
+      true
     end
 
     # This is used for updating Subscription codes.
@@ -173,6 +203,10 @@ module Effective
 
     def save_shipping_address?
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_shipping_address)
+    end
+
+    def send_payment_request_to_buyer?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_payment_request_to_buyer)
     end
 
     def shipping_address_same_as_billing?
@@ -297,25 +331,30 @@ module Effective
       purchase_state == EffectiveOrders::DECLINED
     end
 
+    def pending?
+      purchase_state == EffectiveOrders::PENDING
+    end
+
     def send_order_receipts!
-      send_order_receipt_to_admin!
-      send_order_receipt_to_buyer!
-      send_order_receipt_to_seller!
+      send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
+      send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      send_order_receipt_to_seller! if EffectiveOrders.mailer[:send_order_receipt_to_seller]
     end
 
     def send_order_receipt_to_admin!
-      return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_admin]
-      send_email(:order_receipt_to_admin, self)
+      send_email(:order_receipt_to_admin, self) if purchased?
     end
 
     def send_order_receipt_to_buyer!
-      return false unless purchased? && EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      send_email(:order_receipt_to_buyer, self) if purchased?
+    end
 
-      send_email(:order_receipt_to_buyer, self)
+    def send_payment_request_to_buyer!
+      send_email(:payment_request_to_buyer, self) if !purchased?
     end
 
     def send_order_receipt_to_seller!
-      return false unless purchased?(:stripe_connect) && EffectiveOrders.mailer[:send_order_receipt_to_seller]
+      return false unless purchased?(:stripe_connect)
 
       order_items.group_by(&:seller).each do |seller, order_items|
         send_email(:order_receipt_to_seller, self, seller, order_items)

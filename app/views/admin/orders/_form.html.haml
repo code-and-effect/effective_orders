@@ -1,0 +1,27 @@
+- unless defined?(Cocoon)
+  Please install #{link_to 'cocoon', 'https://github.com/nathanvda/cocoon'} to see this page.
+- else
+  = simple_form_for [:admin, order], (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.admin_orders_path) do |f|
+    = f.association :user,
+      label: 'Buyer',
+      as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
+      collection: @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s }
+
+    %h3 Order Items
+    .order_items
+      - f.object.order_items.build unless f.object.order_items.present?
+      = f.simple_fields_for :order_items do |order_item|
+        = render 'order_item_fields', f: order_item
+
+      .links
+        = link_to_add_association '+ Add Product', f, :order_items, partial: 'order_item_fields'
+
+    = f.input :send_payment_request_to_buyer,
+      as: :boolean,
+      label: 'Yes, send a payment request email to the buyer.',
+      value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.mailer[:send_payment_request_to_buyer] : f.object.send_payment_request_to_buyer?)
+
+    .form-group.pull-right
+      = f.button :submit, 'Save', data: { disable_with: 'Saving...' }
+      = f.button :submit, 'Save and Add New', data: { disable_with: 'Saving...' }
+      = link_to 'Cancel', effective_orders.admin_orders_path

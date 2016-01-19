@@ -42,6 +42,11 @@
   }
 }
 
+form.new_effective_order {
+  .checkbox { margin-top: 30px; }
+  .remove-nested-fields { margin-top: 30px; }
+}
+
 @media print {
   .effective-order-purchase-actions { display: none; }
   .print-button { display: none; }

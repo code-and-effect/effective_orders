@@ -3,9 +3,6 @@ module Effective
     module Stripe
       extend ActiveSupport::Concern
 
-      included do
-      end
-
       def stripe_charge
         @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
         @stripe_charge = Effective::StripeCharge.new(stripe_charge_params)
@@ -16,7 +13,8 @@ module Effective
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(response) # orders_controller#order_purchased
         else
-          flash[:danger] = @stripe_charge.errors.full_messages.join(',')
+          @page_title = 'Checkout'
+          flash.now[:danger] = @stripe_charge.errors.full_messages.join(',')
           render 'checkout'
         end
       end

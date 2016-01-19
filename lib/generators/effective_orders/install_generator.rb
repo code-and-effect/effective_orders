@@ -36,6 +36,7 @@ module EffectiveOrders
         @cart_items_table_name = ':' + EffectiveOrders.cart_items_table_name.to_s
         @customers_table_name = ':' + EffectiveOrders.customers_table_name.to_s
         @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
+        @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
 
         migration_template '../../../db/migrate/01_create_effective_orders.rb.erb', 'db/migrate/create_effective_orders.rb'
       end

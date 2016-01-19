@@ -8,6 +8,7 @@ EffectiveOrders.setup do |config|
   config.cart_items_table_name = :cart_items
   config.customers_table_name = :customers
   config.subscriptions_table_name = :subscriptions
+  config.products_table_name = :products
 
   # Authorization Method
   #
@@ -50,13 +51,18 @@ EffectiveOrders.setup do |config|
   # Works with effective_addresses gem
   config.use_address_full_name = true
 
-  # If set, the orders#new screen will render effective/orders/user_fields partial and capture this User Info
+  # If set, the orders#new screen will render effective/orders/_order_user_fields to capture this User Info
   # The partial can be overridden to customize the form, but the following fields are also fed into strong_paramters
   config.collect_user_fields = []
   #config.collect_user_fields = [:salutation, :first_name, :last_name] # Must be valid fields on the User object
 
   # Don't validate_associated :user when saving an Order
   config.skip_user_validation = false
+
+  # If set, the orders#new screen will render effective/orders/_order_note_fields to capture any Note info
+  config.collect_note = false
+  config.collect_note_required = false   # just required for the form, not a true Order model validation
+  config.collect_note_message = ''
 
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
@@ -91,6 +97,15 @@ EffectiveOrders.setup do |config|
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
 
+  # Pay by Cheque
+  # Allow user to create pending orders in order to pay for it by cheque offline. Pending orders are not
+  # considered purchased and have 'pending' purchase state
+  #
+  # When true, there will be a 'Pay by Cheque' button on the Checkout screen.
+  # Clicking this button will mark an Order pending and redirect the user to the
+  # pending order page.
+  config.cheque_enabled = false
+
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
 
@@ -124,7 +139,8 @@ EffectiveOrders.setup do |config|
   # effective_orders will send out receipts to the buyer, seller and admins.
   # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
   #
-  # The subject_for_admin_receipt, subject_for_buyer_receipt and subject_for_seller_receipt can be one of:
+  # The subject_for_admin_receipt, subject_for_buyer_receipt, subject_for_payment_request and
+  # subject_for_seller_receipt can be one of:
   # - nil / empty string to use the built in defaults
   # - A string with the full subject line for this email
   # - A Proc to create the subject line based on the email
@@ -133,11 +149,14 @@ EffectiveOrders.setup do |config|
   # The Procs are the same for admin & buyer receipt, the seller Proc is different
   # :subject_for_admin_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
   # :subject_for_buyer_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # :subject_for_payment_request => Proc.new { |order| "Pending Order #{order.to_param}"}
   # :subject_for_seller_receipt => Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
 
   config.mailer = {
     :send_order_receipt_to_admin => true,
     :send_order_receipt_to_buyer => true,
+    :send_payment_request_to_buyer => true,
+    :send_order_receipts_when_marked_paid_by_admin => false,
     :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
     :layout => 'effective_orders_mailer_layout',
     :admin_email => 'admin@example.com',
@@ -145,6 +164,7 @@ EffectiveOrders.setup do |config|
     :subject_prefix => '[example]',
     :subject_for_admin_receipt => '',
     :subject_for_buyer_receipt => '',
+    :subject_for_payment_request => '',
     :subject_for_seller_receipt => '',
     :deliver_method => nil,
     :delayed_job_deliver => false

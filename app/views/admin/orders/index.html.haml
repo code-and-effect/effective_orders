@@ -1,11 +1,10 @@
 %h2.effective-orders-page-title Orders
 
 - if @datatable.nil?
-  %p
-    Please install
-    = link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'
-    to see this page.
+  %p Please install #{link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'} to see this page.
 - elsif @datatable.present?
   = render_datatable @datatable
 - else
   %p There are no orders present
+
+%p.text-right= link_to 'New Order', effective_orders.new_admin_order_path, class: 'btn btn-primary'

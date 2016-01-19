@@ -6,6 +6,7 @@ require 'rspec/rails'
 require 'factory_girl_rails'
 require 'stripe_mock'
 require 'pry'
+require 'shoulda-matchers'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -15,6 +16,7 @@ RSpec.configure do |config|
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
   config.include Devise::TestHelpers, :type => :controller
+  config.include Shoulda::Matchers::ActiveModel, :type => :model
 
   Rails.logger.level = 4    # Output only minimal stuff to test.log
 

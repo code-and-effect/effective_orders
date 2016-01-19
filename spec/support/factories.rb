@@ -73,6 +73,14 @@ FactoryGirl.define do
     end
   end
 
+  factory :cart_with_items, :class => Effective::Cart do
+    association :user
+
+    before(:create) do |cart|
+      3.times { cart.cart_items << FactoryGirl.create(:cart_item, cart: cart) }
+    end
+  end
+
   factory :order, :class => Effective::Order do
     association :user
 
@@ -113,6 +121,10 @@ FactoryGirl.define do
 
   factory :declined_order, :parent => :order do
     after(:create) { |order| order.decline! }
+  end
+
+  factory :pending_order, :parent => :order do
+    purchase_state 'pending'
   end
 
   factory :stripe_coupon, :class => Stripe::Coupon do

@@ -1,3 +1,4 @@
+%h3 User Information
 = form.simple_fields_for :user, user do |fa|
   - if (EffectiveOrders.collect_user_fields || []).include?(:salutation) && fa.object.respond_to?(:salutation)
     - if defined?(fa.object.class::SALUTATIONS)

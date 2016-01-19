@@ -8,6 +8,7 @@ EffectiveOrders.setup do |config|
   config.cart_items_table_name = :cart_items
   config.customers_table_name = :customers
   config.subscriptions_table_name = :subscriptions
+  config.products_table_name = :custom_products
 
   # Authorization Method
   #
@@ -55,6 +56,9 @@ EffectiveOrders.setup do |config|
   # Don't validate_associated :user when saving an Order
   config.skip_user_validation = false
 
+  config.collect_note = true
+  config.collect_note_message = 'please enter a note'
+
   # Tax Calculation Method
   config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
 
@@ -83,6 +87,15 @@ EffectiveOrders.setup do |config|
   # Thank You page just as if they had successfully Checked Out through a payment processor
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
+
+  # Pay by Cheque
+  # Allow user to create pending orders in order to pay for it by cheque offline. Pending orders are not
+  # considered purchased and have 'pending' purchase state
+  #
+  # When true, there will be a 'Pay by Cheque' button on the Checkout screen.
+  # Clicking this button will mark an Order pending and redirect the user to the
+  # pending order page.
+  config.cheque_enabled = true
 
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
@@ -117,7 +130,8 @@ EffectiveOrders.setup do |config|
   # effective_orders will send out receipts to the buyer, seller and admins.
   # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
   #
-  # The subject_for_admin_receipt, subject_for_buyer_receipt and subject_for_seller_receipt can be one of:
+  # The subject_for_admin_receipt, subject_for_buyer_receipt, subject_for_payment_request and
+  # subject_for_seller_receipt can be one of:
   # - nil / empty string to use the built in defaults
   # - A string with the full subject line for this email
   # - A Proc to create the subject line based on the email
@@ -126,18 +140,24 @@ EffectiveOrders.setup do |config|
   # The Procs are the same for admin & buyer receipt, the seller Proc is different
   # :subject_for_admin_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
   # :subject_for_buyer_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # :subject_for_payment_request => Proc.new { |order| "Pending Order #{order.to_param}"}
   # :subject_for_seller_receipt => Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
 
   config.mailer = {
     :send_order_receipt_to_admin => true,
     :send_order_receipt_to_buyer => true,
+    :send_payment_request_to_buyer => true,
+    :send_order_receipts_when_marked_paid_by_admin => false,
     :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
+    :layout => 'effective_orders_mailer_layout',
     :admin_email => 'admin@example.com',
     :default_from => 'info@example.com',
     :subject_prefix => '[example]',
     :subject_for_admin_receipt => '',
     :subject_for_buyer_receipt => '',
+    :subject_for_payment_request => '',
     :subject_for_seller_receipt => '',
+    :deliver_method => nil,
     :delayed_job_deliver => false
   }
 
@@ -153,8 +173,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.moneris = {
-      :ps_store_id => '',
-      :hpp_key => '',
+      :ps_store_id => 'h',
+      :hpp_key => 'h',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
       :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
@@ -176,9 +196,9 @@ EffectiveOrders.setup do |config|
     }
   else
     config.paypal = {
-      :seller_email => '',
-      :secret => '',
-      :cert_id => '',
+      :seller_email => 'h',
+      :secret => 'h',
+      :cert_id => 'h',
       :paypal_url => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
       :currency => 'CAD',
       :paypal_cert => "#{Rails.root}/config/paypalcerts/#{Rails.env}/paypal_cert.pem",
@@ -204,8 +224,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.stripe = {
-      :secret_key => '',
-      :publishable_key => '',
+      :secret_key => 'h',
+      :publishable_key => 'h',
       :currency => 'usd',
       :site_title => 'My Development Site',  # Displayed on the Embedded Stripe Form
       :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.

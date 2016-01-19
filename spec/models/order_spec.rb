@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Effective::Order do
+describe Effective::Order, :type => :model do
   let(:cart) { FactoryGirl.create(:cart) }
   let(:order) { FactoryGirl.create(:order) }
   let(:user) { FactoryGirl.create(:user) }
@@ -12,6 +12,12 @@ describe Effective::Order do
     order.subtotal.should eq order.order_items.collect(&:subtotal).sum
     order.tax.should eq order.order_items.collect(&:tax).sum
     order.num_items.should eq order.order_items.collect(&:quantity).sum
+  end
+
+  describe 'validations' do
+    it 'should validate inclusion of purchase state' do
+      expect(subject).to validate_inclusion_of(:purchase_state).in_array([nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING])
+    end
   end
 
   describe '#initialize' do
@@ -148,6 +154,56 @@ describe Effective::Order do
       order.valid?.should eq true
       order.errors[:total].present?.should eq false
     end
+  end
+
+  describe 'create_as_pending' do
+    it 'sets the pending state' do
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.create_as_pending.should eq true
+      order.pending?.should eq true
+    end
+
+    it 'disregards invalid addresses' do
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.billing_address = Effective::Address.new(:address1 => 'invalid')
+      order.shipping_address = Effective::Address.new(:address1 => 'invalid')
+
+      binding.pry
+
+      success = order.create_as_pending
+
+      success.should eq true
+    end
+
+    it 'sends a request for payment when send_payment_request_to_buyer is true' do
+      Effective::OrdersMailer.deliveries.clear
+
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.send_payment_request_to_buyer = true
+
+      order.create_as_pending.should eq true
+      order.send_payment_request_to_buyer?.should eq true
+
+      Effective::OrdersMailer.deliveries.length.should eq 1
+    end
+
+    it 'does not send a request for payment when send_payment_request_to_buyer is false' do
+      Effective::OrdersMailer.deliveries.clear
+
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.create_as_pending.should eq true
+
+      Effective::OrdersMailer.deliveries.length.should eq 0
+    end
+
   end
 
   describe 'purchase!' do
@@ -322,5 +378,11 @@ describe Effective::Order do
     end
   end
 
-
+  describe '#pending?' do
+    it 'should return true for pending orders only' do
+      expect(FactoryGirl.create(:purchased_order).pending?).to be_falsey
+      expect(FactoryGirl.create(:declined_order).pending?).to be_falsey
+      expect(FactoryGirl.create(:pending_order).pending?).to be_truthy
+    end
+  end
 end

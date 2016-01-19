@@ -78,6 +78,14 @@ class CreateEffectiveOrders < ActiveRecord::Migration
 
     add_index <%= @subscriptions_table_name %>, :customer_id
     add_index <%= @subscriptions_table_name %>, :stripe_subscription_id
+
+    create_table <%= @products_table_name %> do |t|
+      t.text      :description
+      t.integer   :price, :default => 0
+      t.boolean   :tax_exempt
+
+      t.timestamps
+    end
   end
 
   def self.down
@@ -87,5 +95,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration
     drop_table <%= @cart_items_table_name %>
     drop_table <%= @customers_table_name %>
     drop_table <%= @subscriptions_table_name %>
+    drop_table <%= @products_table_name %>
   end
 end
