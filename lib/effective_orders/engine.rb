@@ -96,8 +96,13 @@ module EffectiveOrders
           raise ArgumentError, "expected EffectiveOrders.app_checkout to be a Hash but it is a #{EffectiveOrders.app_checkout.class}"
         end
         missing = EffectiveOrders.app_checkout.select {|_config, value| value.blank? }
+        missing = missing | [:service] unless EffectiveOrders.app_checkout.has_key?(:service)
 
         raise "Missing effective_orders App Checkout configuration values: #{missing.keys.join(', ')}" if missing.present?
+        unless EffectiveOrders.app_checkout[:service].respond_to?(:call)
+          msg = "EffectiveOrders.app_checkout[:service] is not a compatible service object. Inherit from EffectiveOrders::AppCheckoutService or implement a similar API"
+          raise ArgumentError, msg
+        end
       end
     end
 

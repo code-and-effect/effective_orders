@@ -1,6 +1,7 @@
 module EffectiveOrders
   class AppCheckoutService
-    def self.call(order:)
+    def self.call(options = {})
+      order = options[:order]
       new(order).tap(&:call)
     end
 
@@ -11,6 +12,7 @@ module EffectiveOrders
     end
 
     def call
+      raise NotImplementedError, "overwrite the `call` instance method in #{self.class}"
     end
 
     def success?

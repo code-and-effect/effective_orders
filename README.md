@@ -954,11 +954,28 @@ config.app_checkout = {
 First, decide on a checkout button label (this is only used when there's more than one checkout option available).
 Other checkout buttons follow the pattern of "Checkout with \_\_\_", like "Checkout with Moneris".
 
-Second, create a [service object](http://stevelorek.com/service-objects.html) in your app and add a reference to
-it in the config (where `TokenCheckoutService` is above). This service object needs to use the API of
-interactors from the [interactor gem](https://github.com/collectiveidea/interactor) (interactor is just another
-term for service object). You may use the gem or inherit from `EffectiveOrders::AppCheckoutService` if you don't
-need any extras.
+Second, create a service object in your app and add a reference to it here ([see below for details](#the-app-checkout-service-object)).
+
+The last configuration option is the declined flash message displayed when the `successful?` method
+returns `false`.
+
+Finally, *the app checkout button is hidden* unless effective orders receives authorzation to
+display it. This is helpful if certain users don't use the in-app currency or in-app checkout.
+To authorize effective orders and display the button, you should make sure that the effective
+orders `authorization_method`, defined earlier in the config file, returns `true` if the three
+arguments are: An instance of `Effective::OrdersController`, the Symbol `:app_checkout`, and the
+instance of `Effective::Order`.
+
+### The App Checkout Service Object
+
+The app checkout [service object](http://stevelorek.com/service-objects.html) is responsible for containing
+the businiess logic of in-app payments (i.e. with tokens).
+
+There are two recommended ways to implement the service object:
+
+1. Create a service object that inherits from `EffectiveOrders::AppCheckoutService`
+2. Use the [interactor gem](https://github.com/collectiveidea/interactor) (interactor is just another
+   term for service object)
 
 Here's a sample service object (and likely the minimal implementation that you'll want):
 
@@ -978,18 +995,16 @@ class TokenCheckoutService < EffectiveOrders::AppCheckoutService
   def successful?
     @success
   end
+
+  # - optional -
+  # return a Hash or easily serializable object like a String
+  #
+  # The return value of this method will be serialized and stored on the `payment_details` attribute
+  # of the `Effective::Order`.
+  def payment_details
+  end
 end
 ```
-
-The last configuration option is the declined flash message displayed when the `successful?` method
-returns `false`.
-
-Finally, *the app checkout button is hidden* unless effective orders receives authorzation to
-display it. This is helpful if certain users don't use the in-app currency or in-app checkout.
-To authorize effective orders and display the button, you should make sure that the effective
-orders `authorization_method`, defined earlier in the config file, returns `true` if the three
-arguments are: An instance of `Effective::OrdersController`, the Symbol `:app_checkout`, and the
-instance of `Effective::Order`.
 
 
 ## License
