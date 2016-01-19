@@ -18,7 +18,9 @@ module Effective
         :use_full_name => EffectiveOrders.use_address_full_name
     })
 
+
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
+    attr_accessor :suppress_effective_address_presence_validation # We set this to true when creating a pending order (the admin action)
 
     belongs_to :user  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
@@ -141,6 +143,17 @@ module Effective
       if shipping_address.nil? == false && shipping_address.full_name.blank?
         self.shipping_address.full_name = billing_name
       end
+    end
+
+    # This is called from admin/orders#create
+    def save_as_pending
+      self.purchase_state = EffectiveOrders::PENDING
+
+      addresses.each { |address| address.delete unless address.valid? }
+
+      self.suppress_effective_address_presence_validation = true
+
+      save
     end
 
     # This is used for updating Subscription codes.

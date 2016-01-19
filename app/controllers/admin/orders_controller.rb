@@ -28,7 +28,6 @@ module Admin
     def create
       @user = User.find_by_id(order_params[:user_id])
       @order = Effective::Order.new({}, @user)
-      @order.purchase_state = EffectiveOrders::PENDING
 
       authorize_effective_order!
 
@@ -39,7 +38,7 @@ module Admin
         end
       end
 
-      if @order.save
+      if @order.save_as_pending
         path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_orders_path
         flash[:success] = 'Successfully created order'
         redirect_to path_for_redirect
