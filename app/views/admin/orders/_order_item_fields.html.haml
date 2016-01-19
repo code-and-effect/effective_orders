@@ -4,6 +4,6 @@
     = f.simple_fields_for :purchasable do |purchasable|
       .col-sm-2= f.input :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
       .col-sm-4= purchasable.input :title, input_html: { maxlength: 255 }
-      .col-sm-2= purchasable.input :price, as: :effective_price
+      .col-sm-2= purchasable.input :price, as: (defined?(EffectiveFormInputs) ? :effective_price : :price)
       .col-sm-2= purchasable.input :tax_exempt, label: 'Tax Exempt', input_html: { title: 'When checked, tax will not be applied to this item' }
       .col-sm-2.remove-nested-fields= link_to_remove_association('remove', f)
