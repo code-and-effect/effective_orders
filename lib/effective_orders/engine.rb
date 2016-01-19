@@ -90,6 +90,17 @@ module EffectiveOrders
       end
     end
 
+    initializer 'effective_orders.app_checkout_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.app_checkout_enabled
+        unless EffectiveOrders.app_checkout.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.app_checkout to be a Hash but it is a #{EffectiveOrders.app_checkout.class}"
+        end
+        missing = EffectiveOrders.app_checkout.select {|_config, value| value.blank? }
+
+        raise "Missing effective_orders App Checkout configuration values: #{missing.keys.join(', ')}" if missing.present?
+      end
+    end
+
     # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin?

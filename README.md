@@ -934,6 +934,64 @@ This process should be very similar although you'll create and configure a selle
 You should generate separate private and public certificates/keys for this and it is advisable to not keep production certificates/keys in version control.
 
 
+## Paying Using App Currency or Logic
+
+There are situations when you want to handle payment logic inside your application. For example, an app could
+have it's own type of currency (tokens, points, kudos) that could be used to make payments.
+
+Let's look at a sample app checkout configuration to see how to get this kind of checkout working:
+
+```ruby
+config.app_checkout_enabled = true
+
+config.app_checkout = {
+  checkout_label: 'Checkout with Tokens',
+  service: TokenCheckoutService,
+  declined_flash: "Payment was unsuccessful. Please try again."
+}
+```
+
+First, decide on a checkout button label (this is only used when there's more than one checkout option available).
+Other checkout buttons follow the pattern of "Checkout with \_\_\_", like "Checkout with Moneris".
+
+Second, create a [service object](http://stevelorek.com/service-objects.html) in your app and add a reference to
+it in the config (where `TokenCheckoutService` is above). This service object needs to use the API of
+interactors from the [interactor gem](https://github.com/collectiveidea/interactor) (interactor is just another
+term for service object). You may use the gem or inherit from `EffectiveOrders::AppCheckoutService` if you don't
+need any extras.
+
+Here's a sample service object (and likely the minimal implementation that you'll want):
+
+```ruby
+# located in /app/services/token_checkout_service.rb
+
+# Instances of this class have access to the Effective::Order object in the instance variable, @order.
+class TokenCheckoutService < EffectiveOrders::AppCheckoutService
+  # This method is responsible to complete the payment transaction
+  def call
+    cost_in_tokens = Token.cost_in_tokens(@order.price)
+    @order.user.tokens = @order.user.tokens - cost_in_tokens
+    @success = @order.user.save
+  end
+
+  # Did the purchase finish correctly?
+  def successful?
+    @success
+  end
+end
+```
+
+The last configuration option is the declined flash message displayed when the `successful?` method
+returns `false`.
+
+Finally, *the app checkout button is hidden* unless effective orders receives authorzation to
+display it. This is helpful if certain users don't use the in-app currency or in-app checkout.
+To authorize effective orders and display the button, you should make sure that the effective
+orders `authorization_method`, defined earlier in the config file, returns `true` if the three
+arguments are: An instance of `Effective::OrdersController`, the Symbol `:app_checkout`, and the
+instance of `Effective::Order`.
+
+
 ## License
 
 MIT License.  Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)

@@ -5,6 +5,7 @@ require 'effective_addresses'
 require 'effective_obfuscation'
 require 'effective_orders/engine'
 require 'effective_orders/version'
+require 'effective_orders/app_checkout_service'
 
 module EffectiveOrders
   PURCHASED = 'purchased'
@@ -46,6 +47,7 @@ module EffectiveOrders
 
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
+  mattr_accessor :app_checkout_enabled
 
   mattr_accessor :show_order_history_button
 
@@ -61,6 +63,7 @@ module EffectiveOrders
   mattr_accessor :paypal
   mattr_accessor :moneris
   mattr_accessor :stripe
+  mattr_accessor :app_checkout
 
   mattr_accessor :deliver_method
 
@@ -89,7 +92,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris_enabled, paypal_enabled, stripe_enabled].select { |enabled| enabled }.length == 1
+    [moneris_enabled, paypal_enabled, stripe_enabled, app_checkout_enabled].select { |enabled| enabled }.length == 1
   end
 
   class SoldOutException < Exception; end

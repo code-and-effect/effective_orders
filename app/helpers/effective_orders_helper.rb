@@ -41,6 +41,8 @@ module EffectiveOrdersHelper
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
     when :stripe
       'Checkout with Stripe'
+    when :app_checkout
+      EffectiveOrders.app_checkout[:checkout_label]
     else
       'Checkout'
     end
