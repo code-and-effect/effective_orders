@@ -28,6 +28,7 @@ module Admin
     def create
       @user = User.find_by_id(order_params[:user_id])
       @order = Effective::Order.new({}, @user)
+      @order.send_payment_request_to_buyer = order_params[:send_payment_request_to_buyer]
 
       authorize_effective_order!
 
@@ -38,7 +39,7 @@ module Admin
         end
       end
 
-      if @order.save_as_pending
+      if @order.create_as_pending
         path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_orders_path
         flash[:success] = 'Successfully created order'
         redirect_to path_for_redirect
@@ -78,7 +79,7 @@ module Admin
     private
 
     def order_params
-      params.require(:effective_order).permit(:user_id,
+      params.require(:effective_order).permit(:user_id, :send_payment_request_to_buyer,
         order_items_attributes: [
           :quantity, :_destroy, purchasable_attributes: [
             :title, :price, :tax_exempt

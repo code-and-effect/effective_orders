@@ -12,7 +12,7 @@ module Effective
     )
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
-    attr_accessor :suppress_effective_address_presence_validation # We set this to true when creating a pending order (the admin action)
+    attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
 
     belongs_to :user  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
@@ -146,11 +146,14 @@ module Effective
     end
 
     # This is called from admin/orders#create
-    def save_as_pending
+    def create_as_pending
       self.purchase_state = EffectiveOrders::PENDING
-      addresses.each { |address| address.delete unless address.valid? }
+      self.addresses.clear if addresses.any? { |address| address.valid? == false }
 
-      save
+      return false unless save
+
+      send_payment_request_to_buyer! if send_payment_request_to_buyer?
+      true
     end
 
     # This is used for updating Subscription codes.
@@ -200,6 +203,10 @@ module Effective
 
     def save_shipping_address?
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_shipping_address)
+    end
+
+    def send_payment_request_to_buyer?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_payment_request_to_buyer)
     end
 
     def shipping_address_same_as_billing?
@@ -335,18 +342,15 @@ module Effective
     end
 
     def send_order_receipt_to_admin!
-      return false unless purchased?
-      send_email(:order_receipt_to_admin, self)
+      send_email(:order_receipt_to_admin, self) if purchased?
     end
 
     def send_order_receipt_to_buyer!
-      return false unless purchased?
-      send_email(:order_receipt_to_buyer, self)
+      send_email(:order_receipt_to_buyer, self) if purchased?
     end
 
     def send_payment_request_to_buyer!
-      return false if purchased?
-      send_email(:payment_request_to_buyer, self)
+      send_email(:payment_request_to_buyer, self) if !purchased?
     end
 
     def send_order_receipt_to_seller!
