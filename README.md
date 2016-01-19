@@ -1,3 +1,7 @@
+# 2.0 Branch
+
+This is a work in progress branch.  Don't use this yet!
+
 # Effective Orders
 
 Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
@@ -74,14 +78,14 @@ To upgrade, use this generator to create a migration on table `products` with co
 bundle exec rails generate effective_orders:upgrade_price_column products price
 ```
 
-### Upgrading from 1.7.x
+### Upgrading to 2.0.x
 
-Since 1.8.0 version Custom Orders feature is available. This feature requires adding new custom products DB table.
+There are numerous database changes in the 2.0.0 line of effective_orders.
 
-If you are running earlier version than 1.8.0, please upgrade to 1.8.* with this command:
+if you are running a 1.x version, please upgrade your database with this command:
 
 ```ruby
-rails generate effective_orders:upgrade_from17x
+rails generate effective_orders:upgrade_from1x
 ```
 
 the above command will add `products` table to you DB.

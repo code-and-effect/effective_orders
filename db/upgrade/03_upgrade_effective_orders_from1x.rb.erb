@@ -1,4 +1,4 @@
-class UpgradeEffectiveOrdersFrom17x < ActiveRecord::Migration
+class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
   def self.up
     create_table <%= @products_table_name %> do |t|
       t.string    :title

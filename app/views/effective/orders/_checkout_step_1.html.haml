@@ -36,7 +36,8 @@
 
               = f.input :shipping_address_same_as_billing, :as => :boolean, :label => 'My Shipping address is the same as my Billing address'
 
-    = link_to_current_cart :label => 'Change Items', :class => 'btn btn-default'
+    - unless f.object.pending?
+      = link_to_current_cart :label => 'Change Items', :class => 'btn btn-default'
 
     .text-right
       - if order.total == 0 && EffectiveOrders.allow_free_orders

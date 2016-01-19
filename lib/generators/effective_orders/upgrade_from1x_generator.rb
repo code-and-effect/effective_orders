@@ -1,9 +1,9 @@
 module EffectiveOrders
   module Generators
-    class UpgradeFrom17xGenerator < Rails::Generators::Base
+    class UpgradeFrom1xGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
 
-      desc 'Upgrade effective_orders from the 1.7.x branch'
+      desc 'Upgrade effective_orders from the 1.x branch'
 
       source_root File.expand_path('../../templates', __FILE__)
 
@@ -24,7 +24,7 @@ module EffectiveOrders
         @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
         @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
 
-        migration_template '../../../db/upgrade/03_upgrade_effective_orders_from17x.rb.erb', 'db/migrate/upgrade_effective_orders_from17x.rb'
+        migration_template '../../../db/upgrade/03_upgrade_effective_orders_from1x.rb.erb', 'db/migrate/upgrade_effective_orders_from1x.rb'
       end
 
       def show_readme
