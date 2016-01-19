@@ -43,7 +43,6 @@ module Admin
         flash[:success] = 'Successfully created order'
         redirect_to path_for_redirect
       else
-        binding.pry
         @page_title = 'New Order'
         flash.now[:danger] = 'Unable to create order'
         render :new
@@ -54,7 +53,7 @@ module Admin
       @order = Effective::Order.find(params[:id])
       authorize_effective_order!
 
-      if @order.purchase!('Paid by cheque', email: EffectiveOrders.mailer[:send_order_receipt_to_buyer_when_marked_paid])
+      if @order.purchase!('Marked as paid by admin', email: EffectiveOrders.mailer[:send_order_receipts_when_marked_paid_by_admin])
         flash[:success] = 'Order marked as paid successfully'
         redirect_to effective_orders.admin_orders_path
       else

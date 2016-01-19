@@ -156,7 +156,7 @@ EffectiveOrders.setup do |config|
     :send_order_receipt_to_admin => true,
     :send_order_receipt_to_buyer => true,
     :send_payment_request_to_buyer => true,
-    :send_order_receipt_to_buyer_when_marked_paid => false,
+    :send_order_receipts_when_marked_paid_by_admin => false,
     :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
     :layout => 'effective_orders_mailer_layout',
     :admin_email => 'admin@example.com',

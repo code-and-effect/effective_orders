@@ -126,7 +126,7 @@ module Effective
       EffectiveOrders.authorized?(self, :show, @order)
 
       if @order.send_order_receipt_to_buyer!
-        flash[:success] = "Successfully resent order receipt to #{@order.user.email}"
+        flash[:success] = "Successfully sent order receipt to #{@order.user.email}"
       else
         flash[:danger] = "Unable to send order receipt."
       end

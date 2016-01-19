@@ -166,7 +166,7 @@ describe Admin::OrdersController, type: :controller do
         expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_orders_path
         expect(assigns(:order)).to eq order
         expect(assigns(:order).purchased?).to be_truthy
-        expect(assigns(:order).payment).to eq(details: 'Paid by cheque')
+        expect(assigns(:order).payment).to eq(details: 'Marked as paid by admin')
         expect(flash[:success]).to eq 'Order marked as paid successfully'
       end
     end
