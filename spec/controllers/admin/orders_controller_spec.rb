@@ -57,7 +57,7 @@ describe Admin::OrdersController, type: :controller do
           expect(second_item.tax_rate).to eq 0.05
         end
 
-        it 'should create new custom products' do
+        it 'should create new effective products' do
           expect { post :create, order_params.merge(commit: button_pressed) }.to change { Effective::Product.count }.from(0).to(2)
 
           first_product = Effective::Product.all.sort.first

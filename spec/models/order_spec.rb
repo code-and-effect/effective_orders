@@ -156,6 +156,56 @@ describe Effective::Order, :type => :model do
     end
   end
 
+  describe 'create_as_pending' do
+    it 'sets the pending state' do
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.create_as_pending.should eq true
+      order.pending?.should eq true
+    end
+
+    it 'disregards invalid addresses' do
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.billing_address = Effective::Address.new(:address1 => 'invalid')
+      order.shipping_address = Effective::Address.new(:address1 => 'invalid')
+
+      binding.pry
+
+      success = order.create_as_pending
+
+      success.should eq true
+    end
+
+    it 'sends a request for payment when send_payment_request_to_buyer is true' do
+      Effective::OrdersMailer.deliveries.clear
+
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.send_payment_request_to_buyer = true
+
+      order.create_as_pending.should eq true
+      order.send_payment_request_to_buyer?.should eq true
+
+      Effective::OrdersMailer.deliveries.length.should eq 1
+    end
+
+    it 'does not send a request for payment when send_payment_request_to_buyer is false' do
+      Effective::OrdersMailer.deliveries.clear
+
+      order = FactoryGirl.build(:order)
+      order.order_items << FactoryGirl.build(:order_item, :order => order)
+
+      order.create_as_pending.should eq true
+
+      Effective::OrdersMailer.deliveries.length.should eq 0
+    end
+
+  end
+
   describe 'purchase!' do
     it 'assigns the purchase_state, purchase_at and payment' do
       order.purchase!('by a test').should eq true
