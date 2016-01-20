@@ -173,8 +173,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.moneris = {
-      :ps_store_id => 'h',
-      :hpp_key => 'h',
+      :ps_store_id => 'test',
+      :hpp_key => 'test',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
       :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
@@ -196,9 +196,9 @@ EffectiveOrders.setup do |config|
     }
   else
     config.paypal = {
-      :seller_email => 'h',
-      :secret => 'h',
-      :cert_id => 'h',
+      :seller_email => 'test',
+      :secret => 'test',
+      :cert_id => 'test',
       :paypal_url => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
       :currency => 'CAD',
       :paypal_cert => "#{Rails.root}/config/paypalcerts/#{Rails.env}/paypal_cert.pem",
@@ -224,8 +224,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.stripe = {
-      :secret_key => 'h',
-      :publishable_key => 'h',
+      :secret_key => 'test',
+      :publishable_key => 'test',
       :currency => 'usd',
       :site_title => 'My Development Site',  # Displayed on the Embedded Stripe Form
       :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
