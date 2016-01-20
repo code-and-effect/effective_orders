@@ -172,8 +172,6 @@ describe Effective::Order, :type => :model do
       order.billing_address = Effective::Address.new(:address1 => 'invalid')
       order.shipping_address = Effective::Address.new(:address1 => 'invalid')
 
-      binding.pry
-
       success = order.create_as_pending
 
       success.should eq true
