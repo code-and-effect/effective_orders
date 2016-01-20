@@ -352,7 +352,8 @@ describe Effective::OrdersController, type: :controller do
       post :create, valid_order_attributes
 
       expect { Effective::Cart.find(cart.id) }.to raise_error(ActiveRecord::RecordNotFound)
-      assigns(:cart).cart_items.size.should eq 0
+      ci_ids = assigns(:cart).cart_items.collect(&:id)
+      expect(Effective::CartItem.where(:id => ci_ids).count).to be 0
     end
 
     it 'redirects to the purchased page' do
