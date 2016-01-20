@@ -76,7 +76,7 @@ if defined?(EffectiveDatatables)
         end
 
         def query_payment_method
-          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'), SUBSTRING(payment FROM 'details: (Paid by cheque)\\n'))"
+          "COALESCE(SUBSTRING(payment FROM 'card: (\\w{1,2})\\n'), SUBSTRING(payment FROM 'action: (\\w+)_postback\\n'), SUBSTRING(payment FROM 'details: (Marked as paid by admin)\\n'))"
         end
 
         def search_column(collection, table_column, search_term)
