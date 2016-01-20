@@ -7,6 +7,7 @@ module Effective
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Stripe if EffectiveOrders.stripe_enabled
     include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
+    include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
 
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
@@ -154,10 +155,13 @@ module Effective
       end
     end
 
-    def order_declined(details = nil, redirect_url = nil)
-      @order.decline!(details) rescue nil
+    # options:
+    # flash: What flash message should be displayed
+    def order_declined(details = nil, redirect_url = nil, options = {})
+      flash = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
 
-      flash[:danger] = "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again."
+      @order.decline!(details) rescue nil
+      flash[:danger] = flash
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end

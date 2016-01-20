@@ -43,6 +43,8 @@ module EffectiveOrdersHelper
       'Checkout with Stripe'
     when :cheque
       'Pay by Cheque'
+    when :app_checkout
+      EffectiveOrders.app_checkout[:checkout_label]
     else
       'Checkout'
     end
