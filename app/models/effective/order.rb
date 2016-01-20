@@ -328,8 +328,10 @@ module Effective
       begin
         if EffectiveOrders.mailer[:delayed_job_deliver] && EffectiveOrders.mailer[:deliver_method] == :deliver_later
           (OrdersMailer.delay.public_send(email, *mailer_args) rescue false)
-        else
+        elsif EffectiveOrders.mailer[:deliver_method].present?
           (OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method]) rescue false)
+        else
+          (OrdersMailer.public_send(email, *mailer_args).deliver_now) rescue false
         end
       rescue => e
         raise e unless Rails.env.production?
