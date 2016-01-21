@@ -161,15 +161,6 @@ module Effective
       true
     end
 
-    # This is called from providers/cheque#pay_by_cheque
-    def save_as_pending
-      self.purchase_state = EffectiveOrders::PENDING
-      return false unless save
-
-      send_payment_request_to_buyer! if send_payment_request_to_buyer?
-      true
-    end
-
     # This is used for updating Subscription codes.
     # We want to update the underlying purchasable object of an OrderItem
     # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
