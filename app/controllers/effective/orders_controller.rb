@@ -158,10 +158,10 @@ module Effective
     # options:
     # flash: What flash message should be displayed
     def order_declined(details = nil, redirect_url = nil, options = {})
-      flash = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
+      flash_msg = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
 
       @order.decline!(details) rescue nil
-      flash[:danger] = flash
+      flash[:danger] = flash_msg
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
