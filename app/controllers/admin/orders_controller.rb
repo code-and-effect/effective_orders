@@ -39,7 +39,7 @@ module Admin
         end
       end
 
-      if @order.create_as_pending
+      if @order.save_as_pending
         path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_orders_path
         flash[:success] = 'Successfully created order'
         redirect_to path_for_redirect

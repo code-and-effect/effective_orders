@@ -161,7 +161,7 @@ describe Effective::Order, :type => :model do
       order = FactoryGirl.build(:order)
       order.order_items << FactoryGirl.build(:order_item, :order => order)
 
-      order.create_as_pending.should eq true
+      order.save_as_pending.should eq true
       order.pending?.should eq true
     end
 
@@ -172,7 +172,7 @@ describe Effective::Order, :type => :model do
       order.billing_address = Effective::Address.new(:address1 => 'invalid')
       order.shipping_address = Effective::Address.new(:address1 => 'invalid')
 
-      success = order.create_as_pending
+      success = order.save_as_pending
 
       success.should eq true
     end
@@ -185,7 +185,7 @@ describe Effective::Order, :type => :model do
 
       order.send_payment_request_to_buyer = true
 
-      order.create_as_pending.should eq true
+      order.save_as_pending.should eq true
       order.send_payment_request_to_buyer?.should eq true
 
       Effective::OrdersMailer.deliveries.length.should eq 1
@@ -197,7 +197,7 @@ describe Effective::Order, :type => :model do
       order = FactoryGirl.build(:order)
       order.order_items << FactoryGirl.build(:order_item, :order => order)
 
-      order.create_as_pending.should eq true
+      order.save_as_pending.should eq true
 
       Effective::OrdersMailer.deliveries.length.should eq 0
     end

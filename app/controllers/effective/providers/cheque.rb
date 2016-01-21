@@ -7,7 +7,9 @@ module Effective
         @order ||= Order.find(params[:id])
         EffectiveOrders.authorized?(self, :update, @order)
 
-        if @order.update_attributes(purchase_state: EffectiveOrders::PENDING)
+        @order.send_payment_request_to_buyer = true
+
+        if @order.save_as_pending
           current_cart.try(:destroy)
           flash[:success] = 'Created pending order successfully!'
         else

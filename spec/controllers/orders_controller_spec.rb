@@ -472,7 +472,7 @@ describe Effective::OrdersController, type: :controller do
     end
 
     context 'when failed' do
-      before { Effective::Order.any_instance.stub(:update_attributes).and_return(false) }
+      before { Effective::Order.any_instance.stub(:save_as_pending).and_return(false) }
 
       it 'should not empty cart and redirect to order show page with danger message' do
         post :pay_by_cheque, id: order.to_param
