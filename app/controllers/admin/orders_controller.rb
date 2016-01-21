@@ -42,7 +42,7 @@ module Admin
       if @order.create_as_pending
         path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_orders_path
         message = 'Successfully created order'
-        message << '. The buyer has been notified with a request for payment.' if @order.send_payment_request_to_buyer
+        message << '. The buyer has been notified with a request for payment.' if @order.send_payment_request_to_buyer?
         flash[:success] = message
         redirect_to path_for_redirect
       else
