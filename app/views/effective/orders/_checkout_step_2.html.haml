@@ -1,6 +1,9 @@
 = render order
 
 .effective-order.effective-order-purchase-actions
+  - if order.pending?
+    = link_to 'Print', 'javascript:;', class: 'btn btn-default print-button', data: { role: 'print-button' }, onClick: 'window.print(); false;'
+
   - if (Rails.env.production? == false && EffectiveOrders.allow_pretend_purchase_in_development)
     = render :partial => '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
 
@@ -20,9 +23,8 @@
     - if EffectiveOrders.app_checkout_enabled
       = render :partial => '/effective/orders/app_checkout/form', locals: {order: order}
 
-  - if EffectiveOrders.cheque_enabled
+  - if EffectiveOrders.cheque_enabled && !order.pending?
     = render :partial => '/effective/orders/cheque/form', locals: {order: order}
 
   - if (Rails.env.production? == true && EffectiveOrders.allow_pretend_purchase_in_production)
     %p= EffectiveOrders.allow_pretend_purchase_in_production_message
-
