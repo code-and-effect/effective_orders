@@ -38,6 +38,18 @@ module Effective
 
     def create
       @order ||= Order.new(current_cart, current_user)
+      render :action => :new if !save_order_and_redirect_to_payment
+    end
+
+    # If there is an existing order, it will be posted to the /update action, instead of /create
+    def update
+      @order ||= Order.find(params[:id])
+      render :action => :show if !save_order_and_redirect_to_payment
+    end
+
+    def save_order_and_redirect_to_payment
+      return false unless @order.present? && current_user.present?
+
       @order.attributes = order_params
       @order.user_id = current_user.try(:id)
 
@@ -67,7 +79,7 @@ module Effective
             redirect_to(effective_orders.order_path(@order))
           end
 
-          return
+          return true
         rescue => e
           Rails.logger.info e.message
           flash[:danger] = "An error has occurred: #{e.message}. Please try again."
@@ -75,7 +87,7 @@ module Effective
         end
       end
 
-      render :action => :new
+      false # Unsuccessful save
     end
 
     def show
@@ -87,10 +99,6 @@ module Effective
                     when @order.pending? then 'Pending Order'
                     else 'Checkout'
                     end
-
-      if @order.purchase_state.blank?
-        render :checkout and return
-      end
     end
 
     def index

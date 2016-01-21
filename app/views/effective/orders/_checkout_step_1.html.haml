@@ -1,5 +1,5 @@
 .effective-order
-  = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(:url => effective_orders.orders_path)) do |f|
+  = simple_form_for(order, (EffectiveOrders.simple_form_options || {})) do |f|
     = render :partial => 'effective/orders/order_items', :locals => {:order => order, :form => f}
 
     - if order.errors[:order_items].present?
