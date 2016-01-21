@@ -145,11 +145,20 @@ module Effective
       end
     end
 
-    # This is called from admin/orders#create and providers/cheque#pay_by_cheque
-    def save_as_pending
+    # This is called from admin/orders#create
+    def create_as_pending
       self.purchase_state = EffectiveOrders::PENDING
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
 
+      return false unless save
+
+      send_payment_request_to_buyer! if send_payment_request_to_buyer?
+      true
+    end
+
+    # This is called from providers/cheque#pay_by_cheque
+    def save_as_pending
+      self.purchase_state = EffectiveOrders::PENDING
       return false unless save
 
       send_payment_request_to_buyer! if send_payment_request_to_buyer?
