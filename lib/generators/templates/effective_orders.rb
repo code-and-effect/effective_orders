@@ -248,4 +248,13 @@ EffectiveOrders.setup do |config|
       :dynamic_pricing_salt => ''
     }
   end
+
+  # App checkout configuration
+  config.app_checkout_enabled = false
+
+  config.app_checkout = {
+    checkout_label: '', # Checkout button to finalize the order
+    service: nil, # an EffectiveOrders::AppCheckout type object
+    declined_flash: "Payment was unsuccessful. Please try again."
+  }
 end

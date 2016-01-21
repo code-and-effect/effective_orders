@@ -31,6 +31,10 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/my_sales', :to => 'orders#my_sales', :as => 'my_sales', :via => :get
     end
 
+    if EffectiveOrders.app_checkout_enabled
+      match 'orders/:id/app_checkout', :to => 'orders#app_checkout', :as => 'app_checkout', :via => :post
+    end
+
     if (Rails.env.development? || Rails.env.test?) || EffectiveOrders.allow_pretend_purchase_in_production
       match 'orders/:id/pretend_purchase', :to => 'orders#pretend_purchase', :as => 'pretend_purchase', :via => [:get, :post]
     end

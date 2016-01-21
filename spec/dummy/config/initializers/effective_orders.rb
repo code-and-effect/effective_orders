@@ -138,6 +138,7 @@ EffectiveOrders.setup do |config|
     :subject_for_admin_receipt => '',
     :subject_for_buyer_receipt => '',
     :subject_for_seller_receipt => '',
+    :deliver_method => :deliver_now,
     :delayed_job_deliver => false
   }
 
@@ -153,8 +154,8 @@ EffectiveOrders.setup do |config|
     }
   else
     config.moneris = {
-      :ps_store_id => '',
-      :hpp_key => '',
+      :ps_store_id => 'foo',
+      :hpp_key => 'bar',
       :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
       :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
@@ -176,9 +177,9 @@ EffectiveOrders.setup do |config|
     }
   else
     config.paypal = {
-      :seller_email => '',
-      :secret => '',
-      :cert_id => '',
+      :seller_email => 'seller@mail.com',
+      :secret => 'foo',
+      :cert_id => 'bar',
       :paypal_url => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
       :currency => 'CAD',
       :paypal_cert => "#{Rails.root}/config/paypalcerts/#{Rails.env}/paypal_cert.pem",
@@ -204,12 +205,12 @@ EffectiveOrders.setup do |config|
     }
   else
     config.stripe = {
-      :secret_key => '',
-      :publishable_key => '',
+      :secret_key => 'foo',
+      :publishable_key => 'bar',
       :currency => 'usd',
       :site_title => 'My Development Site',  # Displayed on the Embedded Stripe Form
-      :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
-      :connect_client_id => ''
+      :site_image => 'foo', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+      :connect_client_id => 'bar'
     }
   end
 
@@ -233,12 +234,21 @@ EffectiveOrders.setup do |config|
     }
   else
     config.ccbill = {
-      :client_accnum => '',
-      :client_subacc => '',
-      :form_name => '',
-      :form_period => '',
-      :currency_code => '',
-      :dynamic_pricing_salt => ''
+      :client_accnum => 'foo',
+      :client_subacc => 'bar',
+      :form_name => 'foo',
+      :form_period => 'bar',
+      :currency_code => 'foo',
+      :dynamic_pricing_salt => 'bar'
     }
   end
+
+  # App checkout configuration
+  config.app_checkout_enabled = false
+
+  config.app_checkout = {
+    checkout_label: '', # Checkout button to finalize the order
+    service: nil, # an EffectiveOrders::AppCheckout type object
+    declined_flash: "Payment was unsuccessful. Please try again."
+  }
 end

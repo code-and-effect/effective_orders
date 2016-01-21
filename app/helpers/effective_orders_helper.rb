@@ -7,7 +7,7 @@ module EffectiveOrdersHelper
   def order_summary(order)
     content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
 
-    content_tag(:ul) do
+      content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
           title = item.title.split('<br>')
@@ -43,6 +43,8 @@ module EffectiveOrdersHelper
       'Checkout with Stripe'
     when :ccbill
       'Checkout with CCBill'
+    when :app_checkout
+      EffectiveOrders.app_checkout[:checkout_label]
     else
       'Checkout'
     end
@@ -70,9 +72,9 @@ module EffectiveOrdersHelper
 
     content_tag(:pre) do
       raw JSON.pretty_generate(payment).html_safe
-        .gsub('\"', '')
-        .gsub("[\n\n    ]", '[]')
-        .gsub("{\n    }", '{}')
+      .gsub('\"', '')
+      .gsub("[\n\n    ]", '[]')
+      .gsub("{\n    }", '{}')
     end
   end
 
@@ -135,7 +137,7 @@ module EffectiveOrdersHelper
           hash.map do |k, v|
             content_tag(:tr) do
               content_tag((options[:th] ? :th : :td), k) +
-              content_tag(:td) do
+                content_tag(:td) do
                 if v.kind_of?(Hash)
                   tableize_order_payment(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
                 elsif v.kind_of?(Array)
