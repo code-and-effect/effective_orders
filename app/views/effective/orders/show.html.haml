@@ -1,6 +1,3 @@
 %h2.effective-orders-page-title= @page_title
 
-- if @order.purchased? == false && @order.user == current_user
-  = render_checkout(@order)
-- else
-  = render @order
+= render @order

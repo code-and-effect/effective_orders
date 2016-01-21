@@ -99,6 +99,10 @@ module Effective
                     when @order.pending? then 'Pending Order'
                     else 'Checkout'
                     end
+
+      if @order.purchased? == false && @order.user == current_user
+        render :checkout and return
+      end
     end
 
     def index
