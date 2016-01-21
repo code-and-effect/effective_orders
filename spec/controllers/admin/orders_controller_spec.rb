@@ -26,7 +26,7 @@ describe Admin::OrdersController, type: :controller do
     let(:user1) { FactoryGirl.create(:user, email: 'bbb@example.com', billing_address: FactoryGirl.create(:address), shipping_address: FactoryGirl.create(:address)) }
 
     context 'when success' do
-      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { title: 'test product 1', price: '10000', tax_exempt: '1' }, quantity: '2', '_destroy' => 'false' }, '1' => { purchasable_attributes: { title: 'test product 2', price: '30000', tax_exempt: '0' }, quantity: '3', '_destroy' => 'false' } } } } }
+      let(:order_params) { { effective_order: { user_id: user1.id, order_items_attributes: { '0' => { purchasable_attributes: { title: 'test product 1', price: '10000', tax_exempt: '1' }, quantity: '2', '_destroy' => 'false' }, '1' => { purchasable_attributes: { title: 'test product 2', price: '30000', tax_exempt: '0' }, quantity: '3', '_destroy' => 'false' } }, send_payment_request_to_buyer: '1' } } }
 
       shared_context 'creates objects in db correctly' do
         it 'should create new custom order with pending state' do
@@ -80,7 +80,7 @@ describe Admin::OrdersController, type: :controller do
 
           expect(response).to be_redirect
           expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_orders_path
-          expect(flash[:success]).to eq 'Successfully created order'
+          expect(flash[:success]).to eq 'Successfully created order. The buyer has been notified with a request for payment.'
         end
       end
 
@@ -94,7 +94,7 @@ describe Admin::OrdersController, type: :controller do
 
           expect(response).to be_redirect
           expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.new_admin_order_path
-          expect(flash[:success]).to eq 'Successfully created order'
+          expect(flash[:success]).to eq 'Successfully created order. The buyer has been notified with a request for payment.'
         end
       end
     end
