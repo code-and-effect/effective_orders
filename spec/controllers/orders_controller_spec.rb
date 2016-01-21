@@ -401,7 +401,7 @@ describe Effective::OrdersController, type: :controller do
           get :show, id: order.to_param
 
           expect(response).to be_successful
-          expect(response).to render_template :show
+          expect(response).to render_template :checkout
           expect(assigns(:order)).to eq order
           expect(assigns(:page_title)).to eq 'Pending Order'
         end
@@ -461,6 +461,8 @@ describe Effective::OrdersController, type: :controller do
 
     context 'when success' do
       it 'should update order state, empty cart and redirect to order show page with success message' do
+        Effective::OrdersMailer.deliveries.clear
+
         post :pay_by_cheque, id: order.to_param
 
         expect(response).to be_redirect
@@ -468,20 +470,22 @@ describe Effective::OrdersController, type: :controller do
         expect(assigns(:order).pending?).to be_truthy
         expect(Effective::Cart.first).to be_nil
         expect(flash[:success]).to eq 'Created pending order successfully!'
+        Effective::OrdersMailer.deliveries.length.should eq 1
       end
     end
 
     context 'when failed' do
-      before { Effective::Order.any_instance.stub(:save_as_pending).and_return(false) }
+      before { Effective::Order.any_instance.stub(:save).and_return(false) }
 
       it 'should not empty cart and redirect to order show page with danger message' do
+        Effective::OrdersMailer.deliveries.clear
         post :pay_by_cheque, id: order.to_param
 
         expect(response).to be_redirect
         expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.order_path(order)
-        expect(assigns(:order).pending?).to be_falsey
         expect(Effective::Cart.first.empty?).to be_falsey
         expect(flash[:danger]).to eq 'Unable to create your pending order. Please check your order details and try again.'
+        Effective::OrdersMailer.deliveries.length.should eq 0
       end
     end
   end

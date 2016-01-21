@@ -13,8 +13,9 @@ module Effective
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
     attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
+    attr_accessor :skip_user_validation
 
-    belongs_to :user  # This is the user who purchased the order
+    belongs_to :user, validate: false  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
 
     structure do
@@ -30,8 +31,8 @@ module Effective
     accepts_nested_attributes_for :user, :allow_destroy => false, :update_only => true
 
     unless EffectiveOrders.skip_user_validation
-      validates_presence_of :user_id
-      validates_associated :user
+      validates_presence_of :user_id, :unless => Proc.new { |order| order.skip_user_validation == true }
+      validates_associated :user, :unless => Proc.new { |order| order.skip_user_validation == true }
     end
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
@@ -146,19 +147,14 @@ module Effective
     end
 
     # This is called from admin/orders#create
+    # This is intended for use as an admin action only
+    # It skips any address or bad user validations
     def create_as_pending
       self.purchase_state = EffectiveOrders::PENDING
+
+      self.skip_user_validation = true
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
 
-      return false unless save
-
-      send_payment_request_to_buyer! if send_payment_request_to_buyer?
-      true
-    end
-
-    # This is called from providers/cheque#pay_by_cheque
-    def save_as_pending
-      self.purchase_state = EffectiveOrders::PENDING
       return false unless save
 
       send_payment_request_to_buyer! if send_payment_request_to_buyer?

@@ -204,13 +204,15 @@ describe Effective::Order, :type => :model do
 
   end
 
-  describe 'save_as_pending' do
+  describe 'save as pending' do
     let(:order) { FactoryGirl.build(:order, billing_address: FactoryGirl.build(:address), shipping_address: FactoryGirl.build(:address)) }
 
     it 'sets the pending state' do
       order.order_items << FactoryGirl.build(:order_item, :order => order)
 
-      order.save_as_pending.should eq true
+      order.purchase_state = EffectiveOrders::PENDING
+
+      order.save.should eq true
       order.pending?.should eq true
     end
 
@@ -220,30 +222,9 @@ describe Effective::Order, :type => :model do
       order.billing_address = Effective::Address.new(:address1 => 'invalid')
       order.shipping_address = Effective::Address.new(:address1 => 'invalid')
 
-      order.save_as_pending.should eq false
-    end
+      order.purchase_state = EffectiveOrders::PENDING
 
-    it 'sends a request for payment when send_payment_request_to_buyer is true' do
-      Effective::OrdersMailer.deliveries.clear
-
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
-
-      order.send_payment_request_to_buyer = true
-
-      order.save_as_pending.should eq true
-      order.send_payment_request_to_buyer?.should eq true
-
-      Effective::OrdersMailer.deliveries.length.should eq 1
-    end
-
-    it 'does not send a request for payment when send_payment_request_to_buyer is false' do
-      Effective::OrdersMailer.deliveries.clear
-
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
-
-      order.save_as_pending.should eq true
-
-      Effective::OrdersMailer.deliveries.length.should eq 0
+      order.save.should eq false
     end
   end
 
