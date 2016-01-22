@@ -9,10 +9,25 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
     end
 
     add_column <%= @orders_table_name %>, :note, :text
+    add_column <%= @orders_table_name %>, :payment_method, :string
+
+    add_column <%= @orders_table_name %>, :subtotal, :integer
+    add_column <%= @orders_table_name %>, :tax, :integer
+    add_column <%= @orders_table_name %>, :total, :integer
+
+    puts 'Resaving all Effective::Order objects to assign order item aggregates.'
+    Effective::Order.find_each { |order| order.save(validate: false); print '.'; }
+    puts 'Done'
   end
 
   def self.down
     remove_column <%= @orders_table_name %>, :note
+    remove_column <%= @orders_table_name %>, :payment_method
+
+    remove_column <%= @orders_table_name %>, :subtotal
+    remove_column <%= @orders_table_name %>, :tax
+    remove_column <%= @orders_table_name %>, :total
+
     drop_table <%= @products_table_name %>
   end
 end

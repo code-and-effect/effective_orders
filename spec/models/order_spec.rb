@@ -64,23 +64,29 @@ describe Effective::Order, :type => :model do
 
   describe 'minimum zero math' do
     it 'has a minimum order total of 0' do
-      order.order_items.each { |order_item| allow(order_item).to receive(:total).and_return(-1000) }
+      order.total = nil
 
+      order.order_items.each { |oi| oi.price = -1000; oi.tax_exempt = true; }
       order.order_items.collect(&:total).sum.should eq -3000
+
       order.total.should eq 0
     end
 
     it 'has no minimum subtotal' do
-      order.order_items.each { |order_item| allow(order_item).to receive(:subtotal).and_return(-1000) }
+      order.subtotal = nil
 
+      order.order_items.each { |oi| oi.price = -1000; oi.tax_exempt = true; }
       order.order_items.collect(&:subtotal).sum.should eq -3000
+
       order.subtotal.should eq -3000
     end
 
     it 'has a minimum order tax of 0.00' do
-      order.order_items.each { |order_item| allow(order_item).to receive(:tax).and_return(-1000) }
+      order.tax = nil
 
+      order.order_items.each { |oi| allow(oi).to receive(:tax).and_return(-1000) }
       order.order_items.collect(&:tax).sum.should eq -3000
+
       order.tax.should eq 0
     end
   end
@@ -132,8 +138,7 @@ describe Effective::Order, :type => :model do
     end
 
     it 'should be invalid when less than the minimum charge' do
-      allow(order).to receive(:total).and_return(49)
-
+      order.order_items.each { |oi| oi.price = 1 }
       order.valid?.should eq false
 
       order.errors[:total].present?.should eq true

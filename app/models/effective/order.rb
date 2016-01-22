@@ -15,20 +15,30 @@ module Effective
     attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
     attr_accessor :skip_buyer_validations
 
-    belongs_to :user, validate: false  # This is the user who purchased the order
+    belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
     has_many :order_items, :inverse_of => :order
 
     structure do
-      payment         :text   # serialized hash, see below
       purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING]}]
-      purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchase_state == EffectiveOrders::PURCHASED}}]
+      purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchased? }}]
+
       note            :text
+
+      payment         :text   # serialized hash containing all the payment details.  see below.
+      payment_method  :string #, :validates => [:presence => {:if => Proc.new { |order| order.purchased? }}]  # the one word or one letter payment method
+
+      subtotal        :integer, :validates => :presence
+      tax             :integer, :validates => :presence
+      total           :integer, :validates => :presence
 
       timestamps
     end
 
     accepts_nested_attributes_for :order_items, :allow_destroy => false, :reject_if => :all_blank
     accepts_nested_attributes_for :user, :allow_destroy => false, :update_only => true
+
+    before_validation { assign_order_item_aggregates! }
+    before_save { assign_order_item_aggregates! unless self[:total].present? } # Incase we save!(validate: false)
 
     unless EffectiveOrders.skip_user_validation
       validates_presence_of :user_id, :unless => Proc.new { |order| order.skip_buyer_validations == true }
@@ -101,6 +111,12 @@ module Effective
         # This is useful when it is needed to get to associated user through cart object within application,
         # ex. in order to update tax rate considering associated user location (billing/shipping address)
         Cart.new(cart_items: cart_items, user: user) if user.present?
+      end
+
+      if persisted?  # Make sure to reset stored aggregates
+        self.total = nil
+        self.subtotal = nil
+        self.tax = nil
       end
 
       retval = cart_items.map do |item|
@@ -191,20 +207,20 @@ module Effective
       end
     end
 
-    def total
-      [order_items.map(&:total).sum, 0].max
-    end
-
     def subtotal
-      order_items.map(&:subtotal).sum
+      self[:subtotal] || order_items.map { |oi| oi.subtotal }.sum
     end
 
     def tax
-      [order_items.map(&:tax).sum, 0].max
+      self[:tax] || [order_items.map { |oi| oi.tax }.sum, 0].max
+    end
+
+    def total
+      self[:total] || [order_items.map { |oi| oi.total }.sum, 0].max
     end
 
     def num_items
-      order_items.map(&:quantity).sum
+      order_items.map { |oi| oi.quantity }.sum
     end
 
     def save_billing_address?
@@ -220,11 +236,7 @@ module Effective
     end
 
     def shipping_address_same_as_billing?
-      if self.shipping_address_same_as_billing.nil?
-        true # Default value
-      else
-        ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
-      end
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
     end
 
     def billing_name
@@ -243,7 +255,7 @@ module Effective
 
       return false if purchased?
 
-      unless opts[:skip_buyer_validations] # An admin can mark purchased a declind order
+      unless opts[:skip_buyer_validations] # An admin can mark purchased a declined order
         raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
       end
 
@@ -375,6 +387,12 @@ module Effective
     end
 
   private
+
+    def assign_order_item_aggregates!
+      self.subtotal = order_items.map { |oi| oi.subtotal }.sum
+      self.tax = [order_items.map { |oi| oi.tax }.sum, 0].max
+      self.total = [order_items.map { |oi| oi.total }.sum, 0].max
+    end
 
     def send_email(email, *mailer_args)
       begin
