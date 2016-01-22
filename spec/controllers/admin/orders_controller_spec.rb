@@ -79,7 +79,7 @@ describe Admin::OrdersController, type: :controller do
           post :create, order_params.merge(commit: button_pressed)
 
           expect(response).to be_redirect
-          expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_orders_path
+          expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(assigns(:order))
           expect(flash[:success]).to eq 'Successfully created order. The buyer has been notified with a request for payment.'
         end
       end
