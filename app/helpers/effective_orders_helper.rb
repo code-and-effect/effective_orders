@@ -27,15 +27,6 @@ module EffectiveOrdersHelper
     end
   end
 
-  # SimpleForm doesn't give us the correct url sometimes
-  def effective_order_path(order = nil, options = {})
-    if order.present?
-      effective_orders.order_path(order)
-    else
-      effective_orders.orders_path
-    end
-  end
-
   def order_checkout_label(processor = nil)
     return 'Checkout' if (EffectiveOrders.single_payment_processor? && processor != :pretend)
 
