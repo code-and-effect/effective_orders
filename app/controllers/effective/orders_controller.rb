@@ -94,11 +94,15 @@ module Effective
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      @page_title = case
-                    when @order.purchased? then 'Order Receipt'
-                    when @order.pending? then 'Pending Order'
-                    else 'Checkout'
-                    end
+      @page_title ||= (
+        if @order.purchased?
+          'Order Receipt'
+        elsif @order.pending? && (@order.user != current_user)
+          'Pending Order'
+        else
+          'Checkout'
+        end
+      )
 
       (render :checkout and return) if @order.purchased? == false && @order.user == current_user
     end
