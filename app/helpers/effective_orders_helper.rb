@@ -103,29 +103,21 @@ module EffectiveOrdersHelper
   end
   alias_method :link_to_order_history, :link_to_my_purchases
 
-  def render_order_history(user_or_orders, opts = {})
+  def render_orders_table(user_or_orders, opts = {})
     if user_or_orders.kind_of?(User)
       orders = Effective::Order.purchased_by(user_or_orders)
     elsif user_or_orders.respond_to?(:to_a)
-      begin
-        orders = user_or_orders.to_a.select { |order| order.purchased? }
-      rescue => e
-        raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
-      end
+      orders = user_or_orders.to_a
     else
       raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
     end
 
-    locals = {
-      :orders => orders,
-      :order_path => effective_orders.order_path(':id') # The :id string will be replaced with the order id
-    }.merge(opts)
-
-    render(:partial => 'effective/orders/my_purchases', :locals => locals)
+    render(:partial => 'effective/orders/orders_table', :locals => {:orders => orders}.merge(opts))
   end
 
-  alias_method :render_purchases, :render_order_history
-  alias_method :render_my_purchases, :render_order_history
+  alias_method :render_purchases, :render_orders_table
+  alias_method :render_my_purchases, :render_orders_table
+  alias_method :render_order_history, :render_orders_table
 
   # Used by the _payment_details partial
   def tableize_order_payment(hash, options = {class: 'table table-bordered'})

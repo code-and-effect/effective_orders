@@ -6,6 +6,8 @@ module Effective
 
     def show
       @cart = current_cart
+      @pending_orders = Effective::Order.pending.where(user: current_user) if current_user.present?
+
       @page_title ||= 'Shopping Cart'
       EffectiveOrders.authorized?(self, :show, @cart)
     end

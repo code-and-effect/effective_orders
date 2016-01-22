@@ -65,6 +65,7 @@ module Effective
     scope :purchased, -> { where(:purchase_state => EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }
     scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
+    scope :pending, -> { where(:purchase_state => EffectiveOrders::PENDING) }
 
     # Can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
     def initialize(items = {}, user = nil)
