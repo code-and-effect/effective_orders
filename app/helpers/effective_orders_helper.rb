@@ -44,7 +44,7 @@ module EffectiveOrdersHelper
     when :cheque
       'Pay by Cheque'
     when :app_checkout
-      EffectiveOrders.app_checkout[:checkout_label]
+      EffectiveOrders.app_checkout[:checkout_label].presence || 'Checkout'
     else
       'Checkout'
     end
