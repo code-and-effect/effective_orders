@@ -1,0 +1,27 @@
+%table.table
+  %thead
+    %tr
+      %th Order
+      %th Date
+      %th Description
+      %th
+  %tbody
+    - orders.each do |order|
+      %tr
+        %td ##{order.to_param}
+        %td
+          - if order.purchased?
+            Purchased
+            = order.purchased_at.strftime("%Y-%m-%d %H:%M")
+          - else
+            Created
+            = order.created_at.strftime("%Y-%m-%d %H:%M")
+        %td= order_summary(order)
+        %td
+          - if order.pending?
+            = link_to 'Checkout', effective_orders.order_path(order), class: 'btn btn-primary'
+          - else
+            = link_to 'View', effective_orders.order_path(order)
+
+- unless orders.present?
+  %p You have no orders

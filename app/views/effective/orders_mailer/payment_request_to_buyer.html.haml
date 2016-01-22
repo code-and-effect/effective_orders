@@ -1,5 +1,9 @@
 %p.effective-orders-receipt-info Pending order created:
 
+%p Please #{link_to('visit here', effective_orders.order_url(@order))} to review your order and pay online.
+
+- if EffectiveOrders.cheque_enabled
+  %p We also accept cheques via the mail, and we will manually mark your order paid upon receiving it.
+
 = render(@order, no_order_actions: true)
 
-%p You can review and pay for this order via credit card or cheque #{link_to('here', effective_orders.order_url(@order))}.

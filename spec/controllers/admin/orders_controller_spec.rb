@@ -163,7 +163,7 @@ describe Admin::OrdersController, type: :controller do
         post :mark_as_paid, id: order.to_param
 
         expect(response).to be_redirect
-        expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_orders_path
+        expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(assigns(:order))
         expect(assigns(:order)).to eq order
         expect(assigns(:order).purchased?).to be_truthy
         expect(assigns(:order).payment).to eq(details: 'Marked as paid by admin')

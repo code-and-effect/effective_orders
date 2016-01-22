@@ -56,9 +56,15 @@ module Admin
       @order = Effective::Order.find(params[:id])
       authorize_effective_order!
 
-      if @order.purchase!('Marked as paid by admin', email: EffectiveOrders.mailer[:send_order_receipts_when_marked_paid_by_admin])
+      purchased = @order.purchase!(
+        'Marked as paid by admin',
+        email: EffectiveOrders.mailer[:send_order_receipts_when_marked_paid_by_admin],
+        skip_buyer_validations: true  # This will allow a declined order to be marked purchased
+      )
+
+      if purchased
         flash[:success] = 'Order marked as paid successfully'
-        redirect_to effective_orders.admin_orders_path
+        redirect_to effective_orders.admin_order_path(@order)
       else
         flash[:danger] = 'Unable to mark order as paid'
         request.referrer ? (redirect_to :back) : (redirect_to effective_orders.admin_orders_path)

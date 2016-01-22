@@ -38,20 +38,20 @@ module Effective
 
     def create
       @order ||= Order.new(current_cart, current_user)
-      render :action => :new if !save_order_and_redirect_to_payment
+      save_order_and_redirect_to_payment
     end
 
     # If there is an existing order, it will be posted to the /update action, instead of /create
     def update
       @order ||= Order.find(params[:id])
-      render :action => :show if !save_order_and_redirect_to_payment
+      save_order_and_redirect_to_payment
     end
 
     def save_order_and_redirect_to_payment
-      return false unless @order.present? && current_user.present?
+      (redirect_to effective_orders.cart_path and return) if (@order.blank? || current_user.blank?)
 
       @order.attributes = order_params
-      @order.user_id = current_user.try(:id)
+      @order.user_id = current_user.id
 
       if EffectiveOrders.require_shipping_address
         if @order.shipping_address_same_as_billing? && @order.billing_address.present?
@@ -59,7 +59,7 @@ module Effective
         end
       end
 
-      EffectiveOrders.authorized?(self, :create, @order)
+      EffectiveOrders.authorized?(self, (@order.persisted? ? :update : :create), @order)
 
       Effective::Order.transaction do
         begin
@@ -82,27 +82,29 @@ module Effective
           return true
         rescue => e
           Rails.logger.info e.message
-          flash[:danger] = "An error has occurred: #{e.message}. Please try again."
+          flash[:danger] = "One or more fields are invalid. Please fix the errors below and try again."
           raise ActiveRecord::Rollback
         end
       end
 
-      false # Unsuccessful save
+      render :checkout
     end
 
     def show
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      @page_title = case
-                    when @order.purchased? then 'Order Receipt'
-                    when @order.pending? then 'Pending Order'
-                    else 'Checkout'
-                    end
+      @page_title ||= (
+        if @order.purchased?
+          'Order Receipt'
+        elsif @order.pending? && (@order.user != current_user)
+          'Pending Order'
+        else
+          'Checkout'
+        end
+      )
 
-      if @order.purchased? == false && @order.user == current_user
-        render :checkout and return
-      end
+      (render :checkout and return) if @order.purchased? == false && @order.user == current_user
     end
 
     def index
@@ -126,12 +128,16 @@ module Effective
     def purchased # Thank You!
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
+
+      (redirect_to effective_orders.order_path(@order) and return) unless @order.purchased?
     end
 
     # An error has occurred, please try again
     def declined # An error occurred!
       @order = Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
+
+      (redirect_to effective_orders.order_path(@order) and return) unless @order.declined?
     end
 
     def resend_buyer_receipt
@@ -144,7 +150,7 @@ module Effective
         flash[:danger] = "Unable to send order receipt."
       end
 
-      redirect_to(:back) rescue effective_orders.order_path(@order)
+      redirect_to (request.referer.present? ? :back : effective_orders.order_path(@order))
     end
 
     protected
@@ -170,10 +176,8 @@ module Effective
     # options:
     # flash: What flash message should be displayed
     def order_declined(details = nil, redirect_url = nil, options = {})
-      flash_msg = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
-
       @order.decline!(details) rescue nil
-      flash[:danger] = flash_msg
+      flash[:danger] = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
