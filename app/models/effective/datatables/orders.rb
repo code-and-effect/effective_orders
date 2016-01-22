@@ -18,7 +18,7 @@ if defined?(EffectiveDatatables)
             end
           end
 
-          table_column :purchase_state, filter: { type: :select, values: purchase_state_dropdown_options, selected: EffectiveOrders::PURCHASED } do |order|
+          table_column :purchase_state, filter: { type: :select, values: purchase_state_dropdown_options } do |order|
             order.purchase_state || 'abandoned'
           end
 
