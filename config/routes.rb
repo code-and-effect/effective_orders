@@ -60,10 +60,8 @@ EffectiveOrders::Engine.routes.draw do
       resources :customers, :only => [:index]
       resources :orders, :only => [:index, :show, :new, :create] do
         member do
-          if EffectiveOrders.cheque_enabled
-            post :send_payment_request
-            post :mark_as_paid
-          end
+          post :send_payment_request
+          post :mark_as_paid
         end
       end
       resources :order_items, :only => [:index]

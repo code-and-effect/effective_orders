@@ -13,7 +13,7 @@ module Effective
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
     attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
-    attr_accessor :skip_user_validation
+    attr_accessor :skip_buyer_validations
 
     belongs_to :user, validate: false  # This is the user who purchased the order
     has_many :order_items, :inverse_of => :order
@@ -31,8 +31,12 @@ module Effective
     accepts_nested_attributes_for :user, :allow_destroy => false, :update_only => true
 
     unless EffectiveOrders.skip_user_validation
-      validates_presence_of :user_id, :unless => Proc.new { |order| order.skip_user_validation == true }
-      validates_associated :user, :unless => Proc.new { |order| order.skip_user_validation == true }
+      validates_presence_of :user_id, :unless => Proc.new { |order| order.skip_buyer_validations == true }
+      validates_associated :user, :unless => Proc.new { |order| order.skip_buyer_validations == true }
+    end
+
+    if EffectiveOrders.collect_note_required
+      validates_presence_of :note, :unless => Proc.new { |order| order.skip_buyer_validations == true }
     end
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
@@ -152,7 +156,7 @@ module Effective
     def create_as_pending
       self.purchase_state = EffectiveOrders::PENDING
 
-      self.skip_user_validation = true
+      self.skip_buyer_validations = true
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
 
       return false unless save
@@ -237,7 +241,10 @@ module Effective
       opts = {validate: true, email: true}.merge(opts)
 
       return false if purchased?
-      raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
+
+      unless opts[:allow_purchase_of_declined_order] # An admin can override this check
+        raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
+      end
 
       success = false
 
