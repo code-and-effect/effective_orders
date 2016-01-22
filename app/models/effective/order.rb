@@ -239,11 +239,11 @@ module Effective
 
     # :validate => false, :email => false
     def purchase!(payment_details = nil, opts = {})
-      opts = {validate: true, email: true}.merge(opts)
+      opts = {validate: true, email: true, skip_buyer_validations: false}.merge(opts)
 
       return false if purchased?
 
-      unless opts[:allow_purchase_of_declined_order] # An admin can override this check
+      unless opts[:skip_buyer_validations] # An admin can mark purchased a declind order
         raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
       end
 
