@@ -14,7 +14,7 @@
         = render 'order_item_fields', f: order_item
 
       .links
-        = link_to_add_association '+ Add Product', f, :order_items, partial: 'order_item_fields'
+        = link_to_add_association '+ Add line item', f, :order_items, partial: 'order_item_fields'
 
     = f.input :send_payment_request_to_buyer,
       as: :boolean,
