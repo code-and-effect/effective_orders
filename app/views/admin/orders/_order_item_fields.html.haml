@@ -6,4 +6,4 @@
       .col-sm-4= purchasable.input :title, input_html: { maxlength: 255 }
       .col-sm-2= purchasable.input :price, as: (defined?(EffectiveFormInputs) ? :effective_price : :price)
       .col-sm-2= purchasable.input :tax_exempt, label: 'Tax Exempt', input_html: { title: 'When checked, tax will not be applied to this item' }
-      .col-sm-2.remove-nested-fields= link_to_remove_association('remove', f)
+      .col-sm-2.remove-nested-fields= link_to_remove_association('Remove line item', f)

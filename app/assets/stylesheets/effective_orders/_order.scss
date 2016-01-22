@@ -45,6 +45,7 @@
 form.new_effective_order {
   .checkbox { margin-top: 30px; }
   .remove-nested-fields { margin-top: 30px; }
+  a.remove_fields.dynamic { float: right; }
 }
 
 @media print {
