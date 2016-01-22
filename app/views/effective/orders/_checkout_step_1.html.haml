@@ -11,9 +11,6 @@
     - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
       = render :partial => 'effective/orders/order_user_fields', :locals => {:form => f, :user => f.object.user }
 
-    - if EffectiveOrders.collect_note
-      = render :partial => 'effective/orders/order_note_fields', :locals => {:form => f}
-
     - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
 
     - if num_addresses > 0
@@ -35,6 +32,9 @@
                   = f.input :save_shipping_address, :as => :boolean, :label => 'Save as my default Shipping Address'
 
               = f.input :shipping_address_same_as_billing, :as => :boolean, :label => 'My Shipping address is the same as my Billing address'
+
+    - if EffectiveOrders.collect_note
+      = render :partial => 'effective/orders/order_note_fields', :locals => {:form => f}
 
     - unless f.object.pending?
       = link_to_current_cart :label => 'Change Items', :class => 'btn btn-default'
