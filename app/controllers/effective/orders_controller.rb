@@ -63,11 +63,11 @@ module Effective
 
       Effective::Order.transaction do
         begin
-          if @order.save_billing_address? && @order.user.respond_to?(:billing_address=) && @order.billing_address.try(:empty?) == false
+          if @order.save_billing_address? && @order.user.respond_to?(:billing_address=) && @order.billing_address.present?
             @order.user.billing_address = @order.billing_address
           end
 
-          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address=) && @order.shipping_address.try(:empty?) == false
+          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address=) && @order.shipping_address.present?
             @order.user.shipping_address = @order.shipping_address
           end
 
@@ -87,6 +87,7 @@ module Effective
         end
       end
 
+      # Fall back to step1
       render :checkout
     end
 

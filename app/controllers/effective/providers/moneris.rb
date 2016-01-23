@@ -93,4 +93,4 @@ end
 # Sent to your server as a POST
 # Response URL:  http://ourwebsite.com/orders/moneris_postback
 
-# Displayed as key/value pairs on our server. ????
+# Displayed as key/value pairs on our server
