@@ -113,11 +113,10 @@ module Effective
         Cart.new(cart_items: cart_items, user: user) if user.present?
       end
 
-      if persisted?  # Make sure to reset stored aggregates
-        self.total = nil
-        self.subtotal = nil
-        self.tax = nil
-      end
+      # Make sure to reset stored aggregates
+      self.total = nil
+      self.subtotal = nil
+      self.tax = nil
 
       retval = cart_items.map do |item|
         order_items.build(
@@ -140,11 +139,11 @@ module Effective
       super
 
       # Copy user addresses into this order if they are present
-      if user.respond_to?(:billing_address) && !user.billing_address.nil?
+      if user.respond_to?(:billing_address) && user.billing_address.present?
         self.billing_address = user.billing_address
       end
 
-      if user.respond_to?(:shipping_address) && !user.shipping_address.nil?
+      if user.respond_to?(:shipping_address) && user.shipping_address.present?
         self.shipping_address = user.shipping_address
       end
 
@@ -158,11 +157,11 @@ module Effective
       end
 
       # Ensure the Full Name is assigned when an address exists
-      if billing_address.nil? == false && billing_address.full_name.blank?
+      if billing_address.present? && billing_address.full_name.blank?
         self.billing_address.full_name = billing_name
       end
 
-      if shipping_address.nil? == false && shipping_address.full_name.blank?
+      if shipping_address.present? && shipping_address.full_name.blank?
         self.shipping_address.full_name = billing_name
       end
     end
@@ -296,6 +295,15 @@ module Effective
         save!
       end
     end
+
+    # Admin
+    # App
+    # Cheque
+    # Moneris
+    # PayPal
+    # Pretend
+    # Stripe
+    # Stripe Connect
 
     def purchase_method
       return 'None' unless purchased?
