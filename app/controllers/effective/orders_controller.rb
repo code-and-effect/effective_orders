@@ -74,7 +74,7 @@ module Effective
           @order.save!
 
           if @order.total == 0 && EffectiveOrders.allow_free_orders
-            order_purchased('automatic purchase of free order')
+            order_purchased(details: 'automatic purchase of free order')
           else
             redirect_to(effective_orders.order_path(@order))
           end
@@ -156,7 +156,7 @@ module Effective
 
     protected
 
-    def order_purchased(details = nil, redirect_url = nil, declined_redirect_url = nil)
+    def order_purchased(details: 'none', redirect_url: nil, declined_redirect_url: nil)
       begin
         @order.purchase!(details: details)
         Cart.where(user_id: @order.user_id).try(:destroy_all) # current_cart won't work for provider post backs here
@@ -176,9 +176,10 @@ module Effective
 
     # options:
     # flash: What flash message should be displayed
-    def order_declined(details = nil, redirect_url = nil, options = {})
+    def order_declined(details: 'none', redirect_url: nil, message: nil)
       @order.decline!(details: details) rescue nil
-      flash[:danger] = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
+
+      flash[:danger] = message || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end

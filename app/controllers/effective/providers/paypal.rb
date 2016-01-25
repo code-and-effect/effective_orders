@@ -14,11 +14,11 @@ module Effective
 
         if @order.present?
           if @order.purchased?
-            order_purchased(params)
+            order_purchased(details: params)
           elsif (params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret])
-            order_purchased(params)
+            order_purchased(details: params)
           else
-            order_declined(params)
+            order_declined(details: params)
           end
         end
 
