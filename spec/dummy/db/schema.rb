@@ -99,7 +99,8 @@ ActiveRecord::Schema.define(:version => 4) do
     t.integer  "total"
     t.integer  "subtotal"
     t.integer  "tax"
-    t.string   "payment_method"
+    t.string   "payment_provider"
+    t.string   "payment_card"
   end
 
   add_index "orders", ["user_id"], :name => "index_orders_on_user_id"

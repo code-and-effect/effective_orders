@@ -9,7 +9,8 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
     end
 
     add_column <%= @orders_table_name %>, :note, :text
-    add_column <%= @orders_table_name %>, :payment_method, :string
+    add_column <%= @orders_table_name %>, :payment_provider, :string
+    add_column <%= @orders_table_name %>, :payment_card, :string
 
     add_column <%= @orders_table_name %>, :subtotal, :integer
     add_column <%= @orders_table_name %>, :tax, :integer
@@ -22,7 +23,8 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
 
   def self.down
     remove_column <%= @orders_table_name %>, :note
-    remove_column <%= @orders_table_name %>, :payment_method
+    remove_column <%= @orders_table_name %>, :payment_provider
+    remove_column <%= @orders_table_name %>, :payment_card
 
     remove_column <%= @orders_table_name %>, :subtotal
     remove_column <%= @orders_table_name %>, :tax

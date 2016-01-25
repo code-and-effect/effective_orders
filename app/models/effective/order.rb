@@ -82,16 +82,17 @@ module Effective
     validates :order_items, presence: { message: 'No items are present.  Please add one or more item to your cart.' }
     validates :order_items, associated: true
 
-    # with_options if: Proc.new { |order| order.purchased? } do |order|
-    #   order.validates :purchased_at, presence: true
-    #   order.validates :payment, presence: true
-    #   order.validates :payment_provider, presence: true
-    #   order.validates :payment_card, presence: true
-    # end
+    with_options if: Proc.new { |order| order.purchased? } do |order|
+      order.validates :purchased_at, presence: true
+      order.validates :payment, presence: true
+
+      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers }
+      order.validates :payment_card, presence: true
+    end
 
     serialize :payment, Hash
 
-    default_scope -> { includes(:user).includes(:order_items => :purchasable).order('created_at DESC') }
+    default_scope -> { includes(:user).includes(order_items: :purchasable).order(created_at: :desc) }
 
     scope :purchased, -> { where(purchase_state: EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(user_id: user.try(:id)) }
@@ -272,7 +273,7 @@ module Effective
 
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
-    def purchase!(details: 'none', validate: true, email: true, skip_buyer_validations: false)
+    def purchase!(details: 'none', provider: 'admin', card: 'unknown', validate: true, email: true, skip_buyer_validations: false)
       return false if purchased?
 
       unless skip_buyer_validations # An admin can mark purchased a declined order
@@ -285,7 +286,10 @@ module Effective
         begin
           self.purchase_state = EffectiveOrders::PURCHASED
           self.purchased_at ||= Time.zone.now
+
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
+          self.payment_provider = provider.to_s
+          self.payment_card = card.to_s.presence || 'unknown'
 
           save!(validate: validate)
 
@@ -293,23 +297,26 @@ module Effective
 
           success = true
         rescue => e
-          raise ActiveRecord::Rollback
+          raise ::ActiveRecord::Rollback
         end
       end
 
       send_order_receipts! if (success && email)
 
+      raise "Failed to purchase! Effective::Order: #{self.errors.full_messages.to_sentence}" unless success
       success
     end
 
-    def decline!(details: 'none', validate: true)
+    def decline!(details: 'none', provider: 'admin', validate: true)
       return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 
-      Order.transaction do
+      Effective::Order.transaction do
         self.purchase_state = EffectiveOrders::DECLINED
         self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
+        self.payment_provider = provider.to_s
+        self.payment_card = nil
 
         order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
 
@@ -362,22 +369,10 @@ module Effective
 
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
-      return true if provider == nil || payment.kind_of?(Hash) == false
+      return true if provider.nil? || payment_provider == provider.to_s
 
-      case provider.to_sym
-      when :stripe_connect
-        charge = (payment[:charge] || payment['charge'] || {})
-        charge['id'] && charge['customer'] && charge['application_fee'].present?
-      when :stripe
-        charge = (payment[:charge] || payment['charge'] || {})
-        charge['id'] && charge['customer']
-      when :moneris
-        (payment[:response_code] || payment['response_code']) &&
-        (payment[:transactionKey] || payment['transactionKey'])
-      when :paypal
-        (payment[:payer_email] || payment['payer_email'])
-      else
-        raise "Unknown provider #{provider} passed to Effective::Order.purchased?"
+      unless EffectiveOrder.payment_providers.include?(provider.to_s)
+        raise "Unknown provider #{provider}. Known providers are #{EffectiveOrders.payment_providers}"
       end
     end
 

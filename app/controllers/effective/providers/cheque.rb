@@ -8,6 +8,7 @@ module Effective
         EffectiveOrders.authorized?(self, :update, @order)
 
         @order.purchase_state = EffectiveOrders::PENDING
+        @order.payment_provider = 'cheque'
 
         if @order.save
           @order.send_payment_request_to_buyer!  # Always send payment request to buyer
