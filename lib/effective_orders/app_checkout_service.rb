@@ -1,7 +1,6 @@
 module EffectiveOrders
   class AppCheckoutService
-    def self.call(options = {})
-      order = options[:order]
+    def self.call(order:)
       new(order).tap(&:call)
     end
 
