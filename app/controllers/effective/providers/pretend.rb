@@ -11,6 +11,7 @@ module Effective
         order_purchased(
           details: 'for pretend',
           provider: 'pretend',
+          card: 'none',
           redirect_url: params[:purchased_redirect_url],
           declined_redirect_url: params[:declined_redirect_url]
         )

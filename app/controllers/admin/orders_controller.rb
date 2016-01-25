@@ -59,6 +59,7 @@ module Admin
       purchased = @order.purchase!(
         details: 'Marked as paid by admin',
         provider: 'admin',
+        card: 'none',
         email: EffectiveOrders.mailer[:send_order_receipts_when_marked_paid_by_admin],
         skip_buyer_validations: true  # This will allow a declined order to be marked purchased
       )

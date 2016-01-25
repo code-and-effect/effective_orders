@@ -116,16 +116,6 @@ module EffectiveOrders
     ].compact
   end
 
-  # The Effective::Order.payment_card value must be in this collection
-  def payment_card
-    [
-      'V'.freeze,
-      'M'.freeze,
-      'AX'.freeze,
-      'Other'.freeze
-    ]
-  end
-
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
   class AlreadyDeclinedException < Exception; end

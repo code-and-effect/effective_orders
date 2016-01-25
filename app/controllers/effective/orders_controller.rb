@@ -74,7 +74,7 @@ module Effective
           @order.save!
 
           if @order.total == 0 && EffectiveOrders.allow_free_orders
-            order_purchased(details: 'automatic purchase of free order', provider: 'free')
+            order_purchased(details: 'automatic purchase of free order', provider: 'free', card: 'none')
           else
             redirect_to(effective_orders.order_path(@order))
           end
@@ -156,7 +156,7 @@ module Effective
 
     protected
 
-    def order_purchased(details: 'none', provider:, card: nil, redirect_url: nil, declined_redirect_url: nil)
+    def order_purchased(details: 'none', provider:, card: 'none', redirect_url: nil, declined_redirect_url: nil)
       begin
         @order.purchase!(details: details, provider: provider, card: card)
 
@@ -175,8 +175,8 @@ module Effective
       end
     end
 
-    def order_declined(details: 'none', provider:, redirect_url: nil, message: nil)
-      @order.decline!(details: details, provider: provider) rescue nil
+    def order_declined(details: 'none', provider:, card: 'none', redirect_url: nil, message: nil)
+      @order.decline!(details: details, provider: provider, card: card) rescue nil
 
       flash[:danger] = message || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 

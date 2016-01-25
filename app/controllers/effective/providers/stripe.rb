@@ -14,6 +14,7 @@ module Effective
           order_purchased(
             details: response,
             provider: (EffectiveOrders.stripe_connect_enabled ? 'stripe_connect' : 'stripe'),
+            card: (response['charge']['card']['brand'] rescue nil)
           )
         else
           @page_title = 'Checkout'

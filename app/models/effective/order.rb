@@ -273,7 +273,7 @@ module Effective
 
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
-    def purchase!(details: 'none', provider: 'admin', card: 'unknown', validate: true, email: true, skip_buyer_validations: false)
+    def purchase!(details: 'none', provider: 'admin', card: 'none', validate: true, email: true, skip_buyer_validations: false)
       return false if purchased?
 
       unless skip_buyer_validations # An admin can mark purchased a declined order
@@ -289,7 +289,7 @@ module Effective
 
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
           self.payment_provider = provider.to_s
-          self.payment_card = card.to_s.presence || 'unknown'
+          self.payment_card = card.to_s.presence || 'none'
 
           save!(validate: validate)
 
@@ -307,65 +307,35 @@ module Effective
       success
     end
 
-    def decline!(details: 'none', provider: 'admin', validate: true)
+    def decline!(details: 'none', provider: 'admin', card: 'none', validate: true)
       return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 
+      success = false
+
       Effective::Order.transaction do
-        self.purchase_state = EffectiveOrders::DECLINED
-        self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
-        self.payment_provider = provider.to_s
-        self.payment_card = nil
+        begin
+          self.purchase_state = EffectiveOrders::DECLINED
+          self.purchased_at = nil
 
-        order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
+          self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
+          self.payment_provider = provider.to_s
+          self.payment_card = card.to_s.presence || 'none'
 
-        save!(validate: validate)
+          save!(validate: validate)
+
+          order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
+
+          success = true
+        rescue => e
+          raise ::ActiveRecord::Rollback
+        end
       end
+
+      raise "Failed to decline! Effective::Order: #{self.errors.full_messages.to_sentence}" unless success
+      success
     end
-
-    # Admin
-    # App
-    # Cheque
-    # Moneris
-    # PayPal
-    # Pretend
-    # Stripe
-    # Stripe Connect
-
-    def purchase_method
-      return 'None' unless purchased?
-
-      if purchased?(:stripe_connect)
-        'Stripe Connect'
-      elsif purchased?(:stripe)
-        'Stripe'
-      elsif purchased?(:moneris)
-        'Moneris'
-      elsif purchased?(:paypal)
-        'PayPal'
-      else
-        'Online'
-      end
-    end
-    alias_method :payment_method, :purchase_method
-
-    def purchase_card_type
-      return 'None' unless purchased?
-
-      if purchased?(:stripe_connect)
-        ((payment[:charge] || payment['charge'])['card']['brand'] rescue 'Unknown')
-      elsif purchased?(:stripe)
-        ((payment[:charge] || payment['charge'])['card']['brand'] rescue 'Unknown')
-      elsif purchased?(:moneris)
-        payment[:card] || payment['card'] || 'Unknown'
-      elsif purchased?(:paypal)
-        payment[:payment_type] || payment['payment_type'] || 'Unknown'
-      else
-        'Online'
-      end
-    end
-    alias_method :payment_card_type, :purchase_card_type
 
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
@@ -403,7 +373,7 @@ module Effective
     end
 
     def send_order_receipt_to_seller!
-      return false unless purchased?(:stripe_connect)
+      return false unless (EffectiveOrders.stripe_connect_enabled && purchased?(:stripe_connect))
 
       order_items.group_by(&:seller).each do |seller, order_items|
         send_email(:order_receipt_to_seller, self, seller, order_items)
