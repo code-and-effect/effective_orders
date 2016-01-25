@@ -68,7 +68,7 @@ module Effective
           # Now we have to purchase it
           @order = Effective::Order.new(subscription)
           @order.user = @customer.user
-          @order.purchase!("via Stripe webhook #{event.id}")
+          @order.purchase!(details: "via Stripe webhook #{event.id}")
         end
 
       end

@@ -77,8 +77,16 @@ module Effective
     scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
     scope :pending, -> { where(:purchase_state => EffectiveOrders::PENDING) }
 
-    # Can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
-    def initialize(items = {}, user = nil)
+    # Effective::Order.new()
+    # Effective::Order.new(Product.first)
+    # Effective::Order.new(Product.all)
+    # Effective::Order.new(Product.first, user: User.first)
+    # Effective::Order.new(Product.first, Product.second, user: User.first)
+    # Effective::Order.new(user: User.first)
+    # Effective::Order.new(current_cart)
+
+    # items can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
+    def initialize(*items, user: nil)
       super() # Call super with no arguments
 
       # Set up defaults
@@ -86,31 +94,24 @@ module Effective
       self.save_shipping_address = true
       self.shipping_address_same_as_billing = true
 
-      self.user = (items.delete(:user) if items.kind_of?(Hash)) || user
-      add_to_order(items) if items.present?
+      self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
+      add(items) if items.present?
     end
 
-    def add(item, quantity = 1)
+    # add(Product.first) => returns an Effective::OrderItem
+    # add(Product.first current_cart) => returns an array of Effective::OrderItems
+    def add(*items, quantity: 1)
       raise 'unable to alter a purchased order' if purchased?
       raise 'unable to alter a declined order' if declined?
 
-      if item.kind_of?(Effective::Cart)
-        cart_items = item.cart_items
-      else
-        purchasables = [item].flatten
-
-        if purchasables.any? { |p| !p.respond_to?(:is_effectively_purchasable?) }
-          raise ArgumentError.new('Effective::Order.add() expects a single acts_as_purchasable item, or an array of acts_as_purchasable items')
+      cart_items = items.flatten.flat_map do |item|
+        if item.kind_of?(Effective::Cart)
+          item.cart_items.to_a
+        elsif item.kind_of?(ActsAsPurchasable)
+          Effective::CartItem.new(quantity: quantity.to_i).tap { |cart_item| cart_item.purchasable = item }
+        else
+          raise ArgumentError.new('Effective::Order.add() expects one or more acts_as_purchasable objects, or an Effective::Cart')
         end
-
-        cart_items = purchasables.map do |purchasable|
-          CartItem.new(:quantity => quantity).tap { |cart_item| cart_item.purchasable = purchasable }
-        end
-
-        # Initialize cart with user associated to order
-        # This is useful when it is needed to get to associated user through cart object within application,
-        # ex. in order to update tax rate considering associated user location (billing/shipping address)
-        Cart.new(cart_items: cart_items, user: user) if user.present?
       end
 
       # Make sure to reset stored aggregates
@@ -248,25 +249,24 @@ module Effective
       name
     end
 
-    # :validate => false, :email => false
-    def purchase!(payment_details = nil, opts = {})
-      opts = {validate: true, email: true, skip_buyer_validations: false}.merge(opts)
-
+    # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
+    # order.purchase!(details: {key: value})
+    def purchase!(details: 'none', validate: true, email: true, skip_buyer_validations: false)
       return false if purchased?
 
-      unless opts[:skip_buyer_validations] # An admin can mark purchased a declined order
-        raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && opts[:validate])
+      unless skip_buyer_validations # An admin can mark purchased a declined order
+        raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && validate)
       end
 
       success = false
 
-      Order.transaction do
+      Effective::Order.transaction do
         begin
           self.purchase_state = EffectiveOrders::PURCHASED
           self.purchased_at ||= Time.zone.now
-          self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
+          self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
 
-          save!(validate: opts[:validate])
+          save!(validate: validate)
 
           order_items.each { |item| (item.purchasable.purchased!(self, item) rescue nil) }
 
@@ -276,19 +276,19 @@ module Effective
         end
       end
 
-      send_order_receipts! if success && opts[:email]
+      send_order_receipts! if (success && email)
 
       success
     end
 
-    def decline!(payment_details = nil)
+    def decline!(details: 'none')
       return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 
       Order.transaction do
         self.purchase_state = EffectiveOrders::DECLINED
-        self.payment = payment_details.kind_of?(Hash) ? payment_details : {:details => (payment_details || 'none').to_s}
+        self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
 
         order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
 
