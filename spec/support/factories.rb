@@ -116,7 +116,7 @@ FactoryGirl.define do
   end
 
   factory :purchased_order, :parent => :order do
-    after(:create) { |order| order.purchase!('by a test') }
+    after(:create) { |order| order.purchase! }
   end
 
   factory :declined_order, :parent => :order do

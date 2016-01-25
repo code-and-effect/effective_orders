@@ -15,7 +15,7 @@ describe Product do
 
   describe 'purchased' do
     it 'is purchased? when in a purchased Order' do
-      order.purchase!('by a test')
+      order.purchase!
 
       product.purchased?.should eq true
       product.purchased_orders.include?(order).should eq true
@@ -36,7 +36,7 @@ describe Product do
         end
       end
 
-      order.purchase!('by a test')
+      order.purchase!
 
       instance_order.purchased?.should eq true
       instance_product.purchased?.should eq true
@@ -44,7 +44,7 @@ describe Product do
     end
 
     it 'is returned by the purchased scopes' do
-      order.purchase!('by a test')
+      order.purchase!
 
       Product.purchased.to_a.include?(product).should eq true
       Product.purchased_by(order.user).to_a.include?(product).should eq true
@@ -60,7 +60,7 @@ describe Product do
       product_with_float_price.price = 20.00
       product_with_float_price.tax_exempt = true
 
-      order = Effective::Order.new(product_with_float_price, user)
+      order = Effective::Order.new(product_with_float_price, user: user)
 
       order.subtotal.should eq 2000
       order.tax.should eq 0
@@ -71,7 +71,7 @@ describe Product do
       product_with_float_price.price = 20.00
       product_with_float_price.tax_exempt = false
 
-      order = Effective::Order.new(product_with_float_price, user)
+      order = Effective::Order.new(product_with_float_price, user: user)
 
       order.subtotal.should eq 2000
       order.tax.should eq 100

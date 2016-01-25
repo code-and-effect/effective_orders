@@ -19,7 +19,7 @@ describe Effective::OrderItem do
 
   describe 'scopes' do
     it 'is included in the Sold scope when order is purchased' do
-      order.purchase!('from a test')
+      order.purchase!
       (order.order_items.size > 0).should eq true
 
       sold_items = Effective::OrderItem.sold.to_a

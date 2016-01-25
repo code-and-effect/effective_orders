@@ -16,6 +16,12 @@ Has Order History, My Purchases, My Sales and Admin screens.
 
 ## Getting Started
 
+Check your ruby version.  As of the 2.0 branch, effective_orders requires a minimum ruby version of `2.1`:
+
+```console
+ruby -v
+```
+
 Add to your Gemfile:
 
 ```ruby
