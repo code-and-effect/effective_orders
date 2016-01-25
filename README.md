@@ -525,7 +525,7 @@ The `acts_as_purchasable` `.purchased?` and `.purchased_by?(user)` methods only 
 To programatically purchase one or more `acts_as_purchasable` objects:
 
 ```ruby
-Effective::Order.new([@product1, @product2], current_user).purchase!('from my rake task')
+Effective::Order.new(@product1, @product2, user: current_user).purchase!(details: 'from my rake task')
 ```
 
 Here the `billing_address` and `shipping_address` are copied from the `current_user` object if the `current_user` responds_to `billing_address` / `shipping_address` as per [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
@@ -539,7 +539,7 @@ order.billing_address = Effective::Address.new(...)
 order.shipping_address = Effective::Address.new(...)
 order.add(@product1)
 order.add(@product2)
-order.purchase!(:some => {:complicated => 'details', :in => 'a hash'})
+order.purchase!(details: {:complicated => 'details', :in => 'a hash'})
 ```
 
 The one gotcha with the above two scenarios, is that when `purchase!` is called, the `Effective::Order` in question will run through its validations.  These validations include:
@@ -554,7 +554,7 @@ The one gotcha with the above two scenarios, is that when `purchase!` is called,
 You can skip validations with the following command, but be careful as this skips all validations:
 
 ```ruby
-Effective::Order.new(@product, @user).purchase!('no validations', :validate => false)
+Effective::Order.new(@product, user: @user).purchase!(validate: false)
 ```
 
 The `@product` is now considered purchased.
