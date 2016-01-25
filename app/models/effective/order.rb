@@ -3,12 +3,12 @@ module Effective
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
     if EffectiveOrders.obfuscate_order_ids
-      acts_as_obfuscated :format => '###-####-###'
+      acts_as_obfuscated format: '###-####-###'
     end
 
     acts_as_addressable(
-      :billing => { :singular => true, :use_full_name => EffectiveOrders.use_address_full_name },
-      :shipping => { :singular => true, :use_full_name => EffectiveOrders.use_address_full_name }
+      :billing => { singular: true, use_full_name: EffectiveOrders.use_address_full_name },
+      :shipping => { singular: true, use_full_name: EffectiveOrders.use_address_full_name }
     )
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
@@ -16,66 +16,87 @@ module Effective
     attr_accessor :skip_buyer_validations
 
     belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
-    has_many :order_items, :inverse_of => :order
+    has_many :order_items, inverse_of: :order
 
     structure do
-      purchase_state  :string, :validates => [:inclusion => {:in => [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING]}]
-      purchased_at    :datetime, :validates => [:presence => {:if => Proc.new { |order| order.purchased? }}]
+      purchase_state    :string
+      purchased_at      :datetime
 
-      note            :text
+      note              :text
 
-      payment         :text   # serialized hash containing all the payment details.  see below.
-      payment_method  :string #, :validates => [:presence => {:if => Proc.new { |order| order.purchased? }}]  # the one word or one letter payment method
+      payment           :text   # serialized hash containing all the payment details.  see below.
 
-      subtotal        :integer, :validates => :presence
-      tax             :integer, :validates => :presence
-      total           :integer, :validates => :presence
+      payment_provider  :string
+      payment_card      :string
+
+      subtotal          :integer
+      tax               :integer
+      total             :integer
 
       timestamps
     end
 
-    accepts_nested_attributes_for :order_items, :allow_destroy => false, :reject_if => :all_blank
-    accepts_nested_attributes_for :user, :allow_destroy => false, :update_only => true
+    accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
+    accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
     before_validation { assign_order_item_aggregates! }
     before_save { assign_order_item_aggregates! unless self[:total].present? } # Incase we save!(validate: false)
 
     unless EffectiveOrders.skip_user_validation
-      validates_presence_of :user_id, :unless => Proc.new { |order| order.skip_buyer_validations == true }
-      validates_associated :user, :unless => Proc.new { |order| order.skip_buyer_validations == true }
+      validates :user_id, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
+      validates :user, associated: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
     end
 
     if EffectiveOrders.collect_note_required
-      validates_presence_of :note, :unless => Proc.new { |order| order.skip_buyer_validations == true }
+      validates :note, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
     end
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
-      validates :billing_address, :presence => true, :unless => Proc.new { |order| order.new_record? && order.pending? }
+      validates :billing_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
     end
 
     if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
-      validates :shipping_address, :presence => true, :unless => Proc.new { |order| order.new_record? && order.pending? }
+      validates :shipping_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
       if EffectiveOrders.allow_free_orders
-        validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :unless => Proc.new { |order| order.total == 0 }, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+        validates :total, numericality: {
+          greater_than_or_equal_to: minimum_charge,
+          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+        }, unless: Proc.new { |order| order.total == 0 }
       else
-        validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge, :message => "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+        validates :total, numericality: {
+          greater_than_or_equal_to: minimum_charge,
+          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+        }
       end
     end
 
-    validates_presence_of :order_items, :message => 'No items are present.  Please add one or more item to your cart.'
-    validates_associated :order_items
+    validates :purchase_state, inclusion: { in: [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING] }
+
+    validates :subtotal, presence: true
+    validates :tax, presence: true
+    validates :total, presence: true
+
+    validates :order_items, presence: { message: 'No items are present.  Please add one or more item to your cart.' }
+    validates :order_items, associated: true
+
+    # with_options if: Proc.new { |order| order.purchased? } do |order|
+    #   order.validates :purchased_at, presence: true
+    #   order.validates :payment, presence: true
+    #   order.validates :payment_provider, presence: true
+    #   order.validates :payment_card, presence: true
+    # end
 
     serialize :payment, Hash
 
     default_scope -> { includes(:user).includes(:order_items => :purchasable).order('created_at DESC') }
 
-    scope :purchased, -> { where(:purchase_state => EffectiveOrders::PURCHASED) }
-    scope :purchased_by, lambda { |user| purchased.where(:user_id => user.try(:id)) }
-    scope :declined, -> { where(:purchase_state => EffectiveOrders::DECLINED) }
-    scope :pending, -> { where(:purchase_state => EffectiveOrders::PENDING) }
+    scope :purchased, -> { where(purchase_state: EffectiveOrders::PURCHASED) }
+    scope :purchased_by, lambda { |user| purchased.where(user_id: user.try(:id)) }
+    scope :declined, -> { where(purchase_state: EffectiveOrders::DECLINED) }
+    scope :pending, -> { where(purchase_state: EffectiveOrders::PENDING) }
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
@@ -99,7 +120,7 @@ module Effective
     end
 
     # add(Product.first) => returns an Effective::OrderItem
-    # add(Product.first current_cart) => returns an array of Effective::OrderItems
+    # add(Product.first, current_cart) => returns an array of Effective::OrderItems
     def add(*items, quantity: 1)
       raise 'unable to alter a purchased order' if purchased?
       raise 'unable to alter a declined order' if declined?
@@ -121,12 +142,12 @@ module Effective
 
       retval = cart_items.map do |item|
         order_items.build(
-          :title => item.title,
-          :quantity => item.quantity,
-          :price => item.price,
-          :tax_exempt => item.tax_exempt || false,
-          :tax_rate => item.tax_rate,
-          :seller_id => (item.purchasable.try(:seller).try(:id) rescue nil)
+          title: item.title,
+          quantity: item.quantity,
+          price: item.price,
+          tax_exempt: item.tax_exempt || false,
+          tax_rate: item.tax_rate,
+          seller_id: (item.purchasable.try(:seller).try(:id) rescue nil)
         ).tap { |order_item| order_item.purchasable = item.purchasable }
       end
 
@@ -281,7 +302,7 @@ module Effective
       success
     end
 
-    def decline!(details: 'none')
+    def decline!(details: 'none', validate: true)
       return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
@@ -292,7 +313,7 @@ module Effective
 
         order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
 
-        save!
+        save!(validate: validate)
       end
     end
 
