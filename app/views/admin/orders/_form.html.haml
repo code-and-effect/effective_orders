@@ -1,7 +1,7 @@
 - unless defined?(Cocoon)
   Please install #{link_to 'cocoon', 'https://github.com/nathanvda/cocoon'} to see this page.
 - else
-  = simple_form_for [:admin, order], (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.admin_orders_path) do |f|
+  = simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: effective_orders.admin_orders_path) do |f|
     = f.association :user,
       label: 'Buyer',
       as: (defined?(EffectiveFormInputs) ? :effective_select : :select),

@@ -122,8 +122,9 @@ EffectiveOrders.setup do |config|
   }
 
   # SimpleForm Options
-  # This Hash of options will be passed into any simple_form_for() calls
+  # This Hash of options will be passed into any client facing simple_form_for() calls
   config.simple_form_options = {}
+  config.admin_simple_form_options = {}  # For the /admin/orders/new form
 
   # config.simple_form_options = {
   #   :html => {:class => 'form-horizontal'},
@@ -134,6 +135,7 @@ EffectiveOrders.setup do |config|
   #     :radio_buttons => :horizontal_radio_and_checkboxes
   #   }
   # }
+
 
   # Mailer Settings
   # effective_orders will send out receipts to the buyer, seller and admins.
