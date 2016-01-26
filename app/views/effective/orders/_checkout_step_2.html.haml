@@ -1,4 +1,4 @@
-= render order
+= render(order)
 
 .effective-order.effective-order-purchase-actions
   - if (Rails.env.production? == false && EffectiveOrders.allow_pretend_purchase_in_development)
@@ -20,7 +20,7 @@
     - if EffectiveOrders.app_checkout_enabled
       = render :partial => '/effective/orders/app_checkout/form', locals: {order: order}
 
-  - if EffectiveOrders.cheque_enabled && !order.pending?
+  - if EffectiveOrders.cheque_enabled
     = render :partial => '/effective/orders/cheque/form', locals: {order: order}
 
   - if (Rails.env.production? == true && EffectiveOrders.allow_pretend_purchase_in_production)
