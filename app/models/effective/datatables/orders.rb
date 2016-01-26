@@ -6,7 +6,10 @@ if defined?(EffectiveDatatables)
           default_order :purchased_at, :desc
 
           table_column :purchased_at
-          table_column :id
+
+          table_column :id, label: 'ID' do |order|
+            link_to order.to_param, effective_orders.admin_order_path(order)
+          end
 
           # Don't display email or buyer_name column if this is for a specific user
           if attributes[:user_id].blank?
