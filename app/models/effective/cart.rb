@@ -11,10 +11,10 @@ module Effective
 
     default_scope -> { includes(:cart_items => :purchasable) }
 
-    def add(item, quantity = 1)
-      raise 'expecting an acts_as_purchasable object' unless item.respond_to?(:is_effectively_purchasable?)
+    def add(item, quantity: 1)
+      raise 'expecting an acts_as_purchasable object' unless item.kind_of?(ActsAsPurchasable)
 
-      existing_item = cart_items.where(:purchasable_id => item.id, :purchasable_type => item.class.name).first
+      existing_item = cart_items.where(purchasable_id: item.id, purchasable_type: item.class.name).first
 
       if item.quantity_enabled? && (quantity + (existing_item.quantity rescue 0)) > item.quantity_remaining
         raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
@@ -22,9 +22,9 @@ module Effective
       end
 
       if existing_item.present?
-        existing_item.update_attributes(:quantity => existing_item.quantity + quantity)
+        existing_item.update_attributes(quantity: existing_item.quantity + quantity)
       else
-        cart_items.create(:cart => self, :purchasable_id => item.id, :purchasable_type => item.class.name, :quantity => quantity)
+        cart_items.create(cart: self, purchasable_id: item.id, purchasable_type: item.class.name, quantity: quantity)
       end
     end
     alias_method :add_to_cart, :add

@@ -19,7 +19,7 @@ module Effective
 
     # This is the entry point for the "Checkout" buttons
     def new
-      @order ||= Order.new(current_cart, current_user)
+      @order ||= Effective::Order.new(current_cart, user: current_user)
 
       EffectiveOrders.authorized?(self, :new, @order)
 
@@ -37,13 +37,13 @@ module Effective
     end
 
     def create
-      @order ||= Order.new(current_cart, current_user)
+      @order ||= Effective::Order.new(current_cart, user: current_user)
       save_order_and_redirect_to_payment
     end
 
     # If there is an existing order, it will be posted to the /update action, instead of /create
     def update
-      @order ||= Order.find(params[:id])
+      @order ||= Effective::Order.find(params[:id])
       save_order_and_redirect_to_payment
     end
 
@@ -63,18 +63,18 @@ module Effective
 
       Effective::Order.transaction do
         begin
-          if @order.save_billing_address? && @order.user.respond_to?(:billing_address=) && @order.billing_address.try(:empty?) == false
+          if @order.save_billing_address? && @order.user.respond_to?(:billing_address=) && @order.billing_address.present?
             @order.user.billing_address = @order.billing_address
           end
 
-          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address=) && @order.shipping_address.try(:empty?) == false
+          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address=) && @order.shipping_address.present?
             @order.user.shipping_address = @order.shipping_address
           end
 
           @order.save!
 
           if @order.total == 0 && EffectiveOrders.allow_free_orders
-            order_purchased('automatic purchase of free order')
+            order_purchased(details: 'automatic purchase of free order', provider: 'free', card: 'none')
           else
             redirect_to(effective_orders.order_path(@order))
           end
@@ -87,11 +87,12 @@ module Effective
         end
       end
 
+      # Fall back to step1
       render :checkout
     end
 
     def show
-      @order = Order.find(params[:id])
+      @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
       @page_title ||= (
@@ -114,19 +115,19 @@ module Effective
     # Basically an index page.
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
-      @orders = Order.purchased_by(current_user)
+      @orders = Effective::Order.purchased_by(current_user)
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Sales is a list of what products beign sold by me have been purchased
     def my_sales
-      @order_items = OrderItem.sold_by(current_user)
+      @order_items = Effective::OrderItem.sold_by(current_user)
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
     def purchased # Thank You!
-      @order = Order.find(params[:id])
+      @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
       (redirect_to effective_orders.order_path(@order) and return) unless @order.purchased?
@@ -134,7 +135,7 @@ module Effective
 
     # An error has occurred, please try again
     def declined # An error occurred!
-      @order = Order.find(params[:id])
+      @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
       (redirect_to effective_orders.order_path(@order) and return) unless @order.declined?
@@ -155,10 +156,11 @@ module Effective
 
     protected
 
-    def order_purchased(details = nil, redirect_url = nil, declined_redirect_url = nil)
+    def order_purchased(details: 'none', provider:, card: 'none', redirect_url: nil, declined_redirect_url: nil)
       begin
-        @order.purchase!(details)
-        Cart.where(user_id: @order.user_id).try(:destroy_all) # current_cart won't work for provider post backs here
+        @order.purchase!(details: details, provider: provider, card: card)
+
+        Effective::Cart.where(user_id: @order.user_id).try(:destroy_all) # current_cart won't work for provider post backs here
 
         if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
           flash[:success] = "Payment successful! Please check your email for a receipt."
@@ -173,11 +175,10 @@ module Effective
       end
     end
 
-    # options:
-    # flash: What flash message should be displayed
-    def order_declined(details = nil, redirect_url = nil, options = {})
-      @order.decline!(details) rescue nil
-      flash[:danger] = options.fetch(:flash, "Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.")
+    def order_declined(details: 'none', provider:, card: 'none', redirect_url: nil, message: nil)
+      @order.decline!(details: details, provider: provider, card: card) rescue nil
+
+      flash[:danger] = message || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 
       redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end

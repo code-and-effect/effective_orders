@@ -7,10 +7,10 @@ module Effective
         @order = Order.find(params[:id])
         checkout = EffectiveOrders.app_checkout[:service].call(order: @order)
         if checkout.success?
-          order_purchased(payment_details(checkout))
+          order_purchased(details: payment_details(checkout), provider: 'app_checkout', card: 'none')
         else
           flash = EffectiveOrders.app_checkout[:declined_flash]
-          order_declined(payment_details(checkout), nil, flash: flash)
+          order_declined(details: payment_details(checkout), message: flash, provider: 'app_checkout', card: 'none')
         end
       end
 

@@ -11,11 +11,15 @@ module Effective
         EffectiveOrders.authorized?(self, :update, @order)
 
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
-          order_purchased(response) # orders_controller#order_purchased
+          order_purchased(
+            details: response,
+            provider: (EffectiveOrders.stripe_connect_enabled ? 'stripe_connect' : 'stripe'),
+            card: (response['charge']['card']['brand'] rescue nil)
+          )
         else
           @page_title = 'Checkout'
           flash.now[:danger] = @stripe_charge.errors.full_messages.join(',')
-          render 'checkout'
+          render :checkout
         end
       end
 

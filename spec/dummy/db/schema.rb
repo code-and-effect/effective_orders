@@ -92,10 +92,14 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string   "purchase_state"
     t.datetime "purchased_at"
     t.text     "payment"
-    t.text     "details"
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
     t.text     "note"
+    t.integer  "total"
+    t.integer  "subtotal"
+    t.integer  "tax"
+    t.string   "payment_provider"
+    t.string   "payment_card"
   end
 
   add_index "orders", ["user_id"], :name => "index_orders_on_user_id"

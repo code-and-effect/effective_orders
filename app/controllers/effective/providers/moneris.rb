@@ -17,7 +17,7 @@ module Effective
         declined_redirect_url = params.delete(:rvar_declined_redirect_url)
 
         if @order.purchased?  # Fallback to a success condition of the Order is already purchased
-          order_purchased(params, purchased_redirect_url)
+          order_purchased(details: params, provider: 'moneris', card: params[:card], redirect_url: purchased_redirect_url)
           return
         end
 
@@ -27,12 +27,12 @@ module Effective
           response_code = verify_params[:response_code].to_i # Sometimes moneris sends us the string 'null'
 
           if response_code > 0 && response_code < 50  # Less than 50 means a successful validation
-            order_purchased(params.merge(verify_params), purchased_redirect_url)
+            order_purchased(details: params.merge(verify_params), provider: 'moneris', card: params[:card], redirect_url: purchased_redirect_url)
           else
-            order_declined(params.merge(verify_params), declined_redirect_url)
+            order_declined(details: params.merge(verify_params), provider: 'moneris', card: params[:card], redirect_url: declined_redirect_url)
           end
         else
-          order_declined(params, declined_redirect_url)
+          order_declined(details: params, provider: 'moneris', card: params[:card], redirect_url: declined_redirect_url)
         end
       end
 
@@ -93,4 +93,4 @@ end
 # Sent to your server as a POST
 # Response URL:  http://ourwebsite.com/orders/moneris_postback
 
-# Displayed as key/value pairs on our server. ????
+# Displayed as key/value pairs on our server

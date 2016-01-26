@@ -64,23 +64,29 @@ describe Effective::Order, :type => :model do
 
   describe 'minimum zero math' do
     it 'has a minimum order total of 0' do
-      order.order_items.each { |order_item| allow(order_item).to receive(:total).and_return(-1000) }
+      order.total = nil
 
+      order.order_items.each { |oi| oi.price = -1000; oi.tax_exempt = true; }
       order.order_items.collect(&:total).sum.should eq -3000
+
       order.total.should eq 0
     end
 
     it 'has no minimum subtotal' do
-      order.order_items.each { |order_item| allow(order_item).to receive(:subtotal).and_return(-1000) }
+      order.subtotal = nil
 
+      order.order_items.each { |oi| oi.price = -1000; oi.tax_exempt = true; }
       order.order_items.collect(&:subtotal).sum.should eq -3000
+
       order.subtotal.should eq -3000
     end
 
     it 'has a minimum order tax of 0.00' do
-      order.order_items.each { |order_item| allow(order_item).to receive(:tax).and_return(-1000) }
+      order.tax = nil
 
+      order.order_items.each { |oi| allow(oi).to receive(:tax).and_return(-1000) }
       order.order_items.collect(&:tax).sum.should eq -3000
+
       order.tax.should eq 0
     end
   end
@@ -132,8 +138,7 @@ describe Effective::Order, :type => :model do
     end
 
     it 'should be invalid when less than the minimum charge' do
-      allow(order).to receive(:total).and_return(49)
-
+      order.order_items.each { |oi| oi.price = 1 }
       order.valid?.should eq false
 
       order.errors[:total].present?.should eq true
@@ -230,7 +235,7 @@ describe Effective::Order, :type => :model do
 
   describe 'purchase!' do
     it 'assigns the purchase_state, purchase_at and payment' do
-      order.purchase!('by a test').should eq true
+      order.purchase!(details: 'by a test').should eq true
 
       order.purchase_state.should eq EffectiveOrders::PURCHASED
       order.purchased_at.kind_of?(Time).should eq true
@@ -239,18 +244,18 @@ describe Effective::Order, :type => :model do
 
     it 'sends purchased callback to all order_items' do
       order.order_items.each { |oi| oi.purchasable.should_receive(:purchased!).with(order, oi) }
-      order.purchase!('by a test')
+      order.purchase!(details: 'by a test')
     end
 
     it 'returns true when purchased twice' do
-      order.purchase!('first time by a test')
-      order.purchase!('second time by a test').should eq false
+      order.purchase!(details: 'first time by a test')
+      order.purchase!(details: 'second time by a test').should eq false
     end
 
     it 'sends emails to the admin, buyer and seller' do
       Effective::OrdersMailer.deliveries.clear
 
-      order.purchase!('by a test')
+      order.purchase!(details: 'by a test')
 
       Effective::OrdersMailer.deliveries.length.should eq 2
 
@@ -264,37 +269,37 @@ describe Effective::Order, :type => :model do
     it 'does not send email if passed :email => false' do
       Effective::OrdersMailer.deliveries.clear
 
-      order.purchase!('by a test', :email => false)
+      order.purchase!(details: 'by a test', :email => false)
 
       Effective::OrdersMailer.deliveries.length.should eq 0
     end
 
     it 'is included with the purchased scope' do
-      order.purchase!('by a test')
+      order.purchase!(details: 'by a test')
       Effective::Order.purchased.to_a.include?(order).should eq true
       Effective::Order.purchased_by(order.user).to_a.include?(order).should eq true
     end
 
     it 'is not included with the declined scope' do
-      order.purchase!('by a test')
+      order.purchase!(details: 'by a test')
       Effective::Order.declined.to_a.include?(order).should eq false
     end
 
     it 'should return false when the Order is invalid' do
       allow(order).to receive(:valid?).and_return(false)
-      expect { order.purchase!('by a test') }.to raise_exception(Exception)
+      expect { order.purchase!(details: 'by a test') }.to raise_exception(Exception)
     end
 
     it 'should return true when the Order is invalid and :validate => false is passed' do
       allow(order).to receive(:valid?).and_return(false)
-      order.purchase!('by a test', :validate => false).should eq true
+      order.purchase!(details: 'by a test', :validate => false).should eq true
     end
 
   end
 
   describe 'purchased?' do
     it 'returns true when a purchased order' do
-      order.purchase!('by a test')
+      order.purchase!(details: 'by a test')
       order.purchased?.should eq true
     end
 
@@ -303,14 +308,14 @@ describe Effective::Order, :type => :model do
     end
 
     it 'returns false when declined' do
-      order.decline!('by a test')
+      order.decline!(details: 'by a test')
       order.purchased?.should eq false
     end
   end
 
   describe 'decline!' do
     it 'assigns the purchase_state' do
-      order.decline!('by a test').should eq true
+      order.decline!(details: 'by a test').should eq true
 
       order.purchase_state.should eq EffectiveOrders::DECLINED
       order.payment[:details].should eq 'by a test'
@@ -319,26 +324,26 @@ describe Effective::Order, :type => :model do
 
     it 'sends declined callback to all order_items' do
       order.order_items.each { |oi| oi.purchasable.should_receive(:declined!).with(order, oi) }
-      order.decline!('by a test')
+      order.decline!(details: 'by a test')
     end
 
     it 'returns false when declined twice' do
-      order.decline!('first time')
-      order.decline!('second time').should eq false
+      order.decline!(details: 'first time')
+      order.decline!(details: 'second time').should eq false
     end
 
     it 'returns false when declined twice' do
-      order.decline!('first time')
-      order.decline!('second time').should eq false
+      order.decline!(details: 'first time')
+      order.decline!(details: 'second time').should eq false
     end
 
     it 'is included with the declined scope' do
-      order.decline!('by a test')
+      order.decline!(details: 'by a test')
       Effective::Order.declined.to_a.include?(order).should eq true
     end
 
     it 'is not included with the purchased scope' do
-      order.decline!('by a test')
+      order.decline!(details: 'by a test')
       Effective::Order.purchased.to_a.include?(order).should eq false
       Effective::Order.purchased_by(order.user).to_a.include?(order).should eq false
     end
@@ -346,7 +351,7 @@ describe Effective::Order, :type => :model do
 
   describe 'declined?' do
     it 'returns true when a declined order' do
-      order.decline!('by a test')
+      order.decline!(details: 'by a test')
       order.declined?.should eq true
     end
 
@@ -355,7 +360,7 @@ describe Effective::Order, :type => :model do
     end
 
     it 'returns false when purchased' do
-      order.purchase!('by a test')
+      order.purchase!(details: 'by a test')
       order.declined?.should eq false
     end
   end

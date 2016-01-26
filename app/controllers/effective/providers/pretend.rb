@@ -5,9 +5,16 @@ module Effective
 
       def pretend_purchase
         @order ||= Order.find(params[:id])
+
         EffectiveOrders.authorized?(self, :update, @order)
 
-        order_purchased('for pretend', params[:purchased_redirect_url], params[:declined_redirect_url])
+        order_purchased(
+          details: 'for pretend',
+          provider: 'pretend',
+          card: 'none',
+          redirect_url: params[:purchased_redirect_url],
+          declined_redirect_url: params[:declined_redirect_url]
+        )
       end
 
     end

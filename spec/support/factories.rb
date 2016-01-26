@@ -116,10 +116,15 @@ FactoryGirl.define do
   end
 
   factory :purchased_order, :parent => :order do
-    after(:create) { |order| order.purchase!('by a test') }
+    payment_provider 'admin'
+    payment_card 'unknown'
+
+    after(:create) { |order| order.purchase! }
   end
 
   factory :declined_order, :parent => :order do
+    payment_provider 'admin'
+
     after(:create) { |order| order.decline! }
   end
 

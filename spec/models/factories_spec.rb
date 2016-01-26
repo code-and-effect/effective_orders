@@ -8,7 +8,13 @@ describe 'Factories' do
   after { StripeMock.stop }
 
   it 'should have all valid factories' do
-    factories.each { |factory| FactoryGirl.create(factory).valid?.should eq true }
+    factories.each do |factory|
+      obj = FactoryGirl.create(factory)
+
+      puts "Invalid factory #{factory}: #{obj.errors.inspect}" unless obj.valid?
+
+      obj.valid?.should eq true
+    end
   end
 
   it 'should have created an Order with a billing_address and shipping_address' do

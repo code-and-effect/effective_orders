@@ -27,7 +27,7 @@ module Admin
 
     def create
       @user = User.find_by_id(order_params[:user_id])
-      @order = Effective::Order.new({}, @user)
+      @order = Effective::Order.new(user: @user)
       @order.send_payment_request_to_buyer = order_params[:send_payment_request_to_buyer]
 
       authorize_effective_order!
@@ -35,7 +35,7 @@ module Admin
       if order_params[:order_items_attributes].present?
         order_params[:order_items_attributes].each do |_, item_attrs|
           purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
-          @order.add(purchasable, item_attrs[:quantity].to_i)
+          @order.add(purchasable, quantity: item_attrs[:quantity])
         end
       end
 
@@ -57,7 +57,9 @@ module Admin
       authorize_effective_order!
 
       purchased = @order.purchase!(
-        'Marked as paid by admin',
+        details: 'Marked as paid by admin',
+        provider: 'admin',
+        card: 'none',
         email: EffectiveOrders.mailer[:send_order_receipts_when_marked_paid_by_admin],
         skip_buyer_validations: true  # This will allow a declined order to be marked purchased
       )

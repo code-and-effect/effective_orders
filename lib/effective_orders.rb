@@ -101,6 +101,21 @@ module EffectiveOrders
     [moneris_enabled, paypal_enabled, stripe_enabled, cheque_enabled, app_checkout_enabled].select { |enabled| enabled }.length == 1
   end
 
+  # The Effective::Order.payment_provider value must be in this collection
+  def self.payment_providers
+    [
+      ('admin'.freeze),
+      ('app_checkout'.freeze if app_checkout_enabled),
+      ('cheque'.freeze if cheque_enabled),
+      ('free'.freeze if allow_free_orders),
+      ('moneris'.freeze if moneris_enabled),
+      ('paypal'.freeze if paypal_enabled),
+      ('pretend'.freeze if (allow_pretend_purchase_in_production && Rails.env.production?) || (allow_pretend_purchase_in_development && !Rails.env.production?)),
+      ('stripe'.freeze if stripe_enabled),
+      ('stripe_connect'.freeze if stripe_connect_enabled)
+    ].compact
+  end
+
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
   class AlreadyDeclinedException < Exception; end

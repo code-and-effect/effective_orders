@@ -5,7 +5,16 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.string    :purchase_state
       t.datetime  :purchased_at
 
+      t.text      :note
+
       t.text      :payment
+
+      t.string    :payment_provider
+      t.string    :payment_card
+
+      t.integer   :subtotal
+      t.integer   :tax
+      t.integer   :total
 
       t.timestamps
     end
@@ -80,9 +89,9 @@ class CreateEffectiveOrders < ActiveRecord::Migration
     add_index <%= @subscriptions_table_name %>, :stripe_subscription_id
 
     create_table <%= @products_table_name %> do |t|
-      t.text      :description
+      t.string    :title
       t.integer   :price, :default => 0
-      t.boolean   :tax_exempt
+      t.boolean   :tax_exempt, :default => false
 
       t.timestamps
     end
