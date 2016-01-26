@@ -26,6 +26,7 @@ module EffectiveOrders
 
   mattr_accessor :layout
   mattr_accessor :simple_form_options
+  mattr_accessor :admin_simple_form_options
 
   mattr_accessor :use_active_admin
   mattr_accessor :active_admin_namespace
@@ -95,6 +96,16 @@ module EffectiveOrders
 
   def self.use_active_admin?
     use_active_admin && defined?(ActiveAdmin)
+  end
+
+  def self.permitted_params
+    [
+      :note, :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
+      :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
+      :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
+      :user_attributes => (EffectiveOrders.collect_user_fields || []),
+      :order_items_attributes => [:stripe_coupon_id, :class, :id]
+    ]
   end
 
   def self.single_payment_processor?

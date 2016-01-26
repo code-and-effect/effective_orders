@@ -188,13 +188,7 @@ module Effective
     # StrongParameters
     def order_params
       begin
-        params.require(:effective_order).permit(
-          :note, :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
-          :billing_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
-          :shipping_address => [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
-          :user_attributes => (EffectiveOrders.collect_user_fields || []),
-          :order_items_attributes => [:stripe_coupon_id, :class, :id]
-        )
+        params.require(:effective_order).permit(EffectiveOrders.permitted_params)
       rescue => e
         params[:effective_order] || {}
       end
