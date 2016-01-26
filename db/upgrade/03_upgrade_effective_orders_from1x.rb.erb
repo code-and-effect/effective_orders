@@ -18,6 +18,8 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
 
     puts 'Resaving all Effective::Order objects to assign new database column values.'
 
+    Effective::Order.reset_column_information
+
     Effective::Order.find_each do |order|
       update_payment_provider_and_card(order)
       order.save(validate: false);
