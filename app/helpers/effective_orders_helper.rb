@@ -34,13 +34,13 @@ module EffectiveOrdersHelper
     when :free
       'Checkout'
     when :moneris
-      'Checkout with Moneris'
+      'Checkout with credit card'
     when :paypal
       'Checkout with PayPal'
     when :pretend  # The logic for this is in orders/views/_checkout_step_2.html.haml
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
     when :stripe
-      'Checkout with Stripe'
+      'Checkout with credit card'
     when :cheque
       'Pay by Cheque'
     when :app_checkout

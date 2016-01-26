@@ -92,7 +92,6 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string   "purchase_state"
     t.datetime "purchased_at"
     t.text     "payment"
-    t.text     "details"
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
     t.text     "note"
