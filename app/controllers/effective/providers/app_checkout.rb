@@ -14,6 +14,8 @@ module Effective
         end
       end
 
+      private
+
       def payment_details(checkout)
         default = 'App Checkout'
         if checkout.respond_to?(:payment_details)

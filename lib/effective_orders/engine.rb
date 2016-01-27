@@ -11,6 +11,7 @@ module EffectiveOrders
         helper EffectiveCartsHelper
         helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
         helper EffectiveStripeHelper if EffectiveOrders.stripe_enabled
+        helper EffectiveCcbillHelper if EffectiveOrders.ccbill_enabled
       end
     end
 
@@ -83,6 +84,22 @@ module EffectiveOrders
         required = [:secret_key, :publishable_key, :currency, :site_title]
         stripe_connect_required = [:connect_client_id]
         required += stripe_connect_required if EffectiveOrders.stripe_connect_enabled
+
+        # perform an intersection operation between missing and required configs
+        missing_required = missing.keys & required
+        raise "Missing effective_orders Stripe configuration values: #{missing_required.join(', ')}" if missing_required.present?
+      end
+    end
+
+    initializer 'effective_orders.ccbill_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.ccbill_enabled
+        unless EffectiveOrders.ccbill.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.ccbill to be a Hash but it is a #{EffectiveOrders.ccbill.class}"
+        end
+        EffectiveOrders.ccbill[:form_period] ||= 365
+
+        missing = EffectiveOrders.stripe.select {|_config, value| value.blank? }
+        required = [:client_accnum, :client_subacc, :form_name, :currency_code, :dynamic_pricing_salt]
 
         # perform an intersection operation between missing and required configs
         missing_required = missing.keys & required

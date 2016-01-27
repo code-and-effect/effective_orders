@@ -5,9 +5,7 @@ module EffectiveOrdersHelper
   end
 
   def order_summary(order)
-    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
-
-    content_tag(:ul) do
+    order_item_list = content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
           title = item.title.split('<br>')
@@ -17,6 +15,7 @@ module EffectiveOrdersHelper
         end
       end.join.html_safe
     end
+    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") + order_item_list
   end
 
   def order_item_summary(order_item)
@@ -41,6 +40,8 @@ module EffectiveOrdersHelper
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
     when :stripe
       'Checkout with Stripe'
+    when :ccbill
+      'Checkout with CCBill'
     when :app_checkout
       EffectiveOrders.app_checkout[:checkout_label]
     else
@@ -135,15 +136,15 @@ module EffectiveOrdersHelper
           hash.map do |k, v|
             content_tag(:tr) do
               content_tag((options[:th] ? :th : :td), k) +
-              content_tag(:td) do
-                if v.kind_of?(Hash)
-                  tableize_order_payment(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
-                elsif v.kind_of?(Array)
-                  '[' + v.join(', ') + ']'
-                else
-                  v
+                content_tag(:td) do
+                  if v.kind_of?(Hash)
+                    tableize_order_payment(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
+                  elsif v.kind_of?(Array)
+                    '[' + v.join(', ') + ']'
+                  else
+                    v
+                  end
                 end
-              end
             end
           end.join.html_safe
         end

@@ -31,6 +31,10 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/my_sales', :to => 'orders#my_sales', :as => 'my_sales', :via => :get
     end
 
+    if EffectiveOrders.ccbill_enabled
+      match 'orders/ccbill_postback', :to => 'orders#ccbill_postback', :as => 'ccbill_postback', :via => :post
+    end
+
     if EffectiveOrders.app_checkout_enabled
       match 'orders/:id/app_checkout', :to => 'orders#app_checkout', :as => 'app_checkout', :via => :post
     end
