@@ -31,7 +31,7 @@ module Effective
       state = order.billing_address.state_code
 
       rate = RATES[country]
-      return rate if rate.kind_of?(Numeric)
+      return rate if rate.kind_of?(Numeric) || rate.nil?
 
       rate[state]
     end

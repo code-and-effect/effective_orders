@@ -5,10 +5,10 @@ FactoryGirl.define do
     category 'billing'
     full_name 'Peter Pan'
     sequence(:address1) { |n| "1234#{n} Fake Street" }
-    city 'San Antonio'
-    state_code 'TX'
-    country_code 'US'
-    postal_code '92387'
+    city 'A canadian city'
+    state_code ['AB', 'BC', 'MB', 'NB', 'NL', 'NT', 'NS', 'ON', 'PE', 'QC', 'SK', 'YT', 'NU'].sample
+    country_code 'CA'
+    postal_code 'T5T2T1'
   end
 
   factory :product do # This only exists in the dummy/ app
@@ -112,7 +112,6 @@ FactoryGirl.define do
     quantity 1
     price 1000
     tax_exempt false
-    tax_rate 0.05
   end
 
   factory :purchased_order, :parent => :order do

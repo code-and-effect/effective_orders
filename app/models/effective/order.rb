@@ -244,7 +244,7 @@ module Effective
     end
 
     def total
-      self[:total] || (subtotal + tax)
+      self[:total] || [(subtotal + tax.to_i), 0].max
     end
 
     def num_items
@@ -409,7 +409,7 @@ module Effective
       self.subtotal = order_items.map { |oi| oi.subtotal }.sum
       self.tax_rate = find_tax_rate()
       self.tax = compute_tax()
-      self.total = subtotal + (tax || 0)
+      self.total = [subtotal + (tax || 0), 0].max
     end
 
     def send_email(email, *mailer_args)

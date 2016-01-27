@@ -8,9 +8,8 @@ describe Effective::Order, :type => :model do
   let(:product2) { FactoryGirl.create(:product) }
 
   it 'calculates dollars based on its order items' do
-    order.total.should eq order.order_items.collect(&:total).sum
     order.subtotal.should eq order.order_items.collect(&:subtotal).sum
-    order.tax.should eq order.order_items.collect(&:tax).sum
+    order.total.should eq (order.order_items.collect(&:subtotal).sum + order.tax.to_i)
     order.num_items.should eq order.order_items.collect(&:quantity).sum
   end
 
@@ -32,9 +31,7 @@ describe Effective::Order, :type => :model do
       end
 
       order.order_items.length.should eq cart.cart_items.length
-      order.total.should eq cart.total
       order.subtotal.should eq cart.subtotal
-      order.tax.should eq cart.tax
     end
 
     it 'creates appropriate OrderItems when initialized with an array of purchasables' do
@@ -42,7 +39,6 @@ describe Effective::Order, :type => :model do
       order.order_items.size.should eq 2
 
       order.subtotal.should eq (product.price + product2.price)
-      order.total.should eq ((product.price + product2.price) * 1.05)
     end
 
     it 'creates appropriate OrderItems when initialized with a single purchasable' do
@@ -64,6 +60,7 @@ describe Effective::Order, :type => :model do
 
   describe 'minimum zero math' do
     it 'has a minimum order total of 0' do
+      order.subtotal = nil
       order.total = nil
 
       order.order_items.each { |oi| oi.price = -1000; oi.tax_exempt = true; }
@@ -79,15 +76,6 @@ describe Effective::Order, :type => :model do
       order.order_items.collect(&:subtotal).sum.should eq -3000
 
       order.subtotal.should eq -3000
-    end
-
-    it 'has a minimum order tax of 0.00' do
-      order.tax = nil
-
-      order.order_items.each { |oi| allow(oi).to receive(:tax).and_return(-1000) }
-      order.order_items.collect(&:tax).sum.should eq -3000
-
-      order.tax.should eq 0
     end
   end
 

@@ -38,7 +38,13 @@ module Effective
     def subtotal
       price * quantity
     end
-    alias_method :total, :subtotal
+
+    def total
+      return subtotal if tax_exempt?
+      raise 'parent Effective::Order must have a tax_rate to compute order item total' unless order.try(:tax_rate).present?
+
+      (subtotal + (subtotal * order.tax_rate / 100.0)).round(0).to_i
+    end
 
     def price=(value)
       if value.kind_of?(Integer)
