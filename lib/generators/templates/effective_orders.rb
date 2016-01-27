@@ -230,21 +230,21 @@ EffectiveOrders.setup do |config|
   if Rails.env.production?
     config.ccbill = {
       :client_accnum => '',
-      :client_subacc => '',
+      :client_subacc => '0000', # initial sub account
       # Get this from CCBill Admin dashboard after setting up a form
-      :form_name => '',
+      :form_name => '211cc', # default credit card form
       # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Webhooks+User+Guide#Appendix_A:_Currency_Codes
-      :currency_code => '',
-      # You'll get this salt value from CCBill tech support
+      :currency_code => '840', # USD
+      # You'll need to get this salt after having CCBill tech support set up dynamic pricing
       # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide#Generating_the_MD5_Hash
       :dynamic_pricing_salt => ''
     }
   else
     config.ccbill = {
       :client_accnum => '',
-      :client_subacc => '',
-      :form_name => '',
-      :currency_code => '',
+      :client_subacc => '0000',
+      :form_name => '211cc',
+      :currency_code => '840',
       :dynamic_pricing_salt => ''
     }
   end
