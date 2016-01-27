@@ -4,6 +4,10 @@ module EffectiveOrdersHelper
     number_to_currency(price / 100.0)
   end
 
+  def tax_rate_to_percentage(tax_rate)
+    number_to_percentage(tax_rate, strip_insignificant_zeros: true)
+  end
+
   def order_summary(order)
     content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
 

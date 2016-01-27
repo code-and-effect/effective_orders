@@ -22,7 +22,7 @@ module EffectiveOrders
   mattr_accessor :products_table_name
 
   mattr_accessor :authorization_method
-  mattr_accessor :tax_rate_method
+  mattr_accessor :order_tax_rate_method
 
   mattr_accessor :layout
   mattr_accessor :simple_form_options
@@ -125,6 +125,10 @@ module EffectiveOrders
       ('stripe'.freeze if stripe_enabled),
       ('stripe_connect'.freeze if stripe_connect_enabled)
     ].compact
+  end
+
+  def self.tax_rate_method=(*args)
+    raise 'EffectiveOrders.tax_rate_method has been removed and renamed to EffectiveOrders.order_tax_rate_method.  Its expected value is now different too. Return 5.25 for 5.25% tax. Please refer to the readme for more info.'
   end
 
   class SoldOutException < Exception; end

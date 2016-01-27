@@ -13,7 +13,7 @@ module Effective
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
     attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
-    attr_accessor :skip_buyer_validations
+    attr_accessor :skip_buyer_validations # Enabled by the /admin/orders/create action
 
     belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
     has_many :order_items, inverse_of: :order
@@ -29,6 +29,8 @@ module Effective
       payment_provider  :string
       payment_card      :string
 
+      tax_rate          :decimal, precision: 6, scale: 3
+
       subtotal          :integer
       tax               :integer
       total             :integer
@@ -39,8 +41,8 @@ module Effective
     accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
-    before_validation { assign_order_item_aggregates! }
-    before_save { assign_order_item_aggregates! unless self[:total].present? } # Incase we save!(validate: false)
+    before_validation { assign_totals! }
+    before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
     unless EffectiveOrders.skip_user_validation
       validates :user_id, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
@@ -50,6 +52,9 @@ module Effective
     if EffectiveOrders.collect_note_required
       validates :note, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
     end
+
+    validates :tax_rate, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
+    validates :tax, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
       validates :billing_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
@@ -76,7 +81,6 @@ module Effective
     validates :purchase_state, inclusion: { in: [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING] }
 
     validates :subtotal, presence: true
-    validates :tax, presence: true
     validates :total, presence: true
 
     validates :order_items, presence: { message: 'No items are present.  Please add one or more item to your cart.' }
@@ -147,7 +151,6 @@ module Effective
           quantity: item.quantity,
           price: item.price,
           tax_exempt: item.tax_exempt || false,
-          tax_rate: item.tax_rate,
           seller_id: (item.purchasable.try(:seller).try(:id) rescue nil)
         ).tap { |order_item| order_item.purchasable = item.purchasable }
       end
@@ -222,23 +225,26 @@ module Effective
             order_item.title = order_item.purchasable.title
             order_item.price = order_item.purchasable.price
             order_item.tax_exempt = order_item.purchasable.tax_exempt
-            order_item.tax_rate = order_item.purchasable.tax_rate
             order_item.seller_id = (order_item.purchasable.try(:seller).try(:id) rescue nil)
           end
         end
       end
     end
 
+    def tax_rate
+      self[:tax_rate] || find_tax_rate()
+    end
+
+    def tax
+      self[:tax] || compute_tax()
+    end
+
     def subtotal
       self[:subtotal] || order_items.map { |oi| oi.subtotal }.sum
     end
 
-    def tax
-      self[:tax] || [order_items.map { |oi| oi.tax }.sum, 0].max
-    end
-
     def total
-      self[:total] || [order_items.map { |oi| oi.total }.sum, 0].max
+      self[:total] || (subtotal + tax)
     end
 
     def num_items
@@ -380,12 +386,30 @@ module Effective
       end
     end
 
-  private
+    protected
 
-    def assign_order_item_aggregates!
+    def find_tax_rate
+      self.instance_exec(self, &EffectiveOrders.order_tax_rate_method).tap do |rate|
+        rate = rate.to_f
+        if (rate > 100.0 || (rate < 0.25 && rate > 0.0000))
+          raise "expected EffectiveOrders.order_tax_rate_method to return a value between 100.0 (100%) and 0.25 (0.25%) or nil. Received #{rate}. Please return 5.25 for 5.25% tax."
+        end
+      end
+    end
+
+    def compute_tax
+      return nil unless tax_rate.present?
+      val = order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+      [val, 0].max
+    end
+
+    private
+
+    def assign_totals!
       self.subtotal = order_items.map { |oi| oi.subtotal }.sum
-      self.tax = [order_items.map { |oi| oi.tax }.sum, 0].max
-      self.total = [order_items.map { |oi| oi.total }.sum, 0].max
+      self.tax_rate = find_tax_rate()
+      self.tax = compute_tax()
+      self.total = subtotal + (tax || 0)
     end
 
     def send_email(email, *mailer_args)

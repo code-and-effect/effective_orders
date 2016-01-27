@@ -15,8 +15,8 @@ module Effective
       timestamps
     end
 
-    validates_presence_of :user
-    validates_uniqueness_of :user_id  # Only 1 customer per user may exist
+    validates :user, presence: true
+    validates :user_id, uniqueness: true
 
     scope :customers, -> { where("#{EffectiveOrders.customers_table_name.to_s}.stripe_customer_id IS NOT NULL") }
 

@@ -12,6 +12,8 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.string    :payment_provider
       t.string    :payment_card
 
+      t.decimal   :tax_rate, :precision => 6, :scale => 3
+
       t.integer   :subtotal
       t.integer   :tax
       t.integer   :total
@@ -32,7 +34,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.integer   :quantity
       t.integer   :price, :default => 0
       t.boolean   :tax_exempt
-      t.decimal   :tax_rate, :precision => 5, :scale => 3, :default => 0.0
 
       t.timestamps
     end

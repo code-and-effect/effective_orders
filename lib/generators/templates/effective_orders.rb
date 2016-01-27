@@ -65,7 +65,7 @@ EffectiveOrders.setup do |config|
   config.collect_note_message = ''
 
   # Tax Calculation Method
-  config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
+  config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
 
   # Minimum Charge
   # Prevent orders less than this value from being purchased

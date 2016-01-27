@@ -6,24 +6,27 @@ module Effective
     belongs_to :purchasable, :polymorphic => true
     belongs_to :seller, :class_name => 'User'
 
+    delegate :purchased_download_url, :to => :purchasable
+    delegate :purchased?, :declined?, :to => :order
+
     structure do
-      title                 :string, :validates => [:presence]
-      quantity              :integer, :validates => [:presence, numericality: { greater_than: 0 }]
-      price                 :integer, :default => 0, :validates => [:numericality]
-      tax_exempt            :boolean, :validates => [:inclusion => {:in => [true, false]}]
-      tax_rate              :decimal, :precision => 5, :scale => 3, :default => 0.000, :validates => [:presence]
+      title                 :string
+      quantity              :integer
+      price                 :integer, default: 0
+      tax_exempt            :boolean
 
       timestamps
     end
 
-    validates_associated :purchasable
-    validates_presence_of :purchasable
-    accepts_nested_attributes_for :purchasable, :allow_destroy => false, :reject_if => :all_blank, :update_only => true
+    validates :purchasable, associated: true, presence: true
+    accepts_nested_attributes_for :purchasable, allow_destroy: false, reject_if: :all_blank, update_only: true
 
-    validates_presence_of :seller_id, :if => Proc.new { |order_item| EffectiveOrders.stripe_connect_enabled }
+    validates :title, presence: true
+    validates :quantity, presence: true, numericality: { greater_than: 0 }
+    validates :price, numericality: true
+    validates :tax_exempt, inclusion: { in: [true, false] }
 
-    delegate :purchased_download_url, :to => :purchasable
-    delegate :purchased?, :declined?, :to => :order
+    validates :seller_id, presence: true, if: Proc.new { |order_item| EffectiveOrders.stripe_connect_enabled }
 
     scope :sold, -> { joins(:order).where(:orders => {:purchase_state => EffectiveOrders::PURCHASED}) }
     scope :sold_by, lambda { |user| sold().where(:seller_id => user.try(:id)) }
@@ -35,14 +38,7 @@ module Effective
     def subtotal
       price * quantity
     end
-
-    def tax  # This is the total tax, for 3 items if quantity is 3
-      tax_exempt ? 0 : (subtotal * tax_rate).round(0).to_i
-    end
-
-    def total
-      subtotal + tax
-    end
+    alias_method :total, :subtotal
 
     def price=(value)
       if value.kind_of?(Integer)

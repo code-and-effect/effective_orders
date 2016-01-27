@@ -78,7 +78,6 @@ ActiveRecord::Schema.define(:version => 4) do
     t.integer  "quantity"
     t.integer  "price",                :default => 0
     t.boolean  "tax_exempt"
-    t.decimal  "tax_rate",             :precision => 5, :scale => 3, :default => 0.0
     t.datetime "created_at",                                                          :null => false
     t.datetime "updated_at",                                                          :null => false
   end
@@ -96,6 +95,7 @@ ActiveRecord::Schema.define(:version => 4) do
     t.datetime "updated_at",     :null => false
     t.text     "note"
     t.integer  "total"
+    t.decimal  "tax_rate",         precision: 6, scale: 3
     t.integer  "subtotal"
     t.integer  "tax"
     t.string   "payment_provider"

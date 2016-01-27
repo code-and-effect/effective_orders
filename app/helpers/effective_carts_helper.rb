@@ -35,7 +35,7 @@ module EffectiveCartsHelper
   end
 
   def link_to_add_to_cart(purchasable, opts = {})
-    raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.respond_to?(:is_effectively_purchasable?)
+    raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.kind_of?(ActsAsPurchasable)
 
     options = {:class => 'btn', :rel => :nofollow, 'data-disable-with' => 'Adding...'}.merge(opts)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')

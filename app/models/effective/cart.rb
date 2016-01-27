@@ -53,13 +53,7 @@ module Effective
     def subtotal
       cart_items.map { |ci| ci.subtotal }.sum
     end
+    alias_method :total, :subtotal
 
-    def tax
-      cart_items.map { |ci| ci.tax }.sum
-    end
-
-    def total
-      cart_items.map { |ci| ci.total }.sum
-    end
   end
 end

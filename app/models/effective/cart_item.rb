@@ -6,13 +6,13 @@ module Effective
     belongs_to :purchasable, :polymorphic => true
 
     structure do
-      quantity    :integer, :validates => [:presence]
+      quantity    :integer
+
       timestamps
     end
 
-    validates_presence_of :purchasable
-
-    delegate :title, :tax_exempt, :tax_rate, :to => :purchasable
+    validates :purchasable, presence: true
+    validates :quantity, presence: true
 
     default_scope -> { order(:updated_at) }
 
@@ -25,16 +25,18 @@ module Effective
       end
     end
 
+    def title
+      purchasable.try(:title) || 'New Cart Item'
+    end
+
+    def tax_exempt
+      purchasable.try(:tax_exempt) || false
+    end
+
     def subtotal
       price * quantity
     end
+    alias_method :total, :subtotal
 
-    def tax
-      tax_exempt ? 0 : (subtotal * tax_rate).round(0).to_i
-    end
-
-    def total
-      subtotal + tax
-    end
   end
 end
