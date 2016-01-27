@@ -232,11 +232,11 @@ module Effective
     end
 
     def tax_rate
-      self[:tax_rate] || find_tax_rate()
+      self[:tax_rate] || get_tax_rate()
     end
 
     def tax
-      self[:tax] || compute_tax()
+      self[:tax] || get_tax()
     end
 
     def subtotal
@@ -388,7 +388,7 @@ module Effective
 
     protected
 
-    def find_tax_rate
+    def get_tax_rate
       self.instance_exec(self, &EffectiveOrders.order_tax_rate_method).tap do |rate|
         rate = rate.to_f
         if (rate > 100.0 || (rate < 0.25 && rate > 0.0000))
@@ -397,18 +397,18 @@ module Effective
       end
     end
 
-    def compute_tax
+    def get_tax
       return nil unless tax_rate.present?
-      val = order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
-      [val, 0].max
+      amount = order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+      [amount, 0].max
     end
 
     private
 
     def assign_totals!
       self.subtotal = order_items.map { |oi| oi.subtotal }.sum
-      self.tax_rate = find_tax_rate()
-      self.tax = compute_tax()
+      self.tax_rate = get_tax_rate()
+      self.tax = get_tax()
       self.total = [subtotal + (tax || 0), 0].max
     end
 
