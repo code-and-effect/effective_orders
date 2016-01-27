@@ -71,9 +71,9 @@ module EffectiveOrdersHelper
 
     content_tag(:pre) do
       raw JSON.pretty_generate(payment).html_safe
-      .gsub('\"', '')
-      .gsub("[\n\n    ]", '[]')
-      .gsub("{\n    }", '{}')
+        .gsub('\"', '')
+        .gsub("[\n\n    ]", '[]')
+        .gsub("{\n    }", '{}')
     end
   end
 
