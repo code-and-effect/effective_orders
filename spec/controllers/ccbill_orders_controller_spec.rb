@@ -69,7 +69,7 @@ describe Effective::OrdersController, type: :controller do
   describe 'ccbill_postback' do
     before do
       sign_in order.user
-      allow_any_instance_of(Effective::CcbillPostback).to receive(:verified?).and_return(true)
+      allow_any_instance_of(Effective::Providers::CcbillPostback).to receive(:verified?).and_return(true)
     end
 
     describe 'invalid parameters' do

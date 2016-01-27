@@ -1,5 +1,5 @@
 # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Background+Post
-class Effective::CcbillPostback
+class Effective::Providers::CcbillPostback
   attr_reader :params
 
   def initialize(params)

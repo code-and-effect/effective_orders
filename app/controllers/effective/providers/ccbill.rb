@@ -8,7 +8,7 @@ module Effective
       end
 
       def ccbill_postback
-        postback = Effective::CcbillPostback.new(params)
+        postback = Effective::Providers::CcbillPostback.new(params)
         @order ||= Effective::Order.find(postback.order_id)
 
         EffectiveOrders.authorized?(self, :update, @order)

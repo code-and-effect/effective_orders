@@ -5,9 +5,7 @@ module EffectiveOrdersHelper
   end
 
   def order_summary(order)
-    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
-
-      content_tag(:ul) do
+    order_item_list = content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
           title = item.title.split('<br>')
@@ -17,6 +15,7 @@ module EffectiveOrdersHelper
         end
       end.join.html_safe
     end
+    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") + order_item_list
   end
 
   def order_item_summary(order_item)
