@@ -7,6 +7,16 @@
   = hidden_field_tag(:currencyCode, EffectiveOrders.ccbill[:currency_code])
   = hidden_field_tag(:formDigest, ccbill_form_digest(order))
 
+  -# CCBill 'Webhooks' (pre-filled form data)
+  = hidden_field_tag(:customer_fname, ccbill_customer_name(order, :first_name))
+  = hidden_field_tag(:customer_lname, ccbill_customer_name(order, :last_name))
+  = hidden_field_tag(:email, order.user.try(:email))
+  = hidden_field_tag(:address1, order.billing_address.try(:address1))
+  = hidden_field_tag(:city, order.billing_address.try(:city))
+  = hidden_field_tag(:state, order.billing_address.try(:state_code))
+  = hidden_field_tag(:zipcode, order.billing_address.try(:postal_code))
+  = hidden_field_tag(:country, order.billing_address.try(:country_code))
+
   -# custom fields
   = hidden_field_tag(:order_id, order.to_param)
 

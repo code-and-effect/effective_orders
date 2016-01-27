@@ -988,6 +988,7 @@ To test payments with CCBill:
 - [Dynamic Pricing](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing)
 - [Dynamic Pricing User Guide](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide)
 - [Background Post](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Background+Post)
+- [Webhooks](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Webhooks+User+Guide)
 - [How do I set up a user to process test transactions?](https://www.ccbill.com/cs/wiki/tiki-index.php?page=How+do+I+set+up+a+user+to+process+test+transactions%3F)
 
 ## Paying Using App Currency or Logic
