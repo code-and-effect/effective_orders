@@ -53,7 +53,7 @@ module Effective
       validates :note, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
     end
 
-    validates :tax_rate, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
+    validates :tax_rate, presence: { message: "can't be determined based on billing address" }, unless: Proc.new { |order| order.skip_buyer_validations == true }
     validates :tax, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses

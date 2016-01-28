@@ -82,7 +82,7 @@ module Effective
           return true
         rescue => e
           Rails.logger.info e.message
-          flash[:danger] = "One or more fields are invalid. Please fix the errors below and try again."
+          flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}.  Please try again."
           raise ActiveRecord::Rollback
         end
       end
@@ -97,7 +97,7 @@ module Effective
 
       @page_title ||= (
         if @order.purchased?
-          'Order Receipt'
+          'Receipt'
         elsif @order.pending? && (@order.user != current_user)
           'Pending Order'
         else
@@ -146,9 +146,9 @@ module Effective
       EffectiveOrders.authorized?(self, :show, @order)
 
       if @order.send_order_receipt_to_buyer!
-        flash[:success] = "Successfully sent order receipt to #{@order.user.email}"
+        flash[:success] = "Successfully sent receipt to #{@order.user.email}"
       else
-        flash[:danger] = "Unable to send order receipt."
+        flash[:danger] = "Unable to send receipt."
       end
 
       redirect_to (request.referer.present? ? :back : effective_orders.order_path(@order))
