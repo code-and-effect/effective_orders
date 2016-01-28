@@ -31,9 +31,15 @@ module Effective
       state = order.billing_address.state_code
 
       rate = RATES[country]
-      return rate if rate.kind_of?(Numeric) || rate.nil?
+      return rate if rate.kind_of?(Numeric)
+      return unknown_tax_rate() if rate.nil?
 
-      rate[state]
+      rate[state].presence || unknown_tax_rate()
     end
+
+    def unknown_tax_rate
+      order.skip_buyer_validations? ? nil : 0
+    end
+
   end
 end

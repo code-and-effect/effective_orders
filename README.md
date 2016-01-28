@@ -365,9 +365,13 @@ The default implementation assigns the tax rate based on the order's billing_add
 config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
 ```
 
-Right now, this gem only supports taxes for Canadian provinces.  US and international tax rates are not currently supported.
+Right now, the `Effective::TaxRateCalculator` only supports taxes for Canadian provinces.
 
-A single static tax rate can also be applied to all orders.  To apply 12.5% tax to all orders:
+US and international tax rates are not currently supported and are assigned 0% tax.
+
+Instead of calculating based on the billing_address, a single static tax rate can be applied to all orders.
+
+To apply 12.5% tax to all orders:
 
 ```ruby
 config.order_tax_rate_method = Proc.new { |order| 12.5 }

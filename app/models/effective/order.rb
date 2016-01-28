@@ -45,16 +45,16 @@ module Effective
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
     unless EffectiveOrders.skip_user_validation
-      validates :user_id, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
-      validates :user, associated: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
+      validates :user_id, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
+      validates :user, associated: true, unless: Proc.new { |order| order.skip_buyer_validations? }
     end
 
     if EffectiveOrders.collect_note_required
-      validates :note, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
+      validates :note, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
     end
 
-    validates :tax_rate, presence: { message: "can't be determined based on billing address" }, unless: Proc.new { |order| order.skip_buyer_validations == true }
-    validates :tax, presence: true, unless: Proc.new { |order| order.skip_buyer_validations == true }
+    validates :tax_rate, presence: { message: "can't be determined based on billing address" }, unless: Proc.new { |order| order.skip_buyer_validations? }
+    validates :tax, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
       validates :billing_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
@@ -265,6 +265,10 @@ module Effective
 
     def shipping_address_same_as_billing?
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
+    end
+
+    def skip_buyer_validations?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.skip_buyer_validations)
     end
 
     def billing_name
