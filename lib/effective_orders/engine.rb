@@ -105,6 +105,14 @@ module EffectiveOrders
       end
     end
 
+    initializer 'effective_orders.cheque_config_validation', :after => :load_config_initializers do
+      if EffectiveOrders.cheque_enabled
+        unless EffectiveOrders.cheque.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.cheque to be a Hash but it is a #{EffectiveOrders.cheque.class}"
+        end
+      end
+    end
+
     # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin?

@@ -71,6 +71,7 @@ module EffectiveOrders
   mattr_accessor :moneris
   mattr_accessor :stripe
   mattr_accessor :app_checkout
+  mattr_accessor :cheque
 
   mattr_accessor :deliver_method
 
