@@ -9,20 +9,24 @@ module Effective
     belongs_to :customer
 
     structure do
-      stripe_plan_id          :string, :validates => [:presence]  # This will be 'Weekly' or something like that
+      stripe_plan_id          :string  # This will be 'Weekly' or something like that
       stripe_subscription_id  :string
       stripe_coupon_id        :string
 
-      title                   :string, :validates => [:presence]
-      price                   :integer, :default => 0, :validates => [:numericality => {:greater_than => 0}]
+      title                   :string
+      price                   :integer, default: 0
 
       timestamps
     end
 
     delegate :user, :user_id, :to => :customer
 
-    validates_presence_of :customer
-    validates_uniqueness_of :customer_id, :scope => [:stripe_plan_id] # Can only be on each plan once.
+    validates :stripe_plan_id, presence: true
+    validates :title, presence: true
+    validates :price, numericality: { greater_than: 0 }
+
+    validates :customer, presence: true
+    validates :customer_id, uniqueness: { scope: [:stripe_plan_id] }  # Can only be on each plan once.
 
     before_validation do
       self.errors.add(:stripe_plan_id, "is an invalid Plan") if stripe_plan_id.present? && stripe_plan.blank?

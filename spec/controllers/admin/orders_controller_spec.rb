@@ -46,7 +46,6 @@ describe Admin::OrdersController, type: :controller do
           expect(first_item.quantity).to eq 2
           expect(first_item.price).to eq 10000
           expect(first_item.tax_exempt).to be_truthy
-          expect(first_item.tax_rate).to eq 0.05
 
           second_item = assigns(:order).order_items.sort.last
           expect(second_item).to be_persisted
@@ -54,7 +53,6 @@ describe Admin::OrdersController, type: :controller do
           expect(second_item.quantity).to eq 3
           expect(second_item.price).to eq 30000
           expect(second_item.tax_exempt).to be_falsey
-          expect(second_item.tax_rate).to eq 0.05
         end
 
         it 'should create new effective products' do
@@ -122,7 +120,6 @@ describe Admin::OrdersController, type: :controller do
           expect(item.quantity).to eq 2
           expect(item.price).to eq 0
           expect(item.tax_exempt).to be_truthy
-          expect(item.tax_rate).to eq 0.05
         end
 
         it 'should not create product' do

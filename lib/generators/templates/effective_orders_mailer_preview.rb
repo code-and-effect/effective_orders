@@ -27,7 +27,12 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     order = Effective::Order.new
     order.user = preview_user
     preview_order_items.each { |atts| order.order_items.build(atts) }
+    order.valid?
     order
+  end
+
+  def build_address
+    Effective::Address.new(category: 'billing', full_name: 'Valued Customer', address1: '1234 Fake Street', address2: 'Suite 200', city: 'Edmonton', state_code: 'AB', country_code: 'CA', postal_code: 'T5T 2T1')
   end
 
   private
@@ -35,14 +40,11 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   # We're building Effective::OrderItems directly rather than creating acts_as_purchasable objects
   # so that this mailer will not have to guess at your app's acts_as_purchasable objects
   def preview_order_items
-    tax_rate = (EffectiveOrders.tax_rate_method.call(Object.new()) rescue -1)
-    tax_rate = 0.05 if tax_rate < 0.0
-
     [
-      {title: 'Item One', quantity: 2, price: 999, tax_exempt: false, tax_rate: tax_rate},
-      {title: 'Item Two', quantity: 1, price: 25000, tax_exempt: false, tax_rate: tax_rate},
-      {title: 'Item Three', quantity: 1, price: 8999, tax_exempt: false, tax_rate: tax_rate},
-      {title: 'Item Four', quantity: 1, price: 100000, tax_exempt: false, tax_rate: tax_rate}
+      {title: 'Item One', quantity: 2, price: 999, tax_exempt: false},
+      {title: 'Item Two', quantity: 1, price: 25000, tax_exempt: false},
+      {title: 'Item Three', quantity: 1, price: 8999, tax_exempt: false},
+      {title: 'Item Four', quantity: 1, price: 100000, tax_exempt: false}
     ]
   end
 
@@ -56,9 +58,7 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
         user.last_name = 'Customer'
       end
 
-      if user.respond_to?(:billing_address=)
-        user.billing_address = Effective::Address.new(category: 'billing', full_name: 'Test Full Address', address1: 'Test Address 1', address2: 'Test Address 2', city: 'Test City', state_code: 'AB', country_code: 'CA', postal_code: 'AAA AAA')
-      end
+      user.billing_address = build_address if user.respond_to?(:billing_address=)
     end
   end
 

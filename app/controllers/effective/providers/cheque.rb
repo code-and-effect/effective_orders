@@ -5,21 +5,24 @@ module Effective
 
       def pay_by_cheque
         @order ||= Order.find(params[:id])
-        EffectiveOrders.authorized?(self, :update, @order)
 
         @order.purchase_state = EffectiveOrders::PENDING
         @order.payment_provider = 'cheque'
 
-        if @order.save
-          @order.send_payment_request_to_buyer!  # Always send payment request to buyer
+        EffectiveOrders.authorized?(self, :update, @order)
 
+        @page_title = 'Payment required'
+
+        if @order.save
           current_cart.try(:destroy)
-          flash[:success] = 'Created pending order successfully!'
+          flash.now[:success] = 'Successfully indicated order will be payed by cheque.  Please send a cheque.'
         else
-          flash[:danger] = 'Unable to create your pending order. Please check your order details and try again.'
+          flash[:danger] = "Unable to save your order: #{@order.errors.full_messages.to_sentence}. Please try again."
+          redirect_to effective_orders.order_path(@order)
+          return
         end
 
-        redirect_to effective_orders.order_path(@order)
+        render 'effective/orders/cheque/pay_by_cheque'
       end
     end
   end

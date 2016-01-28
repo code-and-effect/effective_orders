@@ -12,6 +12,7 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
     add_column <%= @orders_table_name %>, :payment_provider, :string
     add_column <%= @orders_table_name %>, :payment_card, :string
 
+    add_column <%= @orders_table_name %>, :tax_rate, :decimal, :precision => 6, :scale => 3
     add_column <%= @orders_table_name %>, :subtotal, :integer
     add_column <%= @orders_table_name %>, :tax, :integer
     add_column <%= @orders_table_name %>, :total, :integer
@@ -21,24 +22,30 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
     Effective::Order.reset_column_information
 
     Effective::Order.find_each do |order|
+      order.tax_rate = ((order.order_items.first.try(:tax_rate) || 0.0) * 100.0)
       update_payment_provider_and_card(order)
       order.save(validate: false);
       print '.';
     end
 
+    remove_column <%= @order_items_table_name %>, :tax_rate
+
     puts 'Done'
   end
 
   def self.down
+    add_column <%= @order_items_table_name %>, :tax_rate, :decimal, :precision => 5, :scale => 3
+    Effective::OrderItem.reset_column_information
+    Effective::OrderItem.find_each { |order_item| order_item.update_column(:tax_rate, (order.tax_rate || 0.0) / 100.0) }
+
     remove_column <%= @orders_table_name %>, :note
     remove_column <%= @orders_table_name %>, :payment_provider
     remove_column <%= @orders_table_name %>, :payment_card
 
+    remove_column <%= @orders_table_name %>, :tax_rate
     remove_column <%= @orders_table_name %>, :subtotal
     remove_column <%= @orders_table_name %>, :tax
     remove_column <%= @orders_table_name %>, :total
-
-    drop_table <%= @products_table_name %>
   end
 
   def update_payment_provider_and_card(order)

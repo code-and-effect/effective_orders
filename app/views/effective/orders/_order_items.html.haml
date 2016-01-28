@@ -31,7 +31,7 @@
           %td.price= price_to_currency(item.price)
 
     %tfoot
-      - if order.tax > 0
+      - if order.tax.to_i > 0 || order.tax_rate == nil
         %tr
           - if include_quantity_column
             %th.quantity
@@ -39,17 +39,19 @@
             %th.download
           %th.subtotal Subtotal
           %td.price.subtotal-price= price_to_currency(order.subtotal)
+      - if order.tax.to_i > 0
         %tr
           - if include_quantity_column
             %th.quantity
           - if include_download_column
             %th.download
-          %th.tax Tax
+          %th.tax Tax (#{tax_rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
-      %tr
-        - if include_quantity_column
-          %th.quantity
-        - if include_download_column
-          %th.download
-        %th.total Total Due
-        %td.price.total-price= price_to_currency(order.total)
+      - if order.tax_rate.present?
+        %tr
+          - if include_quantity_column
+            %th.quantity
+          - if include_download_column
+            %th.download
+          %th.total Total Due
+          %td.price.total-price= price_to_currency(order.total)

@@ -65,7 +65,7 @@ EffectiveOrders.setup do |config|
   config.collect_note_message = ''
 
   # Tax Calculation Method
-  config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
+  config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
 
   # Minimum Charge
   # Prevent orders less than this value from being purchased
@@ -97,15 +97,6 @@ EffectiveOrders.setup do |config|
   config.allow_pretend_purchase_in_production = false
   config.allow_pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
 
-  # Pay by Cheque
-  # Allow user to create pending orders in order to pay for it by cheque offline. Pending orders are not
-  # considered purchased and have 'pending' purchase state
-  #
-  # When true, there will be a 'Pay by Cheque' button on the Checkout screen.
-  # Clicking this button will mark an Order pending and redirect the user to the
-  # pending order page.
-  config.cheque_enabled = false
-
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
 
@@ -135,7 +126,6 @@ EffectiveOrders.setup do |config|
   #     :radio_buttons => :horizontal_radio_and_checkboxes
   #   }
   # }
-
 
   # Mailer Settings
   # effective_orders will send out receipts to the buyer, seller and admins.
@@ -171,6 +161,10 @@ EffectiveOrders.setup do |config|
     :deliver_method => nil,
     :delayed_job_deliver => false
   }
+
+  #######################################
+  ### Payment Provider specific options
+  #######################################
 
   # Moneris configuration
   config.moneris_enabled = false
@@ -252,4 +246,13 @@ EffectiveOrders.setup do |config|
     service: nil, # an EffectiveOrders::AppCheckout type object
     declined_flash: "Payment was unsuccessful. Please try again."
   }
+
+
+  # Pay by Cheque configuration
+  config.cheque_enabled = false
+
+  config.cheque = {
+    confirm: 'Your order will not be considered purchased until we receive your cheque. Proceed with pay by cheque?'
+  }
+
 end

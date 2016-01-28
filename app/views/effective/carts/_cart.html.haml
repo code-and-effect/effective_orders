@@ -22,16 +22,7 @@
           %td.item There are no items in your shopping cart
           %td.price
     %tfoot
-      - if cart.tax > 0
-        %tr
-          %th.quantity
-          %th.subtotal Subtotal
-          %td.price.subtotal-price= price_to_currency(cart.subtotal)
-        %tr
-          %th.quantity
-          %th.tax Tax
-          %td.price.tax-price= price_to_currency(cart.tax)
       %tr
         %th.quantity
-        %th.total Total Due
-        %td.price.total-price= price_to_currency(cart.total)
+        %th.subtotal Subtotal
+        %td.price.subtotal-price= price_to_currency(cart.subtotal)

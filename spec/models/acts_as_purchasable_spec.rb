@@ -9,7 +9,7 @@ describe Product do
 
   describe 'assumptions' do
     it 'should be effectively purchasable' do
-      product.is_effectively_purchasable?.should eq true
+      product.kind_of?(ActsAsPurchasable).should eq true
     end
   end
 
@@ -61,6 +61,7 @@ describe Product do
       product_with_float_price.tax_exempt = true
 
       order = Effective::Order.new(product_with_float_price, user: user)
+      order.billing_address = FactoryGirl.create(:address, state_code: 'AB')
 
       order.subtotal.should eq 2000
       order.tax.should eq 0
@@ -72,6 +73,7 @@ describe Product do
       product_with_float_price.tax_exempt = false
 
       order = Effective::Order.new(product_with_float_price, user: user)
+      order.billing_address = FactoryGirl.create(:address, state_code: 'AB')
 
       order.subtotal.should eq 2000
       order.tax.should eq 100

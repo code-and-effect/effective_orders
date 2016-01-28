@@ -18,7 +18,7 @@ module Effective
           )
         else
           @page_title = 'Checkout'
-          flash.now[:danger] = @stripe_charge.errors.full_messages.join(',')
+          flash.now[:danger] = @stripe_charge.errors.full_messages.to_sentence
           render :checkout
         end
       end
@@ -65,7 +65,7 @@ module Effective
         end
 
         # Process regular order_items.
-        amount = (charge.order_items.collect(&:total).sum)  # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
+        amount = charge.order_items.map { |oi| oi.total }.sum # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
         description = "Charge for Order ##{charge.order.to_param}"
 
         if amount > 0
@@ -92,7 +92,7 @@ module Effective
 
         # Make one charge per seller, for all his order_items
         items.each do |seller, order_items|
-          amount = order_items.sum(&:total)
+          amount = order_items.map { |oi| oi.total }.sum
           description = "Charge for Order ##{charge.order.to_param} with OrderItems ##{order_items.map(&:id).join(', #')}"
           application_fee = order_items.sum(&:stripe_connect_application_fee)
 

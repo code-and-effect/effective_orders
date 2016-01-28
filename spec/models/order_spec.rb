@@ -8,16 +8,9 @@ describe Effective::Order, :type => :model do
   let(:product2) { FactoryGirl.create(:product) }
 
   it 'calculates dollars based on its order items' do
-    order.total.should eq order.order_items.collect(&:total).sum
     order.subtotal.should eq order.order_items.collect(&:subtotal).sum
-    order.tax.should eq order.order_items.collect(&:tax).sum
+    order.total.should eq (order.order_items.collect(&:subtotal).sum + order.tax.to_i)
     order.num_items.should eq order.order_items.collect(&:quantity).sum
-  end
-
-  describe 'validations' do
-    it 'should validate inclusion of purchase state' do
-      expect(subject).to validate_inclusion_of(:purchase_state).in_array([nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING])
-    end
   end
 
   describe '#initialize' do
@@ -32,9 +25,7 @@ describe Effective::Order, :type => :model do
       end
 
       order.order_items.length.should eq cart.cart_items.length
-      order.total.should eq cart.total
       order.subtotal.should eq cart.subtotal
-      order.tax.should eq cart.tax
     end
 
     it 'creates appropriate OrderItems when initialized with an array of purchasables' do
@@ -42,7 +33,6 @@ describe Effective::Order, :type => :model do
       order.order_items.size.should eq 2
 
       order.subtotal.should eq (product.price + product2.price)
-      order.total.should eq ((product.price + product2.price) * 1.05)
     end
 
     it 'creates appropriate OrderItems when initialized with a single purchasable' do
@@ -64,6 +54,7 @@ describe Effective::Order, :type => :model do
 
   describe 'minimum zero math' do
     it 'has a minimum order total of 0' do
+      order.subtotal = nil
       order.total = nil
 
       order.order_items.each { |oi| oi.price = -1000; oi.tax_exempt = true; }
@@ -79,15 +70,6 @@ describe Effective::Order, :type => :model do
       order.order_items.collect(&:subtotal).sum.should eq -3000
 
       order.subtotal.should eq -3000
-    end
-
-    it 'has a minimum order tax of 0.00' do
-      order.tax = nil
-
-      order.order_items.each { |oi| allow(oi).to receive(:tax).and_return(-1000) }
-      order.order_items.collect(&:tax).sum.should eq -3000
-
-      order.tax.should eq 0
     end
   end
 
@@ -115,6 +97,10 @@ describe Effective::Order, :type => :model do
   end
 
   describe 'validations' do
+    it 'should validate inclusion of purchase state' do
+      expect(subject).to validate_inclusion_of(:purchase_state).in_array([nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING])
+    end
+
     it 'should be invalid without a user or order_items' do
       order = Effective::Order.new()
       order.valid?.should eq false
@@ -159,6 +145,50 @@ describe Effective::Order, :type => :model do
       order.valid?.should eq true
       order.errors[:total].present?.should eq false
     end
+  end
+
+  describe 'tax and tax rate' do
+    it 'is invalid with no tax rate' do
+      order = Effective::Order.new()
+      order.tax_rate.should eq nil
+      order.valid?.should eq false
+      order.errors[:tax_rate].present?.should eq true
+    end
+
+    it 'is valid with no tax rate when skip_buyer_validations = true' do
+      order = Effective::Order.new()
+      order.skip_buyer_validations = true
+      order.tax_rate.should eq nil
+      order.errors[:tax_rate].present?.should eq false
+    end
+
+    it 'sets a tax rate when billing_address is present' do
+      order = FactoryGirl.create(:order)
+      order.billing_address.present?.should eq true
+      order.valid?.should eq true
+      order.errors[:tax_rate].blank?.should eq true
+    end
+
+    it 'updates the tax rate on valid? when billing_address changes' do
+      order = FactoryGirl.create(:order)
+
+      order.billing_address = FactoryGirl.create(:address, state_code: 'AB') # 5.0% tax
+      order.valid?.should eq true
+      order.tax_rate.should eq 5.0
+      order.tax.should eq (order.subtotal * 0.05)
+      order.total.should eq (order.subtotal + order.tax)
+      total_one = order.total
+
+      order.billing_address = FactoryGirl.create(:address, state_code: 'ON') # 13.0% tax
+      order.valid?.should eq true
+      order.tax_rate.should eq 13.0
+      order.tax.should eq (order.subtotal * 0.13)
+      order.total.should eq (order.subtotal + order.tax)
+      total_two = order.total
+
+      total_one.should_not eq total_two
+    end
+
   end
 
   describe 'create_as_pending' do

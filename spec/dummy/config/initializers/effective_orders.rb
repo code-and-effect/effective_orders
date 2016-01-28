@@ -59,9 +59,6 @@ EffectiveOrders.setup do |config|
   config.collect_note = true
   config.collect_note_message = 'please enter a note'
 
-  # Tax Calculation Method
-  config.tax_rate_method = Proc.new { |acts_as_purchasable| 0.05 } # Regardless of the object, charge 5% tax (GST)
-
   # Minimum Charge
   # Prevent orders less than this value from being purchased
   # Stripe doesn't allow orders less than $0.50
