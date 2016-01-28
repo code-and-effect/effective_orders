@@ -18,7 +18,7 @@ module Effective
           )
         else
           @page_title = 'Checkout'
-          flash.now[:danger] = @stripe_charge.errors.full_messages.join(',')
+          flash.now[:danger] = @stripe_charge.errors.full_messages.to_sentence
           render :checkout
         end
       end
