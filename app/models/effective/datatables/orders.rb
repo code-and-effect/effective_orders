@@ -45,6 +45,11 @@ if defined?(EffectiveDatatables)
 
           table_column :subtotal, as: :price
           table_column :tax, as: :price
+
+          table_column :tax_rate, visible: false do |order|
+            tax_rate_to_percentage(order.tax_rate)
+          end
+
           table_column :total, as: :price
 
           table_column :payment_provider, label: 'Provider', visible: false, filter: { values: ['nil'] + EffectiveOrders.payment_providers }
