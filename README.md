@@ -294,7 +294,7 @@ or
 or
 
 ```ruby
-= link_to 'Go Checkout Already', effective_orders.new_order_path
+= link_to 'Continue to Checkout', effective_orders.new_order_path
 ```
 
 From here, the effective_orders engine takes over, walks the user through billing and shipping details screens, then finally collects payment through one of the configured payment processors.
@@ -347,17 +347,39 @@ Of course, there's no mechanism here to prevent someone from just copy&pasting t
 If you're interested in that kind of restricted-download functionality, please check out [effective_assets](https://github.com/code-and-effect/effective_assets) and the authenticated-read temporary URLs.
 
 
-### Tax
+### Tax Exempt
 
 All `acts_as_purchasable` objects will respond to the boolean method `tax_exempt`.
 
 By default, `tax_exempt` is false, meaning that tax must be applied to this item.
 
-The tax calculation is controlled by the config/initializers/effective_orders.rb `config.tax_rate_method` and may be set on an app wide basis.
-
 If `tax_exempt` returns true, it means that no tax will be applied to this item.
 
-Please see the initializer for more information.
+### Tax
+
+The tax calculation applied to an order is controlled by the config/initializers/effective_orders.rb `config.order_tax_rate_method`
+
+The default implementation assigns the tax rate based on the order's billing_address:
+
+```ruby
+config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
+```
+
+Right now, this gem only supports taxes for Canadian provinces.  US and international tax rates are not currently supported.
+
+A single static tax rate can also be applied to all orders.  To apply 12.5% tax to all orders:
+
+```ruby
+config.order_tax_rate_method = Proc.new { |order| 12.5 }
+```
+
+Or to apply 0% tax:
+
+```ruby
+config.order_tax_rate_method = Proc.new { |order| 0 }
+```
+
+Please see the initializer file for more information.
 
 
 ### Callbacks

@@ -392,7 +392,7 @@ module Effective
       self.instance_exec(self, &EffectiveOrders.order_tax_rate_method).tap do |rate|
         rate = rate.to_f
         if (rate > 100.0 || (rate < 0.25 && rate > 0.0000))
-          raise "expected EffectiveOrders.order_tax_rate_method to return a value between 100.0 (100%) and 0.25 (0.25%) or nil. Received #{rate}. Please return 5.25 for 5.25% tax."
+          raise "expected EffectiveOrders.order_tax_rate_method to return a value between 100.0 (100%) and 0.25 (0.25%) or 0 or nil. Received #{rate}. Please return 5.25 for 5.25% tax."
         end
       end
     end
