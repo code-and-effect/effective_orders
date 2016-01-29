@@ -1,5 +1,4 @@
 require 'haml-rails'
-require 'migrant'
 require 'simple_form'
 require 'effective_addresses'
 require 'effective_obfuscation'

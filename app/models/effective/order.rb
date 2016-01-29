@@ -18,26 +18,6 @@ module Effective
     belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
     has_many :order_items, inverse_of: :order
 
-    structure do
-      purchase_state    :string
-      purchased_at      :datetime
-
-      note              :text
-
-      payment           :text   # serialized hash containing all the payment details.  see below.
-
-      payment_provider  :string
-      payment_card      :string
-
-      tax_rate          :decimal, precision: 6, scale: 3
-
-      subtotal          :integer
-      tax               :integer
-      total             :integer
-
-      timestamps
-    end
-
     accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
