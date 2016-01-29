@@ -8,11 +8,7 @@ module EffectiveOrders
       source_root File.expand_path('../../templates', __FILE__)
 
       def self.next_migration_number(dirname)
-        if not ActiveRecord::Base.timestamped_migrations
-          Time.new.utc.strftime('%Y%m%d%H%M%S')
-        else
-          '%.3d' % (current_migration_number(dirname) + 1)
-        end
+        ActiveRecord::Migration.new.next_migration_number(1) #=> “20160114171807"
       end
 
       def create_migration_file
