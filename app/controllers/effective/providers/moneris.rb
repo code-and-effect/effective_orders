@@ -4,7 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        prepend_before_filter :find_authenticity_token_from_moneris, :only => [:moneris_postback]
+        prepend_before_filter :find_authenticity_token_from_moneris, only: [:moneris_postback]
       end
 
       def moneris_postback
@@ -39,7 +39,7 @@ module Effective
       private
 
       def parse_moneris_response(text)
-        text.split("<br>").inject(Hash.new()) { |h, i| h[i.split(' ').first.to_sym] = i.split(' ').last ; h } rescue {:response => text}
+        text.split("<br>").inject(Hash.new()) { |h, i| h[i.split(' ').first.to_sym] = i.split(' ').last ; h } rescue {response: text}
       end
 
       def send_moneris_verify_request(verify_key)

@@ -20,17 +20,17 @@ module EffectivePaypalHelper
     raise ArgumentError.new("unable to read EffectiveOrders PayPal app_key #{EffectiveOrders.paypal[:app_key]}") unless APP_KEY_PEM.present?
 
     values = {
-      :business => EffectiveOrders.paypal[:seller_email],
-      :custom => EffectiveOrders.paypal[:secret],
-      :cmd => '_cart',
-      :upload => 1,
-      :return => effective_orders.order_purchased_url(order),
-      :notify_url => effective_orders.paypal_postback_url,
-      :cert_id => EffectiveOrders.paypal[:cert_id],
-      :currency_code => EffectiveOrders.paypal[:currency],
-      :invoice => order.id,
-      :amount => (order.subtotal / 100.0).round(2),
-      :tax_cart => (order.tax / 100.0).round(2)
+      business: EffectiveOrders.paypal[:seller_email],
+      custom: EffectiveOrders.paypal[:secret],
+      cmd: '_cart',
+      upload: 1,
+      return: effective_orders.order_purchased_url(order),
+      notify_url: effective_orders.paypal_postback_url,
+      cert_id: EffectiveOrders.paypal[:cert_id],
+      currency_code: EffectiveOrders.paypal[:currency],
+      invoice: order.id,
+      amount: (order.subtotal / 100.0).round(2),
+      tax_cart: (order.tax / 100.0).round(2)
     }
 
     order.order_items.each_with_index do |item, x|
