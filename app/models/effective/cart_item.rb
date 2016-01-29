@@ -5,6 +5,12 @@ module Effective
     belongs_to :cart
     belongs_to :purchasable, :polymorphic => true
 
+    # structure do
+    #   quantity    :integer
+    #
+    #   timestamps
+    # end
+
     validates :purchasable, presence: true
     validates :quantity, presence: true
 

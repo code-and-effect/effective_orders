@@ -8,6 +8,17 @@ module Effective
 
     belongs_to :customer
 
+    # structure do
+    #   stripe_plan_id          :string  # This will be 'Weekly' or something like that
+    #   stripe_subscription_id  :string
+    #   stripe_coupon_id        :string
+    #
+    #   title                   :string
+    #   price                   :integer, default: 0
+    #
+    #   timestamps
+    # end
+
     delegate :user, :user_id, :to => :customer
 
     validates :stripe_plan_id, presence: true

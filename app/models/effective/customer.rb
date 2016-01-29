@@ -7,6 +7,14 @@ module Effective
     belongs_to :user
     has_many :subscriptions, :inverse_of => :customer
 
+    # structure do
+    #   stripe_customer_id            :string  # cus_xja7acoa03
+    #   stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
+    #   stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
+    #
+    #   timestamps
+    # end
+
     validates :user, presence: true
     validates :user_id, uniqueness: true
 
