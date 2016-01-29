@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Effective::Order, :type => :model do
+describe Effective::Order, type: :model do
   let(:cart) { FactoryGirl.create(:cart) }
   let(:order) { FactoryGirl.create(:order) }
   let(:user) { FactoryGirl.create(:user) }
@@ -83,8 +83,8 @@ describe Effective::Order, :type => :model do
     it 'assigns addresses from the user' do
       order = Effective::Order.new()
 
-      user.billing_address = FactoryGirl.create(:address, :category => :billing)
-      user.shipping_address = FactoryGirl.create(:address, :category => :shipping)
+      user.billing_address = FactoryGirl.create(:address, category: :billing)
+      user.shipping_address = FactoryGirl.create(:address, category: :shipping)
 
       order.user = user
 
@@ -194,7 +194,7 @@ describe Effective::Order, :type => :model do
   describe 'create_as_pending' do
     it 'sets the pending state' do
       order = FactoryGirl.build(:order)
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
+      order.order_items << FactoryGirl.build(:order_item, order: order)
 
       order.create_as_pending.should eq true
       order.pending?.should eq true
@@ -202,10 +202,10 @@ describe Effective::Order, :type => :model do
 
     it 'disregards invalid addresses' do
       order = FactoryGirl.build(:order)
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
+      order.order_items << FactoryGirl.build(:order_item, order: order)
 
-      order.billing_address = Effective::Address.new(:address1 => 'invalid')
-      order.shipping_address = Effective::Address.new(:address1 => 'invalid')
+      order.billing_address = Effective::Address.new(address1: 'invalid')
+      order.shipping_address = Effective::Address.new(address1: 'invalid')
 
       success = order.create_as_pending
 
@@ -216,7 +216,7 @@ describe Effective::Order, :type => :model do
       Effective::OrdersMailer.deliveries.clear
 
       order = FactoryGirl.build(:order)
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
+      order.order_items << FactoryGirl.build(:order_item, order: order)
 
       order.send_payment_request_to_buyer = true
 
@@ -230,7 +230,7 @@ describe Effective::Order, :type => :model do
       Effective::OrdersMailer.deliveries.clear
 
       order = FactoryGirl.build(:order)
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
+      order.order_items << FactoryGirl.build(:order_item, order: order)
 
       order.create_as_pending.should eq true
 
@@ -243,7 +243,7 @@ describe Effective::Order, :type => :model do
     let(:order) { FactoryGirl.build(:order, billing_address: FactoryGirl.build(:address), shipping_address: FactoryGirl.build(:address)) }
 
     it 'sets the pending state' do
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
+      order.order_items << FactoryGirl.build(:order_item, order: order)
 
       order.purchase_state = EffectiveOrders::PENDING
 
@@ -252,10 +252,10 @@ describe Effective::Order, :type => :model do
     end
 
     it 'does not accept invalid addresses' do
-      order.order_items << FactoryGirl.build(:order_item, :order => order)
+      order.order_items << FactoryGirl.build(:order_item, order: order)
 
-      order.billing_address = Effective::Address.new(:address1 => 'invalid')
-      order.shipping_address = Effective::Address.new(:address1 => 'invalid')
+      order.billing_address = Effective::Address.new(address1: 'invalid')
+      order.shipping_address = Effective::Address.new(address1: 'invalid')
 
       order.purchase_state = EffectiveOrders::PENDING
 
@@ -296,10 +296,10 @@ describe Effective::Order, :type => :model do
       Effective::OrdersMailer.deliveries[1].subject.include?("Order ##{order.to_param} Receipt").should eq true
     end
 
-    it 'does not send email if passed :email => false' do
+    it 'does not send email if passed email: false' do
       Effective::OrdersMailer.deliveries.clear
 
-      order.purchase!(details: 'by a test', :email => false)
+      order.purchase!(details: 'by a test', email: false)
 
       Effective::OrdersMailer.deliveries.length.should eq 0
     end
@@ -320,9 +320,9 @@ describe Effective::Order, :type => :model do
       expect { order.purchase!(details: 'by a test') }.to raise_exception(Exception)
     end
 
-    it 'should return true when the Order is invalid and :validate => false is passed' do
+    it 'should return true when the Order is invalid and validate: false is passed' do
       allow(order).to receive(:valid?).and_return(false)
-      order.purchase!(details: 'by a test', :validate => false).should eq true
+      order.purchase!(details: 'by a test', validate: false).should eq true
     end
 
   end

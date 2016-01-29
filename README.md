@@ -164,22 +164,22 @@ class Product < ActiveRecord::Base
   structure do
     title               :string
 
-    price               :integer, :default => 0
-    tax_exempt          :boolean, :default => false
+    price               :integer, default: 0
+    tax_exempt          :boolean, default: false
 
-    archived            :boolean, :default => false
+    archived            :boolean, default: false
 
     timestamps
   end
 
   validates_presence_of :title
-  validates_numericality_of :price, :greater_than_or_equal_to => 0
+  validates_numericality_of :price, greater_than_or_equal_to: 0
 
-  scope :products, -> { where(:archived => false) }
+  scope :products, -> { where(archived: false) }
 
   # This archives Products instead of deleting them
   def destroy
-    update_attributes(:archived => true)
+    update_attributes(archived: true)
   end
 
 end
@@ -220,7 +220,7 @@ This is available for simple_form, formtastic and Rails default FormBuilder.
 = simple_form_for(@product) do |f|
   = f.input :title
   = f.input :tax_exempt
-  = f.input :price, :as => :price
+  = f.input :price, as: :price
   = f.button :submit
 ```
 
@@ -228,7 +228,7 @@ or
 
 ```ruby
 = semantic_form_for(@product) do |f|
-  = f.input :price, :as => :price
+  = f.input :price, as: :price
 ```
 
 or
@@ -238,16 +238,16 @@ or
   = f.price_field :price
 ```
 
-The `:as => :price` will work interchangeably with SimpleForm or Formtastic, as long as only one of these gems is present in your application
+The `as: :price` will work interchangeably with SimpleForm or Formtastic, as long as only one of these gems is present in your application
 
 If you use both SimpleForm and Formtastic, you will need to call price input differently:
 
 ```ruby
 = simple_form_for(@product) do |f|
-  = f.input :price, :as => :price_simple_form
+  = f.input :price, as: :price_simple_form
 
 = semantic_form_for @user do |f|
-  = f.input :price, :as => :price_formtastic
+  = f.input :price, as: :price_formtastic
 ```
 
 ### Products#show
@@ -257,7 +257,7 @@ So back on the Product#show page, we will render the product with an Add To Cart
 ```haml
 %h4= @product.title
 %p= price_to_currency(@product.price)
-%p= link_to_add_to_cart(@product, :class => 'btn btn-primary', :label => 'Add To My Shopping Cart')
+%p= link_to_add_to_cart(@product, class: 'btn btn-primary', label: 'Add To My Shopping Cart')
 ```
 
 Please take note of the `price_to_currency` helper above.
@@ -277,7 +277,7 @@ We still need to create a link to the Shopping Cart page so that the user can vi
 or
 
 ```ruby
-= link_to_current_cart(:label => 'Shopping Cart', :class => 'btn btn-prmary')  # To display Shopping Cart (3) when there are 3 items
+= link_to_current_cart(label: 'Shopping Cart', class: 'btn btn-prmary')  # To display Shopping Cart (3) when there are 3 items
 ```
 
 or
@@ -297,7 +297,7 @@ The checkout screen can be reached through the My Cart page, or linked to direct
 or
 
 ```ruby
-= link_to_checkout(:label => 'Continue to Checkout', :class => 'btn btn-primary')
+= link_to_checkout(label: 'Continue to Checkout', class: 'btn btn-primary')
 ```
 
 or
@@ -455,8 +455,8 @@ You can rescue from this exception by adding the following to your application_c
 ```ruby
 rescue_from Effective::AccessDenied do |exception|
   respond_to do |format|
-    format.html { render 'static_pages/access_denied', :status => 403 }
-    format.any { render :text => 'Access Denied', :status => 403 }
+    format.html { render 'static_pages/access_denied', status: 403 }
+    format.any { render text: 'Access Denied', status: 403 }
   end
 end
 ```
@@ -466,9 +466,9 @@ end
 The permissions you actually want to define for a regular user are as follows (using CanCan):
 
 ```ruby
-can [:manage], Effective::Cart, :user_id => user.id
-can [:manage], Effective::Order, :user_id => user.id # Orders cannot be deleted
-can [:manage], Effective::Subscription, :user_id => user.id
+can [:manage], Effective::Cart, user_id: user.id
+can [:manage], Effective::Order, user_id: user.id # Orders cannot be deleted
+can [:manage], Effective::Subscription, user_id: user.id
 ```
 
 In addition to the above, the following permissions allow access to the `/admin` screens:
@@ -536,7 +536,7 @@ The Order has now been purchased.
 If you are using effective_orders to roll your own custom payment workflow, you should be aware of the following helpers:
 
 - `render_checkout(order)` to display the standard Checkout step inline.
-- `render_checkout(order, :purchased_redirect_url => '/', :declined_redirect_url => '/')` to display the Checkout step with custom redirect paths.
+- `render_checkout(order, purchased_redirect_url: '/', declined_redirect_url: '/')` to display the Checkout step with custom redirect paths.
 
 - `render_purchasables(one_or_more_acts_as_purchasable_objects)` to display a list of purchasable items
 
@@ -574,7 +574,7 @@ order.billing_address = Effective::Address.new(...)
 order.shipping_address = Effective::Address.new(...)
 order.add(@product1)
 order.add(@product2)
-order.purchase!(details: {:complicated => 'details', :in => 'a hash'})
+order.purchase!(details: {complicated: 'details', in: 'a hash'})
 ```
 
 The one gotcha with the above two scenarios, is that when `purchase!` is called, the `Effective::Order` in question will run through its validations.  These validations include:
@@ -583,7 +583,7 @@ The one gotcha with the above two scenarios, is that when `purchase!` is called,
 - `validates_presence_of :shipping_address` when configured to be required
 - `validates :user` which can be disabled via config initializer
 
-- `validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge` where minimum_charge is the configured value, once again from the initializer
+- `validates_numericality_of :total, greater_than_or_equal_to: minimum_charge` where minimum_charge is the configured value, once again from the initializer
 - `validates_presence_of :order_items` the Order must have at least one OrderItem
 
 You can skip validations with the following command, but be careful as this skips all validations:
@@ -611,7 +611,7 @@ This screen displays all past purchases made by the current user.  You can add i
 or
 
 ```ruby
-= link_to_my_purchases(:label => 'Order History', :class => 'btn btn-primary')
+= link_to_my_purchases(label: 'Order History', class: 'btn btn-primary')
 ```
 
 or
@@ -633,7 +633,7 @@ Totally optional, but another way of displaying the Order History is to use the 
 In your controller:
 
 ```ruby
-@datatable = Effective::Datatables::Orders.new(:user_id => @user.id)
+@datatable = Effective::Datatables::Orders.new(user_id: @user.id)
 ```
 
 and then in the view:
@@ -724,17 +724,17 @@ Copy these two values into the appropriate lines of config/effective_orders.rb i
 
   if Rails.env.production?
     config.moneris = {
-      :ps_store_id => '',
-      :hpp_key => '',
-      :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php'
+      ps_store_id: '',
+      hpp_key: '',
+      hpp_url: 'https://www3.moneris.com/HPPDP/index.php',
+      verify_url: 'https://www3.moneris.com/HPPDP/verifyTxn.php'
     }
   else
     config.moneris = {
-      :ps_store_id => 'VZ9BNtore1',
-      :hpp_key => 'hp1Y5J35GVDM',
-      :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
+      ps_store_id: 'VZ9BNtore1',
+      hpp_key: 'hp1Y5J35GVDM',
+      hpp_url: 'https://esqa.moneris.com/HPPDP/index.php',
+      verify_url: 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
   end
 ```
@@ -838,9 +838,9 @@ Then enable Stripe in the app/config/effective_orders.rb initializer and enter y
 config.stripe_enabled = true
 
 config.stripe = {
-  :secret_key => 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
-  :publishable_key => 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
-  :currency => 'usd'
+  secret_key: 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
+  publishable_key: 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
+  currency: 'usd'
 }
 ```
 
@@ -871,10 +871,10 @@ And add these values to the app/config/effective_orders.rb initializer:
 
 ```ruby
 config.stripe = {
-  :secret_key => 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
-  :publishable_key => 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
-  :currency => 'usd',
-  :connect_client_id => 'ca_35jLok5G9kosyYF7quTOwcauJjTnUnud'
+  secret_key: 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
+  publishable_key: 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
+  currency: 'usd',
+  connect_client_id: 'ca_35jLok5G9kosyYF7quTOwcauJjTnUnud'
 }
 ```
 
@@ -990,6 +990,63 @@ The secret can be any string. Here's a good way to come up with a secret:
 This process should be very similar although you'll create and configure a seller account on paypal.com rather than the sandbox site.
 You should generate separate private and public certificates/keys for this and it is advisable to not keep production certificates/keys in version control.
 
+## Paying via CCBill
+
+Effective Orders has implemented checkout with CCBill using their "Dynamic Pricing" API and does not
+integrate with CCBill subscriptions. If you need to make payments for CCBill subscriptions, please help
+by improving Effective Orders with this functionality.
+
+### CCBill Account Setup
+
+You need a merchant account with CCBill so go sign up and login. To set up your account with Dynamic
+Pricing, you'll need to go through some hoops with CCBill:
+
+1. Get approval to operate a merchant account from CCBill Merchant Services (they'll need to see your
+   site in action)
+2. Provide CCBill with two valid forms of ID and wait for them to approve your account
+3. Create two additional sub accounts for a staging server and your localhost
+   ("Account Info" > "Account Setup")
+4. Get each new sub account approved by Merchant Services (mention that they are for testing only)
+5. Ask CCBill tech support to set up all sub accounts with Dynamic Pricing
+6. Set the postback urls for each sub account to be `"#{ your_domain_name }/orders/ccbill_postback`
+   (Look for 'Approval Post URL' and 'Denial Post URL' in "Account Info" > "Sub Account Admin" > select sub account
+   \> "Advanced" > under 'Background Post Information')
+
+### Effective Orders Configuration
+
+Get the following information and add it
+to the Effective Orders initializer. CCBill live chat is generally quick and helpful. They can help you
+find any of this information.
+
+- Account number (`:client_accnum`)
+- Subaccount number (`:client_subacc`)
+- Checkout form id/name (`:form_name`)
+- Currency code (`:currency_code`)
+- Encryption key/salt (`:dynamic_pricing_salt`)("Account Info" > "Sub Account Admin" > select sub account
+  \> "Advanced" > under 'Upgrade Security Setup Information' > 'Encryption key')
+
+Effective Orders will authorize to make changes to the customer's order during CCBill's post back after
+the transaction. Since, this is not an action that the customer takes directly, please make sure
+that the Effective Orders authorization method returns `true` for the controller/action
+`'Effective::OrdersController#ccbill_postback'` with an `Effective::Order` resource.
+
+### Testing transactions with CCBill
+
+To test payments with CCBill:
+
+1. Set up yourself as a user who is authorized to make test transactions
+   ([See this guide](https://www.ccbill.com/cs/wiki/tiki-index.php?page=How+do+I+set+up+a+user+to+process+test+transactions%3F))
+2. Use ngrok on localhost or a staging server to go through a normal payment (remember to configure the
+   postback urls (see #6 of [CCBill Account Setup](#ccbill-account-setup))
+3. Use one of the provided credit card numbers in the guide from step 1 for the associated response
+
+### Helpful CCBill Documentation
+
+- [Dynamic Pricing](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing)
+- [Dynamic Pricing User Guide](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide)
+- [Background Post](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Background+Post)
+- [Webhooks](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Webhooks+User+Guide)
+- [How do I set up a user to process test transactions?](https://www.ccbill.com/cs/wiki/tiki-index.php?page=How+do+I+set+up+a+user+to+process+test+transactions%3F)
 
 ## Paying Using App Currency or Logic
 

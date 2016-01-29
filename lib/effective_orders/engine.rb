@@ -11,6 +11,7 @@ module EffectiveOrders
         helper EffectiveCartsHelper
         helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
         helper EffectiveStripeHelper if EffectiveOrders.stripe_enabled
+        helper EffectiveCcbillHelper if EffectiveOrders.ccbill_enabled
       end
     end
 
@@ -28,18 +29,18 @@ module EffectiveOrders
     end
 
     # Set up our default configuration options.
-    initializer "effective_orders.defaults", :before => :load_config_initializers do |app|
+    initializer "effective_orders.defaults", before: :load_config_initializers do |app|
       eval File.read("#{config.root}/lib/generators/templates/effective_orders.rb")
     end
 
     # Set up mail delivering config option
-    initializer "effective_orders.mailer", :after => :load_config_initializers do |app|
+    initializer "effective_orders.mailer", after: :load_config_initializers do |app|
       deliver_method = Rails.gem_version >= Gem::Version.new('4.2') ? :deliver_now : :deliver
       EffectiveOrders.mailer[:deliver_method] = deliver_method
     end
 
     # Set up our Stripe API Key
-    initializer "effective_orders.stripe_api_key", :after => :load_config_initializers do |app|
+    initializer "effective_orders.stripe_api_key", after: :load_config_initializers do |app|
       if EffectiveOrders.stripe_enabled
         begin
           require 'stripe'
@@ -51,7 +52,7 @@ module EffectiveOrders
       end
     end
 
-    initializer 'effective_orders.moneris_config_validation', :after => :load_config_initializers do
+    initializer 'effective_orders.moneris_config_validation', after: :load_config_initializers do
       if EffectiveOrders.moneris_enabled
         unless EffectiveOrders.moneris.is_a?(Hash)
           raise ArgumentError, "expected EffectiveOrders.moneris to be a Hash but it is a #{EffectiveOrders.moneris.class}"
@@ -62,7 +63,7 @@ module EffectiveOrders
       end
     end
 
-    initializer 'effective_orders.paypal_config_validation', :after => :load_config_initializers do
+    initializer 'effective_orders.paypal_config_validation', after: :load_config_initializers do
       if EffectiveOrders.paypal_enabled
         unless EffectiveOrders.paypal.is_a?(Hash)
           raise ArgumentError, "expected EffectiveOrders.paypal to be a Hash but it is a #{EffectiveOrders.paypal.class}"
@@ -73,7 +74,7 @@ module EffectiveOrders
       end
     end
 
-    initializer 'effective_orders.stripe_config_validation', :after => :load_config_initializers do
+    initializer 'effective_orders.stripe_config_validation', after: :load_config_initializers do
       if EffectiveOrders.stripe_enabled
         unless EffectiveOrders.stripe.is_a?(Hash)
           raise ArgumentError, "expected EffectiveOrders.stripe to be a Hash but it is a #{EffectiveOrders.stripe.class}"
@@ -89,7 +90,23 @@ module EffectiveOrders
       end
     end
 
-    initializer 'effective_orders.app_checkout_config_validation', :after => :load_config_initializers do
+    initializer 'effective_orders.ccbill_config_validation', after: :load_config_initializers do
+      if EffectiveOrders.ccbill_enabled
+        unless EffectiveOrders.ccbill.is_a?(Hash)
+          raise ArgumentError, "expected EffectiveOrders.ccbill to be a Hash but it is a #{EffectiveOrders.ccbill.class}"
+        end
+        EffectiveOrders.ccbill[:form_period] ||= 365
+
+        missing = EffectiveOrders.stripe.select {|_config, value| value.blank? }
+        required = [:client_accnum, :client_subacc, :form_name, :currency_code, :dynamic_pricing_salt]
+
+        # perform an intersection operation between missing and required configs
+        missing_required = missing.keys & required
+        raise "Missing effective_orders Stripe configuration values: #{missing_required.join(', ')}" if missing_required.present?
+      end
+    end
+
+    initializer 'effective_orders.app_checkout_config_validation', after: :load_config_initializers do
       if EffectiveOrders.app_checkout_enabled
         unless EffectiveOrders.app_checkout.is_a?(Hash)
           raise ArgumentError, "expected EffectiveOrders.app_checkout to be a Hash but it is a #{EffectiveOrders.app_checkout.class}"
@@ -105,7 +122,7 @@ module EffectiveOrders
       end
     end
 
-    initializer 'effective_orders.cheque_config_validation', :after => :load_config_initializers do
+    initializer 'effective_orders.cheque_config_validation', after: :load_config_initializers do
       if EffectiveOrders.cheque_enabled
         unless EffectiveOrders.cheque.is_a?(Hash)
           raise ArgumentError, "expected EffectiveOrders.cheque to be a Hash but it is a #{EffectiveOrders.cheque.class}"

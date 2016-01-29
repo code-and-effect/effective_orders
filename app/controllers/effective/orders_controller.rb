@@ -7,6 +7,7 @@ module Effective
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Stripe if EffectiveOrders.stripe_enabled
     include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
+    include Providers::Ccbill if EffectiveOrders.ccbill_enabled
     include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
 
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
@@ -14,7 +15,7 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
-    before_filter :authenticate_user!, except: [:paypal_postback]
+    before_filter :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
     before_filter :set_page_title, except: [:show]
 
     # This is the entry point for the "Checkout" buttons

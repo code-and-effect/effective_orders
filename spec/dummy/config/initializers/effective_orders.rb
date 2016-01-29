@@ -102,11 +102,11 @@ EffectiveOrders.setup do |config|
 
   # config.layout = 'application'   # All EffectiveOrders controllers will use this layout
   config.layout = {
-    :carts => 'application',
-    :orders => 'application',
-    :subscriptions => 'application',
-    :admin_customers => 'application',
-    :admin_orders => 'application'
+    carts: 'application',
+    orders: 'application',
+    subscriptions: 'application',
+    admin_customers: 'application',
+    admin_orders: 'application'
   }
 
   # SimpleForm Options
@@ -114,12 +114,12 @@ EffectiveOrders.setup do |config|
   config.simple_form_options = {}
 
   # config.simple_form_options = {
-  #   :html => {:class => 'form-horizontal'},
-  #   :wrapper => :horizontal_form,
-  #   :wrapper_mappings => {
-  #     :boolean => :horizontal_boolean,
-  #     :check_boxes => :horizontal_radio_and_checkboxes,
-  #     :radio_buttons => :horizontal_radio_and_checkboxes
+  #   html: {class: 'form-horizontal'},
+  #   wrapper: :horizontal_form,
+  #   wrapper_mappings: {
+  #     boolean: :horizontal_boolean,
+  #     check_boxes: :horizontal_radio_and_checkboxes,
+  #     radio_buttons: :horizontal_radio_and_checkboxes
   #   }
   # }
 
@@ -135,27 +135,27 @@ EffectiveOrders.setup do |config|
   # In all three of these cases, the subject_prefix will still be used.
 
   # The Procs are the same for admin & buyer receipt, the seller Proc is different
-  # :subject_for_admin_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # :subject_for_buyer_receipt => Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # :subject_for_payment_request => Proc.new { |order| "Pending Order #{order.to_param}"}
-  # :subject_for_seller_receipt => Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
+  # subject_for_admin_receipt: Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # subject_for_buyer_receipt: Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # subject_for_payment_request: Proc.new { |order| "Pending Order #{order.to_param}"}
+  # subject_for_seller_receipt: Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
 
   config.mailer = {
-    :send_order_receipt_to_admin => true,
-    :send_order_receipt_to_buyer => true,
-    :send_payment_request_to_buyer => true,
-    :send_order_receipts_when_marked_paid_by_admin => false,
-    :send_order_receipt_to_seller => true,   # Only applies to StripeConnect
-    :layout => 'effective_orders_mailer_layout',
-    :admin_email => 'admin@example.com',
-    :default_from => 'info@example.com',
-    :subject_prefix => '[example]',
-    :subject_for_admin_receipt => '',
-    :subject_for_buyer_receipt => '',
-    :subject_for_payment_request => '',
-    :subject_for_seller_receipt => '',
-    :deliver_method => nil,
-    :delayed_job_deliver => false
+    send_order_receipt_to_admin: true,
+    send_order_receipt_to_buyer: true,
+    send_payment_request_to_buyer: true,
+    send_order_receipts_when_marked_paid_by_admin: false,
+    send_order_receipt_to_seller: true,   # Only applies to StripeConnect
+    layout: 'effective_orders_mailer_layout',
+    admin_email: 'admin@example.com',
+    default_from: 'info@example.com',
+    subject_prefix: '[example]',
+    subject_for_admin_receipt: '',
+    subject_for_buyer_receipt: '',
+    subject_for_payment_request: '',
+    subject_for_seller_receipt: '',
+    deliver_method: nil,
+    delayed_job_deliver: false
   }
 
   # Moneris configuration
@@ -163,17 +163,17 @@ EffectiveOrders.setup do |config|
 
   if Rails.env.production?
     config.moneris = {
-      :ps_store_id => '',
-      :hpp_key => '',
-      :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php'
+      ps_store_id: '',
+      hpp_key: '',
+      hpp_url: 'https://www3.moneris.com/HPPDP/index.php',
+      verify_url: 'https://www3.moneris.com/HPPDP/verifyTxn.php'
     }
   else
     config.moneris = {
-      :ps_store_id => 'foo',
-      :hpp_key => 'bar',
-      :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
+      ps_store_id: 'foo',
+      hpp_key: 'bar',
+      hpp_url: 'https://esqa.moneris.com/HPPDP/index.php',
+      verify_url: 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
   end
 
@@ -182,25 +182,25 @@ EffectiveOrders.setup do |config|
 
   if Rails.env.production?
     config.paypal = {
-      :seller_email => '',
-      :secret => '',
-      :cert_id => '',
-      :paypal_url => 'https://www.paypal.com/cgi-bin/webscr',
-      :currency => 'CAD',
-      :paypal_cert => "#{Rails.root}/config/paypalcerts/production/paypal_cert.pem",
-      :app_cert => "#{Rails.root}/config/paypalcerts/production/app_cert.pem",
-      :app_key => "#{Rails.root}/config/paypalcerts/production/app_key.pem"
+      seller_email: '',
+      secret: '',
+      cert_id: '',
+      paypal_url: 'https://www.paypal.com/cgi-bin/webscr',
+      currency: 'CAD',
+      paypal_cert: "#{Rails.root}/config/paypalcerts/production/paypal_cert.pem",
+      app_cert: "#{Rails.root}/config/paypalcerts/production/app_cert.pem",
+      app_key: "#{Rails.root}/config/paypalcerts/production/app_key.pem"
     }
   else
     config.paypal = {
-      :seller_email => 'seller@mail.com',
-      :secret => 'foo',
-      :cert_id => 'bar',
-      :paypal_url => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
-      :currency => 'CAD',
-      :paypal_cert => "#{Rails.root}/config/paypalcerts/#{Rails.env}/paypal_cert.pem",
-      :app_cert => "#{Rails.root}/config/paypalcerts/#{Rails.env}/app_cert.pem",
-      :app_key => "#{Rails.root}/config/paypalcerts/#{Rails.env}/app_key.pem"
+      seller_email: 'seller@mail.com',
+      secret: 'foo',
+      cert_id: 'bar',
+      paypal_url: 'https://www.sandbox.paypal.com/cgi-bin/webscr',
+      currency: 'CAD',
+      paypal_cert: "#{Rails.root}/config/paypalcerts/#{Rails.env}/paypal_cert.pem",
+      app_cert: "#{Rails.root}/config/paypalcerts/#{Rails.env}/app_cert.pem",
+      app_key: "#{Rails.root}/config/paypalcerts/#{Rails.env}/app_key.pem"
     }
   end
 
@@ -212,21 +212,50 @@ EffectiveOrders.setup do |config|
 
   if Rails.env.production?
     config.stripe = {
-      :secret_key => '',
-      :publishable_key => '',
-      :currency => 'usd',
-      :site_title => 'My Site',
-      :site_image => '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
-      :connect_client_id => ''
+      secret_key: '',
+      publishable_key: '',
+      currency: 'usd',
+      site_title: 'My Site',
+      site_image: '', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+      connect_client_id: ''
     }
   else
     config.stripe = {
-      :secret_key => 'foo',
-      :publishable_key => 'bar',
-      :currency => 'usd',
-      :site_title => 'My Development Site',  # Displayed on the Embedded Stripe Form
-      :site_image => 'foo', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
-      :connect_client_id => 'bar'
+      secret_key: 'foo',
+      publishable_key: 'bar',
+      currency: 'usd',
+      site_title: 'My Development Site',  # Displayed on the Embedded Stripe Form
+      site_image: 'foo', # A relative URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+      connect_client_id: 'bar'
+    }
+  end
+
+  # CCBill configuration
+  config.ccbill_enabled = true
+
+  # CCBill Dynamic Pricing documentation describes these variables:
+  # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide
+  if Rails.env.production?
+    config.ccbill = {
+      client_accnum: '',
+      client_subacc: '',
+      # Get this from CCBill Admin dashboard after setting up a form
+      form_name: '',
+      form_period: '',
+      # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Webhooks+User+Guide#Appendix_A:_Currency_Codes
+      currency_code: '',
+      # You'll get this salt value from CCBill tech support
+      # https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide#Generating_the_MD5_Hash
+      dynamic_pricing_salt: ''
+    }
+  else
+    config.ccbill = {
+      client_accnum: 'foo',
+      client_subacc: 'bar',
+      form_name: 'foo',
+      form_period: 'bar',
+      currency_code: 'foo',
+      dynamic_pricing_salt: 'bar'
     }
   end
 

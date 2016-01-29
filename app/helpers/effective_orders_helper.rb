@@ -9,9 +9,7 @@ module EffectiveOrdersHelper
   end
 
   def order_summary(order)
-    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") +
-
-    content_tag(:ul) do
+    order_item_list = content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
           title = item.title.split('<br>')
@@ -21,6 +19,7 @@ module EffectiveOrdersHelper
         end
       end.join.html_safe
     end
+    content_tag(:p, "#{price_to_currency(order.total)} total for #{pluralize(order.num_items, 'item')}:") + order_item_list
   end
 
   def order_item_summary(order_item)
@@ -37,14 +36,12 @@ module EffectiveOrdersHelper
     case processor
     when :free
       'Checkout'
-    when :moneris
+    when :moneris, :stripe, :ccbill
       'Checkout with credit card'
     when :paypal
       'Checkout with PayPal'
     when :pretend  # The logic for this is in orders/views/_checkout_step_2.html.haml
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
-    when :stripe
-      'Checkout with credit card'
     when :cheque
       'Pay by Cheque'
     when :app_checkout
@@ -83,26 +80,26 @@ module EffectiveOrdersHelper
   end
 
   def render_order(order)
-    render(:partial => 'effective/orders/order', :locals => {:order => order})
+    render(partial: 'effective/orders/order', locals: {order: order})
   end
 
   def render_checkout(order, opts = {})
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 
     locals = {
-      :purchased_redirect_url => nil,
-      :declined_redirect_url => nil
+      purchased_redirect_url: nil,
+      declined_redirect_url: nil
     }.merge(opts)
 
     if order.new_record? || !order.valid?
-      render(:partial => 'effective/orders/checkout_step_1', :locals => locals.merge({:order => order}))
+      render(partial: 'effective/orders/checkout_step_1', locals: locals.merge({order: order}))
     else
-      render(:partial => 'effective/orders/checkout_step_2', :locals => locals.merge({:order => order}))
+      render(partial: 'effective/orders/checkout_step_2', locals: locals.merge({order: order}))
     end
   end
 
   def link_to_my_purchases(opts = {})
-    options = {:rel => :nofollow}.merge(opts)
+    options = {rel: :nofollow}.merge(opts)
     link_to (options.delete(:label) || 'My Purchases'), effective_orders.my_purchases_path, options
   end
   alias_method :link_to_order_history, :link_to_my_purchases
@@ -116,7 +113,7 @@ module EffectiveOrdersHelper
       raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
     end
 
-    render(:partial => 'effective/orders/orders_table', :locals => {:orders => orders}.merge(opts))
+    render(partial: 'effective/orders/orders_table', locals: {orders: orders}.merge(opts))
   end
 
   alias_method :render_purchases, :render_orders_table
@@ -133,15 +130,15 @@ module EffectiveOrdersHelper
           hash.map do |k, v|
             content_tag(:tr) do
               content_tag((options[:th] ? :th : :td), k) +
-              content_tag(:td) do
-                if v.kind_of?(Hash)
-                  tableize_order_payment(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
-                elsif v.kind_of?(Array)
-                  '[' + v.join(', ') + ']'
-                else
-                  v
+                content_tag(:td) do
+                  if v.kind_of?(Hash)
+                    tableize_order_payment(v, options.merge(th: (options.key?(:sub_th) ? options[:sub_th] : options[:th])))
+                  elsif v.kind_of?(Array)
+                    '[' + v.join(', ') + ']'
+                  else
+                    v
+                  end
                 end
-              end
             end
           end.join.html_safe
         end

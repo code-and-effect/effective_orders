@@ -5,7 +5,7 @@ module Effective
 
       def stripe_charge
         @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
-        @stripe_charge = Effective::StripeCharge.new(stripe_charge_params)
+        @stripe_charge = Effective::Providers::StripeCharge.new(stripe_charge_params)
         @stripe_charge.order = @order
 
         EffectiveOrders.authorized?(self, :update, @order)
@@ -46,16 +46,16 @@ module Effective
       end
 
       def charge_with_stripe(charge, buyer)
-        results = {:subscriptions => {}, :charge => nil}
+        results = {subscriptions: {}, charge: nil}
 
         # Process subscriptions.
         charge.subscriptions.each do |subscription|
           next if subscription.stripe_plan_id.blank?
 
           stripe_subscription = if subscription.stripe_coupon_id.present?
-            buyer.stripe_customer.subscriptions.create({:plan => subscription.stripe_plan_id, :coupon => subscription.stripe_coupon_id})
+            buyer.stripe_customer.subscriptions.create({plan: subscription.stripe_plan_id, coupon: subscription.stripe_coupon_id})
           else
-            buyer.stripe_customer.subscriptions.create({:plan => subscription.stripe_plan.id})
+            buyer.stripe_customer.subscriptions.create({plan: subscription.stripe_plan.id})
           end
 
           subscription.stripe_subscription_id = stripe_subscription.id
@@ -70,10 +70,10 @@ module Effective
 
         if amount > 0
           results[:charge] = JSON.parse(::Stripe::Charge.create(
-            :amount => amount,
-            :currency => EffectiveOrders.stripe[:currency],
-            :customer => buyer.stripe_customer.id,
-            :description => description
+            amount: amount,
+            currency: EffectiveOrders.stripe[:currency],
+            customer: buyer.stripe_customer.id,
+            description: description
           ).to_json)
         end
 
@@ -87,7 +87,7 @@ module Effective
 
         # We do all these Tokens first, so if one throws an exception no charges are made
         items.each do |seller, _|
-          seller.token = ::Stripe::Token.create({:customer => buyer.stripe_customer.id}, seller.stripe_connect_access_token)
+          seller.token = ::Stripe::Token.create({customer: buyer.stripe_customer.id}, seller.stripe_connect_access_token)
         end
 
         # Make one charge per seller, for all his order_items
@@ -98,11 +98,11 @@ module Effective
 
           results[seller.id] = JSON.parse(::Stripe::Charge.create(
             {
-              :amount => amount,
-              :currency => EffectiveOrders.stripe[:currency],
-              :card => seller.token.id,
-              :description => description,
-              :application_fee => application_fee
+              amount: amount,
+              currency: EffectiveOrders.stripe[:currency],
+              card: seller.token.id,
+              description: description,
+              application_fee: application_fee
             },
             seller.stripe_connect_access_token
           ).to_json)

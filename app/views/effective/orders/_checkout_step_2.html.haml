@@ -3,27 +3,30 @@
 .effective-order.effective-order-purchase-actions
   - if EffectiveOrders.allow_pretend_purchase_in_development
     - if Rails.env.production? == false
-      = render :partial => '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+      = render partial: '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
 
   - if EffectiveOrders.allow_pretend_purchase_in_production
     - if Rails.env.production?
-      = render :partial => '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+      = render partial: '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
 
   - if EffectiveOrders.moneris_enabled
-    = render :partial => '/effective/orders/moneris/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+    = render partial: '/effective/orders/moneris/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
 
   - if EffectiveOrders.paypal_enabled
-    = render :partial => '/effective/orders/paypal/form', locals: {order: order}
+    = render partial: '/effective/orders/paypal/form', locals: {order: order}
 
   - if EffectiveOrders.stripe_enabled
-    = render :partial => '/effective/orders/stripe/form', locals: {order: order}
+    = render partial: '/effective/orders/stripe/form', locals: {order: order}
+
+  - if EffectiveOrders.ccbill_enabled
+    = render partial: '/effective/orders/ccbill/form', locals: {order: order}
 
   - if EffectiveOrders.app_checkout_enabled
     - if EffectiveOrders.authorized?(controller, :app_checkout, order)
-      = render :partial => '/effective/orders/app_checkout/form', locals: {order: order}
+      = render partial: '/effective/orders/app_checkout/form', locals: {order: order}
 
   - if EffectiveOrders.cheque_enabled
-    = render :partial => '/effective/orders/cheque/form', locals: {order: order}
+    = render partial: '/effective/orders/cheque/form', locals: {order: order}
 
   - if EffectiveOrders.allow_pretend_purchase_in_production
     - if Rails.env.production?
