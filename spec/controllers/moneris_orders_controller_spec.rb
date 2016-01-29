@@ -8,23 +8,23 @@ describe Effective::OrdersController, type: :controller do
   let(:order) { FactoryGirl.create(:order) }
   let(:moneris_params) do
     {
-      :response_order_id => "#{order.to_param}",
-      :date_stamp => '2014-10-27',
-      :time_stamp => '17:42:31',
-      :bank_transaction_id =>'660110910011137660',
-      :charge_total => "#{'%.2f' % order.total}",
-      :bank_approval_code => '497365',
-      :response_code => '027',
-      :iso_code => '01',
-      :message => 'APPROVED           *                    =',
-      :trans_name => 'purchase',
-      :cardholder => 'Matt',
-      :f4l4 => '4242***4242',
-      :card =>'V',
-      :expiry_date => '1904',
-      :result => '1',
-      :rvar_authenticity_token => 'nJQf5RKL9SES4uiQIaj4aMNNdIQayEeauOL44iSppD4=',
-      :transactionKey => 'C3kYLXwyMDDFD1ArgxiHFph3wIy1Jx'
+      response_order_id: "#{order.to_param}",
+      date_stamp: '2014-10-27',
+      time_stamp: '17:42:31',
+      bank_transaction_id:'660110910011137660',
+      charge_total: "#{'%.2f' % order.total}",
+      bank_approval_code: '497365',
+      response_code: '027',
+      iso_code: '01',
+      message: 'APPROVED           *                    =',
+      trans_name: 'purchase',
+      cardholder: 'Matt',
+      f4l4: '4242***4242',
+      card:'V',
+      expiry_date: '1904',
+      result: '1',
+      rvar_authenticity_token: 'nJQf5RKL9SES4uiQIaj4aMNNdIQayEeauOL44iSppD4=',
+      transactionKey: 'C3kYLXwyMDDFD1ArgxiHFph3wIy1Jx'
     }
   end
 
@@ -72,7 +72,7 @@ describe Effective::OrdersController, type: :controller do
 
     describe 'transaction verification step' do
       it 'marks the order as purchased when response code is valid' do
-        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 1}) # success
+        allow(subject).to receive(:parse_moneris_response).and_return({response_code: 1}) # success
 
         post :moneris_postback, moneris_params
 
@@ -81,7 +81,7 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'marks order declined when response_code = null' do
-        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 'null'}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({response_code: 'null'}) # failure
 
         post :moneris_postback, moneris_params
 
@@ -101,14 +101,14 @@ describe Effective::OrdersController, type: :controller do
       end
 
       it 'marks order declined when response_code = 0' do
-        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 0}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({response_code: 0}) # failure
         post :moneris_postback, moneris_params
         response.should redirect_to "/orders/#{order.to_param}/declined"
         assigns(:order).purchased?.should eq false
       end
 
       it 'marks order declined when response_code = 50' do
-        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 50}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({response_code: 50}) # failure
         post :moneris_postback, moneris_params
         response.should redirect_to "/orders/#{order.to_param}/declined"
         assigns(:order).purchased?.should eq false
@@ -117,13 +117,13 @@ describe Effective::OrdersController, type: :controller do
 
     describe 'redirect urls' do
       it 'redirects to the purchased_redirect_url on purchase' do
-        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 1}) # success
+        allow(subject).to receive(:parse_moneris_response).and_return({response_code: 1}) # success
         post :moneris_postback, moneris_params.tap { |x| x[:rvar_purchased_redirect_url] = '/something' }
         response.should redirect_to '/something'
       end
 
       it 'redirects to the declined_redirect_url on decline' do
-        allow(subject).to receive(:parse_moneris_response).and_return({:response_code => 'null'}) # failure
+        allow(subject).to receive(:parse_moneris_response).and_return({response_code: 'null'}) # failure
         post :moneris_postback, moneris_params.tap { |x| x[:rvar_declined_redirect_url] = '/something' }
         response.should redirect_to '/something'
       end

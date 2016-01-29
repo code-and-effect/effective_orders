@@ -155,22 +155,22 @@ class Product < ActiveRecord::Base
   structure do
     title               :string
 
-    price               :integer, :default => 0
-    tax_exempt          :boolean, :default => false
+    price               :integer, default: 0
+    tax_exempt          :boolean, default: false
 
-    archived            :boolean, :default => false
+    archived            :boolean, default: false
 
     timestamps
   end
 
   validates_presence_of :title
-  validates_numericality_of :price, :greater_than_or_equal_to => 0
+  validates_numericality_of :price, greater_than_or_equal_to: 0
 
-  scope :products, -> { where(:archived => false) }
+  scope :products, -> { where(archived: false) }
 
   # This archives Products instead of deleting them
   def destroy
-    update_attributes(:archived => true)
+    update_attributes(archived: true)
   end
 
 end
@@ -211,7 +211,7 @@ This is available for simple_form, formtastic and Rails default FormBuilder.
 = simple_form_for(@product) do |f|
   = f.input :title
   = f.input :tax_exempt
-  = f.input :price, :as => :price
+  = f.input :price, as: :price
   = f.button :submit
 ```
 
@@ -219,7 +219,7 @@ or
 
 ```ruby
 = semantic_form_for(@product) do |f|
-  = f.input :price, :as => :price
+  = f.input :price, as: :price
 ```
 
 or
@@ -229,16 +229,16 @@ or
   = f.price_field :price
 ```
 
-The `:as => :price` will work interchangeably with SimpleForm or Formtastic, as long as only one of these gems is present in your application
+The `as: :price` will work interchangeably with SimpleForm or Formtastic, as long as only one of these gems is present in your application
 
 If you use both SimpleForm and Formtastic, you will need to call price input differently:
 
 ```ruby
 = simple_form_for(@product) do |f|
-  = f.input :price, :as => :price_simple_form
+  = f.input :price, as: :price_simple_form
 
 = semantic_form_for @user do |f|
-  = f.input :price, :as => :price_formtastic
+  = f.input :price, as: :price_formtastic
 ```
 
 ### Products#show
@@ -248,7 +248,7 @@ So back on the Product#show page, we will render the product with an Add To Cart
 ```haml
 %h4= @product.title
 %p= price_to_currency(@product.price)
-%p= link_to_add_to_cart(@product, :class => 'btn btn-primary', :label => 'Add To My Shopping Cart')
+%p= link_to_add_to_cart(@product, class: 'btn btn-primary', label: 'Add To My Shopping Cart')
 ```
 
 Please take note of the `price_to_currency` helper above.
@@ -268,7 +268,7 @@ We still need to create a link to the Shopping Cart page so that the user can vi
 or
 
 ```ruby
-= link_to_current_cart(:label => 'Shopping Cart', :class => 'btn btn-prmary')  # To display Shopping Cart (3) when there are 3 items
+= link_to_current_cart(label: 'Shopping Cart', class: 'btn btn-prmary')  # To display Shopping Cart (3) when there are 3 items
 ```
 
 or
@@ -288,7 +288,7 @@ The checkout screen can be reached through the My Cart page, or linked to direct
 or
 
 ```ruby
-= link_to_checkout(:label => 'Continue to Checkout', :class => 'btn btn-primary')
+= link_to_checkout(label: 'Continue to Checkout', class: 'btn btn-primary')
 ```
 
 or
@@ -446,8 +446,8 @@ You can rescue from this exception by adding the following to your application_c
 ```ruby
 rescue_from Effective::AccessDenied do |exception|
   respond_to do |format|
-    format.html { render 'static_pages/access_denied', :status => 403 }
-    format.any { render :text => 'Access Denied', :status => 403 }
+    format.html { render 'static_pages/access_denied', status: 403 }
+    format.any { render text: 'Access Denied', status: 403 }
   end
 end
 ```
@@ -457,9 +457,9 @@ end
 The permissions you actually want to define for a regular user are as follows (using CanCan):
 
 ```ruby
-can [:manage], Effective::Cart, :user_id => user.id
-can [:manage], Effective::Order, :user_id => user.id # Orders cannot be deleted
-can [:manage], Effective::Subscription, :user_id => user.id
+can [:manage], Effective::Cart, user_id: user.id
+can [:manage], Effective::Order, user_id: user.id # Orders cannot be deleted
+can [:manage], Effective::Subscription, user_id: user.id
 ```
 
 In addition to the above, the following permissions allow access to the `/admin` screens:
@@ -527,7 +527,7 @@ The Order has now been purchased.
 If you are using effective_orders to roll your own custom payment workflow, you should be aware of the following helpers:
 
 - `render_checkout(order)` to display the standard Checkout step inline.
-- `render_checkout(order, :purchased_redirect_url => '/', :declined_redirect_url => '/')` to display the Checkout step with custom redirect paths.
+- `render_checkout(order, purchased_redirect_url: '/', declined_redirect_url: '/')` to display the Checkout step with custom redirect paths.
 
 - `render_purchasables(one_or_more_acts_as_purchasable_objects)` to display a list of purchasable items
 
@@ -565,7 +565,7 @@ order.billing_address = Effective::Address.new(...)
 order.shipping_address = Effective::Address.new(...)
 order.add(@product1)
 order.add(@product2)
-order.purchase!(details: {:complicated => 'details', :in => 'a hash'})
+order.purchase!(details: {complicated: 'details', in: 'a hash'})
 ```
 
 The one gotcha with the above two scenarios, is that when `purchase!` is called, the `Effective::Order` in question will run through its validations.  These validations include:
@@ -574,7 +574,7 @@ The one gotcha with the above two scenarios, is that when `purchase!` is called,
 - `validates_presence_of :shipping_address` when configured to be required
 - `validates :user` which can be disabled via config initializer
 
-- `validates_numericality_of :total, :greater_than_or_equal_to => minimum_charge` where minimum_charge is the configured value, once again from the initializer
+- `validates_numericality_of :total, greater_than_or_equal_to: minimum_charge` where minimum_charge is the configured value, once again from the initializer
 - `validates_presence_of :order_items` the Order must have at least one OrderItem
 
 You can skip validations with the following command, but be careful as this skips all validations:
@@ -602,7 +602,7 @@ This screen displays all past purchases made by the current user.  You can add i
 or
 
 ```ruby
-= link_to_my_purchases(:label => 'Order History', :class => 'btn btn-primary')
+= link_to_my_purchases(label: 'Order History', class: 'btn btn-primary')
 ```
 
 or
@@ -624,7 +624,7 @@ Totally optional, but another way of displaying the Order History is to use the 
 In your controller:
 
 ```ruby
-@datatable = Effective::Datatables::Orders.new(:user_id => @user.id)
+@datatable = Effective::Datatables::Orders.new(user_id: @user.id)
 ```
 
 and then in the view:
@@ -715,17 +715,17 @@ Copy these two values into the appropriate lines of config/effective_orders.rb i
 
   if Rails.env.production?
     config.moneris = {
-      :ps_store_id => '',
-      :hpp_key => '',
-      :hpp_url => 'https://www3.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://www3.moneris.com/HPPDP/verifyTxn.php'
+      ps_store_id: '',
+      hpp_key: '',
+      hpp_url: 'https://www3.moneris.com/HPPDP/index.php',
+      verify_url: 'https://www3.moneris.com/HPPDP/verifyTxn.php'
     }
   else
     config.moneris = {
-      :ps_store_id => 'VZ9BNtore1',
-      :hpp_key => 'hp1Y5J35GVDM',
-      :hpp_url => 'https://esqa.moneris.com/HPPDP/index.php',
-      :verify_url => 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
+      ps_store_id: 'VZ9BNtore1',
+      hpp_key: 'hp1Y5J35GVDM',
+      hpp_url: 'https://esqa.moneris.com/HPPDP/index.php',
+      verify_url: 'https://esqa.moneris.com/HPPDP/verifyTxn.php'
     }
   end
 ```
@@ -829,9 +829,9 @@ Then enable Stripe in the app/config/effective_orders.rb initializer and enter y
 config.stripe_enabled = true
 
 config.stripe = {
-  :secret_key => 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
-  :publishable_key => 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
-  :currency => 'usd'
+  secret_key: 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
+  publishable_key: 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
+  currency: 'usd'
 }
 ```
 
@@ -862,10 +862,10 @@ And add these values to the app/config/effective_orders.rb initializer:
 
 ```ruby
 config.stripe = {
-  :secret_key => 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
-  :publishable_key => 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
-  :currency => 'usd',
-  :connect_client_id => 'ca_35jLok5G9kosyYF7quTOwcauJjTnUnud'
+  secret_key: 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
+  publishable_key: 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
+  currency: 'usd',
+  connect_client_id: 'ca_35jLok5G9kosyYF7quTOwcauJjTnUnud'
 }
 ```
 

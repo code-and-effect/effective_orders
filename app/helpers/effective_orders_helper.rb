@@ -80,26 +80,26 @@ module EffectiveOrdersHelper
   end
 
   def render_order(order)
-    render(:partial => 'effective/orders/order', :locals => {:order => order})
+    render(partial: 'effective/orders/order', locals: {order: order})
   end
 
   def render_checkout(order, opts = {})
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 
     locals = {
-      :purchased_redirect_url => nil,
-      :declined_redirect_url => nil
+      purchased_redirect_url: nil,
+      declined_redirect_url: nil
     }.merge(opts)
 
     if order.new_record? || !order.valid?
-      render(:partial => 'effective/orders/checkout_step_1', :locals => locals.merge({:order => order}))
+      render(partial: 'effective/orders/checkout_step_1', locals: locals.merge({order: order}))
     else
-      render(:partial => 'effective/orders/checkout_step_2', :locals => locals.merge({:order => order}))
+      render(partial: 'effective/orders/checkout_step_2', locals: locals.merge({order: order}))
     end
   end
 
   def link_to_my_purchases(opts = {})
-    options = {:rel => :nofollow}.merge(opts)
+    options = {rel: :nofollow}.merge(opts)
     link_to (options.delete(:label) || 'My Purchases'), effective_orders.my_purchases_path, options
   end
   alias_method :link_to_order_history, :link_to_my_purchases
@@ -113,7 +113,7 @@ module EffectiveOrdersHelper
       raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
     end
 
-    render(:partial => 'effective/orders/orders_table', :locals => {:orders => orders}.merge(opts))
+    render(partial: 'effective/orders/orders_table', locals: {orders: orders}.merge(opts))
   end
 
   alias_method :render_purchases, :render_orders_table
