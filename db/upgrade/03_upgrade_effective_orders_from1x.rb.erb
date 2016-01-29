@@ -24,9 +24,10 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
     Effective::Order.find_each do |order|
       order.tax_rate = ((order.order_items.first.try(:tax_rate) || 0.0) * 100.0)
       update_payment_provider_and_card(order)
-      order.save(validate: false);
-      print '.';
+      order.save(validate: false)
+      print '.'
     end
+    print "\n" if Effective::Order.any?
 
     remove_column <%= @order_items_table_name %>, :tax_rate
 
