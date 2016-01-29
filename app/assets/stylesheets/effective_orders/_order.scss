@@ -48,7 +48,7 @@ form.new_effective_order {
 }
 
 @media print {
+  .effective-orders-page-title { display: none; }
+  .effective-order-actions { display: none; }
   .effective-order-purchase-actions { display: none; }
-  .print-button { display: none; }
-  .resend-receipt-button { display: none; }
 }
