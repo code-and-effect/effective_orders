@@ -1,8 +1,6 @@
 require 'haml-rails'
-require 'migrant'
 require 'simple_form'
 require 'effective_addresses'
-require 'effective_obfuscation'
 require 'effective_orders/engine'
 require 'effective_orders/version'
 require 'effective_orders/app_checkout_service'

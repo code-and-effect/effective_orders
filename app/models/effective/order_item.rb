@@ -9,14 +9,14 @@ module Effective
     delegate :purchased_download_url, :to => :purchasable
     delegate :purchased?, :declined?, :to => :order
 
-    structure do
-      title                 :string
-      quantity              :integer
-      price                 :integer, default: 0
-      tax_exempt            :boolean
-
-      timestamps
-    end
+    # structure do
+    #   title                 :string
+    #   quantity              :integer
+    #   price                 :integer, default: 0
+    #   tax_exempt            :boolean
+    #
+    #   timestamps
+    # end
 
     validates :purchasable, associated: true, presence: true
     accepts_nested_attributes_for :purchasable, allow_destroy: false, reject_if: :all_blank, update_only: true

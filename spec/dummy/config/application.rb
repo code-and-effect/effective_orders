@@ -6,7 +6,8 @@ Bundler.require(*Rails.groups)
 require 'devise'
 require 'haml'
 require 'effective_addresses'
-require "effective_orders"
+require 'effective_orders'
+require 'effective_obfuscation'
 
 module Dummy
   class Application < Rails::Application

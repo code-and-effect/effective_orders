@@ -5,9 +5,9 @@ module Effective
     belongs_to :user    # This is optional.  We want to let non-logged-in people have carts too
     has_many :cart_items, :inverse_of => :cart, :dependent => :delete_all
 
-    structure do
-      timestamps
-    end
+    # structure do
+    #   timestamps
+    # end
 
     default_scope -> { includes(:cart_items => :purchasable) }
 
