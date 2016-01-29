@@ -39,11 +39,16 @@ module Effective
       price * quantity
     end
 
+    def tax
+      return 0 if tax_exempt?
+      raise 'parent Effective::Order must have a tax_rate to compute order item tax' unless order.try(:tax_rate).present?
+      (subtotal * order.tax_rate / 100.0).round(0).to_i
+    end
+
     def total
       return subtotal if tax_exempt?
       raise 'parent Effective::Order must have a tax_rate to compute order item total' unless order.try(:tax_rate).present?
-
-      (subtotal + (subtotal * order.tax_rate / 100.0)).round(0).to_i
+      subtotal + tax
     end
 
     def price=(value)
