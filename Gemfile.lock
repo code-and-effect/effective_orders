@@ -312,6 +312,3 @@ DEPENDENCIES
   shoulda-matchers
   sqlite3
   stripe-ruby-mock (>= 2.0.4)
-
-BUNDLED WITH
-   1.11.2

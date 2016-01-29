@@ -5,7 +5,7 @@ module Effective
 
       def stripe_charge
         @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
-        @stripe_charge = Effective::StripeCharge.new(stripe_charge_params)
+        @stripe_charge = Effective::Providers::StripeCharge.new(stripe_charge_params)
         @stripe_charge.order = @order
 
         EffectiveOrders.authorized?(self, :update, @order)

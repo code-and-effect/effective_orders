@@ -1,5 +1,5 @@
 # This is an object for the stripe charge form
-module Effective
+module Effective::Providers
   class StripeCharge
     extend ActiveModel::Naming
     include ActiveModel::Conversion
