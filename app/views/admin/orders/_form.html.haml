@@ -4,6 +4,7 @@
   = simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: effective_orders.admin_orders_path) do |f|
     = f.association :user,
       label: 'Buyer',
+      required: true,
       as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
       collection: @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s }
 
