@@ -124,17 +124,17 @@ module EffectiveOrders
 
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
-    @payment_providers = [
+    @payment_providers ||= [
       'admin',
       ('app_checkout' if app_checkout_enabled),
+      ('ccbill' if ccbill_enabled),
       ('cheque' if cheque_enabled),
       ('free' if allow_free_orders),
       ('moneris' if moneris_enabled),
       ('paypal' if paypal_enabled),
       ('pretend' if (allow_pretend_purchase_in_production && Rails.env.production?) || (allow_pretend_purchase_in_development && !Rails.env.production?)),
       ('stripe' if stripe_enabled),
-      ('stripe_connect' if stripe_connect_enabled),
-      ('ccbill' if ccbill_enabled)
+      ('stripe_connect' if stripe_connect_enabled)
     ].compact
   end
 
