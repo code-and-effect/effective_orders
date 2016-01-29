@@ -4,7 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        skip_before_filter :verify_authenticity_token, :only => [:ccbill_postback]
+        skip_before_filter :verify_authenticity_token, only: [:ccbill_postback]
       end
 
       def ccbill_postback
@@ -15,11 +15,11 @@ module Effective
 
         if @order.present? && postback.verified?
           if @order.purchased?
-            order_purchased(postback.order_details)
+            order_purchased(details: postback.order_details, provider: 'ccbill')
           elsif postback.approval? && postback.matches?(@order)
-            order_purchased(postback.order_details)
+            order_purchased(details: postback.order_details, provider: 'ccbill')
           else
-            order_declined(postback.order_details)
+            order_declined(details: postback.order_details, provider: 'ccbill')
           end
         end
 
