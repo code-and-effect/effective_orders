@@ -37,7 +37,7 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
   def self.down
     add_column <%= @order_items_table_name %>, :tax_rate, :decimal, :precision => 5, :scale => 3
     Effective::OrderItem.reset_column_information
-    Effective::OrderItem.find_each { |order_item| order_item.update_column(:tax_rate, (order.tax_rate || 0.0) / 100.0) }
+    Effective::OrderItem.find_each { |order_item| order_item.update_column(:tax_rate, (order_item.try(:order).tax_rate || 0.0) / 100.0) }
 
     remove_column <%= @orders_table_name %>, :note
     remove_column <%= @orders_table_name %>, :payment_provider
