@@ -56,6 +56,7 @@ module EffectiveOrders
   mattr_accessor :cheque_enabled
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
+  mattr_accessor :ccbill_enabled
   mattr_accessor :app_checkout_enabled
 
   mattr_accessor :stripe_enabled
@@ -70,6 +71,7 @@ module EffectiveOrders
   mattr_accessor :paypal
   mattr_accessor :moneris
   mattr_accessor :stripe
+  mattr_accessor :ccbill
   mattr_accessor :app_checkout
   mattr_accessor :cheque
 
@@ -110,7 +112,14 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris_enabled, paypal_enabled, stripe_enabled, cheque_enabled, app_checkout_enabled].select { |enabled| enabled }.length == 1
+    [
+      moneris_enabled,
+      paypal_enabled,
+      stripe_enabled,
+      cheque_enabled,
+      ccbill_enabled,
+      app_checkout_enabled
+    ].select { |enabled| enabled }.length == 1
   end
 
   # The Effective::Order.payment_provider value must be in this collection

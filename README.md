@@ -981,6 +981,63 @@ The secret can be any string. Here's a good way to come up with a secret:
 This process should be very similar although you'll create and configure a seller account on paypal.com rather than the sandbox site.
 You should generate separate private and public certificates/keys for this and it is advisable to not keep production certificates/keys in version control.
 
+## Paying via CCBill
+
+Effective Orders has implemented checkout with CCBill using their "Dynamic Pricing" API and does not
+integrate with CCBill subscriptions. If you need to make payments for CCBill subscriptions, please help
+by improving Effective Orders with this functionality.
+
+### CCBill Account Setup
+
+You need a merchant account with CCBill so go sign up and login. To set up your account with Dynamic
+Pricing, you'll need to go through some hoops with CCBill:
+
+1. Get approval to operate a merchant account from CCBill Merchant Services (they'll need to see your
+   site in action)
+2. Provide CCBill with two valid forms of ID and wait for them to approve your account
+3. Create two additional sub accounts for a staging server and your localhost
+   ("Account Info" > "Account Setup")
+4. Get each new sub account approved by Merchant Services (mention that they are for testing only)
+5. Ask CCBill tech support to set up all sub accounts with Dynamic Pricing
+6. Set the postback urls for each sub account to be `"#{ your_domain_name }/orders/ccbill_postback`
+   (Look for 'Approval Post URL' and 'Denial Post URL' in "Account Info" > "Sub Account Admin" > select sub account
+   \> "Advanced" > under 'Background Post Information')
+
+### Effective Orders Configuration
+
+Get the following information and add it
+to the Effective Orders initializer. CCBill live chat is generally quick and helpful. They can help you
+find any of this information.
+
+- Account number (`:client_accnum`)
+- Subaccount number (`:client_subacc`)
+- Checkout form id/name (`:form_name`)
+- Currency code (`:currency_code`)
+- Encryption key/salt (`:dynamic_pricing_salt`)("Account Info" > "Sub Account Admin" > select sub account
+  \> "Advanced" > under 'Upgrade Security Setup Information' > 'Encryption key')
+
+Effective Orders will authorize to make changes to the customer's order during CCBill's post back after
+the transaction. Since, this is not an action that the customer takes directly, please make sure
+that the Effective Orders authorization method returns `true` for the controller/action
+`'Effective::OrdersController#ccbill_postback'` with an `Effective::Order` resource.
+
+### Testing transactions with CCBill
+
+To test payments with CCBill:
+
+1. Set up yourself as a user who is authorized to make test transactions
+   ([See this guide](https://www.ccbill.com/cs/wiki/tiki-index.php?page=How+do+I+set+up+a+user+to+process+test+transactions%3F))
+2. Use ngrok on localhost or a staging server to go through a normal payment (remember to configure the
+   postback urls (see #6 of [CCBill Account Setup](#ccbill-account-setup))
+3. Use one of the provided credit card numbers in the guide from step 1 for the associated response
+
+### Helpful CCBill Documentation
+
+- [Dynamic Pricing](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing)
+- [Dynamic Pricing User Guide](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Dynamic+Pricing+User+Guide)
+- [Background Post](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Background+Post)
+- [Webhooks](https://www.ccbill.com/cs/wiki/tiki-index.php?page=Webhooks+User+Guide)
+- [How do I set up a user to process test transactions?](https://www.ccbill.com/cs/wiki/tiki-index.php?page=How+do+I+set+up+a+user+to+process+test+transactions%3F)
 
 ## Paying Using App Currency or Logic
 
