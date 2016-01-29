@@ -1,6 +1,10 @@
-%h2.effective-orders-page-title= @page_title
-
-%p.text-right= link_to 'New Order', effective_orders.new_admin_order_path, class: 'btn btn-primary'
+.row
+  .col-sm-6
+    %h2.effective-orders-page-title= @page_title
+  .col-sm-6
+    = link_to effective_orders.new_admin_order_path, class: 'btn btn-primary pull-right effective-orders-page-action' do
+      %span.glyphicon.glyphicon-plus
+      New Order
 
 - if @datatable.nil?
   %p Please install #{link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'} to see this page.
