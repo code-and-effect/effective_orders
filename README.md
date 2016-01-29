@@ -86,6 +86,15 @@ bundle exec rails generate effective_orders:upgrade_price_column products price
 
 ### Upgrading to 2.0.x
 
+The `tax_rate_method` configuration option has been removed and renamed to `order_tax_rate_method`.
+Changing this in `/config/initializers/effective_orders.rb` is the first step.
+
+The default implementation assigns the tax rate based on the order's billing_address (see the [Tax section](#tax)):
+
+```ruby
+config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
+```
+
 There are numerous database changes in the 2.0.0 line of effective_orders.
 
 if you are running a 1.x version, please upgrade your database with this command:
