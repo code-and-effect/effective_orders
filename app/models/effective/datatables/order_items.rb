@@ -5,15 +5,21 @@ if defined?(EffectiveDatatables)
         datatable do
           default_order :purchased_at, :desc
 
-          table_column(:purchased_at, :type => :datetime, :column => 'orders.purchased_at') do |order_item|
+          table_column(:purchased_at, type: :datetime, column: 'orders.purchased_at') do |order_item|
             Time.at(order_item[:purchased_at]).in_time_zone if order_item[:purchased_at].present?
           end
 
-          table_column :id, :visible => false
+          table_column :id, visible: false
 
-          table_column(:order, :type => :obfuscated_id, :sortable => false) do |order_item|
-            obfuscated_id = Effective::Order.obfuscate(order_item[:order_id])
-            link_to(obfuscated_id, (datatables_admin_path? ? effective_orders.admin_order_path(obfuscated_id) : effective_orders.order_path(obfuscated_id)))
+          if EffectiveOrders.obfuscate_order_ids
+            table_column(:order, type: :obfuscated_id, sortable: false) do |order_item|
+              obfuscated_id = Effective::Order.obfuscate(order_item[:order_id])
+              link_to(obfuscated_id, (datatables_admin_path? ? effective_orders.admin_order_path(obfuscated_id) : effective_orders.order_path(obfuscated_id)))
+            end
+          else
+            table_column(:order, sortable: false) do |order_item|
+              link_to(order_item.to_param, (datatables_admin_path? ? effective_orders.admin_order_path(order_item.to_param) : effective_orders.order_path(order_item.to_param)))
+            end
           end
 
           table_column :email, column: 'users.email', label: 'Buyer Email', if: proc { attributes[:user_id].blank? } do |order_item|
@@ -38,13 +44,13 @@ if defined?(EffectiveDatatables)
           table_column(:tax) { |order_item| price_to_currency(order_item[:tax].to_i) }
           table_column(:total) { |order_item| price_to_currency(order_item[:total].to_i) }
 
-          table_column :created_at, :visible => false
-          table_column :updated_at, :visible => false
+          table_column :created_at, visible: false
+          table_column :updated_at, visible: false
         end
 
         def collection
           collection = Effective::OrderItem.unscoped
-            .joins(:order => :user)
+            .joins(order: :user)
             .select('order_items.*, orders.*, users.email AS email')
             .select("#{query_subtotal} AS subtotal, #{query_tax} AS tax, #{query_total} AS total")
             .group('order_items.id, orders.id, users.email')
