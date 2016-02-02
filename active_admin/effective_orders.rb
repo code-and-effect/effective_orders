@@ -55,12 +55,12 @@ if defined?(ActiveAdmin)
         price_to_currency(order.total)
       end
 
-      column :payment_method do |order|
-        order.payment_method
+      column :payment_provider do |order|
+        order.payment_provider
       end
 
-      column :payment_card_type do |order|
-        order.payment_card_type
+      column :payment_card do |order|
+        order.payment_card
       end
 
       column do |order|
@@ -80,8 +80,8 @@ if defined?(ActiveAdmin)
       col_headers << "Subtotal"
       col_headers << "Tax"
       col_headers << "Total"
-      col_headers << 'Purchase method'
-      col_headers << 'Card Type'
+      col_headers << 'Payment provider'
+      col_headers << 'Payment card'
 
       csv_string = CSV.generate do |csv|
         csv << col_headers
@@ -91,12 +91,12 @@ if defined?(ActiveAdmin)
             order.to_param,
             order.purchased_at.strftime("%Y-%m-%d %H:%M:%S %z"),
             order.user.try(:email),
-            (order.billing_address.try(:full_name) || order.user.to_s),
+            (order.try(:billing_address).try(:full_name) || order.user.to_s),
             (order.subtotal / 100.0).round(2),
             (order.tax / 100.0).round(2),
             (order.total / 100.0).round(2),
-            order.payment_method,
-            order.payment_card_type
+            order.payment_provider,
+            order.payment_card
           ]
         end
       end

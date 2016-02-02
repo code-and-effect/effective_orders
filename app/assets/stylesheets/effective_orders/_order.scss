@@ -49,6 +49,7 @@ form.new_effective_order {
 
 @media print {
   .effective-orders-page-title { display: none; }
+  .effective-orders-page-content { display: none; }
   .effective-order-actions { display: none; }
   .effective-order-purchase-actions { display: none; }
 }

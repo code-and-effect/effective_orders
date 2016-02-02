@@ -139,25 +139,31 @@ EffectiveOrders.setup do |config|
   # In all three of these cases, the subject_prefix will still be used.
 
   # The Procs are the same for admin & buyer receipt, the seller Proc is different
-  # subject_for_admin_receipt: Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # subject_for_buyer_receipt: Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # subject_for_payment_request: Proc.new { |order| "Pending Order #{order.to_param}"}
-  # subject_for_seller_receipt: Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
+  # subject_for_order_receipt_to_admin: Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # subject_for_order_receipt_to_buyer: Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # subject_for_payment_request_to_buyer: Proc.new { |order| "Pending Order #{order.to_param}"}
+  # subject_for_order_receipt_to_seller: Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
 
   config.mailer = {
     send_order_receipt_to_admin: true,
     send_order_receipt_to_buyer: true,
-    send_payment_request_to_buyer: true,
-    send_order_receipts_when_marked_paid_by_admin: false,
     send_order_receipt_to_seller: true,   # Only applies to StripeConnect
-    layout: 'effective_orders_mailer_layout',
-    admin_email: 'admin@example.com',
-    default_from: 'info@example.com',
+    send_payment_request_to_buyer: true,
+    send_pending_order_invoice_to_buyer: true,
+    send_order_receipts_when_marked_paid_by_admin: false,
+
     subject_prefix: '[example]',
-    subject_for_admin_receipt: '',
-    subject_for_buyer_receipt: '',
-    subject_for_payment_request: '',
-    subject_for_seller_receipt: '',
+    subject_for_order_receipt_to_admin: '',
+    subject_for_order_receipt_to_buyer: '',
+    subject_for_order_receipt_to_seller: '',
+    subject_for_pending_order_invoice_to_buyer: '',
+    subject_for_payment_request_to_buyer: '',
+
+    layout: 'effective_orders_mailer_layout',
+
+    default_from: 'info@example.com',
+    admin_email: 'admin@example.com',
+
     deliver_method: nil,
     delayed_job_deliver: false
   }

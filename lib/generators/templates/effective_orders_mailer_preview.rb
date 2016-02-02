@@ -3,22 +3,26 @@
 # to see a preview of the following 3 emails:
 
 class EffectiveOrdersMailerPreview < ActionMailer::Preview
-  def order_receipt_to_buyer
-    Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
-  end
-
-  def payment_request_to_buyer
-    Effective::OrdersMailer.payment_request_to_buyer(build_preview_order)
-  end
-
   def order_receipt_to_admin
     Effective::OrdersMailer.order_receipt_to_admin(build_preview_order)
+  end
+
+  def order_receipt_to_buyer
+    Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
   end
 
   # This email is only sent to sellers having sold items via StripeConnect
   def order_receipt_to_seller
     order = build_preview_order
     Effective::OrdersMailer.order_receipt_to_seller(order, preview_customer, order.order_items)
+  end
+
+  def payment_request_to_buyer
+    Effective::OrdersMailer.payment_request_to_buyer(build_preview_order)
+  end
+
+  def pending_order_invoice_to_buyer
+    Effective::OrdersMailer.pending_order_invoice_to_buyer(build_preview_order)
   end
 
   protected

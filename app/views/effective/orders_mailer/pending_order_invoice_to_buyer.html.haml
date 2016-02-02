@@ -1,0 +1,13 @@
+%p.effective-orders-receipt-info Pending order created
+
+%p We have received notice of your intention to purchase the following items.
+
+%p Please remit payment at your earliest convenience.
+
+%p #{link_to('Click here', effective_orders.order_url(@order))} to review your order online.
+
+- if EffectiveOrders.cheque_enabled
+  %p When we receive your cheque in the mail we will mark your order paid.
+
+= render(@order, no_order_actions: true)
+
