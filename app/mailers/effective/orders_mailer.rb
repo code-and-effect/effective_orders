@@ -46,7 +46,7 @@ module Effective
         string_or_callable = self.instance_exec(order, &string_or_callable)
       end
 
-      prefix_subject(string_or_callable.presence || "Order ##{order.to_param} Receipt")
+      prefix_subject(string_or_callable.presence || "Order Receipt: ##{order.to_param}")
     end
 
     def subject_for_order_receipt_to_buyer(order)
@@ -56,7 +56,7 @@ module Effective
         string_or_callable = self.instance_exec(order, &string_or_callable)
       end
 
-      prefix_subject(string_or_callable.presence || "Order ##{order.to_param} Receipt")
+      prefix_subject(string_or_callable.presence || "Order Receipt: ##{order.to_param}")
     end
 
     def subject_for_order_receipt_to_seller(order, order_items, seller)
@@ -76,7 +76,7 @@ module Effective
         string_or_callable = self.instance_exec(order, &string_or_callable)
       end
 
-      prefix_subject(string_or_callable.presence || "Request for Payment - Invoice ##{order.to_param}")
+      prefix_subject(string_or_callable.presence || "Request for Payment: Invoice ##{order.to_param}")
     end
 
     def subject_for_pending_order_invoice_to_buyer(order)
@@ -86,7 +86,7 @@ module Effective
         string_or_callable = self.instance_exec(order, &string_or_callable)
       end
 
-      prefix_subject(string_or_callable.presence || "Pending Order ##{order.to_param}")
+      prefix_subject(string_or_callable.presence || "Pending Order: ##{order.to_param}")
     end
 
 
