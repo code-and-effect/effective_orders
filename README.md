@@ -62,28 +62,6 @@ Require the stylesheet on the asset pipeline by adding the following to your app
 *= require effective_orders
 ```
 
-### Upgrading from 0.3.x
-
-In the 0.3.x versions of this gem, prices were internally represented as Decimals
-
-This has been changed in 0.4.x to properly be Integer columns
-
-If you're running a 0.3.x or earlier version, please upgrade to 0.4.x with this one command:
-
-```ruby
-rails generate effective_orders:upgrade_from03x
-```
-
-the above command will upgrade the order_items and subscriptions tables.
-
-If you have additional (products or whatever..) tables with a column `price` represented as a Decimal, they should also be upgraded.
-
-To upgrade, use this generator to create a migration on table `products` with column `price`:
-
-```ruby
-bundle exec rails generate effective_orders:upgrade_price_column products price
-```
-
 ### Upgrading to 2.0.x
 
 The `tax_rate_method` configuration option has been removed and renamed to `order_tax_rate_method`.
