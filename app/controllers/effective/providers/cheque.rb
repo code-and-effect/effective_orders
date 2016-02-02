@@ -14,8 +14,9 @@ module Effective
         @page_title = 'Payment required'
 
         if @order.save
+          @order.send_pending_order_invoice_to_buyer!
           current_cart.try(:destroy)
-          flash.now[:success] = 'Successfully indicated order will be payed by cheque.  Please send a cheque.'
+          flash.now[:success] = 'Successfully indicated order will be payed by cheque. Please send us a cheque.'
         else
           flash[:danger] = "Unable to save your order: #{@order.errors.full_messages.to_sentence}. Please try again."
           redirect_to effective_orders.order_path(@order)

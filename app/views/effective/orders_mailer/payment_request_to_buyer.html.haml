@@ -1,6 +1,10 @@
-%p.effective-orders-receipt-info Pending order created:
+%p.effective-orders-receipt-info Request for Payment
 
-%p Please #{link_to('visit here', effective_orders.order_url(@order))} to review your order and pay online.
+%p
+  An order has been created on your behalf for the following items.
+  Please remit payment at your earliest convenience.
+
+%p #{link_to('Click here', effective_orders.order_url(@order))} to review your order and pay online with a credit card.
 
 - if EffectiveOrders.cheque_enabled
   %p We also accept cheques via the mail, and we will manually mark your order paid upon receiving it.

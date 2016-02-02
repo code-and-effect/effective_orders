@@ -461,12 +461,15 @@ describe Effective::OrdersController, type: :controller do
 
     context 'when success' do
       it 'should update order state, empty cart and redirect to order show page with success message' do
+        Effective::OrdersMailer.deliveries.clear
+
         post :pay_by_cheque, id: order.to_param
 
         expect(assigns(:order).pending?).to be_truthy
         expect(Effective::Cart.first).to be_nil
         flash[:success].present?.should eq true
         response.should render_template(:pay_by_cheque)
+        Effective::OrdersMailer.deliveries.length.should eq 1
       end
     end
 
@@ -474,12 +477,14 @@ describe Effective::OrdersController, type: :controller do
       before { Effective::Order.any_instance.stub(:save).and_return(false) }
 
       it 'should not empty cart and redirect to order show page with danger message' do
+        Effective::OrdersMailer.deliveries.clear
         post :pay_by_cheque, id: order.to_param
 
         expect(response).to be_redirect
         expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.order_path(order)
         expect(Effective::Cart.first.empty?).to be_falsey
         flash[:danger].present?.should eq true
+        Effective::OrdersMailer.deliveries.length.should eq 0
       end
     end
   end
