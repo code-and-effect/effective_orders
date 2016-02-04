@@ -47,7 +47,7 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/:id/pretend_purchase', to: 'orders#pretend_purchase', as: 'pretend_purchase', via: [:get, :post]
     end
 
-    resources :orders, only: [:new, :create, :update, :show, :index]
+    resources :orders, except: [:destroy]
 
     match 'cart', to: 'carts#show', as: 'cart', via: :get
     match 'cart', to: 'carts#destroy', via: :delete
