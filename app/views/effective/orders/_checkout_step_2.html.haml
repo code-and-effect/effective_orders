@@ -29,5 +29,5 @@
     = render partial: '/effective/orders/cheque/form', locals: {order: order}
 
   - if EffectiveOrders.allow_pretend_purchase_in_production
-    - if Rails.env.production?
-      %p= EffectiveOrders.allow_pretend_purchase_in_production_message
+    %br
+    %p= EffectiveOrders.allow_pretend_purchase_in_production_message
