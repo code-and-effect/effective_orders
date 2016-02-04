@@ -8,7 +8,7 @@ module Effective
       @cart = current_cart
       @pending_orders = Effective::Order.pending.where(user: current_user) if current_user.present?
 
-      @page_title ||= 'Shopping Cart'
+      @page_title ||= 'My Cart'
       EffectiveOrders.authorized?(self, :show, @cart)
     end
 

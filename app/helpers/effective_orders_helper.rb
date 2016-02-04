@@ -40,7 +40,7 @@ module EffectiveOrdersHelper
       'Checkout with credit card'
     when :paypal
       'Checkout with PayPal'
-    when :pretend  # The logic for this is in orders/views/_checkout_step_2.html.haml
+    when :pretend
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
     when :cheque
       'Pay by Cheque'
@@ -83,24 +83,38 @@ module EffectiveOrdersHelper
     render(partial: 'effective/orders/order', locals: {order: order})
   end
 
-  def render_checkout(order, opts = {})
+  def render_checkout_step1(order, opts = {})
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 
-    locals = {
-      purchased_redirect_url: nil,
-      declined_redirect_url: nil
-    }.merge(opts)
+    locals = { purchased_redirect_url: nil, declined_redirect_url: nil }.merge(opts)
+
+    render(partial: 'effective/orders/checkout_step1', locals: locals.merge({order: order}))
+  end
+  alias_method :render_checkout, :render_checkout_step1
+
+  def render_checkout_step2(order, opts = {})
+    raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
+
+    locals = { purchased_redirect_url: nil, declined_redirect_url: nil }.merge(opts)
 
     if order.new_record? || !order.valid?
-      render(partial: 'effective/orders/checkout_step_1', locals: locals.merge({order: order}))
+      render(partial: 'effective/orders/checkout_step1', locals: locals.merge({order: order}))
     else
-      render(partial: 'effective/orders/checkout_step_2', locals: locals.merge({order: order}))
+      render(partial: 'effective/orders/checkout_step2', locals: locals.merge({order: order}))
     end
   end
 
   def link_to_my_purchases(opts = {})
-    options = {rel: :nofollow}.merge(opts)
-    link_to (options.delete(:label) || 'My Purchases'), effective_orders.my_purchases_path, options
+    options = {
+      label: 'My Purchases',
+      class: 'btn btn-default',
+      rel: :nofollow
+    }.merge(opts)
+
+    label = options.delete(:label)
+    options[:class] = ((options[:class] || '') + ' btn-my-purchases')
+
+    link_to(label, effective_orders.my_purchases_path, options)
   end
   alias_method :link_to_order_history, :link_to_my_purchases
 

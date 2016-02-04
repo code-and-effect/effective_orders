@@ -28,25 +28,43 @@ module EffectiveCartsHelper
   end
 
   def link_to_current_cart(opts = {})
-    options = {id: 'current_cart', rel: :nofollow}.merge(opts)
+    options = {
+      label: 'My Cart',
+      id: 'current_cart',
+      rel: :nofollow,
+      class: 'btn btn-default'
+    }.merge(opts)
 
-    label = options.delete(:label) || 'Cart'
+    label = options.delete(:label)
+    options[:class] = ((options[:class] || '') + ' btn-current-cart')
+
     link_to (current_cart.size == 0 ? label : "#{label} (#{current_cart.size})"), effective_orders.cart_path, options
   end
 
   def link_to_add_to_cart(purchasable, opts = {})
     raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.kind_of?(ActsAsPurchasable)
 
-    options = {class: 'btn', rel: :nofollow, 'data-disable-with' => 'Adding...'}.merge(opts)
+    options = {
+      label: 'Add to Cart',
+      class: 'btn btn-primary',
+      rel: :nofollow,
+      data: {
+        disable_with: 'Adding...'
+      }
+    }.merge(opts)
+
+    label = options.delete(:label)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')
 
-    link_to (options.delete(:label) || 'Add to Cart'), effective_orders.add_to_cart_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id.to_i), options
+    link_to label, effective_orders.add_to_cart_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id.to_i), options
   end
 
   def link_to_remove_from_cart(cart_item, opts = {})
     raise ArgumentError.new('expecting an Effective::CartItem object') unless cart_item.kind_of?(Effective::CartItem)
 
     options = {
+      label: 'Remove',
+      class: 'btn btn-primary',
       rel: :nofollow,
       data: {
         confirm: 'Are you sure? This cannot be undone!',
@@ -55,37 +73,49 @@ module EffectiveCartsHelper
       method: :delete
     }.merge(opts)
 
+    label = options.delete(:label)
     options[:class] = ((options[:class] || '') + ' btn-remove-from-cart')
 
-    link_to (options.delete(:label) || 'Remove'), effective_orders.remove_from_cart_path(cart_item), options
+    link_to(label, effective_orders.remove_from_cart_path(cart_item), options)
   end
 
   def link_to_empty_cart(opts = {})
     options = {
+      label: 'Empty Cart',
+      class: 'btn btn-danger',
       rel: :nofollow,
-      class: 'btn',
       data: {
-        confirm: 'This will clear your entire cart.  Are you sure?  This cannot be undone!',
+        confirm: 'This will clear your entire cart.  Are you sure?',
         disable_with: 'Emptying...'
       },
       method: :delete
     }.merge(opts)
 
-    options[:class] = ((options[:class] || '') + ' btn-empty-cart btn-danger')
+    label = options.delete(:label)
+    options[:class] = ((options[:class] || '') + ' btn-empty-cart')
 
-    link_to (options.delete(:label) || 'Empty Cart'), effective_orders.cart_path, options
+    link_to(label, effective_orders.cart_path, options)
   end
 
   def link_to_checkout(opts = {})
     options = {
-      class: 'btn',
+      label: 'Checkout',
+      class: 'btn btn-primary',
       rel: :nofollow,
-      disable_with: 'Proceeding...'
+      data: {
+        disable_with: 'Continuing...'
+      },
     }.merge(opts)
 
+    order = options.delete(:order)
+    label = options.delete(:label)
     options[:class] = ((options[:class] || '') + ' btn-checkout')
 
-    link_to (options.delete(:label) || 'Proceed to Checkout'), effective_orders.new_order_path, options
+    if order.present?
+      link_to(label, effective_orders.edit_order_path(order), options)
+    else
+      link_to(label, effective_orders.new_order_path, options)
+    end
   end
 
   def render_cart(cart = nil)
