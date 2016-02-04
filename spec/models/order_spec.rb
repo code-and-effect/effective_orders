@@ -290,10 +290,10 @@ describe Effective::Order, type: :model do
       Effective::OrdersMailer.deliveries.length.should eq 2
 
       Effective::OrdersMailer.deliveries[0].to.first.should eq 'admin@example.com'
-      Effective::OrdersMailer.deliveries[0].subject.include?("Order ##{order.to_param} Receipt").should eq true
+      Effective::OrdersMailer.deliveries[0].subject.include?("Order Receipt: ##{order.to_param}").should eq true
 
       Effective::OrdersMailer.deliveries[1].to.first.should eq order.user.email
-      Effective::OrdersMailer.deliveries[1].subject.include?("Order ##{order.to_param} Receipt").should eq true
+      Effective::OrdersMailer.deliveries[1].subject.include?("Order Receipt: ##{order.to_param}").should eq true
     end
 
     it 'does not send email if passed email: false' do

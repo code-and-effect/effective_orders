@@ -37,7 +37,7 @@ describe Effective::OrdersController, type: :controller do
         assigns(:stripe_charge).errors[:token].present?.should eq true
 
         assigns(:order).purchased?.should eq false
-        response.should render_template(:checkout)
+        response.should render_template(:checkout_step2)
       end
     end
 
@@ -84,7 +84,7 @@ describe Effective::OrdersController, type: :controller do
         assigns(:order).purchased?.should eq false
         assigns(:stripe_charge).errors[:base].first.downcase.include?('unable to process order with stripe').should eq true
         assigns(:stripe_charge).errors[:base].first.downcase.include?('the card was declined').should eq true
-        response.should render_template(:checkout)
+        response.should render_template(:checkout_step2)
       end
     end
   end
@@ -93,7 +93,7 @@ describe Effective::OrdersController, type: :controller do
     let(:order) { FactoryGirl.create(:order_with_subscription) }
     let(:buyer) { Effective::Customer.for_user(order.user) }
     let(:subscription) { order.order_items[1].purchasable }
-    let(:token) { stripe_helper.generate_card_token  }
+    let(:token) { stripe_helper.generate_card_token }
     let(:stripe_charge_params) do
       {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
     end

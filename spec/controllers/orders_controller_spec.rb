@@ -237,7 +237,7 @@ describe Effective::OrdersController, type: :controller do
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
       assigns(:order).errors[:shipping_address].present?.should eq true
 
-      response.should render_template(:checkout)
+      response.should render_template(:checkout_step1)
     end
 
     it 'is invalid when passed an invalid order_item' do
@@ -249,7 +249,7 @@ describe Effective::OrdersController, type: :controller do
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
-      response.should render_template(:checkout)
+      response.should render_template(:checkout_step1)
     end
 
     it 'is invalid when passed an invalid user' do
@@ -261,7 +261,7 @@ describe Effective::OrdersController, type: :controller do
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
-      response.should render_template(:checkout)
+      response.should render_template(:checkout_step1)
     end
 
     it 'is invalid when passed an invalid purchasable' do
@@ -273,7 +273,7 @@ describe Effective::OrdersController, type: :controller do
       }
 
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
-      response.should render_template(:checkout)
+      response.should render_template(:checkout_step1)
     end
 
     it 'prevents the order from proceeding when missing a required address' do
@@ -282,7 +282,7 @@ describe Effective::OrdersController, type: :controller do
       (assigns(:order).valid? && assigns(:order).persisted?).should eq false
       assigns(:order).errors[:shipping_address].present?.should eq true
 
-      response.should render_template(:checkout)
+      response.should render_template(:checkout_step1)
     end
   end
 
@@ -388,7 +388,16 @@ describe Effective::OrdersController, type: :controller do
           get :show, id: order.to_param
 
           expect(response).to be_successful
-          expect(response).to render_template :checkout
+          expect(response).to render_template :checkout_step2
+          expect(assigns(:order)).to eq order
+          expect(assigns(:page_title)).to eq 'Checkout'
+        end
+
+        it 'should render checkout page successfully' do
+          get :edit, id: order.to_param
+
+          expect(response).to be_successful
+          expect(response).to render_template :checkout_step1
           expect(assigns(:order)).to eq order
           expect(assigns(:page_title)).to eq 'Checkout'
         end
@@ -401,7 +410,16 @@ describe Effective::OrdersController, type: :controller do
           get :show, id: order.to_param
 
           expect(response).to be_successful
-          expect(response).to render_template :checkout
+          expect(response).to render_template :checkout_step2
+          expect(assigns(:order)).to eq order
+          expect(assigns(:page_title)).to eq 'Checkout'
+        end
+
+        it 'should render checkout page successfully' do
+          get :edit, id: order.to_param
+
+          expect(response).to be_successful
+          expect(response).to render_template :checkout_step1
           expect(assigns(:order)).to eq order
           expect(assigns(:page_title)).to eq 'Checkout'
         end

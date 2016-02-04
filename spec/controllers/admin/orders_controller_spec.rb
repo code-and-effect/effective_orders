@@ -78,7 +78,7 @@ describe Admin::OrdersController, type: :controller do
 
           expect(response).to be_redirect
           expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.admin_order_path(assigns(:order))
-          expect(flash[:success]).to eq 'Successfully created order. The buyer has been notified with a request for payment.'
+          expect(flash[:success]).to eq "Successfully created order. #{assigns(:order).user.email} has been sent a request for payment."
         end
       end
 
@@ -92,7 +92,7 @@ describe Admin::OrdersController, type: :controller do
 
           expect(response).to be_redirect
           expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.new_admin_order_path
-          expect(flash[:success]).to eq 'Successfully created order. The buyer has been notified with a request for payment.'
+          expect(flash[:success]).to eq "Successfully created order. #{assigns(:order).user.email} has been sent a request for payment."
         end
       end
     end
