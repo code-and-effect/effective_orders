@@ -19,7 +19,7 @@ module Effective
         else
           @page_title = 'Checkout'
           flash.now[:danger] = @stripe_charge.errors.full_messages.to_sentence
-          render :checkout
+          render :checkout_step2
         end
       end
 

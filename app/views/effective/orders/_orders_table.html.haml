@@ -19,7 +19,7 @@
         %td= order_summary(order)
         %td
           - if order.pending?
-            = link_to 'Checkout', effective_orders.order_path(order), class: 'btn btn-primary'
+            = link_to_checkout(order: order)
           - else
             = link_to 'View', effective_orders.order_path(order)
 

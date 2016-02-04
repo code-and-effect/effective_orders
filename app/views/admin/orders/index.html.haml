@@ -1,6 +1,6 @@
 .row
   .col-sm-6
-    %h2.effective-orders-page-title= @page_title
+    %h2.effective-orders-page-title= (@page_title || 'Orders')
   .col-sm-6
     = link_to effective_orders.new_admin_order_path, class: 'btn btn-primary pull-right effective-orders-page-action' do
       %span.glyphicon.glyphicon-plus

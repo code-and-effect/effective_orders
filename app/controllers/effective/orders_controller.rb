@@ -30,25 +30,37 @@ module Effective
 
       if @order.errors[:order_items].present?
         flash[:danger] = @order.errors[:order_items].first
-        redirect_to effective_orders.cart_path
+        redirect_to(effective_orders.cart_path)
+        return
       elsif @order.errors[:total].present?
         flash[:danger] = @order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, view_context.price_to_currency(EffectiveOrders.minimum_charge.to_i))
-        redirect_to effective_orders.cart_path
+        redirect_to(effective_orders.cart_path)
+        return
       end
+
+      render :checkout_step1
+    end
+
+    def edit
+      @order ||= Effective::Order.find(params[:id])
+
+      EffectiveOrders.authorized?(self, :edit, @order)
+
+      render :checkout_step1
     end
 
     def create
       @order ||= Effective::Order.new(current_cart, user: current_user)
-      save_order_and_redirect_to_payment
+      save_order_and_redirect_to_step2
     end
 
     # If there is an existing order, it will be posted to the /update action, instead of /create
     def update
       @order ||= Effective::Order.find(params[:id])
-      save_order_and_redirect_to_payment
+      save_order_and_redirect_to_step2
     end
 
-    def save_order_and_redirect_to_payment
+    def save_order_and_redirect_to_step2
       (redirect_to effective_orders.cart_path and return) if (@order.blank? || current_user.blank?)
 
       @order.attributes = order_params
@@ -77,7 +89,7 @@ module Effective
           if @order.total == 0 && EffectiveOrders.allow_free_orders
             order_purchased(details: 'automatic purchase of free order', provider: 'free', card: 'none')
           else
-            redirect_to(effective_orders.order_path(@order))
+            redirect_to(effective_orders.order_path(@order))  # This goes to checkout_step2
           end
 
           return true
@@ -88,8 +100,8 @@ module Effective
         end
       end
 
-      # Fall back to step1
-      render :checkout
+      # Fall back to checkout step 1
+      render :checkout_step1
     end
 
     def show
@@ -99,14 +111,14 @@ module Effective
       @page_title ||= (
         if @order.purchased?
           'Receipt'
-        elsif @order.pending? && (@order.user != current_user)
-          'Pending Order'
+        elsif @order.user != current_user
+          @order.pending? ? "Pending Order ##{@order.to_param}" : "Order ##{@order.to_param}"
         else
           'Checkout'
         end
       )
 
-      (render :checkout and return) if @order.purchased? == false && @order.user == current_user
+      render(:checkout_step2) if @order.purchased? == false && @order.user == current_user
     end
 
     def index
@@ -131,7 +143,7 @@ module Effective
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      (redirect_to effective_orders.order_path(@order) and return) unless @order.purchased?
+      redirect_to(effective_orders.order_path(@order)) unless @order.purchased?
     end
 
     # An error has occurred, please try again
@@ -139,7 +151,7 @@ module Effective
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
-      (redirect_to effective_orders.order_path(@order) and return) unless @order.declined?
+      redirect_to(effective_orders.order_path(@order)) unless @order.declined?
     end
 
     def resend_buyer_receipt
@@ -152,7 +164,7 @@ module Effective
         flash[:danger] = "Unable to send receipt."
       end
 
-      redirect_to (request.referer.present? ? :back : effective_orders.order_path(@order))
+      redirect_to(request.referer.present? ? :back : effective_orders.order_path(@order))
     end
 
     protected
@@ -172,7 +184,7 @@ module Effective
         redirect_to (redirect_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
       rescue => e
         flash[:danger] = "An error occurred while processing your payment: #{e.message}.  Please try again."
-        redirect_to (declined_redirect_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
+        redirect_to(declined_redirect_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
       end
     end
 
@@ -181,7 +193,7 @@ module Effective
 
       flash[:danger] = message || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 
-      redirect_to (redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
+      redirect_to(redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
 
     private

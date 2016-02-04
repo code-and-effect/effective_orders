@@ -34,11 +34,11 @@
     - if EffectiveOrders.collect_note
       = render partial: 'effective/orders/order_note_fields', locals: {form: f}
 
-    - unless f.object.pending?
-      = link_to_current_cart label: 'Change Items', class: 'btn btn-default'
+    - unless f.object.pending? || current_cart.try(:empty?)
+      = link_to_current_cart(label: 'Change Items')
 
-    .text-right
+    .pull-right
       - if order.total == 0 && EffectiveOrders.allow_free_orders
-        = f.submit order_checkout_label(:free), class: 'btn btn-primary pull-right', rel: :nofollow, data: {'disable_with' => 'Processing...' }
+        = f.submit order_checkout_label(:free), class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Processing...' }
       - else
-        = f.submit 'Save and Continue', class: 'btn btn-primary pull-right', rel: :nofollow, data: {'disable_with' => 'Saving...' }
+        = f.submit 'Save and Continue', class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Saving...' }
