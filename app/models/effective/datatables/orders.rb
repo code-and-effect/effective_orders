@@ -19,7 +19,7 @@ if defined?(EffectiveDatatables)
 
             if EffectiveOrders.use_address_full_name
               table_column :buyer_name, column: 'addresses.full_name' do |order|
-                order.billing_address.full_name
+                order.billing_address.try(:full_name)
               end
 
             elsif # Not using address full name
