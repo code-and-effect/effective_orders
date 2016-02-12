@@ -1,5 +1,7 @@
 %h2.effective-orders-page-title= (@page_title || 'Payment Declined')
 
-%p Your #{link_to_current_cart(label: 'Shopping Cart')} items have been saved.  Please try again.
+%p= flash[:danger]
+
+%p Your #{link_to_current_cart(label: 'Cart')} items have been saved.  Please try again.
 
 
