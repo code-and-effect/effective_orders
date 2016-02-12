@@ -231,6 +231,10 @@ module Effective
       end
     end
 
+    def purchasables
+      order_items.map { |order_item| order_item.purchasable }
+    end
+
     def tax_rate
       self[:tax_rate] || get_tax_rate()
     end
@@ -423,11 +427,11 @@ module Effective
     def send_email(email, *mailer_args)
       begin
         if EffectiveOrders.mailer[:delayed_job_deliver] && EffectiveOrders.mailer[:deliver_method] == :deliver_later
-          (Effective::OrdersMailer.delay.public_send(email, *mailer_args) rescue false)
+          Effective::OrdersMailer.delay.public_send(email, *mailer_args)
         elsif EffectiveOrders.mailer[:deliver_method].present?
-          (Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method]) rescue false)
+          Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
         else
-          (Effective::OrdersMailer.public_send(email, *mailer_args).deliver_now) rescue false
+          Effective::OrdersMailer.public_send(email, *mailer_args).deliver_now
         end
       rescue => e
         raise e unless Rails.env.production?
