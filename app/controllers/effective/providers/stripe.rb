@@ -114,9 +114,9 @@ module Effective
       # StrongParameters
       def stripe_charge_params
         begin
-          params.require(:effective_stripe_charge).permit(:token, :effective_order_id)
+          params.require(:effective_providers_stripe_charge).permit(:token, :effective_order_id)
         rescue => e
-          params[:effective_stripe_charge]
+          params[:effective_providers_stripe_charge]
         end
       end
 

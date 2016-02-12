@@ -8,7 +8,7 @@ stripeCheckoutHandler = (key, form) ->
 
         alert("An error ocurred when contacting Stripe.  Your card has not been charged.  Please refresh the page and try again. #{token.error.message}")
       else
-        form.find('input#effective_stripe_charge_token').val('' + token['id'])
+        form.find('input#effective_providers_stripe_charge_token').val('' + token['id'])
 
         form.find("input[type='submit']").prop('disabled', true)
         $('input[data-disable-with]').each -> try $.rails.disableFormElement($(this))
