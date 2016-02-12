@@ -191,7 +191,7 @@ module Effective
     def order_declined(details: 'none', provider:, card: 'none', redirect_url: nil, message: nil)
       @order.decline!(details: details, provider: provider, card: card) rescue nil
 
-      flash[:danger] = message || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
+      flash[:danger] = message.presence || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 
       redirect_to(redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end

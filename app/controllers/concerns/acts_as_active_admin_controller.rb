@@ -27,9 +27,10 @@ module ActsAsActiveAdminController
       self.send(:define_method, :resource_path) { |resource| effective_orders.cart_path }
     else
       self.send(:define_method, :resource_path) { |resource| public_send(resource_path, resource) }
+      self.send(:define_method, :edit_resource_path) { |resource| effective_orders.edit_order_path(resource) }
     end
 
-    helper_method :resource, :resource_path
+    helper_method :resource, :resource_path, :edit_resource_path
   end
 
   module ClassMethods
