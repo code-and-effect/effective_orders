@@ -20,6 +20,9 @@ module EffectiveOrders
   mattr_accessor :products_table_name
 
   mattr_accessor :authorization_method
+  mattr_accessor :skip_mount_engine
+  mattr_accessor :orders_collection_scope
+
   mattr_accessor :order_tax_rate_method
 
   mattr_accessor :layout
@@ -77,6 +80,10 @@ module EffectiveOrders
 
   def self.setup
     yield self
+
+    if EffectiveOrders.stripe_enabled
+      ::Stripe.api_key = stripe[:secret_key]
+    end
   end
 
   def self.authorized?(controller, action, resource)

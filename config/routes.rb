@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  mount EffectiveOrders::Engine => '/', as: 'effective_orders'
+  unless EffectiveOrders.skip_mount_engine
+    mount EffectiveOrders::Engine => '/', as: 'effective_orders'
+  end
 end
 
 EffectiveOrders::Engine.routes.draw do
