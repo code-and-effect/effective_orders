@@ -102,6 +102,10 @@ module Effective
     scope :purchased_by, lambda { |user| purchased.where(user_id: user.try(:id)) }
     scope :declined, -> { where(purchase_state: EffectiveOrders::DECLINED) }
     scope :pending, -> { where(purchase_state: EffectiveOrders::PENDING) }
+    scope :for_users, -> (users) {   # Expects a Users relation, an Array of ids, or Array of users
+      users = users.kind_of?(::ActiveRecord::Relation) ? users.pluck(:id) : Array(users)
+      where(user_id: (users.first.kind_of?(Integer) ? users : users.map { |user| user.id }))
+    }
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
