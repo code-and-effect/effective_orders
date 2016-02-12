@@ -20,6 +20,7 @@ module EffectiveOrders
   mattr_accessor :products_table_name
 
   mattr_accessor :authorization_method
+
   mattr_accessor :skip_mount_engine
   mattr_accessor :orders_collection_scope
 
