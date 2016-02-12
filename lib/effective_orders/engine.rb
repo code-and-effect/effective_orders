@@ -47,8 +47,6 @@ module EffectiveOrders
         rescue Exception
           raise "unable to load stripe.  Plese add gem 'stripe' to your Gemfile and then 'bundle install'"
         end
-
-        ::Stripe.api_key = EffectiveOrders.stripe[:secret_key]
       end
     end
 

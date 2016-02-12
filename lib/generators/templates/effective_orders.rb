@@ -10,6 +10,7 @@ EffectiveOrders.setup do |config|
   config.subscriptions_table_name = :subscriptions
   config.products_table_name = :products
 
+
   # Authorization Method
   #
   # This method is called by all controller actions with the appropriate action and resource
@@ -30,6 +31,12 @@ EffectiveOrders.setup do |config|
   # Or disable the check completely:
   # config.authorization_method = false
   config.authorization_method = Proc.new { |controller, action, resource| true }
+
+  # Skip automatically mounting the EffectiveOrders engine
+  config.skip_mount_engine = false
+
+  # Filter the @orders on admin/orders#index screen
+  # config.orders_collection_scope = Proc.new { |scope| scope.where(...) }
 
   # Register Effective::Order with ActiveAdmin if ActiveAdmin is present
   # You must have authorization to authorized?(:manage, Effective::Order)
