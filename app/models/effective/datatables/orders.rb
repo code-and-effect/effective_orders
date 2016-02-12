@@ -70,6 +70,10 @@ if defined?(EffectiveDatatables)
             .includes(:user)
             .includes(:order_items)
 
+          if EffectiveOrders.orders_collection_scope.respond_to?(:call)
+            collection = EffectiveOrders.orders_collection_scope.call(collection)
+          end
+
           attributes[:user_id].present? ? collection.where(user_id: attributes[:user_id]) : collection
         end
 

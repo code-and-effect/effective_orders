@@ -18,6 +18,12 @@ if defined?(ActiveAdmin)
       include EffectiveOrdersHelper
 
       def scoped_collection
+        scoped = end_of_association_chain
+
+        if EffectiveOrders.orders_collection_scope.respond_to?(:call)
+          scoped = EffectiveOrders.orders_collection_scope.call(scoped)
+        end
+
         scoped = end_of_association_chain.includes(:user).includes(order_items: :purchasable)
         scoped = scoped.where(user: current_user) if !authorized?(:admin, :effective_orders)
         scoped
