@@ -1,18 +1,26 @@
 module Effective
   class OrdersMailer < ActionMailer::Base
     helper EffectiveOrdersHelper
-    default :from => EffectiveOrders.mailer[:default_from]
 
     layout EffectiveOrders.mailer[:layout].presence || 'effective_orders_mailer_layout'
 
     def order_receipt_to_admin(order)
       @order = order
-      mail(:to => EffectiveOrders.mailer[:admin_email], :subject => subject_for_order_receipt_to_admin(order))
+      mail(
+        to: EffectiveOrders.mailer[:admin_email],
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_order_receipt_to_admin(order)
+      )
     end
 
     def order_receipt_to_buyer(order)  # Buyer
       @order = order
-      mail(:to => order.user.email, :subject => subject_for_order_receipt_to_buyer(order))
+
+      mail(
+        to: order.user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_order_receipt_to_buyer(order)
+      )
     end
 
     def order_receipt_to_seller(order, seller, order_items)
@@ -21,20 +29,34 @@ module Effective
       @order_items = order_items
       @subject = subject_for_order_receipt_to_seller(order, order_items, seller.user)
 
-      mail(:to => @user.email, :subject => @subject)
+      mail(
+        to: @user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: @subject
+      )
     end
 
     # This is sent when an admin creates a new order or /admin/orders/new
     # Or uses the order action Send Payment Request
     def payment_request_to_buyer(order)
       @order = order
-      mail(:to => order.user.email, :subject => subject_for_payment_request_to_buyer(order))
+
+      mail(
+        to: order.user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_payment_request_to_buyer(order)
+      )
     end
 
     # This is sent when someone chooses to Pay by Cheque
     def pending_order_invoice_to_buyer(order)
       @order = order
-      mail(:to => order.user.email, :subject => subject_for_pending_order_invoice_to_buyer(order))
+
+      mail(
+        to: order.user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_pending_order_invoice_to_buyer(order)
+      )
     end
 
     private
