@@ -36,7 +36,7 @@ module EffectiveOrders
     # Set up mail delivering config option
     initializer "effective_orders.mailer", after: :load_config_initializers do |app|
       deliver_method = Rails.gem_version >= Gem::Version.new('4.2') ? :deliver_now : :deliver
-      EffectiveOrders.mailer[:deliver_method] = deliver_method
+      EffectiveOrders.mailer[:deliver_method] ||= deliver_method
     end
 
     # Set up our Stripe API Key

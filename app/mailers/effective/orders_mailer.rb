@@ -4,30 +4,31 @@ module Effective
 
     layout EffectiveOrders.mailer[:layout].presence || 'effective_orders_mailer_layout'
 
-    def order_receipt_to_admin(order)
-      @order = order
+    def order_receipt_to_admin(order_param)
+      @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
+
       mail(
         to: EffectiveOrders.mailer[:admin_email],
         from: EffectiveOrders.mailer[:default_from],
-        subject: subject_for_order_receipt_to_admin(order)
+        subject: subject_for_order_receipt_to_admin(@order)
       )
     end
 
-    def order_receipt_to_buyer(order)  # Buyer
-      @order = order
+    def order_receipt_to_buyer(order_param)  # Buyer
+      @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
-        to: order.user.email,
+        to: @order.user.email,
         from: EffectiveOrders.mailer[:default_from],
-        subject: subject_for_order_receipt_to_buyer(order)
+        subject: subject_for_order_receipt_to_buyer(@order)
       )
     end
 
-    def order_receipt_to_seller(order, seller, order_items)
-      @order = order
+    def order_receipt_to_seller(order_param, seller, order_items)
+      @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
       @user = seller.user
       @order_items = order_items
-      @subject = subject_for_order_receipt_to_seller(order, order_items, seller.user)
+      @subject = subject_for_order_receipt_to_seller(@order, @order_items, seller.user)
 
       mail(
         to: @user.email,
@@ -38,24 +39,24 @@ module Effective
 
     # This is sent when an admin creates a new order or /admin/orders/new
     # Or uses the order action Send Payment Request
-    def payment_request_to_buyer(order)
-      @order = order
+    def payment_request_to_buyer(order_param)
+      @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
-        to: order.user.email,
+        to: @order.user.email,
         from: EffectiveOrders.mailer[:default_from],
-        subject: subject_for_payment_request_to_buyer(order)
+        subject: subject_for_payment_request_to_buyer(@order)
       )
     end
 
     # This is sent when someone chooses to Pay by Cheque
-    def pending_order_invoice_to_buyer(order)
-      @order = order
+    def pending_order_invoice_to_buyer(order_param)
+      @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
-        to: order.user.email,
+        to: @order.user.email,
         from: EffectiveOrders.mailer[:default_from],
-        subject: subject_for_pending_order_invoice_to_buyer(order)
+        subject: subject_for_pending_order_invoice_to_buyer(@order)
       )
     end
 

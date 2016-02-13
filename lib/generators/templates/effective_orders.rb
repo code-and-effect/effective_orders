@@ -171,7 +171,7 @@ EffectiveOrders.setup do |config|
     default_from: 'info@example.com',
     admin_email: 'admin@example.com',
 
-    deliver_method: nil,
+    deliver_method: nil,   # :deliver (rails < 4.2), :deliver_now (rails >= 4.2) or :deliver_later
     delayed_job_deliver: false
   }
 

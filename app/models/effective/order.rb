@@ -379,27 +379,27 @@ module Effective
     end
 
     def send_order_receipt_to_admin!
-      send_email(:order_receipt_to_admin, self) if purchased?
+      send_email(:order_receipt_to_admin, to_param) if purchased?
     end
 
     def send_order_receipt_to_buyer!
-      send_email(:order_receipt_to_buyer, self) if purchased?
+      send_email(:order_receipt_to_buyer, to_param) if purchased?
     end
 
     def send_order_receipt_to_seller!
       return false unless (EffectiveOrders.stripe_connect_enabled && purchased?(:stripe_connect))
 
       order_items.group_by(&:seller).each do |seller, order_items|
-        send_email(:order_receipt_to_seller, self, seller, order_items)
+        send_email(:order_receipt_to_seller, to_param, seller, order_items)
       end
     end
 
     def send_payment_request_to_buyer!
-      send_email(:payment_request_to_buyer, self) if !purchased?
+      send_email(:payment_request_to_buyer, to_param) if !purchased?
     end
 
     def send_pending_order_invoice_to_buyer!
-      send_email(:pending_order_invoice_to_buyer, self) if !purchased?
+      send_email(:pending_order_invoice_to_buyer, to_param) if !purchased?
     end
 
     protected
