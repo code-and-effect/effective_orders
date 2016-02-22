@@ -7,7 +7,7 @@ end
 EffectiveOrders::Engine.routes.draw do
   scope module: 'effective' do
 
-    match 'orders/:id/purchased', to: 'orders#purchased', as: 'order_purchased', via: :get
+    match 'orders/(:id)/purchased', to: 'orders#purchased', as: 'order_purchased', via: :get
     match 'orders/:id/declined', to: 'orders#declined', as: 'order_declined', via: :get
     match 'orders/:id/resend_buyer_receipt', to: 'orders#resend_buyer_receipt', via: :get, as: 'resend_buyer_receipt'
     match 'orders/my_purchases', to: 'orders#my_purchases', as: 'my_purchases', via: :get

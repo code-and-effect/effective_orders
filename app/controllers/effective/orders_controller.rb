@@ -143,7 +143,16 @@ module Effective
 
     # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
     def purchased # Thank You!
-      @order = Effective::Order.find(params[:id])
+      @order = if params[:id].present?
+        Effective::Order.find(params[:id])
+      elsif current_user.present?
+        Effective::Order.purchased_by(current_user).first
+      end
+
+      if @order.blank?
+        redirect_to(effective_orders.my_purchases_path) and return
+      end
+
       EffectiveOrders.authorized?(self, :show, @order)
 
       redirect_to(effective_orders.order_path(@order)) unless @order.purchased?
