@@ -13,7 +13,7 @@ describe Effective::OrdersController, type: :controller do
   let(:buyer) { Effective::Customer.for_user(order.user) }
   let(:token) { stripe_helper.generate_card_token }
   let(:stripe_charge_params) do
-    {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
+    {:effective_providers_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
   end
 
   describe '#stripe_charge' do
@@ -24,14 +24,14 @@ describe Effective::OrdersController, type: :controller do
     describe 'invalid parameters' do
       it 'raises RecordNotFound when passed an unknown order id' do
         expect {
-          post :stripe_charge, stripe_charge_params.tap { |x| x[:effective_stripe_charge]['effective_order_id'] = 999 }
+          post :stripe_charge, stripe_charge_params.tap { |x| x[:effective_providers_stripe_charge]['effective_order_id'] = 999 }
         }.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it 'renders the :create action on validation failure' do
         expect(subject).not_to receive(:process_stripe_charge)
 
-        post :stripe_charge, stripe_charge_params.tap { |x| x[:effective_stripe_charge]['token'] = nil }
+        post :stripe_charge, stripe_charge_params.tap { |x| x[:effective_providers_stripe_charge]['token'] = nil }
 
         flash[:danger].downcase.include?('token').should eq true
         assigns(:stripe_charge).errors[:token].present?.should eq true
@@ -95,7 +95,7 @@ describe Effective::OrdersController, type: :controller do
     let(:subscription) { order.order_items[1].purchasable }
     let(:token) { stripe_helper.generate_card_token }
     let(:stripe_charge_params) do
-      {:effective_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
+      {:effective_providers_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
     end
 
     before do
