@@ -3,6 +3,12 @@ module Effective
     module AppCheckout
       extend ActiveSupport::Concern
 
+      included do
+        if defined?(CanCan)
+          skip_authorization_check only: [:app_checkout]
+        end
+      end
+
       def app_checkout
         @order = Order.find(params[:id])
         checkout = EffectiveOrders.app_checkout[:service].call(order: @order)
