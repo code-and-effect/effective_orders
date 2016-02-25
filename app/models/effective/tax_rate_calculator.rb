@@ -25,7 +25,7 @@ module Effective
     end
 
     def tax_rate
-      return nil unless (order.billing_address.try(:valid?) rescue false)
+      return nil unless order.billing_address.try(:country_code).present?
 
       country = order.billing_address.country_code
       state = order.billing_address.state_code

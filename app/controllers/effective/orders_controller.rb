@@ -41,6 +41,10 @@ module Effective
         return
       end
 
+      @order.errors.clear
+      @order.billing_address.try(:errors).try(:clear)
+      @order.shipping_address.try(:errors).try(:clear)
+
       render :checkout_step1
     end
 
