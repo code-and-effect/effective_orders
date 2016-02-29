@@ -128,6 +128,16 @@ module EffectiveOrders
       end
     end
 
+    initializer 'effective_orders.obfuscate_order_ids_validation' do
+      if EffectiveOrders.obfuscate_order_ids
+        begin
+          require 'effective_obfuscation'
+        rescue Exception
+          raise "unable to load effective_obfuscation.  Plese add gem 'effective_obfuscation' to your Gemfile and then 'bundle install'"
+        end
+      end
+    end
+
     # Use ActiveAdmin (optional)
     initializer 'effective_orders.active_admin' do
       if EffectiveOrders.use_active_admin?
