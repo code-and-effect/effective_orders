@@ -129,14 +129,19 @@ module Effective
     end
 
     def index
-      redirect_to effective_orders.my_purchases_path
+      @orders = Effective::Order.purchased_by(current_user)
+
+      EffectiveOrders.authorized?(self, :index, @orders.presence || Effective::Order.new(user: current_user))
+
+      render action: :my_purchases
     end
 
     # Basically an index page.
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
       @orders = Effective::Order.purchased_by(current_user)
-      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
+
+      EffectiveOrders.authorized?(self, :index, @orders.presence || Effective::Order.new(user: current_user))
     end
 
     # Sales is a list of what products beign sold by me have been purchased
@@ -225,6 +230,7 @@ module Effective
 
     def set_page_title
       @page_title ||= case params[:action]
+        when 'index'        ; 'Order History'
         when 'my_purchases' ; 'Order History'
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'
