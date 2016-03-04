@@ -116,7 +116,7 @@ module Effective
     # Effective::Order.new(current_cart)
 
     # items can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
-    def initialize(*items, user: nil)
+    def initialize(*items, user: nil, billing_address: nil, shipping_address: nil)
       super() # Call super with no arguments
 
       # Set up defaults
@@ -125,6 +125,17 @@ module Effective
       self.shipping_address_same_as_billing = true
 
       self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
+
+      if billing_address
+        self.billing_address = billing_address
+        self.billing_address.full_name ||= billing_name
+      end
+
+      if shipping_address
+        self.shipping_address = shipping_address
+        self.shipping_address.full_name ||= billing_name
+      end
+
       add(items) if items.present?
     end
 
