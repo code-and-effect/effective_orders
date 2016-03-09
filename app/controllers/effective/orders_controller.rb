@@ -131,7 +131,7 @@ module Effective
     def index
       @orders = Effective::Order.purchased_by(current_user)
 
-      EffectiveOrders.authorized?(self, :index, @orders.presence || Effective::Order.new(user: current_user))
+      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
 
       render action: :my_purchases
     end
@@ -141,7 +141,7 @@ module Effective
     def my_purchases
       @orders = Effective::Order.purchased_by(current_user)
 
-      EffectiveOrders.authorized?(self, :index, @orders.presence || Effective::Order.new(user: current_user))
+      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Sales is a list of what products beign sold by me have been purchased
