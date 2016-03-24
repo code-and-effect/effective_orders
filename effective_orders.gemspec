@@ -31,11 +31,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "shoulda-matchers"
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "effective_obfuscation", [">= 1.0.2"]
-
-  s.add_development_dependency "guard"
-  s.add_development_dependency "guard-rspec"
-  s.add_development_dependency "guard-livereload"
-
   s.add_development_dependency "pry"
   s.add_development_dependency "pry-stack_explorer"
   s.add_development_dependency "pry-byebug"
