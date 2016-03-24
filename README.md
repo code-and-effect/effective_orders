@@ -1113,7 +1113,7 @@ The test suite for this gem is mostly complete.
 Run tests by:
 
 ```ruby
-guard
+rspec
 ```
 
 
