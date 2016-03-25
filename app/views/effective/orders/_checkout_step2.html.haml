@@ -22,7 +22,7 @@
     = render partial: '/effective/orders/ccbill/form', locals: {order: order}
 
   - if EffectiveOrders.app_checkout_enabled
-    - if EffectiveOrders.authorized?(controller, :app_checkout, order)
+    - if (EffectiveOrders.authorized?(controller, :app_checkout, order) rescue false)
       = render partial: '/effective/orders/app_checkout/form', locals: {order: order}
 
   - if EffectiveOrders.cheque_enabled
