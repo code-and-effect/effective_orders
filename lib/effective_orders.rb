@@ -156,6 +156,5 @@ module EffectiveOrders
 
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
-  class AlreadyDeclinedException < Exception; end
 
 end
