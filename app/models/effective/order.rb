@@ -305,10 +305,6 @@ module Effective
     def purchase!(details: 'none', provider: 'admin', card: 'none', validate: true, email: true, skip_buyer_validations: false)
       return false if purchased?
 
-      unless skip_buyer_validations # An admin can mark purchased a declined order
-        raise EffectiveOrders::AlreadyDeclinedException.new('order already declined') if (declined? && validate)
-      end
-
       success = false
 
       Effective::Order.transaction do
@@ -332,7 +328,7 @@ module Effective
 
       send_order_receipts! if (success && email)
 
-      raise "Failed to purchase! Effective::Order: #{self.errors.full_messages.to_sentence}" unless success
+      raise "Failed to purchase Effective::Order: #{self.errors.full_messages.to_sentence}" unless success
       success
     end
 
