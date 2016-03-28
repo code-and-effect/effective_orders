@@ -60,8 +60,9 @@ module Effective
       )
     end
 
-    def order_error(order:, to: nil, from: nil, subject: nil, template: 'order_error')
+    def order_error(order:, error: nil, to: nil, from: nil, subject: nil, template: 'order_error')
       @order = (order.kind_of?(Effective::Order) ? order : Effective::Order.find(order))
+      @error = error.to_s
 
       mail(
         to: (to || EffectiveOrders.mailer[:admin_email]),
