@@ -60,14 +60,20 @@ module Effective
       )
     end
 
-    def order_error(order:, error: nil, to: nil, from: nil, subject: nil, template: 'order_error')
-      @order = (order.kind_of?(Effective::Order) ? order : Effective::Order.find(order))
+    def order_error(order: nil, error: nil, to: nil, from: nil, subject: nil, template: 'order_error')
+      if order.present?
+        @order = (order.kind_of?(Effective::Order) ? order : Effective::Order.find(order))
+        @subject = (subject || "An error occurred with order: ##{@order.try(:to_param)}")
+      else
+        @subject = (subject || "An order error occurred with an unknown order")
+      end
+
       @error = error.to_s
 
       mail(
         to: (to || EffectiveOrders.mailer[:admin_email]),
         from: (from || EffectiveOrders.mailer[:default_from]),
-        subject: prefix_subject(subject || "An error occurred with order: ##{order.try(:to_param)}")
+        subject: prefix_subject(@subject),
       ) do |format|
         format.html { render(template) }
       end

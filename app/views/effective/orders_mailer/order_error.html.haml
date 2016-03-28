@@ -1,6 +1,11 @@
-%p.effective-orders-receipt-info An error occurred with the following order:
+%p.effective-orders-receipt-info
+  - if @order.present?
+    An error occurred with the following order:
+  - else
+    An order error occurred:
 
 - if @error.present?
   %p Error: #{@error}
 
-= render(@order, no_order_actions: true)
+- if @order.present?
+  = render(@order, no_order_actions: true)

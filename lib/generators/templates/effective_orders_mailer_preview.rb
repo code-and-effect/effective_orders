@@ -26,7 +26,7 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   end
 
   def order_error
-    Effective::OrdersMailer.pending_order_invoice_to_buyer(order: build_preview_order)
+    Effective::OrdersMailer.order_error(order: build_preview_order, error: "Something didn't work out")
   end
 
   protected
