@@ -1,10 +1,13 @@
 module ActsAsPurchasable
   extend ActiveSupport::Concern
 
+  mattr_accessor :descendants
+
   module ActiveRecord
     def acts_as_purchasable(*options)
       @acts_as_purchasable = options || []
       include ::ActsAsPurchasable
+      (ActsAsPurchasable.descendants ||= []) << self
     end
   end
 
