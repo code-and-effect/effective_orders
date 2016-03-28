@@ -25,6 +25,10 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.pending_order_invoice_to_buyer(build_preview_order)
   end
 
+  def order_error
+    Effective::OrdersMailer.pending_order_invoice_to_buyer(order: build_preview_order)
+  end
+
   protected
 
   def build_preview_order
