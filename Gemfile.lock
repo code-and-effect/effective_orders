@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (1.8.1)
+    effective_orders (2.0.0)
       coffee-rails
       devise
       effective_addresses (>= 1.4.0)

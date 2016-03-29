@@ -3,7 +3,7 @@ if defined?(EffectiveDatatables)
     module Datatables
       class Orders < Effective::Datatable
         datatable do
-          default_order :purchased_at, :desc
+          default_order :created_at, :desc
 
           table_column :purchased_at
 

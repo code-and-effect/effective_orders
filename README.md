@@ -1108,8 +1108,6 @@ Code and Effect is the product arm of [AgileStyle](http://www.agilestyle.com/), 
 
 ## Testing
 
-The test suite for this gem is mostly complete.
-
 Run tests by:
 
 ```ruby
