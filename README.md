@@ -1,7 +1,3 @@
-# 2.0 Branch
-
-This is a work in progress branch.  Don't use this yet!
-
 # Effective Orders
 
 Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
