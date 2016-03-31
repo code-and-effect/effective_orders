@@ -679,9 +679,9 @@ Transaction Type: Purchase
 
 Response Method: Sent to your server as a POST
 
-Approved URL: http://4f972556.ngrok.com/orders/moneris_postback
+Approved URL: https://myapp.herokuapp.com/orders/moneris_postback
 
-Declined URL: http://4f972556.ngrok.com/orders/moneris_postback
+Declined URL: https://myapp.herokuapp.com/orders/moneris_postback
 
 Note: The Approved and Declined URLs must match the effective_orders.moneris_postback_path value in your application. By default it is /orders/moneris_postback
 
@@ -731,7 +731,7 @@ Display merchange name: true, if you have an SSL cert
 
 Cancel Button Text:  'Cancel'
 
-Cancel Button URL: http://4f972556.ngrok.com
+Cancel Button URL: https://myapp.herokuapp.com/
 
 Click 'Save Appearance Settings'
 
@@ -752,16 +752,18 @@ Click 'Return to main configuration'
 
 ### Security
 
-Referring URL: Depends how you're using effective_orders in your application, you can add multiple URLs
-By default, use http://4f972556.ngrok.com/orders/new
+Referring URL: https://myapp.herokuapp.com/
 
 Enable Card Verification: false, unused
 
 Enable Transaction Verification: true
+
 Response Method: Displayed as key/value pairs on our server.
+
 Response URL: leave blank
 
 Click 'Save Verification Settings'
+
 Click 'Return to main configuration'
 
 
@@ -777,7 +779,9 @@ If you'd prefer to use the Moneris receipt, disable email sendouts from the conf
 With this test store set up, you can make a successful purchase with:
 
 Cardholder Name: Any name
+
 Credit Card Number: 4242 4242 4242 4242
+
 Expiry Date: Any future date
 
 Some gotchas:
