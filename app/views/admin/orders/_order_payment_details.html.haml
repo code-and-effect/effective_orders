@@ -1,0 +1,19 @@
+- if order.purchased?
+  .effective-order-payment-details
+    %h3 Payment Details
+    %table.table
+      %tbody
+        %tr
+          %td Provider
+          %td= order.payment_provider
+        %tr
+          %td Card
+          %td= order.payment_card || 'none'
+        %tr
+          %td Purchased at
+          %td= order.purchased_at.strftime('%Y-%m-%d %H:%M')
+        - if order.payment.present?
+          %tr
+            %td Additional details
+            %td= tableize_order_payment(order.payment[:details] || order.payment, class: 'table')
+

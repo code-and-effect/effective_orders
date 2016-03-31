@@ -1,0 +1,33 @@
+= simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: effective_orders.mark_as_paid_admin_order_path(order), method: :post) do |f|
+  %h3 Payment Details
+
+  - if order.purchased?
+    .alert.alert-warning Warning: This order has already been purchased
+    %br
+
+  = f.input :payment_provider,
+    as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
+    collection: EffectiveOrders.payment_providers,
+    required: true
+
+  = f.input :payment_card,
+    label: 'Payment card type, cheque or transaction number',
+    placeholder: 'Visa',
+    hint: 'Full credit card numbers should not be entered here, or anywhere.'
+
+  = f.input :payment,
+    as: :text,
+    label: 'Additional details',
+    input_html: { value: f.object.payment.kind_of?(Hash) ? f.object.payment[:details] : f.object.payment.presence }
+
+  = f.input :send_mark_as_paid_email_to_buyer,
+    as: :boolean,
+    label: 'Yes, send an email receipt to the buyer.',
+    value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid_by_admin] : f.object.send_mark_as_paid_email_to_buyer?)
+
+  %h3 Note to Buyer
+  = f.input :note_to_buyer, label: 'Note to buyer', hint: 'This is displayed to the buyer on all order receipts.'
+
+  %p.text-right
+    = f.button :submit, 'Mark Order as Paid', data: { disable_with: 'Saving...' }
+

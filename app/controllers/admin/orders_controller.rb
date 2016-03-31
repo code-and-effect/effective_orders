@@ -34,7 +34,6 @@ module Admin
 
         redirect_to effective_orders.admin_order_path(@order)
       else
-        binding.pry
         flash.now[:danger] = 'Unable to update order'
         render action: :show
       end
@@ -75,22 +74,33 @@ module Admin
 
     def mark_as_paid
       @order = Effective::Order.find(params[:id])
+      @page_title = 'Mark as Paid'
+
       authorize_effective_order!
 
-      purchased = @order.purchase!(
-        details: 'Marked as paid by admin',
-        provider: 'admin',
-        card: 'none',
-        email: EffectiveOrders.mailer[:send_order_receipts_when_marked_paid_by_admin],
-        skip_buyer_validations: true  # This will allow a declined order to be marked purchased
-      )
+      if request.patch? || request.post?  # They are submitting the form to mark an order as paid
+        purchased = false
 
-      if purchased
-        flash[:success] = 'Order marked as paid successfully'
-        redirect_to effective_orders.admin_order_path(@order)
-      else
-        flash[:danger] = 'Unable to mark order as paid'
-        request.referrer ? (redirect_to :back) : (redirect_to effective_orders.admin_orders_path)
+        @order.attributes = order_params.except(:payment, :payment_provider, :payment_card)
+
+        begin
+          purchased = @order.purchase!(
+            details: order_params[:payment],
+            provider: order_params[:payment_provider],
+            card: order_params[:payment_card],
+            email: @order.send_mark_as_paid_email_to_buyer?,
+          )
+        rescue => e
+          purchased = false
+        end
+
+        if purchased
+          flash[:success] = 'Order marked as paid successfully'
+          redirect_to effective_orders.admin_order_path(@order)
+        else
+          flash.now[:danger] = "Unable to mark order as paid: #{@order.errors.full_messages.to_sentence}"
+          render action: :mark_as_paid
+        end
       end
     end
 
@@ -112,6 +122,7 @@ module Admin
     def order_params
       params.require(:effective_order).permit(:user_id, :send_payment_request_to_buyer,
         :note_internal, :note_to_buyer,
+        :payment_provider, :payment_card, :payment, :send_mark_as_paid_email_to_buyer,
         order_items_attributes: [
           :quantity, :_destroy, purchasable_attributes: [
             :title, :price, :tax_exempt

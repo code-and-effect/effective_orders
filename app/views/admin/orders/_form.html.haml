@@ -26,7 +26,7 @@
     = f.input :note_internal, label: 'Internal note', hint: 'For internal admin use only.  This note will never be displayed to the buyer.'
 
 
-    .form-group.pull-right
+    %p.text-right
       = f.button :submit, 'Save', data: { disable_with: 'Saving...' }
       = f.button :submit, 'Save and Add New', data: { disable_with: 'Saving...' }
       = link_to 'Cancel', effective_orders.admin_orders_path

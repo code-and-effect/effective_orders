@@ -39,7 +39,7 @@
     - unless f.object.pending? || current_cart.try(:empty?)
       = link_to_current_cart(label: 'Change Items')
 
-    .pull-right
+    %p.text-right
       - if order.total == 0 && EffectiveOrders.allow_free_orders
         = f.submit order_checkout_label(:free), class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Processing...' }
       - else

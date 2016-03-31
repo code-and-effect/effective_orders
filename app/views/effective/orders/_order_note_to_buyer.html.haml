@@ -1,0 +1,8 @@
+- if order.note_to_buyer.present?
+  %table.table
+    %thead
+      %tr
+        %th Receipt note
+    %tbody
+      %tr
+        %td= order.note_to_buyer

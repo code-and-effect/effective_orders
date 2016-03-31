@@ -13,6 +13,7 @@ module Effective
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
     attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
+    attr_accessor :send_mark_as_paid_email_to_buyer  # Used by the /admin/orders/mark_as_paid action
     attr_accessor :skip_buyer_validations # Enabled by the /admin/orders/create action
 
     belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
@@ -282,6 +283,10 @@ module Effective
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_payment_request_to_buyer)
     end
 
+    def send_mark_as_paid_email_to_buyer?
+      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_mark_as_paid_email_to_buyer)
+    end
+
     def shipping_address_same_as_billing?
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
     end
@@ -322,6 +327,9 @@ module Effective
 
           success = true
         rescue => e
+          self.purchase_state = purchase_state_was
+          self.purchased_at = purchased_at_was
+
           raise ::ActiveRecord::Rollback
         end
       end

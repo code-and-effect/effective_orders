@@ -157,7 +157,7 @@ EffectiveOrders.setup do |config|
     send_order_receipt_to_seller: true,   # Only applies to StripeConnect
     send_payment_request_to_buyer: true,
     send_pending_order_invoice_to_buyer: true,
-    send_order_receipts_when_marked_paid_by_admin: false,
+    send_order_receipts_when_mark_as_paid_by_admin: false,
 
     subject_prefix: '[example]',
     subject_for_order_receipt_to_admin: '',

@@ -66,8 +66,9 @@ EffectiveOrders::Engine.routes.draw do
       resources :customers, only: [:index]
       resources :orders, only: [:index, :show, :update, :new, :create] do
         member do
-          post :send_payment_request
+          get :mark_as_paid
           post :mark_as_paid
+          post :send_payment_request
         end
       end
       resources :order_items, only: [:index]
