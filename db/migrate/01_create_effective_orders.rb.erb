@@ -6,6 +6,8 @@ class CreateEffectiveOrders < ActiveRecord::Migration
       t.datetime  :purchased_at
 
       t.text      :note
+      t.text      :note_to_buyer
+      t.text      :note_internal
 
       t.text      :payment
 

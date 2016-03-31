@@ -1,3 +1,9 @@
 %h2.effective-orders-page-title= (@order.purchased? ? 'Receipt' : 'Order')
 
 = render partial: 'effective/orders/order', locals: {order: @order}
+
+- if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
+  = render partial: 'admin/orders/note_internal', locals: { order: @order }
+
+- if (EffectiveOrders.authorized?(controller, :show, :payment_details) rescue false)
+  = render partial: 'effective/orders/order_payment_details', locals: { order: @order }

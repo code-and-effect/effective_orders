@@ -9,6 +9,9 @@ class UpgradeEffectiveOrdersFrom1x < ActiveRecord::Migration
     end
 
     add_column <%= @orders_table_name %>, :note, :text
+    add_column <%= @orders_table_name %>, :note_to_buyer, :text
+    add_column <%= @orders_table_name %>, :note_internal, :text
+
     add_column <%= @orders_table_name %>, :payment_provider, :string
     add_column <%= @orders_table_name %>, :payment_card, :string
 

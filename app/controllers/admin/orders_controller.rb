@@ -11,11 +11,33 @@ module Admin
       authorize_effective_order!
     end
 
+    # We use the show action as an edit screen too
     def show
       @order = Effective::Order.find(params[:id])
       @page_title = "Order ##{@order.to_param}"
 
       authorize_effective_order!
+    end
+
+    def update
+      @order = Effective::Order.find(params[:id])
+      @page_title = "Order ##{@order.to_param}"
+
+      authorize_effective_order!
+
+      if @order.update_attributes(order_params)
+        if params[:commit].to_s.downcase == 'save internal note'
+          flash[:success] = 'Successfully updated internal note'
+        else
+          flash[:success] = 'Successfully updated order'
+        end
+
+        redirect_to effective_orders.admin_order_path(@order)
+      else
+        binding.pry
+        flash.now[:danger] = 'Unable to update order'
+        render action: :show
+      end
     end
 
     def new
@@ -28,16 +50,15 @@ module Admin
     def create
       @user = User.find_by_id(order_params[:user_id])
       @order = Effective::Order.new(user: @user)
-      @order.send_payment_request_to_buyer = order_params[:send_payment_request_to_buyer]
 
       authorize_effective_order!
 
-      if order_params[:order_items_attributes].present?
-        order_params[:order_items_attributes].each do |_, item_attrs|
-          purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
-          @order.add(purchasable, quantity: item_attrs[:quantity])
-        end
+      (order_params[:order_items_attributes] || {}).each do |_, item_attrs|
+        purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
+        @order.add(purchasable, quantity: item_attrs[:quantity])
       end
+
+      @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
       if @order.create_as_pending
         path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_order_path(@order)
@@ -90,6 +111,7 @@ module Admin
 
     def order_params
       params.require(:effective_order).permit(:user_id, :send_payment_request_to_buyer,
+        :note_internal, :note_to_buyer,
         order_items_attributes: [
           :quantity, :_destroy, purchasable_attributes: [
             :title, :price, :tax_exempt
