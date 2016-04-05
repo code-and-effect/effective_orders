@@ -30,7 +30,7 @@ module EffectiveOrders
 
     # Set up our default configuration options.
     initializer "effective_orders.defaults", before: :load_config_initializers do |app|
-      eval File.read("#{config.root}/lib/generators/templates/effective_orders.rb")
+      eval File.read("#{config.root}/config/effective_orders.rb")
     end
 
     # Set up mail delivering config option

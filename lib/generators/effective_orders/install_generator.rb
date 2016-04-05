@@ -5,7 +5,7 @@ module EffectiveOrders
 
       desc "Creates an EffectiveOrders initializer in your application."
 
-      source_root File.expand_path("../../templates", __FILE__)
+      source_root File.expand_path('../../templates', __FILE__)
 
       def self.next_migration_number(dirname)
         if not ActiveRecord::Base.timestamped_migrations
@@ -16,7 +16,7 @@ module EffectiveOrders
       end
 
       def copy_initializer
-        template "effective_orders.rb", "config/initializers/effective_orders.rb"
+        template ('../' * 3) + 'config/effective_orders.rb', 'config/initializers/effective_orders.rb'
       end
 
       def copy_mailer_preview
@@ -38,12 +38,9 @@ module EffectiveOrders
         @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
         @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
 
-        migration_template '../../../db/migrate/01_create_effective_orders.rb.erb', 'db/migrate/create_effective_orders.rb'
+        migration_template ('../' * 3) + 'db/migrate/01_create_effective_orders.rb.erb', 'db/migrate/create_effective_orders.rb'
       end
 
-      def show_readme
-        readme "README" if behavior == :invoke
-      end
     end
   end
 end
