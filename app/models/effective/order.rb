@@ -68,12 +68,6 @@ module Effective
       validates :shipping_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
     end
 
-    if EffectiveOrders.terms_and_conditions
-      validates :terms_and_conditions,
-        inclusion: { in: ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES, message: 'please accept' },
-        unless: Proc.new { |order| order.skip_buyer_validations? || order.persisted? }
-    end
-
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
       if EffectiveOrders.allow_free_orders
         validates :total, numericality: {
