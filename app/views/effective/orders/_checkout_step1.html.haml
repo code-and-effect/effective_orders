@@ -34,7 +34,10 @@
               = f.input :shipping_address_same_as_billing, as: :boolean, label: 'My shipping address is the same as my billing address', required: false
 
     - if EffectiveOrders.collect_note
-      = render partial: 'effective/orders/order_note_fields', locals: {form: f}
+      = render partial: 'effective/orders/order_note_fields', locals: { form: f }
+
+    - if EffectiveOrders.terms_and_conditions
+      = render partial: 'effective/orders/order_terms_and_conditions_fields', locals: { form: f }
 
     - unless f.object.pending? || current_cart.try(:empty?)
       = link_to_current_cart(label: 'Change Items')

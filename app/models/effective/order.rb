@@ -12,6 +12,9 @@ module Effective
     )
 
     attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
+    attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
+
+    # Settings in the /admin action forms
     attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
     attr_accessor :send_mark_as_paid_email_to_buyer  # Used by the /admin/orders/mark_as_paid action
     attr_accessor :skip_buyer_validations # Enabled by the /admin/orders/create action
@@ -63,6 +66,12 @@ module Effective
 
     if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
       validates :shipping_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
+    end
+
+    if EffectiveOrders.terms_and_conditions
+      validates :terms_and_conditions,
+        inclusion: { in: ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES, message: 'please accept' },
+        unless: Proc.new { |order| order.skip_buyer_validations? || order.persisted? }
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?

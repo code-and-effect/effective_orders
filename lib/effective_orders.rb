@@ -51,6 +51,9 @@ module EffectiveOrders
   mattr_accessor :collect_note_required
   mattr_accessor :collect_note_message
 
+  mattr_accessor :terms_and_conditions
+  mattr_accessor :terms_and_conditions_label
+
   mattr_accessor :minimum_charge
   mattr_accessor :allow_free_orders
   mattr_accessor :show_order_history_button
@@ -115,7 +118,7 @@ module EffectiveOrders
 
   def self.permitted_params
     [
-      :note, :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing,
+      :note, :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing, :terms_and_conditions,
       billing_address: [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
       shipping_address: [:full_name, :address1, :address2, :city, :country_code, :state_code, :postal_code],
       user_attributes: (EffectiveOrders.collect_user_fields || []),

@@ -1,0 +1,8 @@
+%h3 Terms and Conditions
+
+- terms = EffectiveOrders.terms_and_conditions_label
+
+= form.input :terms_and_conditions,
+  required: true,
+  as: :boolean,
+  label: ((terms.respond_to?(:call) ? instance_exec(form.object, &terms) : terms).presence || 'I accept the terms and conditions.').html_safe

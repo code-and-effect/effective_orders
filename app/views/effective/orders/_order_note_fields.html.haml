@@ -2,4 +2,4 @@
 - if EffectiveOrders.collect_note_message.present?
   %p= EffectiveOrders.collect_note_message
 
-= form.input :note, :required => (EffectiveOrders.collect_note_required == true)
+= form.input :note, required: (EffectiveOrders.collect_note_required == true)

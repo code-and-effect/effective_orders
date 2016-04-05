@@ -71,7 +71,19 @@ EffectiveOrders.setup do |config|
   config.collect_note_required = false   # just required for the form, not a true Order model validation
   config.collect_note_message = ''
 
+  # If true, the orders#new screen will render effective/orders/_terms_and_conditions_fields to require a Terms of Service boolean
+  # config.terms_and_conditions_label can be a String or a Proc
+  # config.terms_and_conditions_label = Proc.new { |order| "Yes, I agree to the #{link_to 'terms and conditions', terms_and_conditions_path}." }
+  config.terms_and_conditions = true
+  config.terms_and_conditions_label = 'I agree to the terms and conditions.'
+
   # Tax Calculation Method
+  # The Effective::TaxRateCalculator considers the order.billing_address and assigns a tax based on country & state code
+  # Right now, only Canadian provinces are supported. Sorry.
+  # To always charge 12.5% tax: Proc.new { |order| 12.5 }
+  # To always charge 0% tax: Proc.new { |order| 0 }
+  # If the Proc returns nil, the tax rate will be calculated once again whenever the order is validated
+  # An order must have a tax rate (even if the value is 0) to be purchased
   config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
 
   # Minimum Charge
