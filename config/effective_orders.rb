@@ -74,7 +74,7 @@ EffectiveOrders.setup do |config|
   # If true, the orders#new screen will render effective/orders/_terms_and_conditions_fields to require a Terms of Service boolean
   # config.terms_and_conditions_label can be a String or a Proc
   # config.terms_and_conditions_label = Proc.new { |order| "Yes, I agree to the #{link_to 'terms and conditions', terms_and_conditions_path}." }
-  config.terms_and_conditions = true
+  config.terms_and_conditions = false
   config.terms_and_conditions_label = 'I agree to the terms and conditions.'
 
   # Tax Calculation Method
