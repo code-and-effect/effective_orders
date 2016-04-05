@@ -28,7 +28,7 @@
             - if order.new_record? && item.purchasable.kind_of?(Effective::Subscription)
               = render :partial => 'effective/orders/stripe/subscription_fields', :locals => {:form => form, :subscription => item.purchasable }
 
-          %td.price= price_to_currency(item.price)
+          %td.price= price_to_currency(item.subtotal)
 
     %tfoot
       - if order.tax.to_i > 0 || order.tax_rate == nil

@@ -39,10 +39,10 @@
     - if EffectiveOrders.terms_and_conditions
       = render partial: 'effective/orders/order_terms_and_conditions_fields', locals: { form: f }
 
-    - unless f.object.pending? || current_cart.try(:empty?)
-      = link_to_current_cart(label: 'Change Items')
-
     %p.text-right
+      - unless f.object.pending? || current_cart.try(:empty?)
+        = link_to_current_cart(label: 'Change Items')
+
       - if order.total == 0 && EffectiveOrders.allow_free_orders
         = f.submit order_checkout_label(:free), class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Processing...' }
       - else
