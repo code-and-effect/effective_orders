@@ -56,6 +56,8 @@ if defined?(EffectiveDatatables)
           table_column :payment_card, label: 'Card'
 
           table_column :note, visible: false
+          table_column :note_to_buyer, visible: false
+          table_column :note_internal, visible: false
 
           table_column :created_at, visible: false
           table_column :updated_at, visible: false
