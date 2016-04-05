@@ -7,7 +7,7 @@
 
   = f.input :payment_provider,
     as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
-    collection: EffectiveOrders.payment_providers,
+    collection: (EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers).sort,
     required: true
 
   = f.input :payment_card,

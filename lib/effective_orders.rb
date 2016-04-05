@@ -140,7 +140,6 @@ module EffectiveOrders
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
     @payment_providers ||= [
-      'admin',
       ('app_checkout' if app_checkout_enabled),
       ('ccbill' if ccbill_enabled),
       ('cheque' if cheque_enabled),
@@ -151,6 +150,10 @@ module EffectiveOrders
       ('stripe' if stripe_enabled),
       ('stripe_connect' if stripe_connect_enabled)
     ].compact
+  end
+
+  def self.other_payment_providers
+    ['credit card', 'none', 'other']
   end
 
   def self.tax_rate_method=(*args)

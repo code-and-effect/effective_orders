@@ -100,7 +100,7 @@ module Effective
       order.validates :purchased_at, presence: true
       order.validates :payment, presence: true
 
-      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers }
+      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
       order.validates :payment_card, presence: true
     end
 
@@ -316,7 +316,7 @@ module Effective
 
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
-    def purchase!(details: 'none', provider: 'admin', card: 'none', validate: true, email: true, skip_buyer_validations: false)
+    def purchase!(details: 'none', provider: 'none', card: 'none', validate: true, email: true, skip_buyer_validations: false)
       return false if purchased?
 
       success = false
@@ -349,7 +349,7 @@ module Effective
       success
     end
 
-    def decline!(details: 'none', provider: 'admin', card: 'none', validate: true)
+    def decline!(details: 'none', provider: 'none', card: 'none', validate: true)
       return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
