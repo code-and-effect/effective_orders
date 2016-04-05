@@ -66,9 +66,8 @@ module Effective
 
         unless subscription.purchased?
           # Now we have to purchase it
-          @order = Effective::Order.new(subscription)
-          @order.user = @customer.user
-          @order.purchase!(details: "Webhook #{event.id}", provider: 'stripe')
+          @order = Effective::Order.new(subscription, user: @customer.user)
+          @order.purchase!(details: "Webhook #{event.id}", provider: 'stripe', validate: false)
         end
 
       end

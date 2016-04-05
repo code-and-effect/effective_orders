@@ -94,6 +94,8 @@ ActiveRecord::Schema.define(:version => 4) do
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
     t.text     "note"
+    t.text     "note_internal"
+    t.text     "note_to_buyer"
     t.integer  "total"
     t.decimal  "tax_rate",         precision: 6, scale: 3
     t.integer  "subtotal"
