@@ -56,7 +56,7 @@ module EffectiveCartsHelper
     label = options.delete(:label)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')
 
-    link_to label, effective_orders.add_to_cart_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id.to_i), options
+    link_to(label, effective_orders.add_to_cart_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id.to_i), options)
   end
 
   def link_to_remove_from_cart(cart_item, opts = {})
