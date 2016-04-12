@@ -164,4 +164,21 @@ module EffectiveOrdersHelper
     end
   end
 
+  def payment_card_label(card)
+    case card.to_s.downcase[0]
+    when nil
+      'None'
+    when 'v'
+      'Visa'
+    when 'm'
+      'MasterCard'
+    when 'a'
+      'American Express'
+    when 'd'
+      'Discover'
+    else
+      card.to_s
+    end
+  end
+
 end
