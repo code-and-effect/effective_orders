@@ -130,10 +130,9 @@ module Effective
 
     def index
       @orders = Effective::Order.purchased_by(current_user)
+      @pending_orders = Effective::Order.pending.where(user: current_user)
 
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
-
-      render action: :my_purchases
     end
 
     # Basically an index page.
@@ -230,7 +229,7 @@ module Effective
 
     def set_page_title
       @page_title ||= case params[:action]
-        when 'index'        ; 'Order History'
+        when 'index'        ; 'Orders'
         when 'my_purchases' ; 'Order History'
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'

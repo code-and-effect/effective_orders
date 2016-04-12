@@ -11,8 +11,7 @@
 
 - if @pending_orders.present?
   %h3 Pending Orders
-  %p The following orders are ready for you to purchase:
-  = render_orders_table(@pending_orders)
+  = render_orders(@pending_orders)
 
 - if EffectiveOrders.show_order_history_button
   = link_to_my_purchases(label: 'Order History')

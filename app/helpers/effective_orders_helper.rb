@@ -118,7 +118,7 @@ module EffectiveOrdersHelper
   end
   alias_method :link_to_order_history, :link_to_my_purchases
 
-  def render_orders_table(user_or_orders, opts = {})
+  def render_orders(user_or_orders, opts = {})
     if user_or_orders.kind_of?(User)
       orders = Effective::Order.purchased_by(user_or_orders)
     elsif user_or_orders.respond_to?(:to_a)
@@ -130,9 +130,9 @@ module EffectiveOrdersHelper
     render(partial: 'effective/orders/orders_table', locals: {orders: orders}.merge(opts))
   end
 
-  alias_method :render_purchases, :render_orders_table
-  alias_method :render_my_purchases, :render_orders_table
-  alias_method :render_order_history, :render_orders_table
+  alias_method :render_purchases, :render_orders
+  alias_method :render_my_purchases, :render_orders
+  alias_method :render_order_history, :render_orders
 
   # Used by the _payment_details partial
   def tableize_order_payment(hash, options = {class: 'table table-bordered'})
