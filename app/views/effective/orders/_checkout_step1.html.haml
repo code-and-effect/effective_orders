@@ -25,13 +25,9 @@
         - if EffectiveOrders.require_shipping_address
           %div{class: "col-sm-#{12 / num_addresses}"}
             %h3 Shipping Address
-            - if EffectiveOrders.require_billing_address && EffectiveOrders.require_shipping_address
-              .shipping_address_fields{style: (f.object.shipping_address_same_as_billing? && (f.object.errors[:shipping_address] || []).blank?) ? 'display: none;' : 'display: block;'}
-                = effective_address_fields(f, :shipping_address)
-                - if f.object.user.respond_to?(:shipping_address=)
-                  = f.input :save_shipping_address, as: :boolean, label: 'Save as my default shipping address', required: false
-
-              = f.input :shipping_address_same_as_billing, as: :boolean, label: 'My shipping address is the same as my billing address', required: false
+            = effective_address_fields(f, :shipping_address)
+            - if f.object.user.respond_to?(:shipping_address=)
+              = f.input :save_shipping_address, as: :boolean, label: 'Save as my default shipping address', required: false
 
     - if EffectiveOrders.collect_note
       = render partial: 'effective/orders/order_note_fields', locals: { form: f }

@@ -73,13 +73,9 @@ module Effective
       @order.attributes = order_params
       @order.user_id = current_user.id
 
-      if EffectiveOrders.require_shipping_address
-        if @order.shipping_address_same_as_billing? && @order.billing_address.present?
-          @order.shipping_address = @order.billing_address
-        end
-      end
-
       EffectiveOrders.authorized?(self, (@order.persisted? ? :update : :create), @order)
+
+      @order.valid?  # This makes sure the correct shipping_address is copied from billing_address if shipping_address_same_as_billing
 
       Effective::Order.transaction do
         begin

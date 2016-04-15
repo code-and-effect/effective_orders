@@ -11,7 +11,7 @@ module Effective
       :shipping => { singular: true, use_full_name: EffectiveOrders.use_address_full_name }
     )
 
-    attr_accessor :save_billing_address, :save_shipping_address, :shipping_address_same_as_billing # save these addresses to the user if selected
+    attr_accessor :save_billing_address, :save_shipping_address # save these addresses to the user if selected
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
 
     # Settings in the /admin action forms
@@ -126,7 +126,6 @@ module Effective
       # Set up defaults
       self.save_billing_address = true
       self.save_shipping_address = true
-      self.shipping_address_same_as_billing = true
 
       self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
 
@@ -288,10 +287,6 @@ module Effective
 
     def send_mark_as_paid_email_to_buyer?
       ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_mark_as_paid_email_to_buyer)
-    end
-
-    def shipping_address_same_as_billing?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.shipping_address_same_as_billing)
     end
 
     def skip_buyer_validations?
