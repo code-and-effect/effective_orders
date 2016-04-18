@@ -1,10 +1,12 @@
 module EffectiveOrdersHelper
-  def price_to_currency(price)
+  def price_to_currency(price, options = {})
     raise 'price_to_currency expects an Integer representing the number of cents in a price' unless price.kind_of?(Integer)
-    number_to_currency(price / 100.0)
+    options[:precision] ||= 2
+    number_to_currency(price / 100.0, options)
   end
 
-  def tax_rate_to_percentage(tax_rate)
+  def tax_rate_to_percentage(tax_rate, options = {})
+    options[:strip_insignificant_zeros] = true if options[:strip_insignificant_zeros].nil?
     number_to_percentage(tax_rate, strip_insignificant_zeros: true)
   end
 
