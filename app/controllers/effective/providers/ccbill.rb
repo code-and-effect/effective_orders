@@ -5,15 +5,13 @@ module Effective
 
       included do
         skip_before_filter :verify_authenticity_token, only: [:ccbill_postback]
-
-        if defined?(CanCan)
-          skip_authorization_check only: [:ccbill_postback]
-        end
       end
 
       def ccbill_postback
         postback = Effective::Providers::CcbillPostback.new(params)
         @order ||= Effective::Order.find(postback.order_id)
+
+        (EffectiveOrders.authorized?(self, :update, @order) rescue false)
 
         if @order.present? && postback.verified?
           if @order.purchased?

@@ -4,13 +4,13 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        if defined?(CanCan)
-          skip_authorization_check only: [:app_checkout]
-        end
       end
 
       def app_checkout
         @order = Order.find(params[:id])
+
+        (EffectiveOrders.authorized?(self, :update, @order) rescue false)
+
         checkout = EffectiveOrders.app_checkout[:service].call(order: @order)
         if checkout.success?
           order_purchased(details: payment_details(checkout), provider: 'app_checkout', card: 'none')
