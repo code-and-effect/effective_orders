@@ -91,7 +91,7 @@ describe Admin::OrdersController, type: :controller do
           post :create, order_params.merge(commit: button_pressed)
 
           expect(response).to be_redirect
-          expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.new_admin_order_path
+          expect(response).to redirect_to EffectiveOrders::Engine.routes.url_helpers.new_admin_order_path(user_id: 1)
           expect(flash[:success]).to eq "Successfully created order. #{assigns(:order).user.email} has been sent a request for payment."
         end
       end
@@ -132,7 +132,7 @@ describe Admin::OrdersController, type: :controller do
           expect(response).to be_successful
           expect(response).to render_template :new
           expect(assigns(:page_title)).to eq 'New Order'
-          expect(flash[:danger]).to eq 'Unable to create order'
+          expect(flash[:danger].to_s.include?('Unable to create order')).to eq true
         end
       end
 
