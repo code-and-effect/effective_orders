@@ -28,6 +28,5 @@
   %h3 Note to Buyer
   = f.input :note_to_buyer, label: 'Note to buyer', hint: 'This is displayed to the buyer on all order receipts.'
 
-  %p.text-right
-    = f.button :submit, 'Mark Order as Paid', data: { disable_with: 'Saving...' }
+  = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
 

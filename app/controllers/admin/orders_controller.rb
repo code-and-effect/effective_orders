@@ -32,15 +32,17 @@ module Admin
           flash[:success] = 'Successfully updated order'
         end
 
-        redirect_to effective_orders.admin_order_path(@order)
+        redirect_to(admin_redirect_path)
       else
-        flash.now[:danger] = 'Unable to update order'
+        flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
         render action: :show
       end
     end
 
     def new
       @order = Effective::Order.new
+      @order.user = (User.find(params[:user_id]) rescue nil) if params[:user_id]
+
       @page_title = 'New Order'
 
       authorize_effective_order!
@@ -60,14 +62,13 @@ module Admin
       @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
       if @order.create_as_pending
-        path_for_redirect = params[:commit] == 'Save and Add New' ? effective_orders.new_admin_order_path : effective_orders.admin_order_path(@order)
         message = 'Successfully created order'
         message << ". #{@order.user.email} has been sent a request for payment." if @order.send_payment_request_to_buyer?
         flash[:success] = message
-        redirect_to path_for_redirect
+        redirect_to(admin_redirect_path)
       else
         @page_title = 'New Order'
-        flash.now[:danger] = 'Unable to create order'
+        flash.now[:danger] = "Unable to create order: #{@order.errors.full_messages.to_sentence}"
         render :new
       end
     end
@@ -89,6 +90,7 @@ module Admin
             provider: order_params[:payment_provider],
             card: order_params[:payment_card],
             email: @order.send_mark_as_paid_email_to_buyer?,
+            skip_buyer_validations: true
           )
         rescue => e
           purchased = false
@@ -96,7 +98,7 @@ module Admin
 
         if purchased
           flash[:success] = 'Order marked as paid successfully'
-          redirect_to effective_orders.admin_order_path(@order)
+          redirect_to(admin_redirect_path)
         else
           flash.now[:danger] = "Unable to mark order as paid: #{@order.errors.full_messages.to_sentence}"
           render action: :mark_as_paid
@@ -134,6 +136,24 @@ module Admin
     def authorize_effective_order!
       EffectiveOrders.authorized?(self, :admin, :effective_orders)
       EffectiveOrders.authorized?(self, action_name.to_sym, @order || Effective::Order)
+    end
+
+    def admin_redirect_path
+      # Allow an app to define effective_orders_admin_redirect_path in their ApplicationController
+      path = if self.respond_to?(:effective_orders_admin_redirect_path)
+        effective_orders_admin_redirect_path(params[:commit], @order)
+      end
+
+      return path if path.present?
+
+      case params[:commit]
+      when 'Save and Add New'
+        effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
+      when 'Save and Mark as Paid'
+        effective_orders.mark_as_paid_admin_order_path(@order)
+      else
+        effective_orders.admin_order_path(@order)
+      end
     end
 
   end
