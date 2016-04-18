@@ -61,11 +61,11 @@ module Effective
     validates :tax, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
-      validates :billing_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
+      validates :billing_address, presence: true, unless: Proc.new { |order| (order.new_record? && order.pending?) || order.skip_buyer_validations? }
     end
 
     if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
-      validates :shipping_address, presence: true, unless: Proc.new { |order| order.new_record? && order.pending? }
+      validates :shipping_address, presence: true, unless: Proc.new { |order| (order.new_record? && order.pending?) || order.skip_buyer_validations? }
     end
 
     if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
@@ -318,6 +318,8 @@ module Effective
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
           self.payment_provider = provider.to_s
           self.payment_card = card.to_s.presence || 'none'
+
+          self.skip_buyer_validations = skip_buyer_validations
 
           save!(validate: validate)
 
