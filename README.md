@@ -793,11 +793,13 @@ Order totals ending in .05 will be Declined
 
 And there's a whole bunch more.  Please refer to:
 
-https://www.google.ca/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CB8QFjAA&url=https%3A%2F%2Fcartthrob.com%2F%3FACT%3D50%26fid%3D25%26aid%3D704_jvVKOeo1a8d3aSYeT3R4%26board_id%3D1&ei=_p1OVOysEpK_sQTZ8oDgCg&usg=AFQjCNHJGH_hEm4kUJAzkvKrzTqEpFnrgA&sig2=XJdE6PZoOY9habWH_B4uWA&bvm=bv.77880786,d.cWc&cad=rja
+https://www.collinsharper.com/downloadable/download/sample/sample_id/5/
 
 2. Moneris will not process a duplicate order ID
 
 Once Order id=1 has been purchased/declined, you will be unable to purchase an order with id=1 ever again.
+
+effective_orders works around this by appending a timestamp to the order ID.
 
 
 ## Paying via Stripe
