@@ -52,7 +52,7 @@ if defined?(EffectiveDatatables)
 
           table_column :total, as: :price
 
-          table_column :payment_provider, label: 'Provider', visible: false, filter: { values: ['nil'] + EffectiveOrders.payment_providers }
+          table_column :payment_provider, label: 'Provider', visible: false, filter: { values: ['nil'] + EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
           table_column :payment_card, label: 'Card'
 
           table_column :note, visible: false
