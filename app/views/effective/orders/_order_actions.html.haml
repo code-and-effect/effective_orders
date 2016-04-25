@@ -7,4 +7,5 @@
 
     - elsif (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
       = link_to 'Admin: Mark as Paid', effective_orders.mark_as_paid_admin_order_path(order), class: 'btn btn-default'
-      = link_to 'Admin: Send Payment Request', effective_orders.send_payment_request_admin_order_path(order), class: 'btn btn-default', method: :post, data: { confirm: 'This action will email buyer a payment request. Send it now?', disable_with: 'Sending...' }
+      = link_to 'Admin: Send Payment Request', effective_orders.send_payment_request_admin_order_path(order), class: 'btn btn-default', data: { method: :post, confirm: 'This action will email buyer a payment request. Send it now?', disable_with: 'Sending...' }
+      = link_to 'Admin: Delete', effective_orders.admin_order_path(order), class: 'btn btn-default', data: { method: :delete, confirm: 'Are you sure you want to delete? This cannot be undone.', disable_with: 'Deleting...' }

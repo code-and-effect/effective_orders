@@ -1,6 +1,9 @@
+= link_to (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)), title: 'View' do
+  %span.glyphicon.glyphicon-eye-open
+
 - if (order.purchased? == false) && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
   = link_to effective_orders.mark_as_paid_admin_order_path(order), title: 'Mark as Paid' do
     %span.glyphicon.glyphicon-usd
 
-= link_to (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)), title: 'View' do
-  %span.glyphicon.glyphicon-eye-open
+  = link_to effective_orders.admin_order_path(order), title: 'Delete', data: { method: :delete, confirm: 'Are you sure you want to delete? This cannot be undone.' } do
+    %span.glyphicon.glyphicon-trash

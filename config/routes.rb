@@ -64,7 +64,7 @@ EffectiveOrders::Engine.routes.draw do
   if !EffectiveOrders.use_active_admin? || Rails.env.test?
     namespace :admin do
       resources :customers, only: [:index]
-      resources :orders, only: [:index, :show, :update, :new, :create] do
+      resources :orders, except: [:edit] do
         member do
           get :mark_as_paid
           post :mark_as_paid

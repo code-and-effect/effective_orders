@@ -73,6 +73,20 @@ module Admin
       end
     end
 
+    def destroy
+      @order = Effective::Order.find(params[:id])
+
+      authorize_effective_order!
+
+      if @order.destroy
+        flash[:success] = 'Successfully deleted order'
+      else
+        flash[:danger] = "Unable to delete order: #{@order.errors.full_messages.to_sentence}"
+      end
+
+      redirect_to(effective_orders.admin_orders_path)
+    end
+
     def mark_as_paid
       @order = Effective::Order.find(params[:id])
       @page_title = 'Mark as Paid'
