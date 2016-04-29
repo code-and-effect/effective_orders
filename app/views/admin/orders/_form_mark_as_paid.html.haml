@@ -25,8 +25,9 @@
     label: 'Yes, send an email receipt to the buyer.',
     value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid_by_admin] : f.object.send_mark_as_paid_email_to_buyer?)
 
-  %h3 Note to Buyer
-  = f.input :note_to_buyer, label: 'Note to buyer', hint: 'This is displayed to the buyer on all order receipts.'
+  .effective-order-note-to-buyer
+    %h3 Note to Buyer
+    = f.input :note_to_buyer, label: false, hint: 'This is displayed to the buyer on all order receipts.'
 
   = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
 

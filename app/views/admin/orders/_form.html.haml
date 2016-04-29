@@ -22,7 +22,8 @@
       label: 'Yes, send a payment request email to the buyer.',
       value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.mailer[:send_payment_request_to_buyer] : f.object.send_payment_request_to_buyer?)
 
-    %h3 Internal Note
-    = f.input :note_internal, label: 'Internal note', hint: 'For internal admin use only.  This note will never be displayed to the buyer.'
+    .effective-order-internal-note
+      %h3 Internal Note
+      = f.input :note_internal, label: false, hint: 'For internal admin use only. This note will never be displayed to the buyer.'
 
     = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
