@@ -299,12 +299,11 @@ EffectiveOrders.setup do |config|
     declined_flash: "Payment was unsuccessful. Please try again."
   }
 
-
   # Pay by Cheque configuration
   config.cheque_enabled = false
 
   config.cheque = {
-    confirm: 'Your order will not be considered purchased until we receive your cheque. Proceed with pay by cheque?'
+    confirm: 'Your order will not be considered purchased until we receive your cheque. Proceed with pay by cheque?',
     success_message: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience. We will mark this order purchased upon receiving payment.'
   }
 
