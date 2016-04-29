@@ -1,9 +1,7 @@
 %h2.effective-orders-page-title= (@page_title || 'Payment Required')
 
-%p.effective-orders-page-content
-  Thank you!
-  You have indicated that this order will be purchased by cheque.
-  Please send us a cheque at your earliest convenience.
-  We will mark this order purchased upon receiving your payment.
+- if EffectiveOrders.cheque[:success_message].present?
+  %p.effective-orders-page-content
+    = EffectiveOrders.cheque_success_message
 
 = render @order

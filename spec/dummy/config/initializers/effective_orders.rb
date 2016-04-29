@@ -94,6 +94,11 @@ EffectiveOrders.setup do |config|
   # pending order page.
   config.cheque_enabled = true
 
+  config.cheque = {
+    confirm: 'Your order will not be considered purchased until we receive your cheque. Proceed with pay by cheque?'
+    success_message: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience. We will mark this order purchased upon receiving payment.'
+  }
+
   # Show/hide the 'Order History' button on the 'Cart Page'
   config.show_order_history_button = true
 
