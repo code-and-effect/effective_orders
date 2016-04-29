@@ -1,6 +1,7 @@
-%h3 Internal Note
+.effective-order-internal-note-form
+  %h3 Internal Note
 
-= simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: effective_orders.admin_order_path(order)) do |f|
-  = f.input :note_internal, label: 'Internal note', hint: 'For internal admin use only.  This note will never be displayed to the buyer.'
+  = simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: effective_orders.admin_order_path(order)) do |f|
+    = f.input :note_internal, label: false, hint: 'For internal admin use only.  This note will never be displayed to the buyer.'
 
-  = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
+    = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
