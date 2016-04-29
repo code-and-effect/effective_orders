@@ -19,7 +19,7 @@ if defined?(EffectiveDatatables)
 
           table_column :subscription_types, column: 'subscription_types'
 
-          table_column :actions, sortable: false, filter: false, partial: '/admin/customers/actions'
+          actions_column partial: 'admin/customers/actions'
         end
 
         def collection

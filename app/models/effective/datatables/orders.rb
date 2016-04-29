@@ -62,7 +62,7 @@ if defined?(EffectiveDatatables)
           table_column :created_at, visible: false
           table_column :updated_at, visible: false
 
-          table_column :actions, sortable: false, filter: false, partial: 'admin/orders/actions'
+          actions_column partial: 'admin/orders/actions'
         end
 
         def collection
