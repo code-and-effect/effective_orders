@@ -2,6 +2,6 @@
 
 - if EffectiveOrders.cheque[:success_message].present?
   %p.effective-orders-page-content
-    = EffectiveOrders.cheque_success_message
+    = EffectiveOrders.cheque[:success_message]
 
 = render @order
