@@ -7,8 +7,8 @@ module Effective
         'AB' => 5.00,   # Alberta
         'BC' => 5.00,   # British Columbia
         'MB' => 5.00,   # Manitoba
-        'NB' => 13.0,   # New Brunswick
-        'NL' => 13.0,   # Newfoundland and Labrador
+        'NB' => 15.0,   # New Brunswick
+        'NL' => 15.0,   # Newfoundland and Labrador
         'NT' => 5.00,   # Northwest Territories
         'NS' => 15.0,   # Nova Scotia
         'ON' => 13.0,   # Ontario
