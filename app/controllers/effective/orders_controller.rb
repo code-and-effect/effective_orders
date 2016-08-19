@@ -16,10 +16,18 @@ module Effective
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
     if defined?(Devise)
-      before_filter :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
+      if respond_to?(:before_action)
+        before_action :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
+      else
+        before_filter :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
+      end
     end
 
-    before_filter :set_page_title, except: [:show]
+    if respond_to?(:before_action)
+      before_action :set_page_title, except: [:show]
+    else
+      before_filter :set_page_title, except: [:show]
+    end
 
     # This is the entry point for the "Checkout" buttons
     def new

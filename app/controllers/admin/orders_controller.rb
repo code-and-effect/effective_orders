@@ -1,6 +1,6 @@
 module Admin
   class OrdersController < ApplicationController
-    before_filter :authenticate_user!   # This is devise, ensure we're logged in.
+    respond_to?(:before_action) ? before_action(:authenticate_user!) : before_filter(:authenticate_user!) # Devise
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
 

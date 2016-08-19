@@ -4,7 +4,11 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        skip_before_filter :verify_authenticity_token, only: [:ccbill_postback]
+        if respond_to?(:skip_before_action)
+          skip_before_action :verify_authenticity_token, only: [:ccbill_postback]
+        else
+          skip_before_filter :verify_authenticity_token, only: [:ccbill_postback]
+        end
       end
 
       def ccbill_postback

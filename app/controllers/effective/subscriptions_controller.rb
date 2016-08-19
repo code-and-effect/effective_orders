@@ -5,8 +5,8 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:subscriptions] : EffectiveOrders.layout)
 
-    before_filter :authenticate_user!
-    before_filter :assign_customer
+    respond_to?(:before_action) ? before_action(:authenticate_user!) : before_filter(:authenticate_user!) # Devise
+    respond_to?(:before_action) ? before_action(:assign_customer) : before_filter(:assign_customer)
 
     # This is a 'My Subscriptions' page
     def index
