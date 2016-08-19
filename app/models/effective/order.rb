@@ -274,23 +274,23 @@ module Effective
     end
 
     def save_billing_address?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_billing_address)
+      truthy?(self.save_billing_address)
     end
 
     def save_shipping_address?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.save_shipping_address)
+      truthy?(self.save_shipping_address)
     end
 
     def send_payment_request_to_buyer?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_payment_request_to_buyer)
+      truthy?(self.send_payment_request_to_buyer)
     end
 
     def send_mark_as_paid_email_to_buyer?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.send_mark_as_paid_email_to_buyer)
+      truthy?(self.send_mark_as_paid_email_to_buyer)
     end
 
     def skip_buyer_validations?
-      ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(self.skip_buyer_validations)
+      truthy?(self.skip_buyer_validations)
     end
 
     def billing_name
@@ -457,5 +457,14 @@ module Effective
         return false
       end
     end
+
+    def truthy?(value)
+      if defined?(::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES)  # Rails <5
+        ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(value)
+      else
+        ActiveRecord::Type::Boolean.new.cast(value)
+      end
+    end
+
   end
 end
