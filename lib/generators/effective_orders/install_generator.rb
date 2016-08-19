@@ -15,6 +15,10 @@ module EffectiveOrders
         end
       end
 
+      def install_effective_addresses
+        run "rails generate effective_addresses:install"
+      end
+
       def copy_initializer
         template ('../' * 3) + 'config/effective_orders.rb', 'config/initializers/effective_orders.rb'
       end

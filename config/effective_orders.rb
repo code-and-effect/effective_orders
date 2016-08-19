@@ -45,7 +45,7 @@ EffectiveOrders.setup do |config|
   config.active_admin_namespace = :admin  # Passed internally to ActiveAdmin.register
 
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
-  config.obfuscate_order_ids = true
+  config.obfuscate_order_ids = false
 
   # Silence the price deprecation warnings
   config.silence_deprecation_warnings = false
