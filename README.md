@@ -641,6 +641,19 @@ and then in the view:
 render_datatable @datatable
 ```
 
+## Rake Tasks
+
+### Overwrite order item titles
+
+When an order is purchased, the `title()` of each `acts_as_purchasable` object is saved to the database.
+
+If you change the output of `acts_as_purchasable`.`title`, any existing order items will remain unchanged.
+
+Run this script to overwrite all saved order item titles with the current `acts_as_purchasable`.`title`.
+
+```ruby
+rake effective_orders:overwrite_order_item_titles
+```
 
 ## Testing in Development
 
