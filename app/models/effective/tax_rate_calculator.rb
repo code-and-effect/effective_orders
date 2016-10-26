@@ -12,7 +12,7 @@ module Effective
         'NT' => 5.00,   # Northwest Territories
         'NS' => 15.0,   # Nova Scotia
         'ON' => 13.0,   # Ontario
-        'PE' => 14.0,   # Prince Edward Island
+        'PE' => 15.0,   # Prince Edward Island
         'QC' => 5.00,   # Quebec
         'SK' => 5.00,   # Saskatchewan
         'YT' => 5.00,   # Yukon Territory
