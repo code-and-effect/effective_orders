@@ -17,14 +17,14 @@
       .row
         - if EffectiveOrders.require_billing_address
           %div{class: "col-sm-#{12 / num_addresses}"}
-            %h3 Billing Address
+            %h2 Billing Address
             = effective_address_fields(f, :billing_address)
             - if f.object.user.respond_to?(:billing_address=)
               = f.input :save_billing_address, as: :boolean, label: 'Save as my default billing address', required: false
 
         - if EffectiveOrders.require_shipping_address
           %div{class: "col-sm-#{12 / num_addresses}"}
-            %h3 Shipping Address
+            %h2 Shipping Address
             = effective_address_fields(f, :shipping_address)
             - if f.object.user.respond_to?(:shipping_address=)
               = f.input :save_shipping_address, as: :boolean, label: 'Save as my default shipping address', required: false

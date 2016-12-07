@@ -8,7 +8,7 @@
       as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
       collection: @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s }
 
-    %h3 Order Items
+    %h2 Order Items
     .order_items
       - f.object.order_items.build unless f.object.order_items.present?
       = f.simple_fields_for :order_items do |order_item|
@@ -23,7 +23,7 @@
       value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.mailer[:send_payment_request_to_buyer] : f.object.send_payment_request_to_buyer?)
 
     .effective-order-internal-note
-      %h3 Internal Note
+      %h2 Internal Note
       = f.input :note_internal, label: false, hint: 'For internal admin use only. This note will never be displayed to the buyer.'
 
     = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }

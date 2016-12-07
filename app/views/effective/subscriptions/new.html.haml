@@ -1,4 +1,4 @@
-%h2.effective-orders-page-title New Subscription
+%h1.effective-heading= @page_title
 
 - if @plans.present?
   = simple_form_for(@subscription, (EffectiveOrders.simple_form_options || {}).merge(:url => effective_orders.subscriptions_path, :method => :post)) do |f|

@@ -1,15 +1,9 @@
-%h2.effective-orders-page-title= (@page_title || 'Orders')
+%h1.effective-admin-heading= @page_title
 
-%p.text-right.effective-orders-page-action= link_to 'New Order', effective_orders.new_admin_order_path, :class => 'btn btn-primary'
+%p.text-right.effective-admin-actions
+  = link_to 'New Order', effective_orders.new_admin_order_path, class: 'btn btn-primary'
 
-- if @datatable.nil?
-  %p Please install #{link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'} to see this page.
-- elsif @datatable.present?
+- if @datatable.present?
   = render_datatable @datatable
 - else
   %p There are no orders present
-
-- if @datatable.present?
-  %p.text-right= link_to 'New Order', effective_orders.new_admin_order_path, :class => 'btn btn-primary'
-
-

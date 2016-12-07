@@ -1,8 +1,6 @@
-%h2.effective-orders-page-title= (@page_title || 'Order Items')
+%h1.effective-admin-heading= @page_title
 
-- if @datatable.nil?
-  %p Please install #{link_to 'effective_datatables', 'https://github.com/code-and-effect/effective_datatables'} to see this page.
-- elsif @datatable.present?
+- if @datatable.present?
   = render_datatable @datatable
 - else
   %p There are no order items present

@@ -1,4 +1,7 @@
-%h2.effective-orders-page-title My Subscriptions
+%h1.effective-heading= @page_title
+
+%p.text-right.effective-actions
+  = link_to 'New Subscription', effective_orders.new_subscription_path, class: 'btn btn-primary'
 
 - if @subscriptions.present?
   %p You have the following subscriptions:
@@ -17,5 +20,3 @@
 
 - else
   %p You have no subscriptions
-
-%p.text-right= link_to 'New Subscription', effective_orders.new_subscription_path

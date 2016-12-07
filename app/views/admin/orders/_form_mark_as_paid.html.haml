@@ -1,5 +1,5 @@
 = simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: effective_orders.mark_as_paid_admin_order_path(order), method: :post) do |f|
-  %h3 Payment Details
+  %h2 Payment Details
 
   - if order.purchased?
     .alert.alert-warning Warning: This order has already been purchased
@@ -26,7 +26,7 @@
     value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid_by_admin] : f.object.send_mark_as_paid_email_to_buyer?)
 
   .effective-order-note-to-buyer
-    %h3 Note to Buyer
+    %h2 Note to Buyer
     = f.input :note_to_buyer, label: false, hint: 'This is displayed to the buyer on all order receipts.'
 
   = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }

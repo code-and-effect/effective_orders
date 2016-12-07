@@ -23,11 +23,7 @@ module EffectiveOrders
         @table = table.to_s.downcase
         @column = column.to_s.downcase
 
-        migration_template '../../../db/upgrade/upgrade_price_column_on_table.rb.erb', "db/migrate/upgrade_price_column_on_#{table}.rb"
-      end
-
-      def show_readme
-        readme "README" if behavior == :invoke
+        migration_template ('../' * 3) + 'db/upgrade/upgrade_price_column_on_table.rb.erb', "db/migrate/upgrade_price_column_on_#{table}.rb"
       end
     end
   end

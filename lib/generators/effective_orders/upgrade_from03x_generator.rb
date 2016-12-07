@@ -24,11 +24,7 @@ module EffectiveOrders
         @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
         @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
 
-        migration_template '../../../db/upgrade/02_upgrade_effective_orders_from03x.rb.erb', 'db/migrate/upgrade_effective_orders_from03x.rb'
-      end
-
-      def show_readme
-        readme "README" if behavior == :invoke
+        migration_template ('../' * 3) + 'db/upgrade/02_upgrade_effective_orders_from03x.rb.erb', 'db/migrate/upgrade_effective_orders_from03x.rb'
       end
     end
   end

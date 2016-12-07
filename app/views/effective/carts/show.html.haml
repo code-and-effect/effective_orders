@@ -1,4 +1,4 @@
-%h2.effective-orders-page-title= (@page_title || 'My Cart')
+%h1.effective-heading= @page_title
 
 - if @cart.empty?
   %p Your cart is empty.
@@ -10,7 +10,7 @@
   = render partial: '/effective/carts/cart_actions', locals: { cart: @cart }
 
 - if @pending_orders.present?
-  %h3 Pending Orders
+  %h2 Pending Orders
   = render_orders(@pending_orders)
 
 - if EffectiveOrders.show_order_history_button

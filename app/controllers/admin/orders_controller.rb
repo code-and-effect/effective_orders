@@ -5,7 +5,7 @@ module Admin
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
 
     def index
-      @datatable = Effective::Datatables::Orders.new() if defined?(EffectiveDatatables)
+      @datatable = Effective::Datatables::Orders.new()
       @page_title = 'Orders'
 
       authorize_effective_order!

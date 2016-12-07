@@ -1,4 +1,4 @@
-%h2.effective-orders-page-title
+%h1.effective-heading
   = @plan.name
   Subscription
   details
@@ -24,7 +24,7 @@
       %th Current Period End
       %td= Time.zone.at(@stripe_subscription.current_period_end).strftime("%d-%b-%Y")
 
-%h3= "#{@plan.interval.chomp('ly')}ly Invoices"
+%h2= "#{@plan.interval.chomp('ly')}ly Invoices"
 
 %table.table
   %thead
@@ -44,6 +44,6 @@
           = Time.zone.at(invoice.lines.first.period.end).strftime("%d-%b-%Y")
         %td= price_to_currency(invoice.total)
 
-%h3 Cancel Subscription
+%h2 Cancel Subscription
 
 = link_to 'Unsubscribe', effective_orders.subscription_path(@plan.id), :data => {:method => :delete, :confirm => 'This will cancel your subscription. Are you sure? This cannot be undone.', :disable_with => 'Unsubscribing...'}

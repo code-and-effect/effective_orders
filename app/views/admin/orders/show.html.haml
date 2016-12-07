@@ -1,4 +1,4 @@
-%h2.effective-orders-page-title= (@order.purchased? ? 'Receipt' : 'Order')
+%h1.effective-admin-heading= (@order.purchased? ? 'Receipt' : 'Order')
 
 = render partial: 'effective/orders/order', locals: {order: @order}
 
