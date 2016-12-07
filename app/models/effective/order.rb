@@ -462,7 +462,7 @@ module Effective
       if defined?(::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES)  # Rails <5
         ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(value)
       else
-        ActiveRecord::Type::Boolean.new.cast(value)
+        ::ActiveRecord::Type::Boolean.new.cast(value)
       end
     end
 
