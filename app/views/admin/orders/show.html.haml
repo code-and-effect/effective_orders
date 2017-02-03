@@ -5,5 +5,4 @@
 - if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
 
-- if (EffectiveOrders.authorized?(controller, :show, :payment_details) rescue false)
-  = render partial: 'admin/orders/order_payment_details', locals: { order: @order }
+= render partial: 'admin/orders/order_payment_details', locals: { order: @order }

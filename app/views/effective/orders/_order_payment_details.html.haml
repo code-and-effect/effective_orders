@@ -1,4 +1,4 @@
-- if order.purchased?
+- if order.purchased? && (EffectiveOrders.authorized?(controller, :show, :payment_details) rescue false)
   .effective-order-payment-details
     %h2 Payment Details
     %table.table

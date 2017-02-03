@@ -28,7 +28,7 @@ module Effective
       def process_stripe_charge(charge)
         Effective::Order.transaction do
           begin
-            @buyer = Customer.for_user(charge.order.user)
+            @buyer = Effective::Customer.for_user(charge.order.user)
             @buyer.update_card!(charge.token)
 
             if EffectiveOrders.stripe_connect_enabled
