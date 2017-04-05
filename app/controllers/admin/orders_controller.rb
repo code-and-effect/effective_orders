@@ -5,7 +5,12 @@ module Admin
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
 
     def index
-      @datatable = Effective::Datatables::Orders.new()
+      if Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
+        @datatable = Effective::Datatables::Orders.new()
+      else
+        @datatable = EffectiveOrdersDatatable.new(self)
+      end
+
       @page_title = 'Orders'
 
       authorize_effective_order!
