@@ -1,4 +1,4 @@
-= link_to (datatables_admin_path? ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)), title: 'View' do
+= link_to (datatable.try(:admin_namespace?) ? effective_orders.admin_order_path(order) : effective_orders.order_path(order)), title: 'View' do
   %span.glyphicon.glyphicon-eye-open
 
 - if (order.purchased? == false) && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
