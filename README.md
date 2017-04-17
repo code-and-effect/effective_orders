@@ -77,7 +77,7 @@ the above command will add `products` table to you DB.
 
 ## High Level Overview
 
-Your rails app creates and displays a list of `acts_as_purchsable` objects, each with a `link_to_add_to_cart(object)`.
+Your rails app creates and displays a list of `acts_as_purchasable` objects, each with a `link_to_add_to_cart(object)`.
 
 The user clicks one or more Add to Cart links and adds some purchasables to their cart.
 
