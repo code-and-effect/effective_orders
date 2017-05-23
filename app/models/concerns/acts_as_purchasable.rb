@@ -21,16 +21,16 @@ module ActsAsPurchasable
     # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
     validates :price, presence: true, numericality: { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
 
-    validates :tax_exempt, inclusion: {in: [true, false]}
+    validates :tax_exempt, inclusion: { in: [true, false] }
 
     # These are breaking on the check for quanitty_enabled?.  More research is due
     validates :quantity_purchased, numericality: {allow_nil: true}, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
     validates :quantity_max, numericality: {allow_nil: true}, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
 
-    scope :purchased, -> { joins(:order_items).joins(:orders).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).uniq }
-    scope :purchased_by, lambda { |user| joins(:order_items).joins(:orders).where(orders: {user_id: user.try(:id), purchase_state: EffectiveOrders::PURCHASED}).uniq }
+    scope :purchased, -> { joins(order_items: :order).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).distinct }
+    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: {user_id: user.try(:id), purchase_state: EffectiveOrders::PURCHASED}).distinct }
     scope :sold, -> { purchased() }
-    scope :sold_by, lambda { |user| joins(:order_items).joins(:orders).where(order_items: {seller_id: user.try(:id)}).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).uniq }
+    scope :sold_by, lambda { |user| joins(order_items: :order).where(order_items: {seller_id: user.try(:id)}).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).distinct }
 
     scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
     scope :not_purchased_by, lambda { |user| where('id NOT IN (?)', purchased_by(user).pluck(:id).presence || [0]) }

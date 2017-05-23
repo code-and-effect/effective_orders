@@ -10,6 +10,7 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
       col :id, visible: false
 
       col :order
+
       # if effectiveorders.obfuscate_order_ids
       #   col(:order, type: :obfuscated_id) do |order_item|
       #     obfuscated_id = effective::order.obfuscate(order_item[:order_id])
@@ -22,18 +23,18 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
       # end
 
       unless attributes[:user_id]
-        col :email, sql_column: 'users.email', label: 'Buyer Email',  do |order_item|
+        col :email, sql_column: 'users.email', label: 'Buyer Email' do |order_item|
           link_to order_item[:email], (edit_admin_user_path(order_item[:user_id]) rescue admin_user_path(order_item[:user_id]) rescue '#')
         end
       end
 
       if EffectiveOrders.require_billing_address && attributes[:user_id].blank?
-        col :buyer_name, sortable: false, label: 'Buyer Name', do |order_item|
+        col :buyer_name, sort: false, label: 'Buyer Name' do |order_item|
           (order_item[:buyer_name] || '').split('!!SEP!!').find(&:present?)
         end
       end
 
-      col :purchase_state, sql_column: 'orders.purchase_state', filter: { collection: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
+      col :purchase_state, sql_column: 'orders.purchase_state', search: { collection: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
         order_item[:purchase_state] || 'abandoned'
       end
 
@@ -41,9 +42,9 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
         order_item.quantity == 1 ? order_item.title : "#{order_item.title} (#{order_item.quantity} purchased)"
       end
 
-      col :subtotal, as: :price
-      col :tax, as: :price
-      col :total, as: :price
+      # col :subtotal, as: :price
+      # col :tax, as: :price
+      # col :total, as: :price
 
       col :created_at, visible: false
       col :updated_at, visible: false

@@ -23,7 +23,7 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
     end
 
     collection do
-      Effective::Customer.customers.uniq
+      Effective::Customer.customers.distinct
         .joins(:user, :subscriptions)
         .select('customers.*, users.email AS email')
         .select("array_to_string(array(#{Effective::Subscription.purchased.select('subscriptions.stripe_plan_id').where('subscriptions.customer_id = customers.id').to_sql}), ' ,') AS subscription_types")
