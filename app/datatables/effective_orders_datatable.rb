@@ -5,23 +5,19 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
 
       col :purchased_at
 
-      col :id do |order|
-        link_to order.to_param, effective_orders.admin_order_path(order)
-      end
+      col :id
 
-      # Don't display email or buyer_name column if this is for a specific user
       if attributes[:user_id].blank?
-        col :email, sql_column: 'users.email', label: 'Buyer Email' do |order|
+        col :user, label: 'Buyer', search: :string, sort: :email do |order|
           link_to order.user.email, (edit_admin_user_path(order.user) rescue admin_user_path(order.user) rescue '#')
         end
 
-        if EffectiveOrders.use_address_full_name
-          col :buyer_name, sql_column: 'addresses.full_name' do |order|
+        if EffectiveOrders.require_billing_address && EffectiveOrders.use_address_full_name
+          val :buyer_name, visible: false do |order|
             order.billing_address.try(:full_name)
           end
-
-        elsif # Not using address full name
-          col :buyer_name, sql_column: 'users.*' do |order|
+        else
+          val :buyer_name, visible: false do |order|
             order.user.to_s
           end
         end
@@ -36,7 +32,7 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
       end
 
       col :purchase_state, label: 'State', search: { collection: purchase_state_filter_values } do |order|
-        order.purchase_state || 'abandoned'
+        order.purchase_state || EffectiveOrders::ABANDONED
       end
 
       col :order_items
@@ -64,22 +60,18 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
     end
 
     collection do
-      collection = Effective::Order.unscoped
-        .joins(:user)
-        .includes(:addresses)
-        .includes(:user)
-        .includes(:order_items)
+      scope = Effective::Order.unscoped.includes(:addresses, :order_items, :user)
 
       if EffectiveOrders.orders_collection_scope.respond_to?(:call)
-        collection = EffectiveOrders.orders_collection_scope.call(collection)
+        scope = EffectiveOrders.orders_collection_scope.call(scope)
       end
 
-      attributes[:user_id].present? ? collection.where(user_id: attributes[:user_id]) : collection
+      attributes[:user_id].present? ? scope.where(user_id: attributes[:user_id]) : scope
     end
 
     def purchase_state_filter_values
       [
-        %w(abandoned nil),
+        [EffectiveOrders::ABANDONED, nil],
         [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED],
         [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED],
         [EffectiveOrders::PENDING, EffectiveOrders::PENDING]

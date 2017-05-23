@@ -20,7 +20,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'coffee-rails'
   s.add_dependency 'jquery-rails'
   s.add_dependency 'devise'
-  s.add_dependency 'haml-rails'
   s.add_dependency 'sass-rails'
   s.add_dependency 'simple_form'
   s.add_dependency 'effective_addresses', '>= 1.6.0'
