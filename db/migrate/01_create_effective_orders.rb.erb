@@ -1,4 +1,4 @@
-class CreateEffectiveOrders < ActiveRecord::Migration
+class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
   def self.up
     create_table <%= @orders_table_name %> do |t|
       t.integer   :user_id
