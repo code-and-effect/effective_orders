@@ -15,7 +15,7 @@ Dir[Rails.root.join("../../spec/support/**/*.rb")].each {|f| require f }
 RSpec.configure do |config|
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
-  config.include Devise::TestHelpers, :type => :controller
+  config.include Devise::Test::ControllerHelpers, :type => :controller
   config.include Shoulda::Matchers::ActiveModel, :type => :model
 
   Rails.logger.level = 4    # Output only minimal stuff to test.log
