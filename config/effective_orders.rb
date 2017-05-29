@@ -10,7 +10,6 @@ EffectiveOrders.setup do |config|
   config.subscriptions_table_name = :subscriptions
   config.products_table_name = :products
 
-
   # Authorization Method
   #
   # This method is called by all controller actions with the appropriate action and resource
@@ -38,17 +37,8 @@ EffectiveOrders.setup do |config|
   # Filter the @orders on admin/orders#index screen
   # config.orders_collection_scope = Proc.new { |scope| scope.where(...) }
 
-  # Register Effective::Order with ActiveAdmin if ActiveAdmin is present
-  # You must have authorization to authorized?(:manage, Effective::Order)
-  # For the activeadmin menu to item to show up
-  config.use_active_admin = true
-  config.active_admin_namespace = :admin  # Passed internally to ActiveAdmin.register
-
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
   config.obfuscate_order_ids = false
-
-  # Silence the price deprecation warnings
-  config.silence_deprecation_warnings = false
 
   # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.require_billing_address = true

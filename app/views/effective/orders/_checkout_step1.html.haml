@@ -9,7 +9,7 @@
       %p.inline-errors= order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, price_to_currency(EffectiveOrders.minimum_charge.to_i))
 
     - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
-      = render partial: 'effective/orders/order_user_fields', locals: {form: f, user: f.object.user }
+      = render partial: 'effective/orders/order_user_fields', locals: { form: f, user: f.object.user }
 
     - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
 
@@ -36,7 +36,7 @@
       = render partial: 'effective/orders/order_terms_and_conditions_fields', locals: { form: f }
 
     %p.text-right
-      - unless f.object.pending? || current_cart.try(:empty?)
+      - unless f.object.pending? || (current_cart && current_cart.empty?)
         = link_to_current_cart(label: 'Change Items')
 
       - if order.total == 0 && EffectiveOrders.allow_free_orders

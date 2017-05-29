@@ -5,35 +5,30 @@ module Effective
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
     belongs_to :user
-    has_many :subscriptions, :inverse_of => :customer
+    has_many :subscriptions, inverse_of: :customer, class_name: 'Effective::Subscription'
 
-    # structure do
-    #   stripe_customer_id            :string  # cus_xja7acoa03
-    #   stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
-    #   stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
+    # Attributes
+    # stripe_customer_id            :string  # cus_xja7acoa03
+    # stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
+    # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
     #
-    #   timestamps
-    # end
+    # timestamps
 
     validates :user, presence: true
     validates :user_id, uniqueness: true
 
-    scope :customers, -> { where("#{EffectiveOrders.customers_table_name.to_s}.stripe_customer_id IS NOT NULL") }
+    scope :customers, -> { where.not(stripe_customer_id: nil) }
 
-    class << self
-      def for_user(user)
-        if user.present?
-          Effective::Customer.where(:user_id => (user.try(:id) rescue user.to_i)).first_or_create
-        end
-      end
+    def self.for_user(user)
+      Effective::Customer.where(user_id: user.id).first_or_create
     end
 
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
-        ::Stripe::Customer.create(:email => user.email, :description => user.id.to_s).tap do |stripe_customer|
-          self.update_attributes(:stripe_customer_id => stripe_customer.id)
+        ::Stripe::Customer.create(email: user.email, description: user.id.to_s).tap do |stripe_customer|
+          self.update_attributes(stripe_customer_id: stripe_customer.id)
         end
       end
     end
@@ -44,6 +39,8 @@ module Effective
           stripe_customer.card = token  # This sets the default_card to the new card
         elsif stripe_customer.respond_to?(:sources)
           stripe_customer.source = token
+        else
+          raise 'unknown stripe card/source token method'
         end
 
         if stripe_customer.save && default_card.present?
@@ -64,20 +61,22 @@ module Effective
     private
 
     def default_card
-      case
-      when stripe_customer.respond_to?(:default_card)
+      if stripe_customer.respond_to?(:default_card)
         stripe_customer.default_card
-      when stripe_customer.respond_to?(:default_source)
+      elsif stripe_customer.respond_to?(:default_source)
         stripe_customer.default_source
+      else
+        raise 'unknown stripe default card method'
       end
     end
 
     def cards
-      case
-      when stripe_customer.respond_to?(:cards)
+      if stripe_customer.respond_to?(:cards)
         stripe_customer.cards
-      when stripe_customer.respond_to?(:sources)
+      elsif stripe_customer.respond_to?(:sources)
         stripe_customer.sources
+      else
+        raise 'unknown stripe cards method'
       end
     end
   end

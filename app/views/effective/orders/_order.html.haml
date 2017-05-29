@@ -1,12 +1,12 @@
 .effective-order
   - unless defined?(no_order_actions)
-    = render partial: 'effective/orders/order_actions', locals: {order: order}
+    = render partial: 'effective/orders/order_actions', locals: { order: order }
 
-  = render partial: 'effective/orders/order_header', locals: {order: order}
-  = render partial: 'effective/orders/order_shipping', locals: {order: order}
-  = render partial: 'effective/orders/order_note', locals: {order: order}
-  = render partial: 'effective/orders/order_note_to_buyer', locals: {order: order}
-  = render partial: 'effective/orders/order_items', locals: {order: order}
-  = render partial: 'effective/orders/order_payment_details', locals: {order: order}
-  = render partial: 'effective/orders/order_footer', locals: {order: order}
+  = render partial: 'effective/orders/order_header', locals: { order: order }
+  = render partial: 'effective/orders/order_shipping', locals: { order: order }
+  = render partial: 'effective/orders/order_note', locals: { order: order }
+  = render partial: 'effective/orders/order_note_to_buyer', locals: { order: order }
+  = render partial: 'effective/orders/order_items', locals: { order: order }
+  = render partial: 'effective/orders/order_payment_details', locals: { order: order }
+  = render partial: 'effective/orders/order_footer', locals: { order: order }
 

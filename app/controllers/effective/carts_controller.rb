@@ -34,7 +34,7 @@ module Effective
       begin
         raise "Please select a valid #{add_to_cart_params[:purchasable_type] || 'item' }." unless @purchasable
 
-        current_cart.add_to_cart(@purchasable, quantity: [add_to_cart_params[:quantity].to_i, 1].max)
+        current_cart.add(@purchasable, quantity: [add_to_cart_params[:quantity].to_i, 1].max)
         flash[:success] = 'Successfully added item to cart.'
       rescue EffectiveOrders::SoldOutException
         flash[:warning] = 'This item is sold out.'

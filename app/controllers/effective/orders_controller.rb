@@ -15,19 +15,8 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
-    if defined?(Devise)
-      if respond_to?(:before_action)
-        before_action :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
-      else
-        before_filter :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
-      end
-    end
-
-    if respond_to?(:before_action)
-      before_action :set_page_title, except: [:show]
-    else
-      before_filter :set_page_title, except: [:show]
-    end
+    before_action(:authenticate_user!, except: [:paypal_postback, :ccbill_postback]) if defined?(Devise)
+    before_action :set_page_title, except: [:show]
 
     # This is the entry point for the "Checkout" buttons
     def new
@@ -224,11 +213,7 @@ module Effective
 
     # StrongParameters
     def order_params
-      begin
-        params.require(:effective_order).permit(EffectiveOrders.permitted_params)
-      rescue => e
-        params[:effective_order] || {}
-      end
+      params.require(:effective_order).permit(EffectiveOrders.permitted_params)
     end
 
     def set_page_title

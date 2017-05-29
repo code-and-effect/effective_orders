@@ -24,11 +24,11 @@ module Effective::Providers
     end
 
     def order_items
-      order.order_items.reject { |order_item| order_item.purchasable.kind_of?(Effective::Subscription) }
+      order.order_items.reject { |oi| oi.purchasable.kind_of?(Effective::Subscription) }
     end
 
     def subscriptions
-      order.order_items.select { |order_item| order_item.purchasable.kind_of?(Effective::Subscription) }.map(&:purchasable)
+      order.order_items.map { |oi| oi.purchasable if oi.purchasable.kind_of?(Effective::Subscription) }.compact
     end
 
   end

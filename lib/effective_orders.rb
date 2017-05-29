@@ -30,11 +30,7 @@ module EffectiveOrders
   mattr_accessor :simple_form_options
   mattr_accessor :admin_simple_form_options
 
-  mattr_accessor :use_active_admin
-  mattr_accessor :active_admin_namespace
-
   mattr_accessor :obfuscate_order_ids
-  mattr_accessor :silence_deprecation_warnings
 
   mattr_accessor :allow_pretend_purchase_in_development
   mattr_accessor :allow_pretend_purchase_in_production
@@ -84,16 +80,6 @@ module EffectiveOrders
 
   def self.setup
     yield self
-
-    if EffectiveOrders.stripe_enabled
-      begin
-        require 'stripe'
-      rescue Exception
-        raise "unable to load stripe.  Plese add gem 'stripe' to your Gemfile and then 'bundle install'"
-      end
-
-      ::Stripe.api_key = stripe[:secret_key]
-    end
   end
 
   def self.authorized?(controller, action, resource)
@@ -101,19 +87,6 @@ module EffectiveOrders
       raise Effective::AccessDenied.new() unless (controller || self).instance_exec(controller, action, resource, &authorization_method)
     end
     true
-  end
-
-  def self.minimum_charge
-    if @@minimum_charge.nil? || @@minimum_charge.kind_of?(Integer)
-      @@minimum_charge
-    else
-      ActiveSupport::Deprecation.warn('EffectiveOrders.minimum_charge config option is a non-integer. It should be an Integer representing the number of cents.  Continuing with (price * 100.0).round(0).to_i conversion') unless EffectiveOrders.silence_deprecation_warnings
-      ((@@minimum_charge * 100.0).round(0).to_i rescue nil)
-    end
-  end
-
-  def self.use_active_admin?
-    use_active_admin && defined?(ActiveAdmin)
   end
 
   def self.permitted_params
@@ -156,11 +129,6 @@ module EffectiveOrders
     ['credit card', 'none', 'other']
   end
 
-  def self.tax_rate_method=(*args)
-    raise 'EffectiveOrders.tax_rate_method has been removed and renamed to EffectiveOrders.order_tax_rate_method.  Its expected value is now different too. Return 5.25 for 5.25% tax. Please refer to the readme for more info.'
-  end
-
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
-
 end

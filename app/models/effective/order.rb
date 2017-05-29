@@ -7,8 +7,8 @@ module Effective
     end
 
     acts_as_addressable(
-      :billing => { singular: true, use_full_name: EffectiveOrders.use_address_full_name },
-      :shipping => { singular: true, use_full_name: EffectiveOrders.use_address_full_name }
+      billing: { singular: true, use_full_name: EffectiveOrders.use_address_full_name },
+      shipping: { singular: true, use_full_name: EffectiveOrders.use_address_full_name }
     )
 
     attr_accessor :save_billing_address, :save_shipping_address # save these addresses to the user if selected
@@ -20,27 +20,26 @@ module Effective
     attr_accessor :skip_buyer_validations # Enabled by the /admin/orders/create action
 
     belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
-    has_many :order_items, inverse_of: :order
+    has_many :order_items, inverse_of: :order, class_name: 'Effective::OrderItem'
 
-    # structure do
-    #   purchase_state    :string
-    #   purchased_at      :datetime
+    # Attributes
+    # purchase_state    :string
+    # purchased_at      :datetime
     #
-    #   note              :text
+    # note              :text
     #
-    #   payment           :text   # serialized hash containing all the payment details.  see below.
+    # payment           :text   # serialized hash containing all the payment details.  see below.
     #
-    #   payment_provider  :string
-    #   payment_card      :string
+    # payment_provider  :string
+    # payment_card      :string
     #
-    #   tax_rate          :decimal, precision: 6, scale: 3
+    # tax_rate          :decimal, precision: 6, scale: 3
     #
-    #   subtotal          :integer
-    #   tax               :integer
-    #   total             :integer
+    # subtotal          :integer
+    # tax               :integer
+    # total             :integer
     #
-    #   timestamps
-    # end
+    # timestamps
 
     accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
@@ -48,36 +47,38 @@ module Effective
     before_validation { assign_totals! }
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
-    unless EffectiveOrders.skip_user_validation
-      validates :user_id, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
-      validates :user, associated: true, unless: Proc.new { |order| order.skip_buyer_validations? }
-    end
+    with_options(unless: -> { skip_buyer_validations? }) do
+      validates :tax_rate, presence: { message: "can't be determined based on billing address" }
+      validates :tax, presence: true
 
-    if EffectiveOrders.collect_note_required
-      validates :note, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
-    end
+      unless EffectiveOrders.skip_user_validation
+        validates :user_id, presence: true
+        validates :user, associated: true
+      end
 
-    validates :tax_rate, presence: { message: "can't be determined based on billing address" }, unless: Proc.new { |order| order.skip_buyer_validations? }
-    validates :tax, presence: true, unless: Proc.new { |order| order.skip_buyer_validations? }
+      if EffectiveOrders.collect_note_required
+        validates :note, presence: true
+      end
+    end
 
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
-      validates :billing_address, presence: true, unless: Proc.new { |order| (order.new_record? && order.pending?) || order.skip_buyer_validations? }
+      validates :billing_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
     end
 
     if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
-      validates :shipping_address, presence: true, unless: Proc.new { |order| (order.new_record? && order.pending?) || order.skip_buyer_validations? }
+      validates :shipping_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
     end
 
-    if ((minimum_charge = EffectiveOrders.minimum_charge.to_i) rescue nil).present?
+    if (minimum_charge = EffectiveOrders.minimum_charge.to_i).present?
       if EffectiveOrders.allow_free_orders
         validates :total, numericality: {
           greater_than_or_equal_to: minimum_charge,
-          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
-        }, unless: Proc.new { |order| order.total == 0 }
+          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required. Please add additional items to your cart."
+        }, unless: -> { total == 0 }
       else
         validates :total, numericality: {
           greater_than_or_equal_to: minimum_charge,
-          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required.  Please add additional items to your cart."
+          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required. Please add additional items to your cart."
         }
       end
     end
@@ -87,25 +88,26 @@ module Effective
     validates :subtotal, presence: true
     validates :total, presence: true
 
-    validates :order_items, presence: { message: 'No items are present.  Please add one or more item to your cart.' }
+    validates :order_items, presence: { message: 'No items are present. Please add one or more item to your cart.' }
     validates :order_items, associated: true
 
-    with_options if: Proc.new { |order| order.purchased? } do |order|
-      order.validates :purchased_at, presence: true
-      order.validates :payment, presence: true
+    with_options if: -> { purchased? } do
+      validates :purchased_at, presence: true
+      validates :payment, presence: true
 
-      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
-      order.validates :payment_card, presence: true
+      validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
+      validates :payment_card, presence: true
     end
 
     serialize :payment, Hash
 
-    default_scope -> { includes(:user).includes(order_items: :purchasable).order(created_at: :desc) }
+    scope :deep, -> { includes(:user).includes(order_items: :purchasable).order(created_at: :desc) }
 
     scope :purchased, -> { where(purchase_state: EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(user_id: user.try(:id)) }
     scope :declined, -> { where(purchase_state: EffectiveOrders::DECLINED) }
     scope :pending, -> { where(purchase_state: EffectiveOrders::PENDING) }
+
     scope :for_users, -> (users) {   # Expects a Users relation, an Array of ids, or Array of users
       users = users.kind_of?(::ActiveRecord::Relation) ? users.pluck(:id) : Array(users)
       where(user_id: (users.first.kind_of?(Integer) ? users : users.map { |user| user.id }))
@@ -175,12 +177,11 @@ module Effective
 
       retval.size == 1 ? retval.first : retval
     end
-    alias_method :add_to_order, :add
 
     def user=(user)
-      return if user.nil?
-
       super
+
+      return unless user
 
       # Copy user addresses into this order if they are present
       if user.respond_to?(:billing_address) && user.billing_address.present?
@@ -404,17 +405,17 @@ module Effective
     def send_order_receipt_to_seller!
       return false unless (EffectiveOrders.stripe_connect_enabled && purchased?(:stripe_connect))
 
-      order_items.group_by(&:seller).each do |seller, order_items|
+      order_items.group_by { |oi| oi.seller }.each do |seller, order_items|
         send_email(:order_receipt_to_seller, to_param, seller, order_items)
       end
     end
 
     def send_payment_request_to_buyer!
-      send_email(:payment_request_to_buyer, to_param) if !purchased?
+      send_email(:payment_request_to_buyer, to_param) unless purchased?
     end
 
     def send_pending_order_invoice_to_buyer!
-      send_email(:pending_order_invoice_to_buyer, to_param) if !purchased?
+      send_email(:pending_order_invoice_to_buyer, to_param) unless purchased?
     end
 
     protected

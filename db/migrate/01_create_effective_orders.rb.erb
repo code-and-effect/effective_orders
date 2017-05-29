@@ -47,6 +47,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
     create_table <%= @carts_table_name %> do |t|
       t.integer   :user_id
+      t.integer   :cart_items_count, :default => 0
       t.timestamps
     end
 

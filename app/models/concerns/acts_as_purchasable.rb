@@ -24,7 +24,7 @@ module ActsAsPurchasable
     validates :tax_exempt, inclusion: { in: [true, false] }
 
     # These are breaking on the check for quanitty_enabled?.  More research is due
-    validates :quantity_purchased, numericality: {allow_nil: true}, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
+    validates :quantity_purchased, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
     validates :quantity_max, numericality: {allow_nil: true}, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
 
     scope :purchased, -> { joins(order_items: :order).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).distinct }
@@ -54,16 +54,12 @@ module ActsAsPurchasable
 
   # If I have a column type of Integer, and I'm passed a non-Integer, convert it here
   def price=(value)
-    integer_column = ((column_for_attribute('price').try(:type) rescue nil) == :integer) # Rails built in method to lookup datatype
-
-    if integer_column == false
-      super
-    elsif value.kind_of?(Integer)
+    if value.kind_of?(Integer)
       super
     elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
       super
-    else # Could be Float, BigDecimal, or String like 9.99
-      super((value.to_f * 100.0).to_i)
+    else
+      raise 'expected price to be an Integer representing the number of cents.'
     end
   end
 
@@ -77,7 +73,7 @@ module ActsAsPurchasable
 
   def seller
     if EffectiveOrders.stripe_connect_enabled
-      raise 'acts_as_purchasable object requires the seller be defined to return the User selling this item.  This is only a requirement when using StripeConnect.'
+      raise 'acts_as_purchasable object requires the seller be defined to return the User selling this item. This is only a requirement when using StripeConnect.'
     end
   end
 

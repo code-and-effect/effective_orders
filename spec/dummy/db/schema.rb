@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(:version => 4) do
 
   create_table "carts", :force => true do |t|
     t.integer  "user_id"
+    t.integer  "cart_items_count"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end

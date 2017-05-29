@@ -4,13 +4,12 @@ module Effective
 
     acts_as_purchasable
 
-    # structure do
-    #   title         :string
-    #   price         :integer, default: 0
-    #   tax_exempt    :boolean, default: false
+    # Attributes
+    # title         :string
+    # price         :integer, default: 0
+    # tax_exempt    :boolean, default: false
     #
-    #   timestamps
-    # end
+    # timestamps
 
     validates :title, presence: true
     validates :price, numericality: { greater_than: 0 }

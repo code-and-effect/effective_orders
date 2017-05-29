@@ -4,11 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        if respond_to?(:prepend_before_action)
-          prepend_before_action :find_authenticity_token_from_moneris, only: [:moneris_postback]
-        else
-          prepend_before_filter :find_authenticity_token_from_moneris, only: [:moneris_postback]
-        end
+        prepend_before_action :find_authenticity_token_from_moneris, only: [:moneris_postback]
       end
 
       def moneris_postback

@@ -2,37 +2,34 @@ module Effective
   class Cart < ActiveRecord::Base
     self.table_name = EffectiveOrders.carts_table_name.to_s
 
-    belongs_to :user    # This is optional.  We want to let non-logged-in people have carts too
-    has_many :cart_items, :inverse_of => :cart, :dependent => :delete_all
+    belongs_to :user    # Optional. We want non-logged-in users to have carts too.
+    has_many :cart_items, -> { order(:updated_at) }, dependent: :delete_all, class_name: 'Effective::CartItem'
 
-    # structure do
-    #   timestamps
-    # end
+    # Attributes
+    # cart_items_count        :integer
+    # timestamps
 
-    default_scope -> { includes(:cart_items => :purchasable) }
+    scope :deep, -> { includes(cart_items: :purchasable) }
 
     def add(item, quantity: 1)
       raise 'expecting an acts_as_purchasable object' unless item.kind_of?(ActsAsPurchasable)
 
-      existing_item = cart_items.where(purchasable_id: item.id, purchasable_type: item.class.name).first
+      existing_item = cart_items.find { |cart_item| cart_item.purchasable_id == item.id && cart_item.purchasable_type == item.class.name }
 
       if item.quantity_enabled? && (quantity + (existing_item.quantity rescue 0)) > item.quantity_remaining
         raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
-        return
       end
 
       if existing_item.present?
         existing_item.update_attributes(quantity: existing_item.quantity + quantity)
       else
-        cart_items.create(cart: self, purchasable_id: item.id, purchasable_type: item.class.name, quantity: quantity)
+        self.cart_items.build(purchasable: item, quantity: quantity).save!
       end
     end
-    alias_method :add_to_cart, :add
 
     def remove(obj)
-      (cart_items.find(cart_item) || cart_item).try(:destroy)
+      cart_items.find(obj).try(:destroy)
     end
-    alias_method :remove_from_cart, :remove
 
     def includes?(item)
       find(item).present?
@@ -43,7 +40,7 @@ module Effective
     end
 
     def size
-      cart_items.size
+      cart_items_count || cart_items.length
     end
 
     def empty?
@@ -53,7 +50,6 @@ module Effective
     def subtotal
       cart_items.map { |ci| ci.subtotal }.sum
     end
-    alias_method :total, :subtotal
 
   end
 end

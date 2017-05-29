@@ -4,11 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        if respond_to?(:skip_before_action)
-          skip_before_action :verify_authenticity_token, :only => [:paypal_postback]
-        else
-          skip_before_filter :verify_authenticity_token, :only => [:paypal_postback]
-        end
+        skip_before_action :verify_authenticity_token, only: [:paypal_postback]
       end
 
       def paypal_postback

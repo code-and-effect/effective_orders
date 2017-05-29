@@ -12,7 +12,7 @@ Has Order History, My Purchases, My Sales and Admin screens.
 
 ## Getting Started
 
-Please first install the [effective_addresses](https://github.com/code-and-effect/effective_addresses) and [effective_datatables](https://github.com/code-and-effect/effective_datatables) gems.
+Please first install the [effective_addresses](https://github.com/code-and-effect/effective_addresses), [effective_datatables](https://github.com/code-and-effect/effective_datatables) and [effective_form_inputs](https://github.com/code-and-effect/effective_form_inputs) gems.
 
 Add to your Gemfile:
 
@@ -54,27 +54,6 @@ Require the stylesheet on the asset pipeline by adding the following to your app
 *= require effective_orders
 ```
 
-### Upgrading to 2.0.x
-
-The `tax_rate_method` configuration option has been removed and renamed to `order_tax_rate_method`.
-Changing this in `/config/initializers/effective_orders.rb` is the first step.
-
-The default implementation assigns the tax rate based on the order's billing_address (see the [Tax section](#tax)):
-
-```ruby
-config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
-```
-
-There are numerous database changes in the 2.0.0 line of effective_orders.
-
-if you are running a 1.x version, please upgrade your database with this command:
-
-```ruby
-rails generate effective_orders:upgrade_from1x
-```
-
-the above command will add `products` table to you DB.
-
 ## High Level Overview
 
 Your rails app creates and displays a list of `acts_as_purchasable` objects, each with a `link_to_add_to_cart(object)`.
@@ -107,7 +86,7 @@ These purchasables could be Products, EventTickets, Memberships or anything else
 
 ### Representing Prices
 
-All prices should be internally represented as Integers.  For us North Americans, think of it as the number of cents.
+All prices should be internally represented as Integers. For us North Americans, think of it as the number of cents.
 
 To represent the value of `$10.00` the price method should return `1000`.
 
@@ -130,28 +109,14 @@ If someone purchased a Product which is later deleted, the Order History page wi
 class Product < ActiveRecord::Base
   acts_as_purchasable
 
-  # this structure do... block is provided by the migrant gem https://github.com/pascalh1011/migrant
-  structure do
-    title               :string
-
-    price               :integer, default: 0
-    tax_exempt          :boolean, default: false
-
-    archived            :boolean, default: false
-
-    timestamps
-  end
+  # Attributes
+  # title               :string
+  # price               :integer, default: 0
+  # tax_exempt          :boolean, default: false
+  # timestamps
 
   validates_presence_of :title
   validates_numericality_of :price, greater_than_or_equal_to: 0
-
-  scope :products, -> { where(archived: false) }
-
-  # This archives Products instead of deleting them
-  def destroy
-    update_attributes(archived: true)
-  end
-
 end
 ```
 
@@ -164,7 +129,6 @@ class CreateProducts < ActiveRecord::Migration
       t.string :title
       t.integer :price, :default=>0
       t.boolean :tax_exempt, :default=>false
-      t.boolean :archived, :default=>false
       t.datetime :updated_at
       t.datetime :created_at
     end
@@ -180,7 +144,7 @@ Once the database has been migrated, it is time to scaffold/build the CRUD Produ
 
 ### Products#new/#edit
 
-Use the EffectiveOrders price input to enter the price.
+Use an [effective_form_inputs](https://github.com/code-and-effect/effective_form_inputs#effective-price) effective_price input to enter the price.
 
 It displays the underlying Integer price as a currency formatted value, ensures that a properly formatted price is entered by the user, and POSTs the appropriate Integer value back to the server.
 
@@ -190,7 +154,7 @@ This is available for simple_form, formtastic and Rails default FormBuilder.
 = simple_form_for(@product) do |f|
   = f.input :title
   = f.input :tax_exempt
-  = f.input :price, as: :price
+  = f.input :price, as: :effective_price
   = f.button :submit
 ```
 
@@ -198,26 +162,14 @@ or
 
 ```ruby
 = semantic_form_for(@product) do |f|
-  = f.input :price, as: :price
+  = f.input :price, as: :effective_price
 ```
 
 or
 
 ```haml
 = form_for(@product) do |f|
-  = f.price_field :price
-```
-
-The `as: :price` will work interchangeably with SimpleForm or Formtastic, as long as only one of these gems is present in your application
-
-If you use both SimpleForm and Formtastic, you will need to call price input differently:
-
-```ruby
-= simple_form_for(@product) do |f|
-  = f.input :price, as: :price_simple_form
-
-= semantic_form_for @user do |f|
-  = f.input :price, as: :price_formtastic
+  = f.effective_price :price
 ```
 
 ### Products#show

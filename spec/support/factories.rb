@@ -51,9 +51,10 @@ FactoryGirl.define do
 
   factory :cart, class: Effective::Cart do
     association :user
+    cart_items_count 0
 
     before(:create) do |cart|
-      3.times { cart.cart_items << FactoryGirl.create(:cart_item, cart: cart) }
+      3.times { cart.cart_items << FactoryGirl.build(:cart_item, cart: cart) }
     end
   end
 

@@ -7,7 +7,7 @@ end
 EffectiveOrders::Engine.routes.draw do
   scope module: 'effective' do
 
-    match 'orders/(:id)/purchased', to: 'orders#purchased', as: 'order_purchased', via: :get
+    match 'orders/:id/purchased', to: 'orders#purchased', as: 'order_purchased', via: :get
     match 'orders/:id/declined', to: 'orders#declined', as: 'order_declined', via: :get
     match 'orders/:id/resend_buyer_receipt', to: 'orders#resend_buyer_receipt', via: :get, as: 'resend_buyer_receipt'
     match 'orders/my_purchases', to: 'orders#my_purchases', as: 'my_purchases', via: :get
@@ -45,7 +45,9 @@ EffectiveOrders::Engine.routes.draw do
       match 'orders/:id/app_checkout', to: 'orders#app_checkout', as: 'app_checkout', via: :post
     end
 
-    if (Rails.env.development? || Rails.env.test?) || EffectiveOrders.allow_pretend_purchase_in_production
+    if EffectiveOrders.allow_pretend_purchase_in_development && (Rails.env.development? || Rails.env.test?)
+      match 'orders/:id/pretend_purchase', to: 'orders#pretend_purchase', as: 'pretend_purchase', via: [:get, :post]
+    elsif EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
       match 'orders/:id/pretend_purchase', to: 'orders#pretend_purchase', as: 'pretend_purchase', via: [:get, :post]
     end
 
@@ -61,17 +63,16 @@ EffectiveOrders::Engine.routes.draw do
     match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]
   end
 
-  if !EffectiveOrders.use_active_admin? || Rails.env.test?
-    namespace :admin do
-      resources :customers, only: [:index]
-      resources :orders, except: [:edit] do
-        member do
-          get :mark_as_paid
-          post :mark_as_paid
-          post :send_payment_request
-        end
+  namespace :admin do
+    resources :customers, only: [:index]
+    resources :orders, except: [:edit] do
+      member do
+        get :mark_as_paid
+        post :mark_as_paid
+        post :send_payment_request
       end
-      resources :order_items, only: [:index]
     end
+    resources :order_items, only: [:index]
   end
+
 end

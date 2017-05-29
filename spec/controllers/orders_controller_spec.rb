@@ -37,7 +37,7 @@ describe Effective::OrdersController, type: :controller do
       assigns(:order).user.should eq cart.user
 
       assigns(:order).order_items.size.should eq cart.cart_items.size
-      assigns(:order).total.should eq cart.total
+      assigns(:order).total.should eq cart.subtotal
     end
 
     it 'redirects if there is an empty order' do
@@ -85,7 +85,7 @@ describe Effective::OrdersController, type: :controller do
 
       assigns(:order).user.should eq cart.user
       assigns(:order).order_items.size.should eq cart.cart_items.size
-      assigns(:order).total.should eq cart.total
+      assigns(:order).total.should eq cart.subtotal
       assigns(:order).purchased?.should eq false
     end
 
@@ -330,7 +330,7 @@ describe Effective::OrdersController, type: :controller do
   describe '#order_purchased (with a free order)' do
     before(:each) do
       sign_in cart.user
-      cart.cart_items.each { |cart_item| cart_item.purchasable.update_attributes(price: 0.0) }
+      cart.cart_items.each { |cart_item| cart_item.purchasable.update_attributes(price: 0) }
     end
 
     it 'creates a purchased order' do

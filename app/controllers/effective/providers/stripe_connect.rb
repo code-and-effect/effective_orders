@@ -4,11 +4,7 @@ module Effective
       extend ActiveSupport::Concern
 
       included do
-        if respond_to?(:prepend_before_action)
-          prepend_before_action :set_stripe_connect_state_params, :only => [:stripe_connect_redirect_uri]
-        else
-          prepend_before_filter :set_stripe_connect_state_params, :only => [:stripe_connect_redirect_uri]
-        end
+        prepend_before_action :set_stripe_connect_state_params, only: [:stripe_connect_redirect_uri]
       end
 
       # So this is the postback after Stripe does its oAuth authentication

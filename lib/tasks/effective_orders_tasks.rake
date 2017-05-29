@@ -1,3 +1,5 @@
+# rake effective_orders:overwrite_order_item_titles
+
 namespace :effective_orders do
   desc 'Overwrite all order item titles with current acts_as_purchasable object title'
   task overwrite_order_item_titles: :environment do

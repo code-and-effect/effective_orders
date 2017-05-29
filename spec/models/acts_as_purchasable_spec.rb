@@ -55,32 +55,6 @@ describe Product do
     end
   end
 
-  describe 'float prices' do
-    it 'should automatically convert float prices to integer' do
-      product_with_float_price.price = 20.00
-      product_with_float_price.tax_exempt = true
-
-      order = Effective::Order.new(product_with_float_price, user: user)
-      order.billing_address = FactoryGirl.create(:address, state_code: 'AB')
-
-      order.subtotal.should eq 2000
-      order.tax.should eq 0
-      order.total.should eq 2000
-    end
-
-    it 'should automatically convert tax floats to integers' do
-      product_with_float_price.price = 20.00
-      product_with_float_price.tax_exempt = false
-
-      order = Effective::Order.new(product_with_float_price, user: user)
-      order.billing_address = FactoryGirl.create(:address, state_code: 'AB')
-
-      order.subtotal.should eq 2000
-      order.tax.should eq 100
-      order.total.should eq 2100
-    end
-  end
-
   describe 'price=' do
     it 'should accept an integer price' do
       product = Product.new()
@@ -94,36 +68,6 @@ describe Product do
       product.price = '1250'
 
       product.price.should eq 1250
-    end
-
-    it 'should convert a String that looks like a Float' do
-      product = Product.new()
-      product.price = '12.50'
-
-      product.price.should eq 1250
-    end
-
-    it 'should convert from a Float' do
-      product = Product.new()
-      product.price = 12.50
-      product.price.should eq 1250
-
-      product.price = Float(12.50)
-      product.price.should eq 1250
-    end
-
-    it 'should convert from a BigDecimal' do
-      product = Product.new()
-      product.price = BigDecimal.new(12.5, 4)
-
-      product.price.should eq 1250
-    end
-
-    it 'should treat nil as a zero' do
-      product = Product.new()
-      product.price = nil
-
-      product.price.should eq 0
     end
 
   end

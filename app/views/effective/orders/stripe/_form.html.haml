@@ -1,4 +1,4 @@
-= javascript_include_tag "https://checkout.stripe.com/checkout.js"
+= javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
 #effective-orders-new-charge-form{data: {'stripe-publishable-key' => EffectiveOrders.stripe[:publishable_key], 'site-title' => EffectiveOrders.stripe[:site_title], 'site-image' => EffectiveOrders.stripe[:site_image], 'user-email' => current_user.try(:email), 'amount' => order.total, 'description' => "#{order.num_items} items (#{price_to_currency(order.total)})"}}
   = simple_form_for(@stripe_charge || Effective::Providers::StripeCharge.new(order), (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.stripe_charges_path)) do |f|

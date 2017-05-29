@@ -105,7 +105,7 @@ describe Effective::CartsController, type: :controller do
 
         get :show
         assigns(:cart).user.should eq cart.user
-        assigns(:cart).size.should eq 4 # the 3 from my factory, and 1 more we just created
+        assigns(:cart).cart_items.length.should eq 4 # the 3 from my factory, and 1 more we just created
         assigns(:cart).find(product).present?.should eq true
 
         Effective::Cart.where(:id => session_cart).should eq []

@@ -5,8 +5,8 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:subscriptions] : EffectiveOrders.layout)
 
-    respond_to?(:before_action) ? before_action(:authenticate_user!) : before_filter(:authenticate_user!) # Devise
-    respond_to?(:before_action) ? before_action(:assign_customer) : before_filter(:assign_customer)
+    before_action(:authenticate_user!) if defined?(Devise)
+    before_action(:assign_customer)
 
     # This is a 'My Subscriptions' page
     def index
@@ -115,11 +115,7 @@ module Effective
 
     # StrongParameters
     def subscription_params
-      begin
-        params.require(:effective_subscription).permit(:stripe_plan_id, :stripe_coupon_id)
-      rescue => e
-        params[:effective_subscription]
-      end
+      params.require(:effective_subscription).permit(:stripe_plan_id, :stripe_coupon_id)
     end
 
   end

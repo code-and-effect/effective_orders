@@ -37,7 +37,7 @@ module Effective
               return charge_with_stripe(charge, @buyer)
             end
           rescue => e
-            charge.errors.add(:base, "Unable to process order with Stripe.  Your credit card has not been charged.  Message: \"#{e.message}\".")
+            charge.errors.add(:base, "Unable to process order with Stripe. Your credit card has not been charged. Message: \"#{e.message}\".")
             raise ActiveRecord::Rollback
           end
         end
@@ -46,16 +46,16 @@ module Effective
       end
 
       def charge_with_stripe(charge, buyer)
-        results = {subscriptions: {}, charge: nil}
+        results = { subscriptions: {}, charge: nil }
 
         # Process subscriptions.
         charge.subscriptions.each do |subscription|
           next if subscription.stripe_plan_id.blank?
 
           stripe_subscription = if subscription.stripe_coupon_id.present?
-            buyer.stripe_customer.subscriptions.create({plan: subscription.stripe_plan_id, coupon: subscription.stripe_coupon_id})
+            buyer.stripe_customer.subscriptions.create(plan: subscription.stripe_plan_id, coupon: subscription.stripe_coupon_id)
           else
-            buyer.stripe_customer.subscriptions.create({plan: subscription.stripe_plan.id})
+            buyer.stripe_customer.subscriptions.create(plan: subscription.stripe_plan.id)
           end
 
           subscription.stripe_subscription_id = stripe_subscription.id
@@ -82,7 +82,7 @@ module Effective
 
       def charge_with_stripe_connect(charge, buyer)
         # Go through and create Stripe::Tokens for each seller
-        items = charge.order_items.group_by(&:seller)
+        items = charge.order_items.group_by { |oi| oi.seller }
         results = {}
 
         # We do all these Tokens first, so if one throws an exception no charges are made
@@ -113,11 +113,7 @@ module Effective
 
       # StrongParameters
       def stripe_charge_params
-        begin
-          params.require(:effective_providers_stripe_charge).permit(:token, :effective_order_id)
-        rescue => e
-          params[:effective_providers_stripe_charge]
-        end
+        params.require(:effective_providers_stripe_charge).permit(:token, :effective_order_id)
       end
 
     end

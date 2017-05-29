@@ -1,10 +1,8 @@
 %h1.effective-heading= @page_title
 
-%h2 Pending Orders
 - if @pending_orders.present?
+  %h2 Pending Orders
   = render_orders(@pending_orders)
-- else
-  %p You have no pending orders.
 
 %h2 Purchased Orders
 - if @orders.present?

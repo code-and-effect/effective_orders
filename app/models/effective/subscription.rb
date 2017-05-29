@@ -6,20 +6,19 @@ module Effective
 
     acts_as_purchasable
 
-    belongs_to :customer
+    belongs_to :customer, class_name: 'Effective::Customer'
 
-    # structure do
-    #   stripe_plan_id          :string  # This will be 'Weekly' or something like that
-    #   stripe_subscription_id  :string
-    #   stripe_coupon_id        :string
+    # Attributes
+    # stripe_plan_id          :string  # This will be 'Weekly' or something like that
+    # stripe_subscription_id  :string
+    # stripe_coupon_id        :string
     #
-    #   title                   :string
-    #   price                   :integer, default: 0
+    # title                   :string
+    # price                   :integer, default: 0
     #
-    #   timestamps
-    # end
+    # timestamps
 
-    delegate :user, :user_id, :to => :customer
+    delegate :user, :user_id, to: :customer
 
     validates :stripe_plan_id, presence: true
     validates :title, presence: true
@@ -29,8 +28,8 @@ module Effective
     validates :customer_id, uniqueness: { scope: [:stripe_plan_id] }  # Can only be on each plan once.
 
     before_validation do
-      self.errors.add(:stripe_plan_id, "is an invalid Plan") if stripe_plan_id.present? && stripe_plan.blank?
-      self.errors.add(:stripe_coupon_id, "is an invalid Coupon") if stripe_coupon_id.present? && stripe_coupon.blank?
+      self.errors.add(:stripe_plan_id, 'is an invalid Plan') if stripe_plan_id.present? && stripe_plan.blank?
+      self.errors.add(:stripe_coupon_id, 'is an invalid Coupon') if stripe_coupon_id.present? && stripe_coupon.blank?
     end
 
     def tax_exempt

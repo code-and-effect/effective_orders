@@ -6,7 +6,7 @@ module EffectiveCartsHelper
       if user.present?
         Effective::Cart.where(user_id: user.id).first_or_create.tap do |user_cart|
           if session[:cart].present?
-            session_cart = Effective::Cart.where('user_id IS NULL').where(id: session[:cart]).first
+            session_cart = Effective::Cart.where(user_id: nil).where(id: session[:cart]).first
 
             if session_cart.present?
               session_cart.cart_items.update_all(cart_id: user_cart.id)
@@ -18,7 +18,7 @@ module EffectiveCartsHelper
           end
         end
       elsif session[:cart].present?
-        Effective::Cart.where('user_id IS NULL').where(id: session[:cart]).first_or_create
+        Effective::Cart.where(user_id: nil).where(id: session[:cart]).first_or_create
       else
         cart = Effective::Cart.create!
         session[:cart] = cart.id
@@ -120,11 +120,11 @@ module EffectiveCartsHelper
 
   def render_cart(cart = nil)
     cart ||= current_cart
-    render(partial: 'effective/carts/cart', locals: {cart: cart})
+    render(partial: 'effective/carts/cart', locals: { cart: cart })
   end
 
   def render_purchasables(*purchasables)
-    render(partial: 'effective/orders/order_items', locals: {order: Effective::Order.new(purchasables)})
+    render(partial: 'effective/orders/order_items', locals: { order: Effective::Order.new(purchasables) })
   end
 
 end
