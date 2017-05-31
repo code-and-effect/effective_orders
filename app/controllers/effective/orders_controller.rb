@@ -95,7 +95,7 @@ module Effective
           return true
         rescue => e
           Rails.logger.info e.message
-          flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}.  Please try again."
+          flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
           raise ActiveRecord::Rollback
         end
       end
@@ -177,7 +177,13 @@ module Effective
         flash[:danger] = "Unable to send receipt."
       end
 
-      redirect_to(request.referer.present? ? :back : effective_orders.order_path(@order))
+      if respond_to?(:redirect_back)
+        redirect_back(fallback_location: effective_orders.order_path(@order))
+      elsif request.referrer.present?
+        redirect_to :back
+      else
+        redirect_to effective_orders.order_path(@order)
+      end
     end
 
     protected

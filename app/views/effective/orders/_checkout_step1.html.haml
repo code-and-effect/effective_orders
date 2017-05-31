@@ -2,6 +2,9 @@
   = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(url: (order.new_record? ? effective_orders.orders_path : effective_orders.order_path(order)))) do |f|
     = render partial: 'effective/orders/order_items', locals: {order: order, form: f}
 
+    - unless f.object.pending? || (current_cart && current_cart.empty?)
+      = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-default'
+
     - if order.errors[:order_items].present?
       %p.inline-errors= order.errors[:order_items].first
 
@@ -36,9 +39,6 @@
       = render partial: 'effective/orders/order_terms_and_conditions_fields', locals: { form: f }
 
     %p.text-right
-      - unless f.object.pending? || (current_cart && current_cart.empty?)
-        = link_to_current_cart(label: 'Change Items')
-
       - if order.total == 0 && EffectiveOrders.allow_free_orders
         = f.submit order_checkout_label(:free), class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Processing...' }
       - else

@@ -47,17 +47,17 @@ module Effective
     before_validation { assign_totals! }
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
-    with_options(unless: -> { skip_buyer_validations? }) do
-      validates :tax_rate, presence: { message: "can't be determined based on billing address" }
-      validates :tax, presence: true
+    with_options unless: -> { skip_buyer_validations? } do |order|
+      order.validates :tax_rate, presence: { message: "can't be determined based on billing address" }
+      order.validates :tax, presence: true
 
       unless EffectiveOrders.skip_user_validation
-        validates :user_id, presence: true
-        validates :user, associated: true
+        order.validates :user_id, presence: true
+        order.validates :user, associated: true
       end
 
       if EffectiveOrders.collect_note_required
-        validates :note, presence: true
+        order.validates :note, presence: true
       end
     end
 
@@ -91,19 +91,20 @@ module Effective
     validates :order_items, presence: { message: 'No items are present. Please add one or more item to your cart.' }
     validates :order_items, associated: true
 
-    with_options if: -> { purchased? } do
-      validates :purchased_at, presence: true
-      validates :payment, presence: true
+    with_options if: -> { purchased? } do |order|
+      order.validates :purchased_at, presence: true
+      order.validates :payment, presence: true
 
-      validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
-      validates :payment_card, presence: true
+      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
+      order.validates :payment_card, presence: true
     end
 
     serialize :payment, Hash
 
-    scope :deep, -> { includes(:user).includes(order_items: :purchasable).order(created_at: :desc) }
+    scope :deep, -> { includes(:user).includes(order_items: :purchasable) }
+    scope :sorted, -> { order(created_at: :desc) }
 
-    scope :purchased, -> { where(purchase_state: EffectiveOrders::PURCHASED) }
+    scope :purchased, -> { sorted.where(purchase_state: EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(user_id: user.try(:id)) }
     scope :declined, -> { where(purchase_state: EffectiveOrders::DECLINED) }
     scope :pending, -> { where(purchase_state: EffectiveOrders::PENDING) }
@@ -181,7 +182,7 @@ module Effective
     def user=(user)
       super
 
-      return unless user
+      return unless user.present?
 
       # Copy user addresses into this order if they are present
       if user.respond_to?(:billing_address) && user.billing_address.present?

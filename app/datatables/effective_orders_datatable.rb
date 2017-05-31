@@ -57,6 +57,8 @@ unless Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
       col :updated_at, visible: false
 
       actions_col partial: 'admin/orders/actions', partial_as: :order
+
+      aggregate :total
     end
 
     collection do

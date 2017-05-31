@@ -4,8 +4,8 @@
   %h2 Pending Orders
   = render_orders(@pending_orders)
 
-%h2 Purchased Orders
 - if @orders.present?
+  %h2 Purchased Orders
   = render_orders(@orders)
 - else
   %p You have no purchased orders.

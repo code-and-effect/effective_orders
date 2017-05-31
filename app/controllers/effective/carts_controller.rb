@@ -23,7 +23,7 @@ module Effective
         flash[:danger] = 'Unable to destroy cart.'
       end
 
-      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
+      redirect_back_or_to_cart
     end
 
     def add_to_cart
@@ -42,7 +42,7 @@ module Effective
         flash[:danger] = 'Unable to add item to cart: ' + e.message
       end
 
-      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
+      redirect_back_or_to_cart
     end
 
     def remove_from_cart
@@ -56,7 +56,7 @@ module Effective
         flash[:danger] = 'Unable to remove item from cart.'
       end
 
-      request.referrer ? (redirect_to :back) : (redirect_to effective_orders.cart_path)
+      redirect_back_or_to_cart
     end
 
     private
@@ -67,6 +67,16 @@ module Effective
 
     def remove_from_cart_params
       params.permit(:id)
+    end
+
+    def redirect_back_or_to_cart
+      if respond_to?(:redirect_back)
+        redirect_back(fallback_location: effective_orders.cart_path)
+      elsif request.referrer.present?
+        redirect_to(:back)
+      else
+        redirect_to(effective_orders.cart_path)
+      end
     end
 
   end

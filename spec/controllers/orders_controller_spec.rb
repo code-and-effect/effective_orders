@@ -81,7 +81,7 @@ describe Effective::OrdersController, type: :controller do
     end
 
     it 'should assign an @order based off the user cart' do
-      post :create
+      post :create, effective_order: {}
 
       assigns(:order).user.should eq cart.user
       assigns(:order).order_items.size.should eq cart.cart_items.size
