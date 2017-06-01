@@ -8,25 +8,14 @@ module Effective
     before_action(:authenticate_user!) if defined?(Devise)
     before_action(:assign_customer)
 
-    # This is a 'My Subscriptions' page
-    def index
-      @page_title ||= 'My Subscriptions'
-
-      @subscriptions = @customer.subscriptions.purchased
-      @active_stripe_subscription = @subscriptions.map(&:stripe_subscription).find do |subscription|
-        subscription.present? && subscription.status == 'active' && subscription.current_period_end > Time.zone.now.to_i
-      end
-
-      EffectiveOrders.authorized?(self, :index, Effective::Subscription)
-    end
-
+    # /subscriptions/new and /plans
     def new
-      @page_title ||= 'New Subscription'
+      @page_title ||= 'Plans'
 
       @subscription = @customer.subscriptions.new()
 
-      purchased_plans = @customer.subscriptions.purchased.map(&:stripe_plan_id)
-      @plans = Stripe::Plan.all.reject { |stripe_plan| purchased_plans.include?(stripe_plan.id) }
+      @plans = Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
+      @current_plans = @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
 
       EffectiveOrders.authorized?(self, :new, @subscription)
     end
@@ -49,6 +38,18 @@ module Effective
         flash[:danger] ||= 'Unable to add subscription to cart.  Please try again.'
         render :action => :new
       end
+    end
+
+    # This is a 'My Subscriptions' page
+    def index
+      @page_title ||= 'My Subscriptions'
+
+      @subscriptions = @customer.subscriptions.purchased
+      @active_stripe_subscription = @subscriptions.map(&:stripe_subscription).find do |subscription|
+        subscription.present? && subscription.status == 'active' && subscription.current_period_end > Time.zone.now.to_i
+      end
+
+      EffectiveOrders.authorized?(self, :index, Effective::Subscription)
     end
 
     def show

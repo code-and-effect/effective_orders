@@ -58,6 +58,10 @@ module Effective
       stripe_connect_access_token.present?
     end
 
+    def current_plan_ids
+      @current_plan_ids ||= subscriptions.purchased.map { |subscription| subscription.stripe_plan_id }
+    end
+
     private
 
     def default_card

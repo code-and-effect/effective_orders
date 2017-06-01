@@ -33,7 +33,7 @@ module EffectiveStripeHelper
 
   ### Subscriptions Helpers
   def stripe_plans_collection(plans)
-    (plans || []).map { |plan| [stripe_plan_description(plan), plan.id, {'data-amount' => plan.amount}] }
+    (plans || []).map { |plan| [(plan.name + ' ' + stripe_plan_description(plan)), plan.id, {'data-amount' => plan.amount}] }
   end
 
   def stripe_plan_description(plan)
@@ -47,7 +47,8 @@ module EffectiveStripeHelper
       else            ; plan.interval
     end
 
-    "#{plan.name} - #{ActionController::Base.helpers.price_to_currency(plan.amount)} #{plan.currency.upcase}#{occurrence}"
+    # We call helpers here, because stripe_plan_description is sometimes called in models
+    "#{ActionController::Base.helpers.price_to_currency(plan.amount)} #{plan.currency.upcase}#{occurrence}"
   end
 
   def stripe_coupon_description(coupon)

@@ -4,6 +4,8 @@ module Effective
 
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
 
+    attr_accessor :has_coupon  # For the form
+
     acts_as_purchasable
 
     belongs_to :customer, class_name: 'Effective::Customer'
@@ -25,7 +27,7 @@ module Effective
     validates :price, numericality: { greater_than: 0 }
 
     validates :customer, presence: true
-    validates :customer_id, uniqueness: { scope: [:stripe_plan_id] }  # Can only be on each plan once.
+    validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' } # Can only be on each plan once.
 
     before_validation do
       self.errors.add(:stripe_plan_id, 'is an invalid Plan') if stripe_plan_id.present? && stripe_plan.blank?
@@ -72,16 +74,20 @@ module Effective
       end
     end
 
+    def has_coupon
+      stripe_coupon_id.present?
+    end
+
     private
 
     def assign_price_and_title
       if stripe_plan
         if stripe_coupon
           self.price = price_with_coupon(stripe_plan.amount, stripe_coupon)
-          self.title = stripe_plan_description(stripe_plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
+          self.title = stripe_plan.name + ' ' + stripe_plan_description(stripe_plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
         else
-          self.title = stripe_plan_description(stripe_plan)
           self.price = stripe_plan.amount
+          self.title = stripe_plan.name + ' ' + stripe_plan_description(stripe_plan)
         end
       end
     end

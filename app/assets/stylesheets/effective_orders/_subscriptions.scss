@@ -1,0 +1,12 @@
+.panel-effective-orders-stripe-plan {
+  input { display: none; }
+  cursor: pointer;
+
+  .visible-when-selected { display: none; }
+  .visible-when-unselected { display: block; }
+}
+
+.panel-effective-orders-stripe-plan.panel-primary {
+  .visible-when-selected { display: block; }
+  .visible-when-unselected { display: none; }
+}
