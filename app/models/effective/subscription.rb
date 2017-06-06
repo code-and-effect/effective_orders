@@ -20,8 +20,6 @@ module Effective
     #
     # timestamps
 
-    delegate :user, :user_id, to: :customer
-
     before_validation do
       assign_price_and_title
     end
@@ -65,6 +63,14 @@ module Effective
 
     def has_coupon
       stripe_coupon_id.present?
+    end
+
+    def user
+      customer.try(:user)
+    end
+
+    def user_id
+      customer.try(:user_id)
     end
 
     private

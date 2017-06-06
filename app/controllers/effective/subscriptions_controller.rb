@@ -5,17 +5,20 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:subscriptions] : EffectiveOrders.layout)
 
-    before_action :authenticate_user!
-    before_action :assign_customer
+    before_action :authenticate_user!, except: [:new]
+    before_action :assign_customer, if: -> { current_user.present? }
 
     # /subscriptions/new and /plans
     def new
       @page_title ||= 'Plans'
 
-      @subscription = @customer.subscriptions.new()
+      @subscription = Subscription.new()
 
-      @plans = Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
-      @current_plans = @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
+      @plans ||= Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
+
+      if @customer.present?
+        @current_plans ||= @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
+      end
 
       EffectiveOrders.authorized?(self, :new, @subscription)
     end
