@@ -14,8 +14,8 @@
   .row.effective-orders-stripe-plans
     - @plans.each do |plan|
       .col-sm-6.col-md-3
-        .panel.panel-effective-orders-stripe-plan{class: f.object.stripe_plan_id == plan.id ? 'panel-primary' : 'panel-default'}
-          = f.input_field :stripe_plan_id, id: nil, type: :radio, value: plan.id
+        .panel.panel-default.panel-effective-orders-stripe-plan{class: ('panel-primary' if f.object.stripe_plan_id == plan.id)}
+          = f.input_field :stripe_plan_id, type: :radio, value: plan.id, selected: (f.object.stripe_plan_id == plan.id), required: false
 
           .panel-heading.text-center
             %h3= plan.name
@@ -30,11 +30,16 @@
             .visible-when-selected.text-center
               = effective_region "stripe_plan_#{plan.id}_selected" do
                 %p This is a great plan
+
+  - if f.object.errors[:stripe_plan_id].present?
+    .form-group.has-error
+      %p.help-block Please select a plan
+
   .row
     .col-sm-4.col-sm-offset-4.text-center
       = f.input :has_coupon, as: :boolean, label: 'Yes, I have a coupon code'
 
-      .coupon{style: ('display: none;' unless f.object.stripe_coupon_id)}
+      .coupon{style: ('display: none;' unless f.object.has_coupon)}
         = f.input :stripe_coupon_id, placeholder: 'Coupon Code', label: false
 
       = f.submit 'Purchase Selected Plan', class: 'btn btn-primary'

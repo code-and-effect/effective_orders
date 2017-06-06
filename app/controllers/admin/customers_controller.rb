@@ -1,6 +1,6 @@
 module Admin
   class CustomersController < ApplicationController
-    before_action(:authenticate_user!) if defined?(Devise)
+    before_action :authenticate_user!
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_customers] : EffectiveOrders.layout)
 

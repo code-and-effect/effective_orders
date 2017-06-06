@@ -22,38 +22,27 @@ module Effective
 
     delegate :user, :user_id, to: :customer
 
-    validates :stripe_plan_id, presence: true
-    validates :title, presence: true
-    validates :price, numericality: { greater_than: 0 }
-
-    validates :customer, presence: true
-    validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' } # Can only be on each plan once.
-
     before_validation do
-      self.errors.add(:stripe_plan_id, 'is an invalid Plan') if stripe_plan_id.present? && stripe_plan.blank?
-      self.errors.add(:stripe_coupon_id, 'is an invalid Coupon') if stripe_coupon_id.present? && stripe_coupon.blank?
+      assign_price_and_title
+    end
+
+    validates :stripe_plan_id, presence: true
+
+    with_options(if: -> { stripe_plan_id.present? }) do
+      validates :title, presence: true
+      validates :price, numericality: { greater_than: 0 }
+
+      validates :customer, presence: true
+      validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }
+    end
+
+    validate do
+      self.errors.add(:stripe_plan_id, 'is an invalid plan') if stripe_plan_id.present? && stripe_plan.blank?
+      self.errors.add(:stripe_coupon_id, 'is an invalid coupon') if stripe_coupon_id.present? && stripe_coupon.blank?
     end
 
     def tax_exempt
       true
-    end
-
-    def stripe_plan_id=(plan_id)
-      unless self[:stripe_plan_id] == plan_id
-        self[:stripe_plan_id] = plan_id
-        @stripe_plan = nil   # Remove any memoization
-
-        assign_price_and_title()
-      end
-    end
-
-    def stripe_coupon_id=(coupon_id)
-      unless self[:stripe_coupon_id] == coupon_id
-        self[:stripe_coupon_id] = coupon_id
-        @stripe_coupon = nil   # Remove any memoization
-
-        assign_price_and_title()
-      end
     end
 
     def stripe_plan
@@ -69,7 +58,7 @@ module Effective
     end
 
     def stripe_subscription
-      if stripe_subscription_id.present?
+      if stripe_subscription_id.present? && customer.present?
         @stripe_subscription ||= (customer.stripe_customer.subscriptions.retrieve(stripe_subscription_id) rescue nil)
       end
     end

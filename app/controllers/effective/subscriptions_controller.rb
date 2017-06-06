@@ -5,8 +5,8 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:subscriptions] : EffectiveOrders.layout)
 
-    before_action(:authenticate_user!) if defined?(Devise)
-    before_action(:assign_customer)
+    before_action :authenticate_user!
+    before_action :assign_customer
 
     # /subscriptions/new and /plans
     def new
@@ -21,22 +21,28 @@ module Effective
     end
 
     def create
-      @page_title ||= 'New Subscription'
+      @page_title ||= 'Plans'
 
-      # Don't let the user create another Subscription object if it's already created
-      @subscription = @customer.subscriptions.where(:stripe_plan_id => subscription_params[:stripe_plan_id]).first_or_initialize
+      # @subscription = @customer.subscriptions.build(subscription_params)
+
+      # Later we might want to implement SWITCH PLANS here
+      # We only create singular subscriptions, so lookup an existing one if present.
+      @subscription = @customer.subscriptions.where(stripe_plan_id: subscription_params[:stripe_plan_id]).first_or_initialize
+      @subscription.assign_attributes(subscription_params)
 
       EffectiveOrders.authorized?(self, :create, @subscription)
 
-      if @subscription.update_attributes(subscription_params) && (current_cart.find(@subscription).present? || current_cart.add(@subscription))
-        flash[:success] = "Successfully added subscription to cart."
-        redirect_to effective_orders.new_order_path
-      else
-        purchased_plans = @customer.subscriptions.purchased.map(&:stripe_plan_id)
-        @plans = Stripe::Plan.all.reject { |stripe_plan| purchased_plans.include?(stripe_plan.id) }
+      @order = Effective::Order.new(@subscription, user: current_user)
 
-        flash[:danger] ||= 'Unable to add subscription to cart.  Please try again.'
-        render :action => :new
+      if (@subscription.save && @order.save)
+        flash[:success] = 'Successfully created order'
+        redirect_to effective_orders.order_path(@order)
+      else
+        @plans = Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
+        @current_plans = @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
+
+        flash.now[:danger] = "Unable to purchase plan: #{@subscription.errors.full_messages.to_sentence}"
+        render :new
       end
     end
 
@@ -116,7 +122,7 @@ module Effective
 
     # StrongParameters
     def subscription_params
-      params.require(:effective_subscription).permit(:stripe_plan_id, :stripe_coupon_id)
+      params.require(:effective_subscription).permit(:stripe_plan_id, :stripe_coupon_id, :has_coupon)
     end
 
   end
