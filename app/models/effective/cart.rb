@@ -11,8 +11,13 @@ module Effective
 
     scope :deep, -> { includes(cart_items: :purchasable) }
 
-    def add(item, quantity: 1)
+    def add(item, quantity: 1, unique: false)
       raise 'expecting an acts_as_purchasable object' unless item.kind_of?(ActsAsPurchasable)
+
+      if unique
+        cart_items.each { |cart_item| cart_item.destroy if cart_item.purchasable_type == item.class.name }
+        quantity = 1
+      end
 
       existing_item = cart_items.find { |cart_item| cart_item.purchasable_id == item.id && cart_item.purchasable_type == item.class.name }
 

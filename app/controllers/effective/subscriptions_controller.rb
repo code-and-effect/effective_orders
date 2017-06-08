@@ -5,7 +5,7 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:subscriptions] : EffectiveOrders.layout)
 
-    before_action :authenticate_user!, except: [:new]
+    before_action :authenticate_user!, except: [:new, :create]
     before_action :assign_customer, if: -> { current_user.present? }
 
     # /subscriptions/new and /plans
@@ -14,11 +14,7 @@ module Effective
 
       @subscription = Subscription.new()
 
-      @plans ||= Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
-
-      if @customer.present?
-        @current_plans ||= @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
-      end
+      assign_plans
 
       EffectiveOrders.authorized?(self, :new, @subscription)
     end
@@ -26,23 +22,21 @@ module Effective
     def create
       @page_title ||= 'Plans'
 
-      # @subscription = @customer.subscriptions.build(subscription_params)
+      if @customer.present?
+        @subscription = Subscription.where(customer: @customer, stripe_plan_id: subscription_params[:stripe_plan_id]).first_or_initialize
+      else
+        @subscription = Subscription.new()
+      end
 
-      # Later we might want to implement SWITCH PLANS here
-      # We only create singular subscriptions, so lookup an existing one if present.
-      @subscription = @customer.subscriptions.where(stripe_plan_id: subscription_params[:stripe_plan_id]).first_or_initialize
       @subscription.assign_attributes(subscription_params)
 
       EffectiveOrders.authorized?(self, :create, @subscription)
 
-      @order = Effective::Order.new(@subscription, user: current_user)
-
-      if (@subscription.save && @order.save)
-        flash[:success] = 'Successfully created order'
-        redirect_to effective_orders.order_path(@order)
+      if @subscription.save
+        current_cart.add(@subscription, unique: true)
+        redirect_to effective_orders.new_order_path
       else
-        @plans = Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
-        @current_plans = @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
+        assign_plans
 
         flash.now[:danger] = "Unable to purchase plan: #{@subscription.errors.full_messages.to_sentence}"
         render :new
@@ -118,6 +112,14 @@ module Effective
     end
 
     private
+
+    def assign_plans
+      @plans ||= Stripe::Plan.all.sort { |x, y| x.amount <=> y.amount }
+
+      if @customer.present?
+        @current_plans ||= @plans.select { |plan| @customer.current_plan_ids.include?(plan.id) }
+      end
+    end
 
     def assign_customer
       @customer ||= Customer.for_user(current_user)

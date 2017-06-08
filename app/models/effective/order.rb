@@ -155,7 +155,7 @@ module Effective
         if item.kind_of?(Effective::Cart)
           item.cart_items.to_a
         elsif item.kind_of?(ActsAsPurchasable)
-          Effective::CartItem.new(quantity: quantity.to_i).tap { |cart_item| cart_item.purchasable = item }
+          Effective::CartItem.new(quantity: quantity).tap { |cart_item| cart_item.purchasable = item }
         else
           raise ArgumentError.new('Effective::Order.add() expects one or more acts_as_purchasable objects, or an Effective::Cart')
         end

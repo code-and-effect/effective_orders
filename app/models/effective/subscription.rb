@@ -30,9 +30,11 @@ module Effective
       validates :title, presence: true
       validates :price, numericality: { greater_than: 0 }
 
-      validates :customer, presence: true
-      validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }
+      #validates :customer, presence: true
+      #validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }
     end
+
+    validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }, if: -> { stripe_plan_id.present? && customer.present? }
 
     validate do
       self.errors.add(:stripe_plan_id, 'is an invalid plan') if stripe_plan_id.present? && stripe_plan.blank?
@@ -66,11 +68,11 @@ module Effective
     end
 
     def user
-      customer.try(:user)
+      customer.user if customer
     end
 
     def user_id
-      customer.try(:user_id)
+      customer.user_id if customer
     end
 
     private
