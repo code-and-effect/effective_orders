@@ -22,8 +22,6 @@ module Effective
     def new
       @order ||= Effective::Order.new(current_cart, user: current_user)
 
-      binding.pry
-
       EffectiveOrders.authorized?(self, :new, @order)
 
       # We're only going to check for a subset of errors on this step,

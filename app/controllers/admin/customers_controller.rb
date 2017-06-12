@@ -5,11 +5,7 @@ module Admin
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_customers] : EffectiveOrders.layout)
 
     def index
-      if Gem::Version.new(EffectiveDatatables::VERSION) < Gem::Version.new('3.0')
-        @datatable = Effective::Datatables::Customers.new()
-      else
-        @datatable = EffectiveCustomersDatatable.new(self)
-      end
+      @datatable = EffectiveCustomersDatatable.new(self)
 
       @page_title = 'Customers'
 
