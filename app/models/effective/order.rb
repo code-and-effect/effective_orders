@@ -46,6 +46,7 @@ module Effective
 
     before_validation { assign_totals! }
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
+    before_save { save_addresses! }
 
     # Order validations
     validates :purchase_state, inclusion: { in: EffectiveOrders::PURCHASE_STATES.keys }
@@ -58,6 +59,10 @@ module Effective
       (total == 0 && EffectiveOrders.allow_free_orders) ||
       (total < 0 && EffectiveOrders.allow_refunds && skip_buyer_validations?)
     }
+
+    # validate do
+    #   self.errors.add(:base, 'uho')
+    # end
 
     # When Purchased
     with_options if: -> { purchased? } do |order|
@@ -447,6 +452,18 @@ module Effective
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
       self.total = subtotal + (tax || 0)
+    end
+
+    def save_addresses!
+      return unless user.present?
+
+      if save_billing_address? && billing_address.present? && user.respond_to?(:billing_address=)
+        user.billing_address = billing_address
+      end
+
+      if save_shipping_address? && shipping_address.present? && user.respond_to?(:shipping_address=)
+        user.shipping_address = shipping_address
+      end
     end
 
     def send_email(email, *mailer_args)

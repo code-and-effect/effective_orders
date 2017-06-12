@@ -13,14 +13,6 @@ module Admin
       authorize_effective_order!
     end
 
-    # We use the show action as an edit screen too
-    def show
-      @order = Effective::Order.find(params[:id])
-      @page_title ||= (@order.purchased? ? "Receipt ##{@order.to_param}" : "Order ##{@order.to_param}")
-
-      authorize_effective_order!
-    end
-
     def create
       @user = User.find_by_id(order_params[:user_id])
       @order = Effective::Order.new(user: @user)
@@ -34,6 +26,10 @@ module Admin
 
       @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
+      # Create as Pending
+      # Create as Free
+      # Create as Refund
+
       if @order.create_as_pending
         message = 'Successfully created order'
         message << ". #{@order.user.email} has been sent a request for payment." if @order.send_payment_request_to_buyer?
@@ -46,32 +42,57 @@ module Admin
       end
     end
 
-    def index
-      @datatable = EffectiveOrdersDatatable.new(self)
-
-      @page_title = 'Orders'
+    def edit
+      @order = Effective::Order.find(params[:id])
+      @page_title ||= "#{@order.purchased? ? 'Receipt' : 'Order'} ##{@order.to_param}"
 
       authorize_effective_order!
     end
 
     def update
       @order = Effective::Order.find(params[:id])
-      @page_title = "Order ##{@order.to_param}"
+      @page_title ||= "#{@order.purchased? ? 'Receipt' : 'Order'} ##{@order.to_param}"
 
       authorize_effective_order!
 
       if @order.update_attributes(order_params)
-        if params[:commit].to_s.downcase == 'save internal note'
-          flash[:success] = 'Successfully updated internal note'
-        else
-          flash[:success] = 'Successfully updated order'
-        end
-
+        flash[:success] = 'Successfully updated order'
         redirect_to(admin_redirect_path)
       else
         flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
-        render action: :show
+        render :edit
       end
+    end
+
+    def show
+      @order = Effective::Order.find(params[:id])
+      @page_title ||= (@order.purchased? ? "Receipt ##{@order.to_param}" : "Order ##{@order.to_param}")
+
+      authorize_effective_order!
+    end
+
+    # The show page posts to this action
+    # See Effective::OrdersController checkout
+    def checkout
+      @order = Effective::Order.find(params[:id])
+      @page_title ||= 'Checkout'
+
+      authorize_effective_order!
+
+      if @order.update_attributes(checkout_params)
+        redirect_to(effective_orders.admin_order_path(@order))
+      else
+        flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
+        render :show
+      end
+    end
+
+    def index
+      @datatable = EffectiveOrdersDatatable.new(self)
+
+      @page_title = 'Orders'
+
+      authorize_effective_order!
     end
 
     def destroy
@@ -119,6 +140,10 @@ module Admin
           ]
         ]
       )
+    end
+
+    def checkout_params
+      params.require(:effective_order).permit(EffectiveOrders.permitted_params)
     end
 
     def authorize_effective_order!

@@ -1,6 +1,10 @@
 - if datatable.admin_namespace?
-  = link_to effective_orders.admin_order_path(order), title: 'View' do
-    %span.glyphicon.glyphicon-eye-open
+  = link_to effective_orders.edit_admin_order_path(order), title: 'Edit' do
+    %span.glyphicon.glyphicon-edit
+
+  - unless order.purchased?
+    = link_to effective_orders.admin_order_path(order), title: 'Checkout' do
+      %span.glyphicon.glyphicon-eye-open
 
   = link_to effective_orders.admin_order_path(order), title: 'Delete', data: { method: :delete, confirm: 'Are you sure you want to delete? This cannot be undone.' } do
     %span.glyphicon.glyphicon-trash

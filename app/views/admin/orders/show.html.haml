@@ -3,9 +3,5 @@
 - if @order.purchased?
   = render partial: 'effective/orders/order', locals: { order: @order }
   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
-  = render partial: 'admin/orders/order_payment_details', locals: { order: @order }
 - else
-  = render_checkout_step2(@order, namespace: :admin)
-
-/ - if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
-/   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
+  = render_checkout_step2(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))

@@ -1,0 +1,4 @@
+%h1.effective-admin-heading= @page_title
+
+= render partial: 'effective/orders/order', locals: { order: @order }
+= render partial: 'admin/orders/form_note_internal', locals: { order: @order }

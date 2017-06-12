@@ -1,6 +1,6 @@
 .effective-order
-  = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(url: (order.new_record? ? effective_orders.orders_path : effective_orders.order_path(order)))) do |f|
-    = render partial: 'effective/orders/order_items', locals: {order: order, form: f}
+  = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(url: checkout_step1_form_url(order, namespace))) do |f|
+    = render partial: 'effective/orders/order_items', locals: { order: order, form: f }
 
     - unless f.object.pending? || (current_cart && current_cart.empty?)
       = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-default'
@@ -23,14 +23,14 @@
             %h2 Billing Address
             = effective_address_fields(f, :billing_address)
             - if f.object.user.respond_to?(:billing_address=)
-              = f.input :save_billing_address, as: :boolean, label: 'Save as my default billing address', required: false
+              = f.input :save_billing_address, as: :boolean, label: 'Save as default billing address', required: false
 
         - if EffectiveOrders.require_shipping_address
           %div{class: "col-sm-#{12 / num_addresses}"}
             %h2 Shipping Address
             = effective_address_fields(f, :shipping_address)
             - if f.object.user.respond_to?(:shipping_address=)
-              = f.input :save_shipping_address, as: :boolean, label: 'Save as my default shipping address', required: false
+              = f.input :save_shipping_address, as: :boolean, label: 'Save as default shipping address', required: false
 
     - if EffectiveOrders.collect_note
       = render partial: 'effective/orders/order_note_fields', locals: { form: f }

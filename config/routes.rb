@@ -73,6 +73,8 @@ EffectiveOrders::Engine.routes.draw do
     resources :orders do
       member do
         post :send_payment_request
+        post :checkout
+        patch :checkout
       end
     end
     resources :order_items, only: [:index]

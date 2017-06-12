@@ -3,16 +3,15 @@ module Effective
     include EffectiveCartsHelper
 
     include Providers::Admin if EffectiveOrders.admin_enabled
+    include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
+    include Providers::Ccbill if EffectiveOrders.ccbill_enabled
     include Providers::Cheque if EffectiveOrders.cheque_enabled
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled
-    include Providers::Stripe if EffectiveOrders.stripe_enabled
-    include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
-    include Providers::Ccbill if EffectiveOrders.ccbill_enabled
-    include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
-
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
+    include Providers::Stripe if EffectiveOrders.stripe_enabled
+    include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
@@ -44,16 +43,16 @@ module Effective
       @order.shipping_address.try(:errors).try(:clear)
     end
 
-    def edit
-      @order ||= Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :edit, @order)
-    end
-
     def create
       @order ||= Effective::Order.new(current_cart, user: current_user)
       EffectiveOrders.authorized?(self, :create, @order)
 
       save_order_and_redirect_to_step2 || render(:new)
+    end
+
+    def edit
+      @order ||= Effective::Order.find(params[:id])
+      EffectiveOrders.authorized?(self, :edit, @order)
     end
 
     # If there is an existing order, it will be posted to the /update action, instead of /create
@@ -67,24 +66,13 @@ module Effective
     def save_order_and_redirect_to_step2
       raise 'expected @order to be present' unless @order
 
-      @order.attributes = order_params
-      @order.user_id = current_user.id
-
-      @order.valid?  # This makes sure the correct shipping_address is copied from billing_address if shipping_address_same_as_billing
+      @order.assign_attributes(checkout_params)
 
       Effective::Order.transaction do
         begin
-          if @order.save_billing_address? && @order.user.respond_to?(:billing_address=) && @order.billing_address.present?
-            @order.user.billing_address = @order.billing_address
-          end
-
-          if @order.save_shipping_address? && @order.user.respond_to?(:shipping_address=) && @order.shipping_address.present?
-            @order.user.shipping_address = @order.shipping_address
-          end
-
           @order.save!
 
-          if @order.total == 0 && EffectiveOrders.allow_free_orders
+          if @order.total == 0
             order_purchased(details: 'automatic purchase of free order', provider: 'free', card: 'none')
           else
             redirect_to(effective_orders.order_path(@order))  # This goes to checkout_step2
@@ -92,7 +80,6 @@ module Effective
 
           return true
         rescue => e
-          Rails.logger.info e.message
           flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
           raise ActiveRecord::Rollback
         end
@@ -146,8 +133,7 @@ module Effective
       redirect_to(effective_orders.order_path(@order)) unless @order.purchased?
     end
 
-    # An error has occurred, please try again
-    def declined # An error occurred!
+    def declined
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
@@ -175,14 +161,14 @@ module Effective
 
     protected
 
-    def order_purchased(details: 'none', provider:, card: 'none', purchased_url: nil, declined_url: nil)
+    def order_purchased(details: 'none', provider:, card: 'none', purchased_url: nil, declined_url: nil, email: true)
       begin
-        @order.purchase!(details: details, provider: provider, card: card)
+        @order.purchase!(details: details, provider: provider, card: card, email: email)
 
         Effective::Cart.where(user_id: @order.user_id).destroy_all
 
         if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && @order.user == current_user
-          flash[:success] = "Payment successful! Please check your email for a receipt."
+          flash[:success] = "Payment successful! An email receipt has been sent to #{@order.user.email}"
         else
           flash[:success] = "Payment successful!"
         end
@@ -205,7 +191,7 @@ module Effective
     private
 
     # StrongParameters
-    def order_params
+    def checkout_params
       params.require(:effective_order).permit(EffectiveOrders.permitted_params)
     end
 

@@ -1,2 +1,2 @@
 = form_tag(effective_orders.pretend_purchase_path(order, purchased_url: purchased_url, declined_url: declined_url), method: :post) do
-  = submit_tag order_checkout_label(:pretend), class: 'btn btn-primary', data: { disable_with: => 'Continuing...' }
+  = submit_tag order_checkout_label(:pretend), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }

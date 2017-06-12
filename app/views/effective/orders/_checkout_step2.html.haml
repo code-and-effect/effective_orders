@@ -1,8 +1,8 @@
 = render partial: 'effective/orders/order', locals: { order: order }
 
-- if EffectiveOrders.admin_enabled && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false) && current_user != order.user
+- if EffectiveOrders.admin_enabled && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
   .effective-order.effective-order-admin-purchase-actions
-    = render partial: '/effective/orders/admin/form', locals: { order: order }
+    = render partial: '/effective/orders/admin/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
 .effective-order.effective-order-purchase-actions
   - if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
@@ -15,19 +15,19 @@
     = render partial: '/effective/orders/moneris/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.paypal_enabled
-    = render partial: '/effective/orders/paypal/form', locals: {order: order}
+    = render partial: '/effective/orders/paypal/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.stripe_enabled
-    = render partial: '/effective/orders/stripe/form', locals: {order: order}
+    = render partial: '/effective/orders/stripe/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.ccbill_enabled
-    = render partial: '/effective/orders/ccbill/form', locals: {order: order}
+    = render partial: '/effective/orders/ccbill/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.app_checkout_enabled && (EffectiveOrders.authorized?(controller, :app_checkout, order) rescue false)
-    = render partial: '/effective/orders/app_checkout/form', locals: {order: order}
+    = render partial: '/effective/orders/app_checkout/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.cheque_enabled
-    = render partial: '/effective/orders/cheque/form', locals: {order: order}
+    = render partial: '/effective/orders/cheque/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.allow_pretend_purchase_in_production
     %br

@@ -88,7 +88,7 @@ module EffectiveOrdersHelper
   end
 
   def render_checkout_step1(order, namespace: nil, purchased_url: nil, declined_url: nil)
-    raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
+    raise 'unable to checkout an order without a user' unless order && order.user
 
     locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
 
@@ -97,7 +97,7 @@ module EffectiveOrdersHelper
   alias_method :render_checkout, :render_checkout_step1
 
   def render_checkout_step2(order, namespace: nil, purchased_url: nil, declined_url: nil)
-    raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
+    raise 'unable to checkout an order without a user' unless order && order.user
 
     locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
 
@@ -105,6 +105,17 @@ module EffectiveOrdersHelper
       render(partial: 'effective/orders/checkout_step1', locals: locals)
     else
       render(partial: 'effective/orders/checkout_step2', locals: locals)
+    end
+  end
+
+  def checkout_step1_form_url(order, namespace = nil)
+    raise 'expected an order' unless order
+    raise 'invalid namespace, expecting nil or :admin' unless [nil, :admin].include?(namespace)
+
+    if order.new_record?
+      namespace == nil ? effective_orders.orders_path : effective_orders.admin_orders_path
+    else
+      namespace == nil ? effective_orders.order_path(order) : effective_orders.checkout_admin_order_path(order)
     end
   end
 
