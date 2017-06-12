@@ -21,7 +21,7 @@ module Effective
 
     validates :title, presence: true
     validates :quantity, presence: true, numericality: { greater_than: 0 }
-    validates :price, numericality: true
+    validates :price, presence: true
     validates :tax_exempt, inclusion: { in: [true, false] }
 
     validates :seller_id, presence: true, if: -> { EffectiveOrders.stripe_connect_enabled }

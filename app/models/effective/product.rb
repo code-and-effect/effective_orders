@@ -12,7 +12,8 @@ module Effective
     # timestamps
 
     validates :title, presence: true
-    validates :price, numericality: { greater_than: 0 }
+    validates :price, presence: true
+    validates :tax_exempt, inclusion: { in: [true, false] }
 
     def to_s
       self[:title] || 'New Product'

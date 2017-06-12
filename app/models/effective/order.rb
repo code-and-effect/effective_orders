@@ -70,7 +70,6 @@ module Effective
 
     # Order item and purchasable validations
     validates :order_items, presence: { message: 'No items are present. Please add one or more item to your cart.' }
-    validates :order_items, associated: true
 
     # Address validations
     if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
@@ -224,29 +223,29 @@ module Effective
       true
     end
 
-    # This is used for updating Subscription codes.
-    # We want to update the underlying purchasable object of an OrderItem
-    # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
-    # So we override this method to do the updates on the non-persisted OrderItem objects
-    # Right now strong_paramaters only lets through stripe_coupon_id
-    # {"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
-    def order_items_attributes=(order_item_attributes)
-      if self.persisted? == false
-        (order_item_attributes || {}).each do |_, atts|
-          order_item = self.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
+    # # This is used for updating Subscription codes.
+    # # We want to update the underlying purchasable object of an OrderItem
+    # # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
+    # # So we override this method to do the updates on the non-persisted OrderItem objects
+    # # Right now strong_paramaters only lets through stripe_coupon_id
+    # # {"0"=>{"class"=>"Effective::Subscription", "stripe_coupon_id"=>"50OFF", "id"=>"2"}}}
+    # def order_items_attributes=(order_item_attributes)
+    #   if self.persisted? == false
+    #     (order_item_attributes || {}).each do |_, atts|
+    #       order_item = self.order_items.find { |oi| oi.purchasable.class.name == atts[:class] && oi.purchasable.id == atts[:id].to_i }
 
-          if order_item
-            order_item.purchasable.attributes = atts.except(:id, :class)
+    #       if order_item
+    #         order_item.purchasable.attributes = atts.except(:id, :class)
 
-            # Recalculate the OrderItem based on the updated purchasable object
-            order_item.title = order_item.purchasable.title
-            order_item.price = order_item.purchasable.price
-            order_item.tax_exempt = order_item.purchasable.tax_exempt
-            order_item.seller_id = (order_item.purchasable.try(:seller).try(:id) rescue nil)
-          end
-        end
-      end
-    end
+    #         # Recalculate the OrderItem based on the updated purchasable object
+    #         order_item.title = order_item.purchasable.title
+    #         order_item.price = order_item.purchasable.price
+    #         order_item.tax_exempt = order_item.purchasable.tax_exempt
+    #         order_item.seller_id = (order_item.purchasable.try(:seller).try(:id) rescue nil)
+    #       end
+    #     end
+    #   end
+    # end
 
     def purchasables
       order_items.map { |order_item| order_item.purchasable }
@@ -369,6 +368,10 @@ module Effective
       success
     end
 
+    def abandoned?
+      purchase_state == EffectiveOrders::ABANDONED
+    end
+
     def purchased?(provider = nil)
       return false if (purchase_state != EffectiveOrders::PURCHASED)
       return true if provider.nil? || payment_provider == provider.to_s
@@ -384,6 +387,10 @@ module Effective
 
     def pending?
       purchase_state == EffectiveOrders::PENDING
+    end
+
+    def refund?
+      total.to_i < 0
     end
 
     def send_order_receipts!
@@ -439,7 +446,7 @@ module Effective
       self.subtotal = order_items.map { |oi| oi.subtotal }.sum
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
-      self.total = [subtotal + (tax || 0), 0].max
+      self.total = subtotal + (tax || 0)
     end
 
     def send_email(email, *mailer_args)
