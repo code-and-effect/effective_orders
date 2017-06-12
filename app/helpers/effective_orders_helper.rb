@@ -82,7 +82,7 @@ module EffectiveOrdersHelper
   end
 
   def render_order(order)
-    render(partial: 'effective/orders/order', locals: {order: order})
+    render(partial: 'effective/orders/order', locals: { order: order })
   end
 
   def render_checkout_step1(order, opts = {})
