@@ -19,7 +19,7 @@ module Effective
     attr_accessor :send_mark_as_paid_email_to_buyer  # Used by the /admin/orders/mark_as_paid action
     attr_accessor :skip_buyer_validations # Enabled by the /admin/orders/create action
 
-    belongs_to :user, validate: false  # This is the user who purchased the order. We validate it below.
+    belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
     has_many :order_items, inverse_of: :order, class_name: 'Effective::OrderItem'
 
     # Attributes
@@ -47,6 +47,41 @@ module Effective
     before_validation { assign_totals! }
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
+    # Order validations
+    validates :purchase_state, inclusion: { in: EffectiveOrders::PURCHASE_STATES.keys }
+    validates :subtotal, presence: true
+
+    validates :total, presence: true, numericality: {
+      greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
+      message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
+    }, unless: -> {
+      (total == 0 && EffectiveOrders.allow_free_orders) ||
+      (total < 0 && EffectiveOrders.allow_refunds && skip_buyer_validations?)
+    }
+
+    # When Purchased
+    with_options if: -> { purchased? } do |order|
+      order.validates :purchased_at, presence: true
+      order.validates :payment, presence: true
+
+      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
+      order.validates :payment_card, presence: true
+    end
+
+    # Order item and purchasable validations
+    validates :order_items, presence: { message: 'No items are present. Please add one or more item to your cart.' }
+    validates :order_items, associated: true
+
+    # Address validations
+    if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
+      validates :billing_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
+    end
+
+    if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
+      validates :shipping_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
+    end
+
+    # User validations -- An admin skips these when working in the admin/ namespace
     with_options unless: -> { skip_buyer_validations? } do |order|
       order.validates :tax_rate, presence: { message: "can't be determined based on billing address" }
       order.validates :tax, presence: true
@@ -59,44 +94,6 @@ module Effective
       if EffectiveOrders.collect_note_required
         order.validates :note, presence: true
       end
-    end
-
-    if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
-      validates :billing_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
-    end
-
-    if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
-      validates :shipping_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
-    end
-
-    if (minimum_charge = EffectiveOrders.minimum_charge.to_i).present?
-      if EffectiveOrders.allow_free_orders
-        validates :total, numericality: {
-          greater_than_or_equal_to: minimum_charge,
-          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required. Please add additional items to your cart."
-        }, unless: -> { total == 0 }
-      else
-        validates :total, numericality: {
-          greater_than_or_equal_to: minimum_charge,
-          message: "A minimum order of #{EffectiveOrders.minimum_charge} is required. Please add additional items to your cart."
-        }
-      end
-    end
-
-    validates :purchase_state, inclusion: { in: [nil, EffectiveOrders::PURCHASED, EffectiveOrders::DECLINED, EffectiveOrders::PENDING] }
-
-    validates :subtotal, presence: true
-    validates :total, presence: true
-
-    validates :order_items, presence: { message: 'No items are present. Please add one or more item to your cart.' }
-    validates :order_items, associated: true
-
-    with_options if: -> { purchased? } do |order|
-      order.validates :purchased_at, presence: true
-      order.validates :payment, presence: true
-
-      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
-      order.validates :payment_card, presence: true
     end
 
     serialize :payment, Hash

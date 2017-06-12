@@ -89,6 +89,12 @@ EffectiveOrders.setup do |config|
   # and just display the 'Thank You' after checkout is clicked
   config.allow_free_orders = true
 
+  # Refunds
+  # Allow admins to create orders with a negative total
+  # Refunds don't perform any kind of refund action with the payment processor.
+  # This just changes the validations
+  config.allow_refunds = false
+
   # Display a 'Purchase order' button on the Checkout screen allowing the user
   # to purchase an Order without going through the payment processor
   config.allow_pretend_purchase_in_development = true

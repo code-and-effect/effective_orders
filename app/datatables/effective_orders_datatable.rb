@@ -30,8 +30,8 @@ class EffectiveOrdersDatatable < Effective::Datatable
       col :shipping_address
     end
 
-    col :purchase_state, label: 'State', search: { collection: purchase_state_filter_values } do |order|
-      order.purchase_state || EffectiveOrders::ABANDONED
+    col :purchase_state, label: 'State', search: { collection: EffectiveOrders::PURCHASE_STATES.invert } do |order|
+      EffectiveOrders::PURCHASE_STATES[order.purchase_state]
     end
 
     col :order_items
@@ -70,12 +70,4 @@ class EffectiveOrdersDatatable < Effective::Datatable
     attributes[:user_id].present? ? scope.where(user_id: attributes[:user_id]) : scope
   end
 
-  def purchase_state_filter_values
-    [
-      [EffectiveOrders::ABANDONED, nil],
-      [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED],
-      [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED],
-      [EffectiveOrders::PENDING, EffectiveOrders::PENDING]
-    ]
-  end
 end

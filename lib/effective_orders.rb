@@ -10,6 +10,8 @@ module EffectiveOrders
   DECLINED = 'declined'
   PENDING = 'pending'
 
+  PURCHASE_STATES = { nil => ABANDONED, PURCHASED => PURCHASED, DECLINED => DECLINED, PENDING => PENDING }
+
   # The following are all valid config keys
   mattr_accessor :orders_table_name
   mattr_accessor :order_items_table_name
@@ -29,6 +31,7 @@ module EffectiveOrders
   mattr_accessor :layout
   mattr_accessor :simple_form_options
   mattr_accessor :admin_simple_form_options
+  mattr_accessor :show_order_history_button
 
   mattr_accessor :obfuscate_order_ids
 
@@ -52,7 +55,7 @@ module EffectiveOrders
 
   mattr_accessor :minimum_charge
   mattr_accessor :allow_free_orders
-  mattr_accessor :show_order_history_button
+  mattr_accessor :allow_refunds
 
   mattr_accessor :cheque_enabled
   mattr_accessor :paypal_enabled
