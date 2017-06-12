@@ -33,7 +33,7 @@ module Effective
         redirect_to(effective_orders.cart_path)
         return
       elsif @order.errors[:total].present?
-        flash[:danger] = @order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, view_context.price_to_currency(EffectiveOrders.minimum_charge.to_i))
+        flash[:danger] = @order.errors[:total].first
         redirect_to(effective_orders.cart_path)
         return
       end

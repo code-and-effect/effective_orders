@@ -1,6 +1,6 @@
 %h1.effective-admin-heading= (@order.purchased? ? 'Receipt' : 'Order')
 
-= render partial: 'effective/orders/order', locals: {order: @order}
+= render partial: 'effective/orders/order', locals: { order: @order }
 
 - if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
