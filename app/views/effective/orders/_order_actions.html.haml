@@ -6,6 +6,5 @@
       = link_to 'Resend Receipt', effective_orders.resend_buyer_receipt_path(order), class: 'btn btn-default', data: { confirm: 'This action will email the buyer a copy of the original email receipt.  Send receipt now?', disable_with: 'Resending...' }
 
     - elsif (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
-      = link_to 'Admin: Mark as Paid', effective_orders.mark_as_paid_admin_order_path(order), class: 'btn btn-default'
       = link_to 'Admin: Send Payment Request', effective_orders.send_payment_request_admin_order_path(order), class: 'btn btn-default', data: { method: :post, confirm: 'This action will email buyer a payment request. Send it now?', disable_with: 'Sending...' }
       = link_to 'Admin: Delete', effective_orders.admin_order_path(order), class: 'btn btn-default', data: { method: :delete, confirm: 'Are you sure you want to delete? This cannot be undone.', disable_with: 'Deleting...' }

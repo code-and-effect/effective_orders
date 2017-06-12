@@ -2,6 +2,7 @@ module Effective
   class OrdersController < ApplicationController
     include EffectiveCartsHelper
 
+    include Providers::Admin if EffectiveOrders.admin_enabled
     include Providers::Cheque if EffectiveOrders.cheque_enabled
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled
@@ -41,36 +42,33 @@ module Effective
       @order.errors.clear
       @order.billing_address.try(:errors).try(:clear)
       @order.shipping_address.try(:errors).try(:clear)
-
-      render :checkout_step1
     end
 
     def edit
       @order ||= Effective::Order.find(params[:id])
-
       EffectiveOrders.authorized?(self, :edit, @order)
-
-      render :checkout_step1
     end
 
     def create
       @order ||= Effective::Order.new(current_cart, user: current_user)
-      save_order_and_redirect_to_step2
+      EffectiveOrders.authorized?(self, :create, @order)
+
+      save_order_and_redirect_to_step2 || render(:new)
     end
 
     # If there is an existing order, it will be posted to the /update action, instead of /create
     def update
       @order ||= Effective::Order.find(params[:id])
-      save_order_and_redirect_to_step2
+      EffectiveOrders.authorized?(self, :update, @order)
+
+      save_order_and_redirect_to_step2 || render(:edit)
     end
 
     def save_order_and_redirect_to_step2
-      (redirect_to effective_orders.cart_path and return) if (@order.blank? || current_user.blank?)
+      raise 'expected @order to be present' unless @order
 
       @order.attributes = order_params
       @order.user_id = current_user.id
-
-      EffectiveOrders.authorized?(self, (@order.persisted? ? :update : :create), @order)
 
       @order.valid?  # This makes sure the correct shipping_address is copied from billing_address if shipping_address_same_as_billing
 
@@ -100,25 +98,14 @@ module Effective
         end
       end
 
-      # Fall back to checkout step 1
-      render :checkout_step1
+      false
     end
 
     def show
       @order = Effective::Order.find(params[:id])
+      set_page_title
+
       EffectiveOrders.authorized?(self, :show, @order)
-
-      @page_title ||= (
-        if @order.purchased?
-          'Receipt'
-        elsif @order.user != current_user
-          @order.pending? ? "Pending Order ##{@order.to_param}" : "Order ##{@order.to_param}"
-        else
-          'Checkout'
-        end
-      )
-
-      render(:checkout_step2) if @order.purchased? == false && @order.user == current_user
     end
 
     def index
@@ -188,31 +175,31 @@ module Effective
 
     protected
 
-    def order_purchased(details: 'none', provider:, card: 'none', redirect_url: nil, declined_redirect_url: nil)
+    def order_purchased(details: 'none', provider:, card: 'none', purchased_url: nil, declined_url: nil)
       begin
         @order.purchase!(details: details, provider: provider, card: card)
 
-        Effective::Cart.where(user_id: @order.user_id).try(:destroy_all) # current_cart won't work for provider post backs here
+        Effective::Cart.where(user_id: @order.user_id).destroy_all
 
-        if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+        if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && @order.user == current_user
           flash[:success] = "Payment successful! Please check your email for a receipt."
         else
           flash[:success] = "Payment successful!"
         end
 
-        redirect_to (redirect_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
+        redirect_to (purchased_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
       rescue => e
         flash[:danger] = "An error occurred while processing your payment: #{e.message}.  Please try again."
-        redirect_to(declined_redirect_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
+        redirect_to(declined_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
       end
     end
 
-    def order_declined(details: 'none', provider:, card: 'none', redirect_url: nil, message: nil)
+    def order_declined(details: 'none', provider:, card: 'none', declined_url: nil, message: nil)
       @order.decline!(details: details, provider: provider, card: card) rescue nil
 
       flash[:danger] = message.presence || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 
-      redirect_to(redirect_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
+      redirect_to(declined_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
     end
 
     private
@@ -225,6 +212,14 @@ module Effective
     def set_page_title
       @page_title ||= case params[:action]
         when 'index'        ; 'Orders'
+        when 'show'
+          if @order.purchased?
+            'Receipt'
+          elsif @order.user != current_user
+            @order.pending? ? "Pending Order ##{@order.to_param}" : "Order ##{@order.to_param}"
+          else
+            'Checkout'
+          end
         when 'my_purchases' ; 'Order History'
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'

@@ -9,7 +9,7 @@
       %p.inline-errors= order.errors[:order_items].first
 
     - if order.errors[:total].present?
-      %p.inline-errors= order.errors[:total].first.gsub(EffectiveOrders.minimum_charge.to_i.to_s, price_to_currency(EffectiveOrders.minimum_charge.to_i))
+      %p.inline-errors= order.errors[:total].first
 
     - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
       = render partial: 'effective/orders/order_user_fields', locals: { form: f, user: f.object.user }
@@ -40,6 +40,6 @@
 
     %p.text-right
       - if order.total == 0 && EffectiveOrders.allow_free_orders
-        = f.submit order_checkout_label(:free), class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Processing...' }
+        = f.submit order_checkout_label(:free), class: 'btn btn-primary', rel: :nofollow, data: { disable_with: 'Processing...' }
       - else
-        = f.submit 'Save and Continue', class: 'btn btn-primary', rel: :nofollow, data: {'disable_with' => 'Saving...' }
+        = f.submit 'Save and Continue', class: 'btn btn-primary', rel: :nofollow, data: { disable_with: 'Saving...' }

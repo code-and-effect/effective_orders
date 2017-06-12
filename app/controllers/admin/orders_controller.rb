@@ -4,10 +4,11 @@ module Admin
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
 
-    def index
-      @datatable = EffectiveOrdersDatatable.new(self)
+    def new
+      @order = Effective::Order.new
+      @order.user = (User.find(params[:user_id]) rescue nil) if params[:user_id]
 
-      @page_title = 'Orders'
+      @page_title = 'New Order'
 
       authorize_effective_order!
     end
@@ -15,36 +16,7 @@ module Admin
     # We use the show action as an edit screen too
     def show
       @order = Effective::Order.find(params[:id])
-      @page_title = "Order ##{@order.to_param}"
-
-      authorize_effective_order!
-    end
-
-    def update
-      @order = Effective::Order.find(params[:id])
-      @page_title = "Order ##{@order.to_param}"
-
-      authorize_effective_order!
-
-      if @order.update_attributes(order_params)
-        if params[:commit].to_s.downcase == 'save internal note'
-          flash[:success] = 'Successfully updated internal note'
-        else
-          flash[:success] = 'Successfully updated order'
-        end
-
-        redirect_to(admin_redirect_path)
-      else
-        flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
-        render action: :show
-      end
-    end
-
-    def new
-      @order = Effective::Order.new
-      @order.user = (User.find(params[:user_id]) rescue nil) if params[:user_id]
-
-      @page_title = 'New Order'
+      @page_title ||= (@order.purchased? ? "Receipt ##{@order.to_param}" : "Order ##{@order.to_param}")
 
       authorize_effective_order!
     end
@@ -74,6 +46,34 @@ module Admin
       end
     end
 
+    def index
+      @datatable = EffectiveOrdersDatatable.new(self)
+
+      @page_title = 'Orders'
+
+      authorize_effective_order!
+    end
+
+    def update
+      @order = Effective::Order.find(params[:id])
+      @page_title = "Order ##{@order.to_param}"
+
+      authorize_effective_order!
+
+      if @order.update_attributes(order_params)
+        if params[:commit].to_s.downcase == 'save internal note'
+          flash[:success] = 'Successfully updated internal note'
+        else
+          flash[:success] = 'Successfully updated order'
+        end
+
+        redirect_to(admin_redirect_path)
+      else
+        flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
+        render action: :show
+      end
+    end
+
     def destroy
       @order = Effective::Order.find(params[:id])
 
@@ -86,39 +86,6 @@ module Admin
       end
 
       redirect_to(effective_orders.admin_orders_path)
-    end
-
-    def mark_as_paid
-      @order = Effective::Order.find(params[:id])
-      @page_title = 'Mark as Paid'
-
-      authorize_effective_order!
-
-      if request.patch? || request.post?  # They are submitting the form to mark an order as paid
-        purchased = false
-
-        @order.attributes = order_params.except(:payment, :payment_provider, :payment_card)
-
-        begin
-          purchased = @order.purchase!(
-            details: order_params[:payment],
-            provider: order_params[:payment_provider],
-            card: order_params[:payment_card],
-            email: @order.send_mark_as_paid_email_to_buyer?,
-            skip_buyer_validations: true
-          )
-        rescue => e
-          purchased = false
-        end
-
-        if purchased
-          flash[:success] = 'Order marked as paid successfully'
-          redirect_to(admin_redirect_path)
-        else
-          flash.now[:danger] = "Unable to mark order as paid: #{@order.errors.full_messages.to_sentence}"
-          render action: :mark_as_paid
-        end
-      end
     end
 
     def send_payment_request
@@ -167,13 +134,11 @@ module Admin
 
       return path if path.present?
 
-      case params[:commit]
-      when 'Save and Add New'
-        effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
-      when 'Save and Mark as Paid'
-        effective_orders.mark_as_paid_admin_order_path(@order)
-      else
-        effective_orders.admin_order_path(@order)
+      case params[:commit].to_s
+      when 'Save'               ; effective_orders.admin_order_path(@order)
+      when 'Save and Continue'  ; effective_orders.admin_orders_path
+      when 'Save and Add New'   ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
+      else effective_orders.admin_order_path(@order)
       end
     end
 

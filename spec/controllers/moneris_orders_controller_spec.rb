@@ -116,15 +116,15 @@ describe Effective::OrdersController, type: :controller do
     end
 
     describe 'redirect urls' do
-      it 'redirects to the purchased_redirect_url on purchase' do
+      it 'redirects to the purchased_url on purchase' do
         allow(subject).to receive(:parse_moneris_response).and_return({response_code: 1}) # success
-        post :moneris_postback, moneris_params.tap { |x| x[:rvar_purchased_redirect_url] = '/something' }
+        post :moneris_postback, moneris_params.tap { |x| x[:rvar_purchased_url] = '/something' }
         response.should redirect_to '/something'
       end
 
-      it 'redirects to the declined_redirect_url on decline' do
+      it 'redirects to the declined_url on decline' do
         allow(subject).to receive(:parse_moneris_response).and_return({response_code: 'null'}) # failure
-        post :moneris_postback, moneris_params.tap { |x| x[:rvar_declined_redirect_url] = '/something' }
+        post :moneris_postback, moneris_params.tap { |x| x[:rvar_declined_url] = '/something' }
         response.should redirect_to '/something'
       end
     end

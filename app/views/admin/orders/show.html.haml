@@ -1,8 +1,11 @@
-%h1.effective-admin-heading= (@order.purchased? ? 'Receipt' : 'Order')
+%h1.effective-admin-heading= @page_title
 
-= render partial: 'effective/orders/order', locals: { order: @order }
-
-- if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
+- if @order.purchased?
+  = render partial: 'effective/orders/order', locals: { order: @order }
   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
+  = render partial: 'admin/orders/order_payment_details', locals: { order: @order }
+- else
+  = render_checkout_step2(@order, namespace: :admin)
 
-= render partial: 'admin/orders/order_payment_details', locals: { order: @order }
+/ - if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
+/   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }

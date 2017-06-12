@@ -187,6 +187,10 @@ EffectiveOrders.setup do |config|
   ### Payment Provider specific options
   #######################################
 
+  # Admin configuration
+  # Admin can mark an order as paid without going through a processor
+  config.admin_enabled = false
+
   # Moneris configuration
   config.moneris_enabled = false
 

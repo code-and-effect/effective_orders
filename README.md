@@ -458,7 +458,7 @@ The Order has now been purchased.
 If you are using effective_orders to roll your own custom payment workflow, you should be aware of the following helpers:
 
 - `render_checkout(order)` to display the standard Checkout step inline.
-- `render_checkout(order, purchased_redirect_url: '/', declined_redirect_url: '/')` to display the Checkout step with custom redirect paths.
+- `render_checkout(order, purchased_url: '/', declined_url: '/')` to display the Checkout step with custom redirect paths.
 
 - `render_purchasables(one_or_more_acts_as_purchasable_objects)` to display a list of purchasable items
 

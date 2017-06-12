@@ -57,6 +57,7 @@ module EffectiveOrders
   mattr_accessor :allow_free_orders
   mattr_accessor :allow_refunds
 
+  mattr_accessor :admin_enabled
   mattr_accessor :cheque_enabled
   mattr_accessor :paypal_enabled
   mattr_accessor :moneris_enabled
@@ -104,6 +105,7 @@ module EffectiveOrders
 
   def self.single_payment_processor?
     [
+      admin_enabled,
       moneris_enabled,
       paypal_enabled,
       stripe_enabled,

@@ -12,6 +12,10 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/:id/resend_buyer_receipt', to: 'orders#resend_buyer_receipt', via: :get, as: 'resend_buyer_receipt'
     match 'orders/my_purchases', to: 'orders#my_purchases', as: 'my_purchases', via: :get
 
+    if EffectiveOrders.admin_enabled
+      match 'orders/:id/mark_as_paid', to: 'orders#mark_as_paid', via: :post, as: 'mark_as_paid'
+    end
+
     if EffectiveOrders.cheque_enabled
       match 'orders/:id/pay_by_cheque', to: 'orders#pay_by_cheque', via: :post, as: 'pay_by_cheque'
     end
@@ -66,10 +70,8 @@ EffectiveOrders::Engine.routes.draw do
 
   namespace :admin do
     resources :customers, only: [:index]
-    resources :orders, except: [:edit] do
+    resources :orders do
       member do
-        get :mark_as_paid
-        post :mark_as_paid
         post :send_payment_request
       end
     end

@@ -36,6 +36,8 @@ module EffectiveOrdersHelper
     return 'Checkout' if (EffectiveOrders.single_payment_processor? && processor != :pretend)
 
     case processor
+    when :admin
+      'Mark as paid'
     when :free
       'Checkout'
     when :moneris, :stripe, :ccbill
@@ -85,24 +87,24 @@ module EffectiveOrdersHelper
     render(partial: 'effective/orders/order', locals: { order: order })
   end
 
-  def render_checkout_step1(order, opts = {})
+  def render_checkout_step1(order, namespace: nil, purchased_url: nil, declined_url: nil)
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 
-    locals = { purchased_redirect_url: nil, declined_redirect_url: nil }.merge(opts)
+    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
 
-    render(partial: 'effective/orders/checkout_step1', locals: locals.merge({order: order}))
+    render partial: 'effective/orders/checkout_step1', locals: locals
   end
   alias_method :render_checkout, :render_checkout_step1
 
-  def render_checkout_step2(order, opts = {})
+  def render_checkout_step2(order, namespace: nil, purchased_url: nil, declined_url: nil)
     raise ArgumentError.new('unable to checkout an order without a user') unless order.user.present?
 
-    locals = { purchased_redirect_url: nil, declined_redirect_url: nil }.merge(opts)
+    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
 
     if order.new_record? || !order.valid?
-      render(partial: 'effective/orders/checkout_step1', locals: locals.merge({order: order}))
+      render(partial: 'effective/orders/checkout_step1', locals: locals)
     else
-      render(partial: 'effective/orders/checkout_step2', locals: locals.merge({order: order}))
+      render(partial: 'effective/orders/checkout_step2', locals: locals)
     end
   end
 

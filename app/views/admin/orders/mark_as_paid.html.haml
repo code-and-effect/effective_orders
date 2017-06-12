@@ -1,7 +1,0 @@
-%h1.effective-admin-heading= @page_title
-
-%p Mark the following order as paid:
-
-= render partial: 'effective/orders/order', locals: {order: @order, no_order_actions: true}
-
-= render partial: 'admin/orders/form_mark_as_paid', locals: { order: @order }

@@ -9,7 +9,7 @@ module Effective
         @order.purchase_state = EffectiveOrders::PENDING
         @order.payment_provider = 'cheque'
 
-        EffectiveOrders.authorized?(self, :update, @order)
+        (EffectiveOrders.authorized?(self, :update, @order) rescue false)
 
         @page_title = 'Payment Required'
 

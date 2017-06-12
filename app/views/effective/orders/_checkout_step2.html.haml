@@ -1,14 +1,18 @@
-= render(order)
+= render partial: 'effective/orders/order', locals: { order: order }
+
+- if EffectiveOrders.admin_enabled && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false) && current_user != order.user
+  .effective-order.effective-order-admin-purchase-actions
+    = render partial: '/effective/orders/admin/form', locals: { order: order }
 
 .effective-order.effective-order-purchase-actions
   - if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
-    = render partial: '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+    = render partial: '/effective/orders/pretend/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
-    = render partial: '/effective/orders/pretend/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+    = render partial: '/effective/orders/pretend/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.moneris_enabled
-    = render partial: '/effective/orders/moneris/form', locals: {order: order, purchased_redirect_url: purchased_redirect_url, declined_redirect_url: declined_redirect_url}
+    = render partial: '/effective/orders/moneris/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
   - if EffectiveOrders.paypal_enabled
     = render partial: '/effective/orders/paypal/form', locals: {order: order}

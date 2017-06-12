@@ -3,7 +3,4 @@
 %p.text-right.effective-admin-actions
   = link_to 'New Order', effective_orders.new_admin_order_path, class: 'btn btn-primary'
 
-- if @datatable.present?
-  = render_datatable @datatable
-- else
-  %p There are no orders present
+= render_datatable @datatable
