@@ -14,22 +14,26 @@ module Effective
     def add(item, quantity: 1, unique: false)
       raise 'expecting an acts_as_purchasable object' unless item.kind_of?(ActsAsPurchasable)
 
+      # If unique == true, we can only have 1 of this object type in our cart
       if unique
         cart_items.each { |cart_item| cart_item.destroy if cart_item.purchasable_type == item.class.name }
-        quantity = 1
+        cart_items.build(purchasable: item, quantity: 1).save!
+        return
       end
 
-      existing_item = cart_items.find { |cart_item| cart_item.purchasable_id == item.id && cart_item.purchasable_type == item.class.name }
+      # Otherwise, we check existance and quantity
+      if (existing = find(item))
+        if item.quantity_enabled? && (quantity + (existing.quantity rescue 0)) > item.quantity_remaining
+          raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
+        end
 
-      if item.quantity_enabled? && (quantity + (existing_item.quantity rescue 0)) > item.quantity_remaining
-        raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
+        existing.quantity = existing.quantity + quantity
+        existing.save!
+        return
       end
 
-      if existing_item.present?
-        existing_item.update_attributes(quantity: existing_item.quantity + quantity)
-      else
-        self.cart_items.build(purchasable: item, quantity: quantity).save!
-      end
+      # Otherwise this is a new item we just add
+      cart_items.build(purchasable: item, quantity: quantity).save!
     end
 
     def remove(obj)
