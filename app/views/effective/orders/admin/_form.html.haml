@@ -25,5 +25,5 @@
       = f.input :note_to_buyer, hint: 'This is displayed to the buyer on all order receipts.'
 
       .text-right
-        = f.submit order_checkout_label(:admin), class: 'btn btn-primary', data: {'disable_with' => 'Continuing...' }
+        = f.submit order_checkout_label(:mark_as_paid), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
 

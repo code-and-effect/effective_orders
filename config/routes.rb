@@ -13,7 +13,7 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/my_purchases', to: 'orders#my_purchases', as: 'my_purchases', via: :get
 
     if EffectiveOrders.app_checkout_enabled
-      match 'orders/:id/app_checkout', to: 'orders#app_checkout', as: 'app_checkout', via: :post
+      match 'orders/:id/app_checkout', to: 'orders#app_checkout', via: :post, as: 'app_checkout'
     end
 
     if EffectiveOrders.allow_free_orders
@@ -21,7 +21,7 @@ EffectiveOrders::Engine.routes.draw do
     end
 
     if EffectiveOrders.ccbill_enabled
-      match 'orders/ccbill_postback', to: 'orders#ccbill_postback', as: 'ccbill_postback', via: :post
+      match 'orders/ccbill_postback', to: 'orders#ccbill_postback', via: :post, as: 'ccbill_postback'
     end
 
     if EffectiveOrders.cheque_enabled
@@ -33,15 +33,15 @@ EffectiveOrders::Engine.routes.draw do
     end
 
     if EffectiveOrders.moneris_enabled
-      match 'orders/moneris_postback', to: 'orders#moneris_postback', as: 'moneris_postback', via: :post
+      match 'orders/moneris_postback', to: 'orders#moneris_postback', via: :post, as: 'moneris_postback'
     end
 
     if EffectiveOrders.paypal_enabled
-      match 'orders/paypal_postback', to: 'orders#paypal_postback', as: 'paypal_postback', via: :post
+      match 'orders/paypal_postback', to: 'orders#paypal_postback', via: :post, as: 'paypal_postback'
     end
 
     if EffectiveOrders.stripe_enabled
-      match 'orders/stripe_charge', to: 'orders#stripe_charge', as: 'stripe_charges', via: :post
+      match 'orders/stripe_charge', to: 'orders#stripe_charge', via: :post, as: 'stripe_charges'
     end
 
     if EffectiveOrders.stripe_subscriptions_enabled
@@ -61,6 +61,7 @@ EffectiveOrders::Engine.routes.draw do
     end
 
     resources :orders, except: [:destroy]
+    match 'orders/:id', to: 'orders#update', via: :post
 
     match 'cart', to: 'carts#show', as: 'cart', via: :get
     match 'cart', to: 'carts#destroy', via: :delete

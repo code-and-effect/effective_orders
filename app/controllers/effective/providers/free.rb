@@ -18,8 +18,8 @@ module Effective
           details: 'free order. no payment required.',
           provider: 'free',
           card: 'none',
-          purchased_url: free_params[:purchased_url],
-          declined_url: free_params[:declined_url],
+          purchased_url: params[:purchased_url],
+          declined_url: params[:declined_url],
         )
       end
 

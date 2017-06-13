@@ -33,13 +33,13 @@ module EffectiveOrdersHelper
   end
 
   def order_checkout_label(processor = nil)
-    return 'Checkout' if (EffectiveOrders.single_payment_processor? && processor != :pretend)
+    return 'Checkout' if (EffectiveOrders.single_payment_processor? && ![:pretend, :mark_as_paid, :free].include?(processor))
 
     case processor
     when :mark_as_paid
       'Mark as paid'
     when :free
-      'Checkout'
+      'Checkout free'
     when :moneris, :stripe, :ccbill
       'Checkout with credit card'
     when :paypal

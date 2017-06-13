@@ -2,6 +2,8 @@ module Effective
   class OrdersController < ApplicationController
     include EffectiveCartsHelper
 
+    include Concerns::Purchase
+
     include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
     include Providers::Ccbill if EffectiveOrders.ccbill_enabled
     include Providers::Cheque if EffectiveOrders.cheque_enabled
@@ -48,10 +50,12 @@ module Effective
       @order ||= Effective::Order.new(current_cart, user: current_user)
       EffectiveOrders.authorized?(self, :create, @order)
 
-      if @order.update_attributes(checkout_params)
+      @order.assign_attributes(checkout_params)
+
+      if @order.save
         redirect_to effective_orders.order_path(@order)
       else
-        flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
+        flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
         render :new
       end
     end
@@ -61,24 +65,25 @@ module Effective
       EffectiveOrders.authorized?(self, :edit, @order)
     end
 
-    # If there is an existing order, it will be posted to the /update action, instead of /create
     def update
       @order ||= Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :update, @order)
 
-      if @order.update_attributes(checkout_params)
+      @order.assign_attributes(checkout_params)
+
+      if @order.save
         redirect_to effective_orders.order_path(@order)
       else
-        flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
+        flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
         render :edit
       end
     end
 
     def show
       @order = Effective::Order.find(params[:id])
-      set_page_title
-
       EffectiveOrders.authorized?(self, :show, @order)
+
+      @page_title ||= ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
     end
 
     def index
@@ -92,7 +97,6 @@ module Effective
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
       @orders = Effective::Order.purchased_by(current_user)
-
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
@@ -145,35 +149,6 @@ module Effective
       end
     end
 
-    protected
-
-    def order_purchased(provider:, card: 'none', details: 'none', email: true, purchased_url: nil, declined_url: nil)
-      begin
-        @order.purchase!(provider: provider, card: card, details: details, email: email)
-
-        Effective::Cart.where(user_id: @order.user_id).destroy_all
-
-        if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && @order.user == current_user
-          flash[:success] = "Payment successful! An email receipt has been sent to #{@order.user.email}"
-        else
-          flash[:success] = "Payment successful!"
-        end
-
-        redirect_to (purchased_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
-      rescue => e
-        flash[:danger] = "An error occurred while processing your payment: #{e.message}.  Please try again."
-        redirect_to(declined_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
-      end
-    end
-
-    def order_declined(provider:, card: 'none', details: 'none', message: nil, declined_url: nil)
-      @order.decline!(provider: provider, card: card, details: details) rescue nil
-
-      flash[:danger] = message.presence || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
-
-      redirect_to(declined_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
-    end
-
     private
 
     # StrongParameters
@@ -184,7 +159,6 @@ module Effective
     def set_page_title
       @page_title ||= case params[:action]
         when 'index'        ; 'Orders'
-        when 'show'         ; ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
         when 'my_purchases' ; 'Order History'
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'
