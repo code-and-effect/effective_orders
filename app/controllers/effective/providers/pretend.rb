@@ -3,7 +3,7 @@ module Effective
     module Pretend
       extend ActiveSupport::Concern
 
-      def pretend_purchase
+      def pretend
         @order ||= Order.find(params[:id])
 
         EffectiveOrders.authorized?(self, :update, @order)

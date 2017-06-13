@@ -446,7 +446,7 @@ On this final checkout screen, links to all configured payment providers are dis
 
 The payment processor handles collecting the Credit Card number, and through one way or another, the `Effective::Order` `@order.purchase!` method is called.
 
-Once the order has been marked purchased, the user is redirected to the `effective_orders.order_purchased_path` screen where they see a 'Thank You!' message, and the Order receipt.
+Once the order has been marked purchased, the user is redirected to the `effective_orders.purchased_order_path` screen where they see a 'Thank You!' message, and the Order receipt.
 
 If the configuration option `config.mailer[:send_order_receipt_to_buyer] == true` the order receipt will be emailed to the user.
 
@@ -539,7 +539,7 @@ or
 or
 
 ```ruby
-= link_to 'My Order History', effective_orders.my_purchases_path
+= link_to 'My Order History', effective_orders.my_purchases_orders_path
 ```
 
 or render it inline on an existing page with
@@ -644,7 +644,7 @@ Approved URL: https://myapp.herokuapp.com/orders/moneris_postback
 
 Declined URL: https://myapp.herokuapp.com/orders/moneris_postback
 
-Note: The Approved and Declined URLs must match the effective_orders.moneris_postback_path value in your application. By default it is /orders/moneris_postback
+Note: The Approved and Declined URLs must match the effective_orders.moneris_postback_orders_path value in your application. By default it is /orders/moneris_postback
 
 Click 'Save Changes'
 

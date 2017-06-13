@@ -129,7 +129,7 @@ module EffectiveOrdersHelper
     label = options.delete(:label)
     options[:class] = ((options[:class] || '') + ' btn-my-purchases')
 
-    link_to(label, effective_orders.my_purchases_path, options)
+    link_to(label, effective_orders.my_purchases_orders_path, options)
   end
   alias_method :link_to_order_history, :link_to_my_purchases
 

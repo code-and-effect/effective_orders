@@ -17,7 +17,7 @@ module Effective
             flash[:success] = "Payment successful!"
           end
 
-          redirect_to (purchased_url.presence || effective_orders.order_purchased_path(':id')).gsub(':id', @order.to_param.to_s)
+          redirect_to (purchased_url.presence || effective_orders.purchased_order_path(':id')).gsub(':id', @order.to_param.to_s)
         rescue => e
           flash[:danger] = "An error occurred while processing your payment: #{e.message}.  Please try again."
           redirect_to(declined_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
@@ -29,7 +29,7 @@ module Effective
 
         flash[:danger] = message.presence || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 
-        redirect_to(declined_url.presence || effective_orders.order_declined_path(@order)).gsub(':id', @order.id.to_s)
+        redirect_to(declined_url.presence || effective_orders.declined_order_path(@order)).gsub(':id', @order.id.to_s)
       end
 
     end

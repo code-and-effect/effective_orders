@@ -1,2 +1,2 @@
-= form_tag(effective_orders.app_checkout_path(order), method: :post) do
+= form_tag(effective_orders.app_checkout_order_path(order), method: :post) do
   = submit_tag order_checkout_label(:app_checkout), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }

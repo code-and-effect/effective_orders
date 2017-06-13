@@ -1,7 +1,7 @@
 .panel.panel-default
   .panel-body
     %h3 Admin: Mark as Paid
-    = simple_form_for order, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.mark_as_paid_path(order), method: :post) do |f|
+    = simple_form_for order, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
       = f.input :payment_provider,
         as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
         collection: (EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers).sort,

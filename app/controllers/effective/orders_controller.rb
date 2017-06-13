@@ -115,7 +115,7 @@ module Effective
       end
 
       if @order.blank?
-        redirect_to(effective_orders.my_purchases_path) and return
+        redirect_to(effective_orders.my_purchases_orders_path) and return
       end
 
       EffectiveOrders.authorized?(self, :show, @order)
