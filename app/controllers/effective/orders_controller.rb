@@ -2,10 +2,11 @@ module Effective
   class OrdersController < ApplicationController
     include EffectiveCartsHelper
 
-    include Providers::Admin if EffectiveOrders.admin_enabled
     include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
     include Providers::Ccbill if EffectiveOrders.ccbill_enabled
     include Providers::Cheque if EffectiveOrders.cheque_enabled
+    include Providers::Free if EffectiveOrders.allow_free_orders
+    include Providers::MarkAsPaid if EffectiveOrders.mark_as_paid_enabled
     include Providers::Moneris if EffectiveOrders.moneris_enabled
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
@@ -18,7 +19,7 @@ module Effective
     before_action :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
     before_action :set_page_title, except: [:show]
 
-    # This is the entry point for the "Checkout" buttons
+    # This is the entry point for any Checkout button
     def new
       @order ||= Effective::Order.new(current_cart, user: current_user)
 
@@ -47,7 +48,12 @@ module Effective
       @order ||= Effective::Order.new(current_cart, user: current_user)
       EffectiveOrders.authorized?(self, :create, @order)
 
-      save_order_and_redirect_to_step2 || render(:new)
+      if @order.update_attributes(checkout_params)
+        redirect_to effective_orders.order_path(@order)
+      else
+        flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
+        render :new
+      end
     end
 
     def edit
@@ -60,32 +66,12 @@ module Effective
       @order ||= Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :update, @order)
 
-      save_order_and_redirect_to_step2 || render(:edit)
-    end
-
-    def save_order_and_redirect_to_step2
-      raise 'expected @order to be present' unless @order
-
-      @order.assign_attributes(checkout_params)
-
-      Effective::Order.transaction do
-        begin
-          @order.save!
-
-          if @order.total == 0
-            order_purchased(details: 'automatic purchase of free order', provider: 'free', card: 'none')
-          else
-            redirect_to(effective_orders.order_path(@order))  # This goes to checkout_step2
-          end
-
-          return true
-        rescue => e
-          flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
-          raise ActiveRecord::Rollback
-        end
+      if @order.update_attributes(checkout_params)
+        redirect_to effective_orders.order_path(@order)
+      else
+        flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
+        render :edit
       end
-
-      false
     end
 
     def show
@@ -116,7 +102,7 @@ module Effective
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
-    # Thank you for Purchasing this Order.  This is where a successfully purchased order ends up
+    # Thank you for Purchasing this Order. This is where a successfully purchased order ends up
     def purchased # Thank You!
       @order = if params[:id].present?
         Effective::Order.find(params[:id])
@@ -198,14 +184,7 @@ module Effective
     def set_page_title
       @page_title ||= case params[:action]
         when 'index'        ; 'Orders'
-        when 'show'
-          if @order.purchased?
-            'Receipt'
-          elsif @order.user != current_user
-            @order.pending? ? "Pending Order ##{@order.to_param}" : "Order ##{@order.to_param}"
-          else
-            'Checkout'
-          end
+        when 'show'         ; ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
         when 'my_purchases' ; 'Order History'
         when 'my_sales'     ; 'Sales History'
         when 'purchased'    ; 'Thank You'

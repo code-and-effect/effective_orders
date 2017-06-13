@@ -1,9 +1,9 @@
 module Effective
   module Providers
-    module Admin
+    module Free
       extend ActiveSupport::Concern
 
-      def mark_as_paid
+      def free
         @order ||= Order.find(params[:id])
 
         EffectiveOrders.authorized?(self, :update, @order)

@@ -12,20 +12,32 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/:id/resend_buyer_receipt', to: 'orders#resend_buyer_receipt', via: :get, as: 'resend_buyer_receipt'
     match 'orders/my_purchases', to: 'orders#my_purchases', as: 'my_purchases', via: :get
 
-    if EffectiveOrders.admin_enabled
-      match 'orders/:id/mark_as_paid', to: 'orders#mark_as_paid', via: :post, as: 'mark_as_paid'
+    if EffectiveOrders.allow_free_orders
+      match 'orders/:id/free', to: 'orders#free', via: :post, as: 'free'
+    end
+
+    if EffectiveOrders.app_checkout_enabled
+      match 'orders/:id/app_checkout', to: 'orders#app_checkout', as: 'app_checkout', via: :post
+    end
+
+    if EffectiveOrders.ccbill_enabled
+      match 'orders/ccbill_postback', to: 'orders#ccbill_postback', as: 'ccbill_postback', via: :post
     end
 
     if EffectiveOrders.cheque_enabled
       match 'orders/:id/pay_by_cheque', to: 'orders#pay_by_cheque', via: :post, as: 'pay_by_cheque'
     end
 
-    if EffectiveOrders.paypal_enabled
-      match 'orders/paypal_postback', to: 'orders#paypal_postback', as: 'paypal_postback', via: :post
+    if EffectiveOrders.mark_as_paid_enabled
+      match 'orders/:id/mark_as_paid', to: 'orders#mark_as_paid', via: :post, as: 'mark_as_paid'
     end
 
     if EffectiveOrders.moneris_enabled
       match 'orders/moneris_postback', to: 'orders#moneris_postback', as: 'moneris_postback', via: :post
+    end
+
+    if EffectiveOrders.paypal_enabled
+      match 'orders/paypal_postback', to: 'orders#paypal_postback', as: 'paypal_postback', via: :post
     end
 
     if EffectiveOrders.stripe_enabled
@@ -40,14 +52,6 @@ EffectiveOrders::Engine.routes.draw do
     if EffectiveOrders.stripe_connect_enabled
       match 'orders/stripe_connect_redirect_uri', to: 'orders#stripe_connect_redirect_uri', as: 'stripe_connect_redirect_uri', via: :get
       match 'orders/my_sales', to: 'orders#my_sales', as: 'my_sales', via: :get
-    end
-
-    if EffectiveOrders.ccbill_enabled
-      match 'orders/ccbill_postback', to: 'orders#ccbill_postback', as: 'ccbill_postback', via: :post
-    end
-
-    if EffectiveOrders.app_checkout_enabled
-      match 'orders/:id/app_checkout', to: 'orders#app_checkout', as: 'app_checkout', via: :post
     end
 
     if EffectiveOrders.allow_pretend_purchase_in_development && (Rails.env.development? || Rails.env.test?)

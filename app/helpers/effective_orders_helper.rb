@@ -36,7 +36,7 @@ module EffectiveOrdersHelper
     return 'Checkout' if (EffectiveOrders.single_payment_processor? && processor != :pretend)
 
     case processor
-    when :admin
+    when :mark_as_paid
       'Mark as paid'
     when :free
       'Checkout'
@@ -47,7 +47,7 @@ module EffectiveOrdersHelper
     when :pretend
       EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
     when :cheque
-      'Pay by Cheque'
+      'Pay by cheque'
     when :app_checkout
       EffectiveOrders.app_checkout[:checkout_label].presence || 'Checkout'
     else

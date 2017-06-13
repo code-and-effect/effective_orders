@@ -57,12 +57,12 @@ module EffectiveOrders
   mattr_accessor :allow_free_orders
   mattr_accessor :allow_refunds
 
-  mattr_accessor :admin_enabled
-  mattr_accessor :cheque_enabled
-  mattr_accessor :paypal_enabled
-  mattr_accessor :moneris_enabled
-  mattr_accessor :ccbill_enabled
   mattr_accessor :app_checkout_enabled
+  mattr_accessor :ccbill_enabled
+  mattr_accessor :cheque_enabled
+  mattr_accessor :mark_as_paid_enabled
+  mattr_accessor :moneris_enabled
+  mattr_accessor :paypal_enabled
 
   mattr_accessor :stripe_enabled
   mattr_accessor :stripe_subscriptions_enabled
@@ -72,13 +72,13 @@ module EffectiveOrders
   mattr_accessor :stripe_connect_application_fee_method
 
   # These are hashes of configs
-  mattr_accessor :mailer
-  mattr_accessor :paypal
-  mattr_accessor :moneris
-  mattr_accessor :stripe
-  mattr_accessor :ccbill
   mattr_accessor :app_checkout
+  mattr_accessor :ccbill
   mattr_accessor :cheque
+  mattr_accessor :mailer
+  mattr_accessor :moneris
+  mattr_accessor :paypal
+  mattr_accessor :stripe
 
   mattr_accessor :deliver_method
 
@@ -105,7 +105,6 @@ module EffectiveOrders
 
   def self.single_payment_processor?
     [
-      admin_enabled,
       moneris_enabled,
       paypal_enabled,
       stripe_enabled,
@@ -130,6 +129,7 @@ module EffectiveOrders
     ].compact
   end
 
+  # One of these is used when Admin marks as paid
   def self.other_payment_providers
     ['credit card', 'none', 'other']
   end

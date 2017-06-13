@@ -1,6 +1,6 @@
 = render partial: 'effective/orders/order', locals: { order: order }
 
-- if EffectiveOrders.admin_enabled && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
+- if EffectiveOrders.mark_as_paid_enabled && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
   .effective-order.effective-order-admin-purchase-actions
     = render partial: '/effective/orders/admin/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 

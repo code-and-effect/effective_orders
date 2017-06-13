@@ -20,7 +20,7 @@
       = f.input :send_mark_as_paid_email_to_buyer,
         as: :boolean,
         label: 'Yes, send an email receipt to the buyer.',
-        value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid_by_admin] : f.object.send_mark_as_paid_email_to_buyer?)
+        value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid] : f.object.send_mark_as_paid_email_to_buyer?)
 
       = f.input :note_to_buyer, hint: 'This is displayed to the buyer on all order receipts.'
 

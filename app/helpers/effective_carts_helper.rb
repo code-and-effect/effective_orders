@@ -1,4 +1,5 @@
 module EffectiveCartsHelper
+  # TODO: Consider unique
   def current_cart(for_user = nil)
     @cart ||= (
       user = for_user || (current_user rescue nil) # rescue protects me against Devise not being installed

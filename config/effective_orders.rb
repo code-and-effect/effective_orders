@@ -85,7 +85,6 @@ EffectiveOrders.setup do |config|
 
   # Free Orders
   # Allow orders with a total of 0.00 to be purchased (regardless of the minimum charge setting)
-  # When enabled, the checkout process will skip the paypal/stripe/purchasing step
   # and just display the 'Thank You' after checkout is clicked
   config.allow_free_orders = true
 
@@ -165,7 +164,7 @@ EffectiveOrders.setup do |config|
     send_order_receipt_to_seller: true,   # Only applies to StripeConnect
     send_payment_request_to_buyer: true,
     send_pending_order_invoice_to_buyer: true,
-    send_order_receipts_when_mark_as_paid_by_admin: false,
+    send_order_receipts_when_mark_as_paid: false,
 
     subject_prefix: '[example]',
     subject_for_order_receipt_to_admin: '',
@@ -187,9 +186,9 @@ EffectiveOrders.setup do |config|
   ### Payment Provider specific options
   #######################################
 
-  # Admin configuration
-  # Admin can mark an order as paid without going through a processor
-  config.admin_enabled = false
+  # Mark an order as paid without going through a processor
+  # This is accessed via the admin screens only. Must have can?(:admin, :effective_orders)
+  config.mark_as_paid_enabled = false
 
   # Moneris configuration
   config.moneris_enabled = false

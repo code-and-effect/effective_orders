@@ -252,6 +252,16 @@ module Effective
     #   end
     # end
 
+    def to_s
+      if purchased?
+        "Receipt ##{to_param}"
+      elsif pending?
+        "Pending Order ##{to_param}"
+      else
+        "Order ##{to_param}"
+      end
+    end
+
     def purchasables
       order_items.map { |order_item| order_item.purchasable }
     end
