@@ -1,0 +1,4 @@
+= form_tag(effective_orders.free_checkout_path(order), method: :post) do
+  = hidden_field_tag(:purchased_url, purchased_url)
+  = hidden_field_tag(:declined_url, declined_url)
+  = submit_tag order_checkout_label(:free), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }

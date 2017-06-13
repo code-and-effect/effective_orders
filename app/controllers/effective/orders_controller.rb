@@ -147,9 +147,9 @@ module Effective
 
     protected
 
-    def order_purchased(details: 'none', provider:, card: 'none', purchased_url: nil, declined_url: nil, email: true)
+    def order_purchased(provider:, card: 'none', details: 'none', email: true, purchased_url: nil, declined_url: nil)
       begin
-        @order.purchase!(details: details, provider: provider, card: card, email: email)
+        @order.purchase!(provider: provider, card: card, details: details, email: email)
 
         Effective::Cart.where(user_id: @order.user_id).destroy_all
 
@@ -166,8 +166,8 @@ module Effective
       end
     end
 
-    def order_declined(details: 'none', provider:, card: 'none', declined_url: nil, message: nil)
-      @order.decline!(details: details, provider: provider, card: card) rescue nil
+    def order_declined(provider:, card: 'none', details: 'none', message: nil, declined_url: nil)
+      @order.decline!(provider: provider, card: card, details: details) rescue nil
 
       flash[:danger] = message.presence || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 

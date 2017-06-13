@@ -262,6 +262,10 @@ module Effective
       end
     end
 
+    def free?
+      total == 0
+    end
+
     def purchasables
       order_items.map { |order_item| order_item.purchasable }
     end

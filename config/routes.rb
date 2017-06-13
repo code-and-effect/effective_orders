@@ -12,12 +12,12 @@ EffectiveOrders::Engine.routes.draw do
     match 'orders/:id/resend_buyer_receipt', to: 'orders#resend_buyer_receipt', via: :get, as: 'resend_buyer_receipt'
     match 'orders/my_purchases', to: 'orders#my_purchases', as: 'my_purchases', via: :get
 
-    if EffectiveOrders.allow_free_orders
-      match 'orders/:id/free', to: 'orders#free', via: :post, as: 'free'
-    end
-
     if EffectiveOrders.app_checkout_enabled
       match 'orders/:id/app_checkout', to: 'orders#app_checkout', as: 'app_checkout', via: :post
+    end
+
+    if EffectiveOrders.allow_free_orders
+      match 'orders/:id/free', to: 'orders#free', via: :post, as: 'free_checkout'
     end
 
     if EffectiveOrders.ccbill_enabled
