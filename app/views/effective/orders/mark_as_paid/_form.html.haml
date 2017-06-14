@@ -20,10 +20,10 @@
 
       = f.input :send_mark_as_paid_email_to_buyer,
         as: :boolean,
-        label: 'Yes, send an receipt email to the buyer.',
+        label: 'Yes, send a receipt email to the buyer.',
         value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid] : f.object.send_mark_as_paid_email_to_buyer?)
 
-      = f.input :note_to_buyer, hint: 'This is displayed to the buyer on all order receipts.'
+      = f.input :note_to_buyer, hint: 'This message will be displayed on the receipt.'
 
       .text-right
         = f.submit order_checkout_label(:mark_as_paid), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
