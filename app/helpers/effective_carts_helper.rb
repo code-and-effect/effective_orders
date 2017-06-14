@@ -43,7 +43,7 @@ module EffectiveCartsHelper
   end
 
   def link_to_add_to_cart(purchasable, opts = {})
-    raise ArgumentError.new('expecting an acts_as_purchasable object') unless purchasable.kind_of?(ActsAsPurchasable)
+    raise 'expecting an acts_as_purchasable object' unless purchasable.kind_of?(ActsAsPurchasable)
 
     options = {
       label: 'Add to Cart',
@@ -61,7 +61,7 @@ module EffectiveCartsHelper
   end
 
   def link_to_remove_from_cart(cart_item, opts = {})
-    raise ArgumentError.new('expecting an Effective::CartItem object') unless cart_item.kind_of?(Effective::CartItem)
+    raise 'expecting an Effective::CartItem object' unless cart_item.kind_of?(Effective::CartItem)
 
     options = {
       label: 'Remove',

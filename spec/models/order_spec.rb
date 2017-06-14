@@ -47,8 +47,8 @@ describe Effective::Order, type: :model do
       order_item.quantity.should eq 1
     end
 
-    it 'throws an ArgumentError when passed something unexpected' do
-      expect { Effective::Order.new(Object.new()) }.to raise_error(ArgumentError)
+    it 'throws an Exception when passed something unexpected' do
+      expect { Effective::Order.new(Object.new()) }.to raise_error(Exception)
     end
   end
 

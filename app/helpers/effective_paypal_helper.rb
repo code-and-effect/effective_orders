@@ -15,9 +15,9 @@ module EffectivePaypalHelper
   APP_KEY_PEM     = ConfigReader.cert_or_key(:app_key)
 
   def paypal_encrypted_payload(order)
-    raise ArgumentError.new("unable to read EffectiveOrders PayPal paypal_cert #{EffectiveOrders.paypal[:paypal_cert]}") unless PAYPAL_CERT_PEM.present?
-    raise ArgumentError.new("unable to read EffectiveOrders PayPal app_cert #{EffectiveOrders.paypal[:app_cert]}") unless APP_CERT_PEM.present?
-    raise ArgumentError.new("unable to read EffectiveOrders PayPal app_key #{EffectiveOrders.paypal[:app_key]}") unless APP_KEY_PEM.present?
+    raise "unable to read EffectiveOrders PayPal paypal_cert #{EffectiveOrders.paypal[:paypal_cert]}" unless PAYPAL_CERT_PEM.present?
+    raise "unable to read EffectiveOrders PayPal app_cert #{EffectiveOrders.paypal[:app_cert]}" unless APP_CERT_PEM.present?
+    raise "unable to read EffectiveOrders PayPal app_key #{EffectiveOrders.paypal[:app_key]}" unless APP_KEY_PEM.present?
 
     values = {
       business: EffectiveOrders.paypal[:seller_email],

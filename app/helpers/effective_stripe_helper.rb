@@ -10,7 +10,7 @@ module EffectiveStripeHelper
   def link_to_new_stripe_connect_customer(opts = {})
     client_id = EffectiveOrders.stripe[:connect_client_id]
 
-    raise ArgumentError.new('effective_orders config: stripe.connect_client_id has not been set') unless client_id.present?
+    raise 'effective_orders config: stripe.connect_client_id has not been set' unless client_id.present?
 
     authorize_params = {
       response_type: :code,

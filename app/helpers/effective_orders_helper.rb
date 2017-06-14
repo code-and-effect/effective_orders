@@ -141,7 +141,7 @@ module EffectiveOrdersHelper
     elsif user_or_orders.respond_to?(:to_a)
       orders = user_or_orders.to_a
     else
-      raise ArgumentError.new('expecting an instance of User or an array/collection of Effective::Order objects')
+      raise 'expecting an instance of User or an array/collection of Effective::Order objects'
     end
 
     render(partial: 'effective/orders/orders_table', locals: {orders: orders}.merge(opts))
