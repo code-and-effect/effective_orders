@@ -13,30 +13,30 @@ EffectiveOrders::Engine.routes.draw do
         get :declined
         get :resend_buyer_receipt
 
-        post :app_checkout if true || EffectiveOrders.app_checkout_enabled
-        post :free if true || EEffectiveOrders.allow_free_orders
-        post :mark_as_paid if true || EEffectiveOrders.mark_as_paid_enabled
-        post :pay_by_cheque if true || EEffectiveOrders.cheque_enabled
-        post :pretend if true || EEffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
-        post :pretend if true || EEffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
+        post :app_checkout if EffectiveOrders.app_checkout_enabled
+        post :free if EffectiveOrders.allow_free_orders
+        post :mark_as_paid if EffectiveOrders.mark_as_paid_enabled
+        post :pay_by_cheque if EffectiveOrders.cheque_enabled
+        post :pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
+        post :pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
       end
 
       collection do
         get :my_purchases
 
-        if true || EEffectiveOrders.stripe_connect_enabled
+        if EffectiveOrders.stripe_connect_enabled
           get :stripe_connect_redirect_uri # oAuth2
           get :my_sales
         end
 
-        post :ccbill_postback if true || EEffectiveOrders.ccbill_enabled
-        post :moneris_postback if true || EEffectiveOrders.moneris_enabled
-        post :paypal_postback if true || EEffectiveOrders.paypal_enabled
-        post :stripe_charge if true || EEffectiveOrders.stripe_enabled
+        post :ccbill_postback if EffectiveOrders.ccbill_enabled
+        post :moneris_postback if EffectiveOrders.moneris_enabled
+        post :paypal_postback if EffectiveOrders.paypal_enabled
+        post :stripe_charge if EffectiveOrders.stripe_enabled
       end
     end
 
-    if true || EEffectiveOrders.stripe_subscriptions_enabled
+    if true || EffectiveOrders.stripe_subscriptions_enabled
       resources :subscriptions, only: [:index, :show, :new, :create, :destroy]
       match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]
       get 'plans', to: 'subscriptions#new', as: :plans

@@ -87,8 +87,8 @@ module Effective
     end
 
     def index
-      @orders = Effective::Order.purchased_by(current_user)
-      @pending_orders = Effective::Order.pending.where(user: current_user)
+      @orders = Effective::Order.deep.purchased_by(current_user)
+      @pending_orders = Effective::Order.deep.pending.where(user: current_user)
 
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
@@ -96,13 +96,13 @@ module Effective
     # Basically an index page.
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
-      @orders = Effective::Order.purchased_by(current_user)
+      @orders = Effective::Order.deep.purchased_by(current_user)
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Sales is a list of what products beign sold by me have been purchased
     def my_sales
-      @order_items = Effective::OrderItem.sold_by(current_user)
+      @order_items = Effective::OrderItem.deep.sold_by(current_user)
       EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
     end
 

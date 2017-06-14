@@ -132,12 +132,12 @@ EffectiveOrders.setup do |config|
   config.admin_simple_form_options = {}  # For the /admin/orders/new form
 
   # config.simple_form_options = {
-  #   html: {class: 'form-horizontal'},
-  #   wrapper: :horizontal_form,
-  #   wrapper_mappings: {
-  #     boolean: :horizontal_boolean,
-  #     check_boxes: :horizontal_radio_and_checkboxes,
-  #     radio_buttons: :horizontal_radio_and_checkboxes
+  #   :html => {:class => ['form-horizontal']},
+  #   :wrapper => :horizontal_form,
+  #   :wrapper_mappings => {
+  #     :boolean => :horizontal_boolean,
+  #     :check_boxes => :horizontal_radio_and_checkboxes,
+  #     :radio_buttons => :horizontal_radio_and_checkboxes
   #   }
   # }
 
