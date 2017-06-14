@@ -131,7 +131,7 @@ module Effective
       redirect_to(effective_orders.order_path(@order)) unless @order.declined?
     end
 
-    def resend_buyer_receipt
+    def send_buyer_receipt
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorized?(self, :show, @order)
 
@@ -147,6 +147,24 @@ module Effective
         redirect_to :back
       else
         redirect_to effective_orders.order_path(@order)
+      end
+    end
+
+    def bulk_send_buyer_receipt
+      @orders = Effective::Order.purchased.where(id: params[:ids])
+
+      begin
+        EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
+
+        @orders.each do |order|
+          next unless (EffectiveOrders.authorized?(self, :show, order) rescue false)
+
+          order.send_order_receipt_to_buyer!
+        end
+
+        render json: { status: 200, message: "Successfully sent #{@orders.length} receipt emails"}
+      rescue => e
+        render json: { status: 500, message: "Bulk send buyer receipt error: #{e.message}" }
       end
     end
 

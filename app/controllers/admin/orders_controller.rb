@@ -113,7 +113,7 @@ module Admin
     end
 
     def send_payment_request
-      @order = Effective::Order.find(params[:id])
+      @order = Effective::Order.pending.find(params[:id])
       authorize_effective_order!
 
       if @order.send_payment_request_to_buyer!
@@ -128,6 +128,19 @@ module Admin
         redirect_to :back
       else
         redirect_to effective_orders.admin_order_path(@order)
+      end
+    end
+
+    def bulk_send_payment_request
+      @orders = Effective::Order.pending.where(id: params[:ids])
+
+      begin
+        authorize_effective_order!
+
+        @orders.each { |order| order.send_payment_request_to_buyer! }
+        render json: { status: 200, message: "Successfully sent #{@orders.length} payment request emails"}
+      rescue => e
+        render json: { status: 500, message: "Bulk send payment request error: #{e.message}" }
       end
     end
 

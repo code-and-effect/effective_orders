@@ -1,6 +1,24 @@
 class EffectiveOrdersDatatable < Effective::Datatable
+  bulk_actions do
+    if (EffectiveOrders.authorized?(view.controller, :admin, :effective_orders) rescue false)
+      bulk_action(
+      'Send payment request email to selected pending orders',
+        effective_orders.bulk_send_payment_request_admin_orders_path,
+        data: { confirm: 'Send payment request emails to pending orders?' }
+      )
+    end
+
+    bulk_action(
+    'Send receipt email to selected purchased orders',
+      effective_orders.bulk_send_buyer_receipt_orders_path,
+      data: { confirm: 'Send receipt emails to purchased orders?' }
+    )
+  end
+
   datatable do
     order :created_at, :desc
+
+    bulk_actions_col
 
     col :purchased_at
 

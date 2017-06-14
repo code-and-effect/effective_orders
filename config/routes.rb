@@ -11,7 +11,7 @@ EffectiveOrders::Engine.routes.draw do
       member do
         get :purchased
         get :declined
-        get :resend_buyer_receipt
+        get :send_buyer_receipt
 
         post :app_checkout if EffectiveOrders.app_checkout_enabled
         post :free if EffectiveOrders.allow_free_orders
@@ -24,6 +24,7 @@ EffectiveOrders::Engine.routes.draw do
 
       collection do
         get :my_purchases
+        post :bulk_send_buyer_receipt
 
         if EffectiveOrders.stripe_connect_enabled
           get :stripe_connect_redirect_uri # oAuth2
@@ -59,6 +60,11 @@ EffectiveOrders::Engine.routes.draw do
         post :checkout
         patch :checkout
       end
+
+      collection do
+        post :bulk_send_payment_request
+      end
+
     end
     resources :order_items, only: [:index]
   end
