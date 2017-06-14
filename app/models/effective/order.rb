@@ -59,7 +59,7 @@ module Effective
         message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
       }, unless: -> {
         (total == 0 && EffectiveOrders.allow_free_orders) ||
-        (total < 0 && EffectiveOrders.allow_refunds && (skip_buyer_validations? || skip_minimum_charge_validation?))
+        (total < 0 && EffectiveOrders.allow_refunds && skip_minimum_charge_validation?)
       }
     end
 
@@ -318,7 +318,7 @@ module Effective
     end
 
     def skip_minimum_charge_validation?
-      truthy?(skip_minimum_charge_validation)
+      truthy?(skip_minimum_charge_validation) || skip_buyer_validations?
     end
 
     def billing_name
