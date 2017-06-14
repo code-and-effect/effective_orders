@@ -12,7 +12,7 @@ module Admin
       end
 
       if params[:duplicate_id]
-        @duplicate = Effective::Order.find(params[:duplicate_id])
+        @duplicate = Effective::Order.deep.find(params[:duplicate_id])
         EffectiveOrders.authorized?(self, :show, @duplicate)
 
         @order.add(@duplicate)
@@ -189,9 +189,15 @@ module Admin
 
       case params[:commit].to_s
       when 'Save'               ; effective_orders.admin_order_path(@order)
+
       when 'Save and Continue'  ; effective_orders.admin_orders_path
       when 'Save and Add New'   ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
       when 'Save and Duplicate' ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
+
+      when 'Continue'           ; effective_orders.admin_orders_path
+      when 'Add New'            ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
+      when 'Duplicate'          ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
+
       else effective_orders.admin_order_path(@order)
       end
     end
