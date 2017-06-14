@@ -13,6 +13,7 @@ module Effective
     include Providers::Paypal if EffectiveOrders.paypal_enabled
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
     include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
+    include Providers::Refund if EffectiveOrders.allow_refunds
     include Providers::Stripe if EffectiveOrders.stripe_enabled
     include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
 

@@ -5,9 +5,9 @@ module Effective
 
       protected
 
-      def order_purchased(provider:, card: 'none', details: 'none', email: true, purchased_url: nil, declined_url: nil)
+      def order_purchased(provider:, card: 'none', details: 'none', email: true, skip_buyer_validations: false, purchased_url: nil, declined_url: nil)
         begin
-          @order.purchase!(provider: provider, card: card, details: details, email: email)
+          @order.purchase!(provider: provider, card: card, details: details, email: email, skip_buyer_validations: skip_buyer_validations)
 
           Effective::Cart.where(user_id: @order.user_id).destroy_all
 

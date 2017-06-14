@@ -26,31 +26,14 @@ module Admin
 
       @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
-      begin
-
-        if @order.refund?
-          if @order.create_as_refund
-            message = 'Successfully created refund'
-            message << ". A receipt has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
-            flash[:success] = message
-          else
-            raise 'unable to save refund'
-          end
-        else
-          if @order.create_as_pending
-            message = 'Successfully created order'
-            message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
-            flash[:success] = message
-          else
-            raise 'unable to save pending order'
-          end
-        end
+      if (@order.create_as_pending rescue false)
+        message = 'Successfully created order'
+        message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
+        flash[:success] = message
 
         redirect_to(admin_redirect_path)
-
-      rescue => e
+      else
         @page_title = 'New Order'
-        flash[:success] = nil
         flash.now[:danger] = "Unable to create order: #{@order.errors.full_messages.to_sentence}"
         render :new
       end
@@ -65,6 +48,8 @@ module Admin
 
     def update
       @order = Effective::Order.find(params[:id])
+      @order.skip_minimum_charge_validation = true if @order.refund?
+
       @page_title ||= @order.to_s
 
       authorize_effective_order!
@@ -80,6 +65,8 @@ module Admin
 
     def show
       @order = Effective::Order.find(params[:id])
+      @order.skip_minimum_charge_validation = true if @order.refund?
+
       @page_title ||= @order.to_s
 
       authorize_effective_order!
@@ -89,6 +76,8 @@ module Admin
     # See Effective::OrdersController checkout
     def checkout
       @order = Effective::Order.find(params[:id])
+      @order.skip_minimum_charge_validation = true if @order.refund?
+
       @page_title ||= 'Checkout'
 
       authorize_effective_order!

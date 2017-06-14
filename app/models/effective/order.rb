@@ -15,9 +15,10 @@ module Effective
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
 
     # Settings in the /admin action forms
-    attr_accessor :send_payment_request_to_buyer # Used by the /admin/orders/new form. Should the payment request email be sent after creating an order?
-    attr_accessor :send_mark_as_paid_email_to_buyer  # Used by the /admin/orders/mark_as_paid action
-    attr_accessor :skip_buyer_validations # Enabled by the /admin/orders/create action
+    attr_accessor :send_payment_request_to_buyer # Set by Admin::Orders#new. Should the payment request email be sent after creating an order?
+    attr_accessor :send_mark_as_paid_email_to_buyer  # Set by Admin::Orders#mark_as_paid
+    attr_accessor :skip_buyer_validations # Set by Admin::Orders#create
+    attr_accessor :skip_minimum_charge_validation # Set by Admin::Orders#show
 
     belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
     has_many :order_items, inverse_of: :order, class_name: 'Effective::OrderItem'
@@ -58,7 +59,7 @@ module Effective
         message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
       }, unless: -> {
         (total == 0 && EffectiveOrders.allow_free_orders) ||
-        (total < 0 && EffectiveOrders.allow_refunds && skip_buyer_validations?)
+        (total < 0 && EffectiveOrders.allow_refunds && (skip_buyer_validations? || skip_minimum_charge_validation?))
       }
     end
 
@@ -232,14 +233,6 @@ module Effective
       true
     end
 
-    def create_as_refund
-      return false unless refund?
-
-      binding.pry
-
-      purchase!(details: 'refund', skip_buyer_validations: true, email: send_payment_request_to_buyer?)
-    end
-
     # # This is used for updating Subscription codes.
     # # We want to update the underlying purchasable object of an OrderItem
     # # Passing the order_item_attributes using rails default acts_as_nested creates a new object instead of updating the temporary one.
@@ -305,23 +298,27 @@ module Effective
     end
 
     def save_billing_address?
-      truthy?(self.save_billing_address)
+      truthy?(save_billing_address)
     end
 
     def save_shipping_address?
-      truthy?(self.save_shipping_address)
+      truthy?(save_shipping_address)
     end
 
     def send_payment_request_to_buyer?
-      truthy?(self.send_payment_request_to_buyer)
+      truthy?(send_payment_request_to_buyer)
     end
 
     def send_mark_as_paid_email_to_buyer?
-      truthy?(self.send_mark_as_paid_email_to_buyer)
+      truthy?(send_mark_as_paid_email_to_buyer)
     end
 
     def skip_buyer_validations?
-      truthy?(self.skip_buyer_validations)
+      truthy?(skip_buyer_validations)
+    end
+
+    def skip_minimum_charge_validation?
+      truthy?(skip_minimum_charge_validation)
     end
 
     def billing_name

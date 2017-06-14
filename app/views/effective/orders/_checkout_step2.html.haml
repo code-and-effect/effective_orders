@@ -1,12 +1,19 @@
 = render partial: 'effective/orders/order', locals: { order: order }
 
-- if EffectiveOrders.mark_as_paid_enabled && (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false)
-  .effective-order.effective-order-admin-purchase-actions
-    = render partial: '/effective/orders/admin/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+- if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false) && order.user != current_user
+  - if EffectiveOrders.allow_refunds && order.refund?
+    .effective-order.effective-order-admin-purchase-actions
+      = render partial: '/effective/orders/refund/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+  - elsif EffectiveOrders.mark_as_paid_enabled
+    .effective-order.effective-order-admin-purchase-actions
+      = render partial: '/effective/orders/mark_as_paid/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
 .effective-order.effective-order-purchase-actions
   - if EffectiveOrders.allow_free_orders && order.free?
     = render partial: '/effective/orders/free/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+
+  - elsif EffectiveOrders.allow_refunds && order.refund?
+    -# Nothing
 
   - else
     - if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
@@ -32,7 +39,6 @@
 
     - if EffectiveOrders.cheque_enabled
       = render partial: '/effective/orders/cheque/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
-
 
   - if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production? && EffectiveOrders.allow_pretend_purchase_in_production_message.present?
     %br

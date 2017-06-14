@@ -1,20 +1,20 @@
 module Effective
   module Providers
-    module MarkAsPaid
+    module Refund
       extend ActiveSupport::Concern
 
-      def mark_as_paid
+      def refund
         @order ||= Order.find(params[:id])
 
         EffectiveOrders.authorized?(self, :update, @order)
         EffectiveOrders.authorized?(self, :admin, :effective_orders)
 
-        @order.assign_attributes(mark_as_paid_params.except(:payment, :payment_provider, :payment_card))
+        @order.assign_attributes(refund_params.except(:payment, :payment_provider, :payment_card))
 
         order_purchased(
-          details: mark_as_paid_params[:payment],
-          provider: mark_as_paid_params[:payment_provider],
-          card: mark_as_paid_params[:payment_card],
+          details: refund_params[:payment],
+          provider: refund_params[:payment_provider],
+          card: refund_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,
           skip_buyer_validations: true,
           purchased_url: effective_orders.admin_order_path(@order),
@@ -22,7 +22,7 @@ module Effective
         )
       end
 
-      def mark_as_paid_params
+      def refund_params
         params.require(:effective_order).permit(
           :payment, :payment_provider, :payment_card, :note_to_buyer, :send_mark_as_paid_email_to_buyer
         )

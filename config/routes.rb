@@ -19,6 +19,7 @@ EffectiveOrders::Engine.routes.draw do
         post :pay_by_cheque if EffectiveOrders.cheque_enabled
         post :pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
         post :pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
+        post :refund if EffectiveOrders.allow_refunds
       end
 
       collection do

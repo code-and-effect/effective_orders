@@ -1,7 +1,8 @@
 .panel.panel-default
   .panel-body
-    %h2 Admin: Mark as Paid
-    = simple_form_for order, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
+    %h2 Admin: Complete Refund
+
+    = simple_form_for order, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.refund_order_path(order), method: :post) do |f|
       = f.input :payment_provider,
         as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
         collection: (EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers).sort,
@@ -19,11 +20,11 @@
 
       = f.input :send_mark_as_paid_email_to_buyer,
         as: :boolean,
-        label: 'Yes, send an email receipt to the buyer.',
+        label: 'Yes, send an refund receipt email to the buyer.',
         value: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid] : f.object.send_mark_as_paid_email_to_buyer?)
 
       = f.input :note_to_buyer, hint: 'This is displayed to the buyer on all order receipts.'
 
       .text-right
-        = f.submit order_checkout_label(:mark_as_paid), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
+        = f.submit order_checkout_label(:refund), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
 
