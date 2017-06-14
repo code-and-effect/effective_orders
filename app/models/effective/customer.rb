@@ -49,7 +49,7 @@ module Effective
           self.stripe_active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
           self.save!
         else
-          raise Exception.new('unable to update stripe customer with new card')
+          raise 'unable to update stripe customer with new card'
         end
       end
     end

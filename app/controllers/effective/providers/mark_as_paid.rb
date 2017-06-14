@@ -17,8 +17,8 @@ module Effective
           provider: mark_as_paid_params[:payment_provider],
           card: mark_as_paid_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,
-          purchased_url: effective_orders.admin_orders_path(@order),
-          declined_url: effective_orders.admin_orders_path(@order)
+          purchased_url: effective_orders.admin_order_path(@order),
+          declined_url: effective_orders.admin_order_path(@order)
         )
       end
 

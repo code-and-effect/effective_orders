@@ -52,13 +52,15 @@ module Effective
     validates :purchase_state, inclusion: { in: EffectiveOrders::PURCHASE_STATES.keys }
     validates :subtotal, presence: true
 
-    validates :total, presence: true, numericality: {
-      greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
-      message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
-    }, unless: -> {
-      (total == 0 && EffectiveOrders.allow_free_orders) ||
-      (total < 0 && EffectiveOrders.allow_refunds && skip_buyer_validations?)
-    }
+    if EffectiveOrders.minimum_charge.to_i > 0
+      validates :total, presence: true, numericality: {
+        greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
+        message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
+      }, unless: -> {
+        (total == 0 && EffectiveOrders.allow_free_orders) ||
+        (total < 0 && EffectiveOrders.allow_refunds && skip_buyer_validations?)
+      }
+    end
 
     # validate do
     #   self.errors.add(:base, 'uho')
@@ -158,7 +160,7 @@ module Effective
         elsif item.kind_of?(ActsAsPurchasable)
           Effective::CartItem.new(quantity: quantity).tap { |cart_item| cart_item.purchasable = item }
         else
-          raise ArgumentError.new('Effective::Order.add() expects one or more acts_as_purchasable objects, or an Effective::Cart')
+          raise 'add() expects one or more acts_as_purchasable objects, or an Effective::Cart'
         end
       end
 
