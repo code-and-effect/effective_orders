@@ -12,7 +12,7 @@ module Effective
           Effective::Cart.where(user_id: @order.user_id).destroy_all
 
           if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && email
-            flash[:success] = "Payment successful! An email receipt has been sent to #{@order.user.email}"
+            flash[:success] = "Payment successful! A receipt has been sent to #{@order.user.email}"
           else
             flash[:success] = "Payment successful! No emails have been sent."
           end

@@ -219,6 +219,8 @@ module Effective
     # This is intended for use as an admin action only
     # It skips any address or bad user validations
     def create_as_pending
+      return false unless new_record?
+
       self.purchase_state = EffectiveOrders::PENDING
 
       self.skip_buyer_validations = true
@@ -228,6 +230,14 @@ module Effective
 
       send_payment_request_to_buyer! if send_payment_request_to_buyer?
       true
+    end
+
+    def create_as_refund
+      return false unless refund?
+
+      binding.pry
+
+      purchase!(details: 'refund', skip_buyer_validations: true, email: send_payment_request_to_buyer?)
     end
 
     # # This is used for updating Subscription codes.
@@ -255,7 +265,9 @@ module Effective
     # end
 
     def to_s
-      if purchased?
+      if refund?
+        "Refund ##{to_param}"
+      elsif purchased?
         "Receipt ##{to_param}"
       elsif pending?
         "Pending Order ##{to_param}"
@@ -285,7 +297,7 @@ module Effective
     end
 
     def total
-      self[:total] || [(subtotal + tax.to_i), 0].max
+      (self[:total] || (subtotal + tax.to_i)).to_i
     end
 
     def num_items
@@ -411,7 +423,7 @@ module Effective
     end
 
     def refund?
-      total.to_i < 0
+      total < 0
     end
 
     def send_order_receipts!

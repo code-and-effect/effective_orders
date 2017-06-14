@@ -26,17 +26,31 @@ module Admin
 
       @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
-      # Create as Pending
-      # Create as Free
-      # Create as Refund
+      begin
 
-      if @order.create_as_pending
-        message = 'Successfully created order'
-        message << ". #{@order.user.email} has been sent a request for payment." if @order.send_payment_request_to_buyer?
-        flash[:success] = message
+        if @order.refund?
+          if @order.create_as_refund
+            message = 'Successfully created refund'
+            message << ". A receipt has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
+            flash[:success] = message
+          else
+            raise 'unable to save refund'
+          end
+        else
+          if @order.create_as_pending
+            message = 'Successfully created order'
+            message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
+            flash[:success] = message
+          else
+            raise 'unable to save pending order'
+          end
+        end
+
         redirect_to(admin_redirect_path)
-      else
+
+      rescue => e
         @page_title = 'New Order'
+        flash[:success] = nil
         flash.now[:danger] = "Unable to create order: #{@order.errors.full_messages.to_sentence}"
         render :new
       end
@@ -44,14 +58,14 @@ module Admin
 
     def edit
       @order = Effective::Order.find(params[:id])
-      @page_title ||= "#{@order.purchased? ? 'Receipt' : 'Order'} ##{@order.to_param}"
+      @page_title ||= @order.to_s
 
       authorize_effective_order!
     end
 
     def update
       @order = Effective::Order.find(params[:id])
-      @page_title ||= "#{@order.purchased? ? 'Receipt' : 'Order'} ##{@order.to_param}"
+      @page_title ||= @order.to_s
 
       authorize_effective_order!
 
@@ -66,7 +80,7 @@ module Admin
 
     def show
       @order = Effective::Order.find(params[:id])
-      @page_title ||= (@order.purchased? ? "Receipt ##{@order.to_param}" : "Order ##{@order.to_param}")
+      @page_title ||= @order.to_s
 
       authorize_effective_order!
     end
@@ -114,7 +128,7 @@ module Admin
       authorize_effective_order!
 
       if @order.send_payment_request_to_buyer!
-        flash[:success] = "Successfully sent payment request to #{@order.user.email}"
+        flash[:success] = "A request for payment has been sent to #{@order.user.email}"
       else
         flash[:danger] = 'Unable to send payment request'
       end
