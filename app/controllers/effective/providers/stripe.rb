@@ -3,6 +3,8 @@ module Effective
     module Stripe
       extend ActiveSupport::Concern
 
+      # TODO: Make stripe charge work with admin checkout workflow
+
       def stripe_charge
         @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
         @stripe_charge = Effective::Providers::StripeCharge.new(stripe_charge_params)

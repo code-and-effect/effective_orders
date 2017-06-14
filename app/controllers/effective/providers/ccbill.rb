@@ -7,6 +7,8 @@ module Effective
         skip_before_action :verify_authenticity_token, only: [:ccbill_postback]
       end
 
+      # TODO: Make ccbill work with admin checkout workflow
+
       def ccbill_postback
         postback = Effective::Providers::CcbillPostback.new(params)
         @order ||= Effective::Order.find(postback.order_id)

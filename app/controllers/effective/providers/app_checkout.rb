@@ -6,6 +6,8 @@ module Effective
       included do
       end
 
+      # TODO: Make app checkout work with admin checkout workflow
+
       def app_checkout
         @order = Order.find(params[:id])
 
