@@ -21,13 +21,14 @@ module Effective
     attr_accessor :skip_minimum_charge_validation # Set by Admin::Orders#show
 
     belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
-    has_many :order_items, inverse_of: :order, class_name: 'Effective::OrderItem'
+    has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem'
 
     # Attributes
     # purchase_state    :string
     # purchased_at      :datetime
     #
-    # note              :text
+    # note_to_buyer     :text
+    # note_internal     :text
     #
     # payment           :text   # serialized hash containing all the payment details.  see below.
     #
@@ -160,6 +161,14 @@ module Effective
           item.cart_items.to_a
         elsif item.kind_of?(ActsAsPurchasable)
           Effective::CartItem.new(quantity: quantity).tap { |cart_item| cart_item.purchasable = item }
+        elsif item.kind_of?(Effective::Order)
+          # Duplicate an existing order
+          self.note_to_buyer ||= item.note_to_buyer
+          self.note_internal ||= item.note_internal
+
+          item.order_items.map do |oi|
+            Effective::CartItem.new(quantity: oi.quantity).tap { |cart_item| cart_item.purchasable = oi.purchasable }
+          end
         else
           raise 'add() expects one or more acts_as_purchasable objects, or an Effective::Cart'
         end

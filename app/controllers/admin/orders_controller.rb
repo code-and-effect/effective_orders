@@ -6,7 +6,17 @@ module Admin
 
     def new
       @order = Effective::Order.new
-      @order.user = (User.find(params[:user_id]) rescue nil) if params[:user_id]
+
+      if params[:user_id]
+        @order.user = User.where(id: params[:user_id]).first
+      end
+
+      if params[:duplicate_id]
+        @duplicate = Effective::Order.find(params[:duplicate_id])
+        EffectiveOrders.authorized?(self, :show, @duplicate)
+
+        @order.add(@duplicate)
+      end
 
       @page_title = 'New Order'
 
@@ -57,7 +67,7 @@ module Admin
       authorize_effective_order!
 
       if @order.update_attributes(order_params)
-        flash[:success] = 'Successfully updated order'
+        flash[:success] = 'Successfully saved order'
         redirect_to(admin_redirect_path)
       else
         flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
@@ -181,6 +191,7 @@ module Admin
       when 'Save'               ; effective_orders.admin_order_path(@order)
       when 'Save and Continue'  ; effective_orders.admin_orders_path
       when 'Save and Add New'   ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
+      when 'Save and Duplicate' ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
       else effective_orders.admin_order_path(@order)
       end
     end
