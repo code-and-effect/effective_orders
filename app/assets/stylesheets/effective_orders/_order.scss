@@ -36,6 +36,7 @@
 // Print - Resend Receipt.  Ontop of order.
 .effective-order-actions {
   text-align: right;
+  margin-bottom: 10px;
 }
 
 // Checkout buttons. Bottom of order.
@@ -54,8 +55,13 @@ form.new_effective_order {
 }
 
 @media print {
-  .effective-orders-page-title { display: none; }
   .effective-orders-page-content { display: none; }
+
   .effective-order-actions { display: none; }
   .effective-order-purchase-actions { display: none; }
+  .effective-order-admin-purchase-actions { display: none; }
+
+  .effective-heading { display: none; }
+  .effective-admin-heading { display: none; }
+  .effective-order-internal-note-form { display: none; }
 }
