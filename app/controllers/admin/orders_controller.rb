@@ -10,6 +10,8 @@ module Admin
 
       @page_title = 'New Order'
 
+      raise 'please install cocoon gem to use this page' unless defined?(Cocoon)
+
       authorize_effective_order!
     end
 

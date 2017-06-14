@@ -1,36 +1,33 @@
-- unless defined?(Cocoon)
-  Please install #{link_to 'cocoon', 'https://github.com/nathanvda/cocoon'} to see this page.
-- else
-  = simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: (order.persisted? ? effective_orders.admin_order_path(order) : effective_orders.admin_orders_path)) do |f|
-    - if f.object.new_record?
-      = f.association :user,
-        label: 'Buyer',
-        required: true,
-        as: (defined?(EffectiveFormInputs) ? :effective_select : :select),
-        collection: @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s }
+= simple_form_for [:admin, order], (EffectiveOrders.admin_simple_form_options || {}).merge(url: (order.persisted? ? effective_orders.admin_order_path(order) : effective_orders.admin_orders_path)) do |f|
+  - if f.object.new_record?
+    = f.association :user,
+      label: 'Buyer',
+      required: true,
+      as: :effective_select,
+      collection: @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s }
 
-      %h2 Order Items
-      .order_items
-        - f.object.order_items.build unless f.object.order_items.present?
-        = f.simple_fields_for :order_items do |order_item|
-          = render 'order_item_fields', f: order_item
+    %h2 Order Items
+    .order_items
+      - f.object.order_items.build unless f.object.order_items.present?
+      = f.simple_fields_for :order_items do |order_item|
+        = render 'order_item_fields', f: order_item
 
-        .links
-          = link_to_add_association '+ Add line item', f, :order_items, partial: 'order_item_fields'
+      .links
+        = link_to_add_association '+ Add line item', f, :order_items, partial: 'order_item_fields'
 
-      = f.input :send_payment_request_to_buyer,
-        as: :boolean,
-        label: 'Yes, send a payment request email to the buyer.',
-        value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.mailer[:send_payment_request_to_buyer] : f.object.send_payment_request_to_buyer?)
+    = f.input :send_payment_request_to_buyer,
+      as: :boolean,
+      label: 'Yes, send a payment request email to the buyer.',
+      value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.mailer[:send_payment_request_to_buyer] : f.object.send_payment_request_to_buyer?)
 
-    .row
-      .col-sm-6.effective-order-note-to-buyer
-        %h2 Note to Buyer
-        = f.input :note_to_buyer, disabled: f.object.purchased?, label: false,
-          hint: (f.object.purchased? ? 'This message was displayed to the buyer during checkout and appears on the receipt.' : 'This message will be displayed to the buyer during checkout and will appear on the receipt.')
+  .row
+    .col-sm-6.effective-order-note-to-buyer
+      %h2 Note to Buyer
+      = f.input :note_to_buyer, disabled: f.object.purchased?, label: false,
+        hint: (f.object.purchased? ? 'This message was displayed to the buyer during checkout and appears on the receipt.' : 'This message will be displayed to the buyer during checkout and will appear on the receipt.')
 
-      .col-sm-6.effective-order-internal-note
-        %h2 Internal Note
-        = f.input :note_internal, label: false, hint: 'For internal admin use only. This note will never be displayed to the buyer.'
+    .col-sm-6.effective-order-internal-note
+      %h2 Internal Note
+      = f.input :note_internal, label: false, hint: 'For internal admin use only. This note will never be displayed to the buyer.'
 
-    = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
+  = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
