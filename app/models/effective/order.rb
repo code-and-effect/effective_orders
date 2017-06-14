@@ -160,19 +160,19 @@ module Effective
         if item.kind_of?(Effective::Cart)
           item.cart_items.to_a
         elsif item.kind_of?(ActsAsPurchasable)
-          Effective::CartItem.new(quantity: quantity).tap { |cart_item| cart_item.purchasable = item }
+          Effective::CartItem.new(quantity: quantity, purchasable: item)
         elsif item.kind_of?(Effective::Order)
           # Duplicate an existing order
           self.note_to_buyer ||= item.note_to_buyer
           self.note_internal ||= item.note_internal
 
-          item.order_items.map do |oi|
-            Effective::CartItem.new(quantity: oi.quantity).tap { |cart_item| cart_item.purchasable = oi.purchasable }
+          item.order_items.select { |oi| oi.purchasable.kind_of?(Effective::Product) }.map do |oi|
+            Effective::CartItem.new(quantity: oi.quantity, purchasable: oi.purchasable)
           end
         else
           raise 'add() expects one or more acts_as_purchasable objects, or an Effective::Cart'
         end
-      end
+      end.compact
 
       # Make sure to reset stored aggregates
       self.total = nil
