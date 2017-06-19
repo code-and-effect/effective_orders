@@ -50,6 +50,7 @@ module Effective
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
     # Order validations
+    validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
     validates :purchase_state, inclusion: { in: EffectiveOrders::PURCHASE_STATES.keys }
     validates :subtotal, presence: true
 
@@ -63,27 +64,6 @@ module Effective
       }
     end
 
-    # When Purchased
-    with_options if: -> { purchased? } do |order|
-      order.validates :purchased_at, presence: true
-      order.validates :payment, presence: true
-
-      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
-      order.validates :payment_card, presence: true
-    end
-
-    # Order item and purchasable validations
-    validates :order_items, presence: { message: 'No items are present. Please add one or more item to your cart.' }
-
-    # Address validations
-    if EffectiveOrders.require_billing_address  # An admin creating a new pending order should not be required to have addresses
-      validates :billing_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
-    end
-
-    if EffectiveOrders.require_shipping_address  # An admin creating a new pending order should not be required to have addresses
-      validates :shipping_address, presence: true, unless: -> { (new_record? && pending?) || skip_buyer_validations? }
-    end
-
     # User validations -- An admin skips these when working in the admin/ namespace
     with_options unless: -> { skip_buyer_validations? } do |order|
       order.validates :tax_rate, presence: { message: "can't be determined based on billing address" }
@@ -94,9 +74,26 @@ module Effective
         order.validates :user, associated: true
       end
 
+      if EffectiveOrders.require_billing_address
+        order.validates :billing_address, presence: true
+      end
+
+      if EffectiveOrders.require_shipping_address
+        order.validates :shipping_address, presence: true
+      end
+
       if EffectiveOrders.collect_note_required
         order.validates :note, presence: true
       end
+    end
+
+    # When Purchased
+    with_options if: -> { purchased? } do |order|
+      order.validates :purchased_at, presence: true
+      order.validates :payment, presence: true
+
+      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
+      order.validates :payment_card, presence: true
     end
 
     serialize :payment, Hash
@@ -187,8 +184,6 @@ module Effective
       super
 
       return unless user.present?
-
-      binding.pry
 
       # Copy user addresses into this order if they are present
       if user.respond_to?(:billing_address) && user.billing_address.present?
