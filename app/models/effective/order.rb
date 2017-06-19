@@ -11,7 +11,6 @@ module Effective
       shipping: { singular: true, use_full_name: EffectiveOrders.use_address_full_name }
     )
 
-    attr_accessor :save_billing_address, :save_shipping_address # save these addresses to the user if selected
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
 
     # Settings in the /admin action forms
@@ -22,6 +21,9 @@ module Effective
 
     belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
     has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem'
+
+    accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
+    accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
     # Attributes
     # purchase_state    :string
@@ -43,11 +45,9 @@ module Effective
     #
     # timestamps
 
-    accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
-    accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
+    serialize :payment, Hash
 
     before_validation { assign_totals! }
-    before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
 
     # Order validations
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
@@ -96,7 +96,8 @@ module Effective
       order.validates :payment_card, presence: true
     end
 
-    serialize :payment, Hash
+    before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
+    before_save :save_addresses
 
     scope :deep, -> { includes(:user).includes(order_items: :purchasable) }
     scope :sorted, -> { order(created_at: :desc) }
@@ -122,10 +123,6 @@ module Effective
     # items can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
     def initialize(*items, user: nil, billing_address: nil, shipping_address: nil)
       super() # Call super with no arguments
-
-      # Set up defaults
-      self.save_billing_address = true
-      self.save_shipping_address = true
 
       # Assign user
       self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
@@ -193,24 +190,8 @@ module Effective
       if user.respond_to?(:shipping_address) && user.shipping_address.present?
         self.shipping_address = user.shipping_address
       end
-    end
 
-    def billing_address=(value)
-      set_singular_effective_address('billing', value)
-      billing_address.full_name ||= billing_name
-
-      if save_billing_address? && billing_address.present? && user.respond_to?(:billing_address=)
-        user.billing_address = billing_address
-      end
-    end
-
-    def shipping_address=(value)
-      set_singular_effective_address('shipping', value)
-      shipping_address.full_name ||= billing_name
-
-      if save_shipping_address? && shipping_address.present? && user.respond_to?(:shipping_address=)
-        user.shipping_address = shipping_address
-      end
+      user
     end
 
     # This is called from admin/orders#create
@@ -227,6 +208,7 @@ module Effective
       save!
 
       send_payment_request_to_buyer! if send_payment_request_to_buyer?
+
       true
     end
 
@@ -270,6 +252,10 @@ module Effective
       total == 0
     end
 
+    def refund?
+      total.to_i < 0
+    end
+
     def purchasables
       order_items.map { |order_item| order_item.purchasable }
     end
@@ -292,14 +278,6 @@ module Effective
 
     def num_items
       order_items.map { |oi| oi.quantity }.sum
-    end
-
-    def save_billing_address?
-      truthy?(save_billing_address)
-    end
-
-    def save_shipping_address?
-      truthy?(save_shipping_address)
     end
 
     def send_payment_request_to_buyer?
@@ -416,10 +394,6 @@ module Effective
       purchase_state == EffectiveOrders::PENDING
     end
 
-    def refund?
-      total < 0
-    end
-
     def send_order_receipts!
       send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
       send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
@@ -473,6 +447,18 @@ module Effective
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
       self.total = subtotal + (tax || 0)
+    end
+
+    def save_addresses
+      if user.respond_to?(:billing_address=) && billing_address.present?
+        user.billing_address = billing_address
+        user.billing_address.save
+      end
+
+      if user.respond_to?(:shipping_address=) && shipping_address.present?
+        user.shipping_address = shipping_address
+        user.shipping_address.save
+      end
     end
 
     def send_email(email, *mailer_args)
