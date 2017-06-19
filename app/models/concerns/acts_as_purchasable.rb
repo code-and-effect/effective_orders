@@ -25,7 +25,7 @@ module ActsAsPurchasable
 
     # These are breaking on the check for quanitty_enabled?.  More research is due
     validates :quantity_purchased, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
-    validates :quantity_max, numericality: {allow_nil: true}, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
+    validates :quantity_max, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
 
     scope :purchased, -> { joins(order_items: :order).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).distinct }
     scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: {user_id: user.try(:id), purchase_state: EffectiveOrders::PURCHASED}).distinct }

@@ -53,12 +53,17 @@ module Effective
 
       @order.assign_attributes(checkout_params)
 
-      if @order.save
-        redirect_to effective_orders.order_path(@order)
-      else
-        flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
-        render :new
+      Effective::Order.transaction do
+        begin
+          @order.save!
+          redirect_to(effective_orders.order_path(@order)) and return
+        rescue => e
+          raise ActiveRecord::Rollback
+        end
       end
+
+      flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
+      render :new
     end
 
     def edit
@@ -72,12 +77,17 @@ module Effective
 
       @order.assign_attributes(checkout_params)
 
-      if @order.save
-        redirect_to effective_orders.order_path(@order)
-      else
-        flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
-        render :edit
+      Effective::Order.transaction do
+        begin
+          @order.save!
+          redirect_to(effective_orders.order_path(@order)) and return
+        rescue => e
+          raise ActiveRecord::Rollback
+        end
       end
+
+      flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
+      render :edit
     end
 
     def show

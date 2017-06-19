@@ -48,7 +48,6 @@ module Effective
 
     before_validation { assign_totals! }
     before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
-    before_save { save_addresses! }
 
     # Order validations
     validates :purchase_state, inclusion: { in: EffectiveOrders::PURCHASE_STATES.keys }
@@ -63,10 +62,6 @@ module Effective
         (total < 0 && EffectiveOrders.allow_refunds && skip_minimum_charge_validation?)
       }
     end
-
-    # validate do
-    #   self.errors.add(:base, 'uho')
-    # end
 
     # When Purchased
     with_options if: -> { purchased? } do |order|
@@ -135,17 +130,12 @@ module Effective
       self.save_billing_address = true
       self.save_shipping_address = true
 
+      # Assign user
       self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
 
-      if billing_address
-        self.billing_address = billing_address
-        self.billing_address.full_name ||= billing_name
-      end
-
-      if shipping_address
-        self.shipping_address = shipping_address
-        self.shipping_address.full_name ||= billing_name
-      end
+      # Assign addresses
+      self.billing_address = billing_address if billing_address
+      self.shipping_address = shipping_address if shipping_address
 
       add(items) if items.present?
     end
@@ -167,7 +157,8 @@ module Effective
           self.note_internal ||= item.note_internal
 
           item.order_items.select { |oi| oi.purchasable.kind_of?(Effective::Product) }.map do |oi|
-            Effective::CartItem.new(quantity: oi.quantity, purchasable: oi.purchasable)
+            product = Effective::Product.new(title: oi.purchasable.title, price: oi.purchasable.price, tax_exempt: oi.purchasable.tax_exempt)
+            Effective::CartItem.new(quantity: oi.quantity, purchasable: product)
           end
         else
           raise 'add() expects one or more acts_as_purchasable objects, or an Effective::Cart'
@@ -197,6 +188,8 @@ module Effective
 
       return unless user.present?
 
+      binding.pry
+
       # Copy user addresses into this order if they are present
       if user.respond_to?(:billing_address) && user.billing_address.present?
         self.billing_address = user.billing_address
@@ -205,30 +198,30 @@ module Effective
       if user.respond_to?(:shipping_address) && user.shipping_address.present?
         self.shipping_address = user.shipping_address
       end
+    end
 
-      # If our addresses are required, make sure they exist
-      if EffectiveOrders.require_billing_address
-        self.billing_address ||= Effective::Address.new()
+    def billing_address=(value)
+      set_singular_effective_address('billing', value)
+      billing_address.full_name ||= billing_name
+
+      if save_billing_address? && billing_address.present? && user.respond_to?(:billing_address=)
+        user.billing_address = billing_address
       end
+    end
 
-      if EffectiveOrders.require_shipping_address
-        self.shipping_address ||= Effective::Address.new()
-      end
+    def shipping_address=(value)
+      set_singular_effective_address('shipping', value)
+      shipping_address.full_name ||= billing_name
 
-      # Ensure the Full Name is assigned when an address exists
-      if billing_address.present? && billing_address.full_name.blank?
-        self.billing_address.full_name = billing_name
-      end
-
-      if shipping_address.present? && shipping_address.full_name.blank?
-        self.shipping_address.full_name = billing_name
+      if save_shipping_address? && shipping_address.present? && user.respond_to?(:shipping_address=)
+        user.shipping_address = shipping_address
       end
     end
 
     # This is called from admin/orders#create
     # This is intended for use as an admin action only
     # It skips any address or bad user validations
-    def create_as_pending
+    def create_as_pending!
       return false unless new_record?
 
       self.purchase_state = EffectiveOrders::PENDING
@@ -236,7 +229,7 @@ module Effective
       self.skip_buyer_validations = true
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
 
-      return false unless save
+      save!
 
       send_payment_request_to_buyer! if send_payment_request_to_buyer?
       true
@@ -475,8 +468,7 @@ module Effective
 
     def get_tax
       return nil unless tax_rate.present?
-      amount = order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
-      [amount, 0].max
+      order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
     end
 
     private
@@ -486,18 +478,6 @@ module Effective
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
       self.total = subtotal + (tax || 0)
-    end
-
-    def save_addresses!
-      return unless user.present?
-
-      if save_billing_address? && billing_address.present? && user.respond_to?(:billing_address=)
-        user.billing_address = billing_address
-      end
-
-      if save_shipping_address? && shipping_address.present? && user.respond_to?(:shipping_address=)
-        user.shipping_address = shipping_address
-      end
     end
 
     def send_email(email, *mailer_args)
