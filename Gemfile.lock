@@ -5,7 +5,8 @@ PATH
       coffee-rails
       devise
       effective_addresses (>= 1.6.0)
-      effective_datatables (>= 2.0.0)
+      effective_datatables (>= 3.0.0)
+      effective_form_inputs
       jquery-rails
       rails (>= 3.2.0)
       sass-rails
@@ -87,16 +88,19 @@ GEM
       coffee-rails
       haml-rails
       rails (>= 3.2.0)
-    effective_datatables (3.0.7)
+    effective_datatables (3.0.12)
       coffee-rails
       effective_resources (>= 0.3.0)
       rails (>= 3.2.0)
       sass-rails
       simple_form
+    effective_form_inputs (1.1.5)
+      rails (>= 3.2.0)
+      simple_form (>= 3.1.0)
     effective_obfuscation (1.1.0)
       rails (>= 3.2.0)
       scatter_swap (~> 0.0.3)
-    effective_resources (0.3.8)
+    effective_resources (0.3.10)
       rails (>= 3.2.0)
     erubis (2.7.0)
     execjs (2.6.0)
