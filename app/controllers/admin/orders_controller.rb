@@ -31,24 +31,30 @@ module Admin
 
       authorize_effective_order!
 
-      (order_params[:order_items_attributes] || {}).each do |_, item_attrs|
-        purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
-        @order.add(purchasable, quantity: item_attrs[:quantity])
+      Effective::Order.transaction do
+        begin
+          (order_params[:order_items_attributes] || {}).each do |_, item_attrs|
+            purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
+            @order.add(purchasable, quantity: item_attrs[:quantity])
+          end
+
+          @order.attributes = order_params.except(:order_items_attributes, :user_id)
+
+          @order.create_as_pending!
+
+          message = 'Successfully created order'
+          message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
+          flash[:success] = message
+
+          redirect_to(admin_redirect_path) and return
+        rescue => e
+          raise ActiveRecord::Rollback
+        end
       end
 
-      @order.attributes = order_params.except(:order_items_attributes, :user_id)
-
-      if (@order.create_as_pending rescue false)
-        message = 'Successfully created order'
-        message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
-        flash[:success] = message
-
-        redirect_to(admin_redirect_path)
-      else
-        @page_title = 'New Order'
-        flash.now[:danger] = "Unable to create order: #{@order.errors.full_messages.to_sentence}"
-        render :new
-      end
+      @page_title = 'New Order'
+      flash.now[:danger] = "Unable to create order: #{@order.errors.full_messages.to_sentence}"
+      render :new
     end
 
     def edit
@@ -66,13 +72,18 @@ module Admin
 
       authorize_effective_order!
 
-      if @order.update_attributes(order_params)
-        flash[:success] = 'Successfully saved order'
-        redirect_to(admin_redirect_path)
-      else
-        flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
-        render :edit
+      Effective::Order.transaction do
+        begin
+          @order.assign_attributes(order_params)
+          @order.save!
+          redirect_to(admin_redirect_path) and return
+        rescue => e
+          raise ActiveRecord::Rollback
+        end
       end
+
+      flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
+      render :edit
     end
 
     def show
@@ -94,12 +105,18 @@ module Admin
 
       authorize_effective_order!
 
-      if @order.update_attributes(checkout_params)
-        redirect_to(effective_orders.admin_order_path(@order))
-      else
-        flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
-        render :show
+      Effective::Order.transaction do
+        begin
+          @order.assign_attributes(checkout_params)
+          @order.save!
+          redirect_to(effective_orders.admin_order_path(@order)) and return
+        rescue => e
+          raise ActiveRecord::Rollback
+        end
       end
+
+      flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
+      render :show
     end
 
     def index

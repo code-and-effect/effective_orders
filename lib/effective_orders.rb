@@ -95,7 +95,7 @@ module EffectiveOrders
 
   def self.permitted_params
     [
-      :note, :save_billing_address, :save_shipping_address, :terms_and_conditions,
+      :note, :terms_and_conditions,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
       user_attributes: (EffectiveOrders.collect_user_fields || []),
