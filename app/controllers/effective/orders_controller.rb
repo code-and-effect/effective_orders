@@ -51,7 +51,7 @@ module Effective
       @order ||= Effective::Order.new(current_cart, user: current_user)
       EffectiveOrders.authorized?(self, :create, @order)
 
-      @order.assign_attributes(checkout_params)
+      @order.assign_attributes(checkout_params) if params[:effective_order]
 
       Effective::Order.transaction do
         begin

@@ -98,8 +98,7 @@ module EffectiveOrders
       :note, :terms_and_conditions,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
-      user_attributes: (EffectiveOrders.collect_user_fields || []),
-      order_items_attributes: [:stripe_coupon_id, :class, :id]
+      user_attributes: (EffectiveOrders.collect_user_fields || [])
     ]
   end
 
