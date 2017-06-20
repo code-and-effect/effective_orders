@@ -1,9 +1,5 @@
 - if order.note.present?
-  .effective-order-note
-    %table.table
-      %thead
-        %tr
-          %th Note
-      %tbody
-        %tr
-          %td= order.note
+  %p
+    %strong Note
+    %br
+    = order.note
