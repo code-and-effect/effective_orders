@@ -61,4 +61,17 @@ module EffectiveStripeHelper
     end
   end
 
+  def stripe_site_image_url
+    return nil unless EffectiveOrders.stripe && (url = EffectiveOrders.stripe[:site_image].to_s).present?
+    url.start_with?('http') ? url : asset_url(url)
+  end
+
+  def stripe_order_description(order)
+    if order.num_items == 1 && order.order_items.all? { |oi| oi.purchasable.kind_of?(Effective::Subscription) }
+      order.order_items.first.purchasable.stripe_plan.name
+    else
+      "#{order.num_items} items (#{price_to_currency(order.total)})"
+    end
+  end
+
 end
