@@ -33,8 +33,16 @@ module Effective
       EffectiveOrders.authorized?(self, :create, @subscription)
 
       if @subscription.save
-        current_cart.add(@subscription, unique: true)
-        redirect_to effective_orders.new_order_path
+        # If we need to collect addresses or terms and conditions, we gotta use the cart here
+        # Otherwise, we can create an order and go straight to checkout.
+        @order = Effective::Order.new(@subscription, user: current_user)
+
+        if EffectiveOrders.can_skip_checkout_step1? && @order.save
+          redirect_to effective_orders.order_path(@order)
+        else
+          current_cart.add(@subscription, unique: true)
+          redirect_to effective_orders.new_order_path
+        end
       else
         assign_plans
 
@@ -70,20 +78,20 @@ module Effective
         raise ActiveRecord::RecordNotFound
       end
 
-      @stripe_subscription = @subscription.try(:stripe_subscription)
-
-      unless @stripe_subscription.present?
+      unless @subscription.stripe_subscription.present?
         flash[:danger] = "Unable to find Stripe Subscription for plan: #{params[:id]}"
         raise ActiveRecord::RecordNotFound
       end
 
       EffectiveOrders.authorized?(self, :show, @subscription)
 
+      @order = @subscription.purchased_order
+
       @invoices = @customer.stripe_customer.invoices.all.select do |invoice|
-        invoice.lines.any? { |line| line.id == @stripe_subscription.id }
+        invoice.lines.any? { |line| line.id == @subscription.stripe_subscription.id }
       end
 
-      @page_title ||= "#{@plan.name}"
+      @page_title ||= @plan.name
     end
 
     def destroy

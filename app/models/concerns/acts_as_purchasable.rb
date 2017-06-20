@@ -12,9 +12,13 @@ module ActsAsPurchasable
   end
 
   included do
-    has_many :orders, through: :order_items, class_name: 'Effective::Order'
-    has_many :order_items, as: :purchasable, class_name: 'Effective::OrderItem'
     has_many :cart_items, as: :purchasable, dependent: :delete_all, class_name: 'Effective::CartItem'
+
+    has_many :order_items, as: :purchasable, class_name: 'Effective::OrderItem'
+    has_many :orders, -> { order(:id) }, through: :order_items, class_name: 'Effective::Order'
+
+    has_many :purchased_orders, -> { where(purchase_state: EffectiveOrders::PURCHASED).order(:purchased_at) },
+      through: :order_items, class_name: 'Effective::Order', source: :order
 
     validates_with Effective::SoldOutValidator, on: :create
 
@@ -77,24 +81,20 @@ module ActsAsPurchasable
     end
   end
 
-  def purchased?
-    @is_purchased ||= orders.any? { |order| order.purchased? }
+  def purchased_order
+    @purchased_order ||= purchased_orders.first
   end
 
-  def purchased_at
-    @purchased_at ||= orders.map { |order| order.purchased_at if order.purchased? }.compact.sort.first
+  def purchased?
+    @is_purchased ||= purchased_order.present?
   end
 
   def purchased_by?(user)
-    orders.any? { |order| order.purchased? && order.user_id == user.id }
+    purchased_orders.any? { |order| order.user_id == user.id }
   end
 
-  def purchased_orders
-    orders.select { |order| order.purchased? }
-  end
-
-  def purchased_order
-    purchased_orders.first
+  def purchased_at
+    purchased_order.try(:purchased_at)
   end
 
   def quantity_enabled?

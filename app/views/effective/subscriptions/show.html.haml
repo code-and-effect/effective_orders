@@ -1,7 +1,4 @@
-%h1.effective-heading
-  = @plan.name
-  Subscription
-  details
+%h1.effective-heading= @plan.name
 
 %p= stripe_plan_description(@plan)
 
@@ -9,22 +6,26 @@
   %tbody
     %tr
       %th Started
-      %td= Time.zone.at(@stripe_subscription.start).strftime("%d-%b-%Y")
-    - if @stripe_subscription.discount.present?
+      %td= Time.zone.at(@subscription.stripe_subscription.start).strftime("%d-%b-%Y")
+    - if @subscription.stripe_subscription.discount.present?
       %tr
         %th Coupon
-        %td= stripe_coupon_description(@stripe_subscription.discount.coupon)
+        %td= stripe_coupon_description(@subscription.stripe_subscription.discount.coupon)
     %tr
       %th Status
-      %td= @stripe_subscription.status
+      %td= @subscription.stripe_subscription.status
     %tr
       %th Current Period Start
-      %td= Time.zone.at(@stripe_subscription.current_period_start).strftime("%d-%b-%Y")
+      %td= Time.zone.at(@subscription.stripe_subscription.current_period_start).strftime("%d-%b-%Y")
     %tr
       %th Current Period End
-      %td= Time.zone.at(@stripe_subscription.current_period_end).strftime("%d-%b-%Y")
+      %td= Time.zone.at(@subscription.stripe_subscription.current_period_end).strftime("%d-%b-%Y")
 
-%h2= "#{@plan.interval.chomp('ly')}ly Invoices"
+%h2 Initial Order
+
+= render_orders(@subscription.purchased_order)
+
+%h2= "#{@plan.interval.chomp('ly').titleize}ly Invoices"
 
 %table.table
   %thead

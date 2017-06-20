@@ -1,9 +1,4 @@
 module EffectiveOrdersHelper
-  def price_to_currency(price, options = {})
-    raise 'price_to_currency expects an Integer representing the number of cents in a price' unless price.kind_of?(Integer)
-    options[:precision] ||= 2
-    number_to_currency(price / 100.0, options)
-  end
 
   def tax_rate_to_percentage(tax_rate, options = {})
     options[:strip_insignificant_zeros] = true if options[:strip_insignificant_zeros].nil?
@@ -135,16 +130,15 @@ module EffectiveOrdersHelper
   end
   alias_method :link_to_order_history, :link_to_my_purchases
 
-  def render_orders(user_or_orders, opts = {})
-    if user_or_orders.kind_of?(User)
-      orders = Effective::Order.purchased_by(user_or_orders)
-    elsif user_or_orders.respond_to?(:to_a)
-      orders = user_or_orders.to_a
-    else
-      raise 'expecting an instance of User or an array/collection of Effective::Order objects'
+
+  def render_orders(obj, opts = {})
+    orders = Array(obj.kind_of?(User) ? Effective::Order.purchased_by(obj) : obj)
+
+    if orders.any? { |order| order.kind_of?(Effective::Order) == false }
+      raise 'expected a User or Effective::Order'
     end
 
-    render(partial: 'effective/orders/orders_table', locals: {orders: orders}.merge(opts))
+    render(partial: 'effective/orders/orders_table', locals: { orders: orders }.merge(opts))
   end
 
   alias_method :render_purchases, :render_orders

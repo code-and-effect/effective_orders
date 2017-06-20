@@ -133,6 +133,16 @@ module EffectiveOrders
     ['credit card', 'none', 'other']
   end
 
+  def self.can_skip_checkout_step1?
+    return false if require_billing_address
+    return false if require_shipping_address
+    return false if collect_note
+    return false if terms_and_conditions
+    return false if collect_user_fields.present?
+
+    true
+  end
+
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
 end
