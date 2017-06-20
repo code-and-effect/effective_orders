@@ -43,8 +43,8 @@ module Effective
       end
 
       @order.errors.clear
-      @order.billing_address.try(:errors).try(:clear)
-      @order.shipping_address.try(:errors).try(:clear)
+      @order.billing_address.errors.clear if @order.billing_address
+      @order.shipping_address.errors.clear if @order.shipping_address
     end
 
     def create

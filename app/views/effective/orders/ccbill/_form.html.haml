@@ -20,5 +20,5 @@
   -# custom fields
   = hidden_field_tag(:order_id, order.to_param)
 
-  = submit_tag(order_checkout_label(:ccbill), :class => 'btn btn-primary', :data => {'disable_with' => 'Continuing...' })
+  = submit_tag order_checkout_label(:ccbill), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
 
