@@ -2,7 +2,7 @@
   = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(url: checkout_step1_form_url(order, namespace))) do |f|
     = render partial: 'effective/orders/order_items', locals: { order: order, form: f }
 
-    - unless f.object.pending? || (current_cart && current_cart.empty?)
+    - unless f.object.pending? || (current_cart && current_cart.blank?)
       = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-default'
 
     - if order.errors[:order_items].present?

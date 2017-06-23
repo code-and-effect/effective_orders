@@ -52,7 +52,11 @@ module Effective
       cart_items_count || cart_items.length
     end
 
-    def empty?
+    def present?
+      size > 0
+    end
+
+    def blank?
       size == 0
     end
 
