@@ -1,5 +1,0 @@
-- if order.payment.present?
-  .effective-order-payment-details
-    %h2 Payment Provider Details
-    = tableize_order_payment(order.payment[:details] || order.payment, class: 'table')
-
