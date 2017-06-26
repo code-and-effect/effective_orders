@@ -36,6 +36,11 @@ module Effective
       cart_items.build(purchasable: item, quantity: quantity).save!
     end
 
+    def clear!
+      cart_items.each { |cart_item| cart_item.destroy }
+      reload
+    end
+
     def remove(obj)
       cart_items.find(obj).try(:destroy)
     end
