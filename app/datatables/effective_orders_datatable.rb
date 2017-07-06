@@ -52,7 +52,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
       EffectiveOrders::PURCHASE_STATES[order.purchase_state]
     end
 
-    col :order_items
+    col :order_items, search: { as: :string }
 
     col :subtotal, as: :price
     col :tax, as: :price
