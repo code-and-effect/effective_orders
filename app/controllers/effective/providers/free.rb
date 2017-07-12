@@ -20,6 +20,7 @@ module Effective
           card: 'none',
           purchased_url: params[:purchased_url],
           declined_url: params[:declined_url],
+          email: false
         )
       end
 
