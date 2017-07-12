@@ -14,7 +14,7 @@ module Effective
           if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && email
             flash[:success] = "Payment successful! A receipt has been sent to #{@order.user.email}"
           else
-            flash[:success] = "Payment successful! No emails have been sent."
+            flash[:success] = @order.free? ? 'Success' : 'Payment successful! An email receipt has not been sent.'
           end
 
           redirect_to (purchased_url.presence || effective_orders.purchased_order_path(':id')).gsub(':id', @order.to_param.to_s)
