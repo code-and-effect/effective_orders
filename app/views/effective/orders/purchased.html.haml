@@ -1,6 +1,9 @@
 %h1.effective-heading= @page_title
 
 %p.effective-orders-page-content
+  = link_to 'Home', root_path, class: 'btn btn-primary'
+
+%p.effective-orders-page-content
   You have successfully purchased the following:
 
 = render @order
