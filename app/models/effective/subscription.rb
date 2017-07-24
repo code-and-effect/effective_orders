@@ -11,33 +11,28 @@ module Effective
 
     # Attributes
     # stripe_plan_id          :string  # This will be 'Weekly' or something like that
-    # stripe_subscription_id  :string
     # stripe_coupon_id        :string
+    # stripe_subscription_id  :string
     #
     # title                   :string
     # price                   :integer, default: 0
     #
     # timestamps
 
-    before_validation do
-      assign_price_and_title
-    end
+    before_validation(if: -> { stripe_subscription_id.blank? && stripe_plan_id.present? && customer.present? }) { stripe_subscription }
 
-    validates :stripe_plan_id, presence: true
+    validates :customer, presence: true
+    validates :subscribable, presence: true
+    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.keys }
 
     with_options(if: -> { stripe_plan_id.present? }) do
       validates :title, presence: true
-      validates :price, numericality: { greater_than: 0 }
-
-      #validates :customer, presence: true
-      #validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }
+      validates :price, numericality: { greater_than_or_equal_to: 0, only_integer: true }
+      validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }
     end
 
-    validates :customer_id, uniqueness: { scope: [:stripe_plan_id], message: 'is already subscribed to this plan' }, if: -> { stripe_plan_id.present? && customer.present? }
-
-    validate do
-      self.errors.add(:stripe_plan_id, 'is an invalid plan') if stripe_plan_id.present? && stripe_plan.blank?
-      self.errors.add(:stripe_coupon_id, 'is an invalid coupon') if stripe_coupon_id.present? && stripe_coupon.blank?
+    validate(if: -> { stripe_coupon_id.present? }) do
+      self.errors.add(:stripe_coupon_id, 'is an invalid coupon') unless stripe_coupon
     end
 
     def tax_exempt
@@ -57,8 +52,15 @@ module Effective
     end
 
     def stripe_subscription
-      if stripe_subscription_id.present? && customer.present?
-        @stripe_subscription ||= (customer.stripe_customer.subscriptions.retrieve(stripe_subscription_id) rescue nil)
+      @stripe_subscription ||= if stripe_subscription_id.present?
+        customer.stripe_customer.subscriptions.retrieve(stripe_subscription_id)
+      else
+        raise 'must have a customer and stripe_plan_id assigned to create a stripe subscription' unless customer.present? && stripe_plan_id.present?
+
+        customer.stripe_customer.subscriptions.create(plan: stripe_plan_id, coupon: stripe_coupon_id.presence).tap do |stripe_subscription|
+          self.stripe_subscription_id = stripe_subscription.id
+          assign_price_and_title
+        end
       end
     end
 
@@ -66,24 +68,16 @@ module Effective
       stripe_coupon_id.present?
     end
 
-    def user
-      customer.user if customer
-    end
-
-    def user_id
-      customer.user_id if customer
-    end
-
     private
 
     def assign_price_and_title
-      if stripe_plan
+      if (plan = EffectiveOrders.stripe_plans[stripe_plan_id])
         if stripe_coupon
-          self.price = price_with_coupon(stripe_plan.amount, stripe_coupon)
-          self.title = stripe_plan.name + ' ' + stripe_plan_description(stripe_plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
+          self.price = price_with_coupon(plan[:amount], stripe_coupon)
+          self.title = plan[:name] + ' ' + stripe_plan_description(plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
         else
-          self.price = stripe_plan.amount
-          self.title = stripe_plan.name + ' ' + stripe_plan_description(stripe_plan)
+          self.price = plan[:amount]
+          self.title = plan[:name] + ' ' + stripe_plan_description(plan)
         end
       end
     end

@@ -4,7 +4,7 @@ module EffectiveStripeHelper
   STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
 
   def is_stripe_connect_seller?(user)
-    Effective::Customer.for(user).try(:is_stripe_connect_seller?) == true
+    Effective::Customer.for_buyer(user).try(:is_stripe_connect_seller?) == true
   end
 
   def link_to_new_stripe_connect_customer(opts = {})
@@ -36,19 +36,31 @@ module EffectiveStripeHelper
     (plans || []).map { |plan| [(plan.name + ' ' + stripe_plan_description(plan)), plan.id, {'data-amount' => plan.amount}] }
   end
 
-  def stripe_plan_description(plan)
-    occurrence = case plan.interval
+  def stripe_plan_description(obj)
+    plan = (
+      case obj
+      when Hash            ; obj
+      when ::Stripe::Plan  ; EffectiveOrders.stripe_plans[obj.id]
+      else                 ; EffectiveOrders.stripe_plans[obj]
+      end
+    )
+
+    raise("unknown stripe plan: #{obj}") unless plan.kind_of?(Hash) && plan[:id].present?
+
+    occurrence = case plan[:interval]
+      when 'daily'    ; '/day'
       when 'weekly'   ; '/week'
       when 'monthly'  ; '/month'
       when 'yearly'   ; '/year'
-      when 'week'     ; plan.interval_count == 1 ? '/week' : " every #{plan.interval_count} weeks"
-      when 'month'    ; plan.interval_count == 1 ? '/month' : " every #{plan.interval_count} months"
-      when 'year'     ; plan.interval_count == 1 ? '/year' : " every #{plan.interval_count} years"
-      else            ; plan.interval
+      when 'day'      ; plan[:interval_count] == 1 ? '/day' : " every #{plan[:interval_count]} days"
+      when 'week'     ; plan[:interval_count] == 1 ? '/week' : " every #{plan[:interval_count]} weeks"
+      when 'month'    ; plan[:interval_count] == 1 ? '/month' : " every #{plan[:interval_count]} months"
+      when 'year'     ; plan[:interval_count] == 1 ? '/year' : " every #{plan[:interval_count]} years"
+      else            ; plan[:interval]
     end
 
     # We call helpers here, because stripe_plan_description is sometimes called in models
-    "#{ActionController::Base.helpers.price_to_currency(plan.amount)} #{plan.currency.upcase}#{occurrence}"
+    "#{ActionController::Base.helpers.price_to_currency(plan[:amount])} #{plan[:currency].upcase}#{occurrence}"
   end
 
   def stripe_coupon_description(coupon)

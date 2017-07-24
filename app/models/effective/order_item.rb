@@ -63,7 +63,7 @@ module Effective
     # And is the Customer representing who is selling the product
     # This is really only used for StripeConnect
     def seller
-      @seller ||= Effective::Customer.for(purchasable.seller)
+      @seller ||= Effective::Customer.for_buyer(purchasable.seller)
     end
 
     def stripe_connect_application_fee

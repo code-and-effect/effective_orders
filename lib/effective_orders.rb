@@ -148,9 +148,17 @@ module EffectiveOrders
     return [] unless (stripe_enabled && stripe_subscriptions_enabled)
 
     @stripe_plans ||= (
-      Stripe::Plan.all.inject({}) do |hash, plan|
-        hash[plan.id] = { id: plan.id, amount: plan.amount, interval: plan.interval }
-        hash
+      Stripe::Plan.all.inject({}) do |plans, plan|
+        plans[plan.id] = {
+          id: plan.id,
+          name: plan.name,
+          amount: plan.amount,
+          currency: plan.currency,
+          interval: plan.interval,
+          interval_count: plan.interval_count
+        }
+
+        plans
       end
     )
   end

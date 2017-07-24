@@ -9,7 +9,7 @@ describe Effective::Customer do
 
   describe 'Customer.for' do
     it 'creates a new Customer when passed a new user' do
-      c = Effective::Customer.for(user)
+      c = Effective::Customer.for_buyer(user)
 
       c.kind_of?(Effective::Customer).should eq true
       c.persisted?.should eq true
@@ -18,7 +18,7 @@ describe Effective::Customer do
     end
 
     it 'returns an existing Customer when passed an existing user' do
-      c =  Effective::Customer.for(customer.user)
+      c =  Effective::Customer.for_buyer(customer.user)
       c.should eq customer
     end
   end
