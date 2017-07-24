@@ -143,6 +143,18 @@ module EffectiveOrders
     true
   end
 
+  # We query stripe for the plans just once and cache it forever.
+  def self.stripe_plans
+    return [] unless (stripe_enabled && stripe_subscriptions_enabled)
+
+    @stripe_plans ||= (
+      Stripe::Plan.all.inject({}) do |hash, plan|
+        hash[plan.id] = { id: plan.id, amount: plan.amount, interval: plan.interval }
+        hash
+      end
+    )
+  end
+
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
 end

@@ -130,7 +130,7 @@ module Effective
     end
 
     def assign_customer
-      @customer ||= Customer.for_user(current_user)
+      @customer ||= Customer.for(current_user)
     end
 
     # StrongParameters

@@ -7,9 +7,9 @@ describe Effective::Customer do
   let(:customer) { FactoryGirl.create(:customer) }
   let(:user) { FactoryGirl.create(:user) }
 
-  describe 'Customer.for_user' do
+  describe 'Customer.for' do
     it 'creates a new Customer when passed a new user' do
-      c = Effective::Customer.for_user(user)
+      c = Effective::Customer.for(user)
 
       c.kind_of?(Effective::Customer).should eq true
       c.persisted?.should eq true
@@ -18,7 +18,7 @@ describe Effective::Customer do
     end
 
     it 'returns an existing Customer when passed an existing user' do
-      c =  Effective::Customer.for_user(customer.user)
+      c =  Effective::Customer.for(customer.user)
       c.should eq customer
     end
   end

@@ -4,30 +4,28 @@ module Effective
 
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
-    belongs_to :user
-    has_many :subscriptions, inverse_of: :customer, class_name: 'Effective::Subscription'
+    belongs_to :buyer, polymorphic: true  # Probably a User
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
     # stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
-    # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
+    # stripe_connect_access_token   :string  # If using StripeConnect and this buyer is a connected Seller
     #
     # timestamps
 
-    validates :user, presence: true
-    validates :user_id, uniqueness: true
+    validates :buyer, presence: true
 
     scope :customers, -> { where.not(stripe_customer_id: nil) }
 
-    def self.for_user(user)
-      Effective::Customer.where(user_id: user.id).first_or_create
+    def self.for(buyer)
+      Effective::Customer.where(buyer: buyer).first_or_create
     end
 
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
-        ::Stripe::Customer.create(email: user.email, description: user.id.to_s).tap do |stripe_customer|
+        ::Stripe::Customer.create(email: buyer.email, description: buyer.id.to_s).tap do |stripe_customer|
           self.update_attributes(stripe_customer_id: stripe_customer.id)
         end
       end

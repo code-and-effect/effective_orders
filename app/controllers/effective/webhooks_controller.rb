@@ -69,8 +69,8 @@ module Effective
           @order = Effective::Order.new(subscription, user: @customer.user)
           @order.purchase!(details: "Webhook #{event.id}", provider: 'stripe', validate: false)
         end
-
       end
+
     end
 
     def stripe_subscription_deleted(event)

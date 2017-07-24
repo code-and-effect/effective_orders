@@ -11,7 +11,7 @@ module Effective
       def stripe_connect_redirect_uri
         if params[:code].present?
           token_params = request_access_token(params[:code]) # We got a code, so now we make a curl request for the access_token
-          customer = Effective::Customer.for_user(current_user)
+          customer = Effective::Customer.for(current_user)
 
           if token_params['access_token'].present? && customer.present?
             if customer.update_attributes(:stripe_connect_access_token => token_params['access_token'])

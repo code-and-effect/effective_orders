@@ -7,7 +7,7 @@ describe Effective::WebhooksController, type: :controller do
   after { StripeMock.stop }
 
   let(:order) { FactoryGirl.create(:order) }
-  let(:buyer) { Effective::Customer.for_user(order.user) }
+  let(:buyer) { Effective::Customer.for(order.user) }
 
   let(:event_hash) { event.to_hash }
 

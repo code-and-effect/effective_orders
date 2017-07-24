@@ -6,9 +6,8 @@ module Effective
 
     attr_accessor :has_coupon  # For the form
 
-    acts_as_purchasable
-
     belongs_to :customer, class_name: 'Effective::Customer'
+    belongs_to :subscribable, polymorphic: true
 
     # Attributes
     # stripe_plan_id          :string  # This will be 'Weekly' or something like that
