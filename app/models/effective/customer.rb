@@ -29,10 +29,13 @@ module Effective
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
         raise 'must have a buyer assigned to create a stripe customer' unless buyer.present?
+        raise "buyer email can't be blank" unless buyer.try(:email).present?
 
-        Rails.logger.info "STRIPE CUSTOMER CREATE: #{buyer.email} and #{buyer.id.to_s}"
+        description = "#{buyer.class.name} #{buyer.to_param}"
 
-        ::Stripe::Customer.create(email: buyer.email, description: buyer.id.to_s).tap do |stripe_customer|
+        Rails.logger.info "STRIPE CUSTOMER CREATE: #{buyer.email} and #{description}"
+
+        ::Stripe::Customer.create(email: buyer.email, description: description).tap do |stripe_customer|
           self.stripe_customer_id = stripe_customer.id
         end
       end

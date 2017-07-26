@@ -4,7 +4,7 @@ module Effective
 
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
 
-    attr_accessor :has_coupon  # For the form
+    #attr_accessor :has_coupon  # For the form
 
     belongs_to :customer, class_name: 'Effective::Customer'
     belongs_to :subscribable, polymorphic: true
@@ -74,7 +74,7 @@ module Effective
       if (plan = EffectiveOrders.stripe_plans[stripe_plan_id])
         if stripe_coupon
           self.price = price_with_coupon(plan[:amount], stripe_coupon)
-          self.title = plan[:name] + ' ' + stripe_plan_description(plan) + '<br>Coupon Code: ' + stripe_coupon_description(stripe_coupon)
+          self.title = plan[:name] + ' ' + stripe_plan_description(plan) + 'with coupon: ' + stripe_coupon_description(stripe_coupon)
         else
           self.price = plan[:amount]
           self.title = plan[:name] + ' ' + stripe_plan_description(plan)
