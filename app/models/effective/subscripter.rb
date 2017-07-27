@@ -4,11 +4,7 @@ module Effective
   class Subscripter
     include ActiveModel::Model
 
-    attr_accessor :subscribable, :plan
-
-    def self.permitted_params
-      { subscripter: [:subscribable, :plan] }
-    end
+    attr_accessor :subscribable, :stripe_plan_id
 
     validates :subscribable, presence: true
 
@@ -16,8 +12,16 @@ module Effective
       subscribable.errors.add(:subscripter, 'is invalid') if self.errors.present?
     end
 
-    def subscribe!(name)
-      assign_plan(name)
+    validate do
+      self.errors.add(:stripe_plan_id, 'oh man')
+    end
+
+    def stripe_plan_id
+      @stripe_plan_id ||= subscribable.subscriptions.map { |subscription| subscription.stripe_plan_id }.first
+    end
+
+    def subscribe!(stripe_plan_id)
+      assign_plan(stripe_plan_id)
       raise 'is invalid' unless valid?
 
       error = nil
@@ -41,7 +45,7 @@ module Effective
         end
       end
 
-      raise "unable to subscribe to #{name}: #{error}"
+      raise "unable to subscribe to #{stripe_plan_id}: #{error}"
     end
 
     private

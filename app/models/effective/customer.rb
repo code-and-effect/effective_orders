@@ -24,6 +24,10 @@ module Effective
     #   Effective::Customer.where(buyer: buyer).first_or_create
     # end
 
+    def to_s
+      buyer.to_s
+    end
+
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
         ::Stripe::Customer.retrieve(stripe_customer_id)

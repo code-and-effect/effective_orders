@@ -26,22 +26,40 @@ module EffectiveStripeHelper
     stripe_user_params = opts.delete :stripe_user
     authorize_params.merge!({stripe_user: stripe_user_params}) if stripe_user_params.is_a?(Hash)
 
-    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL.chomp('/') + '?' + authorize_params.to_query
+    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL + '?' + authorize_params.to_query
     options = {}.merge(opts)
     link_to image_tag('/assets/effective_orders/stripe_connect.png'), authorize_url, options
   end
 
   ### Subscriptions Helpers
-  def stripe_plans_collection(plans)
-    (plans || []).map { |plan| [(plan.name + ' ' + stripe_plan_description(plan)), plan.id, {'data-amount' => plan.amount}] }
+  def stripe_plans_collection(f)
+    EffectiveOrders.stripe_plans.map do |plan|
+      partial = (
+        if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
+          "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
+        else
+          "effective/subscriptions/plan" # Render effective_orders default plan panel
+        end
+      )
+
+      content = render(partial: partial, locals: {
+        f: f,
+        plan: plan,
+        selected: Array(f.object.stripe_plan_id).include?(plan[:id]),
+        subscribable: f.object.subscribable,
+        subscribed: f.object.subscribable.subscribed?(plan[:id])
+      })
+
+      [content, plan[:id], { 'data-amount' => plan[:amount] }]
+    end
   end
 
   def stripe_plan_description(obj)
     plan = (
       case obj
       when Hash            ; obj
-      when ::Stripe::Plan  ; EffectiveOrders.stripe_plans[obj.id]
-      else                 ; EffectiveOrders.stripe_plans[obj]
+      when ::Stripe::Plan  ; EffectiveOrders.stripe_plans.find { |plan| plan.id == obj.id }
+      else                 ; raise 'unexpected object'
       end
     )
 

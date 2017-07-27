@@ -99,7 +99,7 @@ module EffectiveOrders
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
       user_attributes: (EffectiveOrders.collect_user_fields || []),
-      subscripter: [:subscribable, :plan]
+      subscripter: [:stripe_plan_id]
     ]
   end
 
@@ -149,8 +149,8 @@ module EffectiveOrders
     return [] unless (stripe_enabled && stripe_subscriptions_enabled)
 
     @stripe_plans ||= (
-      Stripe::Plan.all.inject({}) do |plans, plan|
-        plans[plan.id] = {
+      Stripe::Plan.all.map do |plan|
+        {
           id: plan.id,
           name: plan.name,
           amount: plan.amount,
@@ -158,8 +158,6 @@ module EffectiveOrders
           interval: plan.interval,
           interval_count: plan.interval_count
         }
-
-        plans
       end
     )
   end

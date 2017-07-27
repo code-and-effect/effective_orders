@@ -1,21 +1,14 @@
-# When we click a stripe plan .panel, make it look selected, and set the radio input value
-$(document).on 'click', '.panel-effective-orders-stripe-plan', (event) ->
-  $plan = $(event.currentTarget)
-  $plans = $plan.closest('.effective-orders-stripe-plans').find('.panel-effective-orders-stripe-plan')
+# Add .panel-primary to the selected stripe_plan_id panels
+$(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event) ->
+  $plans = $(event.currentTarget).closest('.effective-orders-stripe-plans')
 
-  value = $plan.find('input:radio').val()
+  $plans.find("input[name$='[subscripter][stripe_plan_id]']").each ->
+    if $(this).is(':checked')
+      $(this).siblings('.panel').addClass('panel-primary selected')
+    else
+      $(this).siblings('.panel').removeClass('panel-primary selected')
 
-  $plans.removeClass('panel-primary')
-  $plans.find('input:radio').val([value]) # Set as Array
-
-  $plan.addClass('panel-primary')
-
+$(document).on 'click', '.effective-orders-stripe-plan .btn-select', (event) ->
+  val = $(event.currentTarget).closest('.effective-orders-stripe-plan').find('input:radio').val()
+  $(event.currentTarget).closest('.effective-orders-stripe-plans').find('input:radio').val([val]).trigger('change')
   false
-
-$(document).on 'change', "input[name='effective_subscription[has_coupon]']", (event) ->
-  $obj = $(event.currentTarget)
-
-  if $obj.is(':checked')
-    $obj.closest('.row').find('.coupon').show()
-  else
-    $obj.closest('.row').find('.coupon').hide().find('input').val('')

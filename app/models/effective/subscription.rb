@@ -23,7 +23,7 @@ module Effective
 
     validates :customer, presence: true
     validates :subscribable, presence: true
-    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.keys }
+    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.map { |plan| plan[:id] } }
 
     with_options(if: -> { stripe_plan_id.present? }) do
       validates :title, presence: true
@@ -37,6 +37,10 @@ module Effective
 
     def tax_exempt
       true
+    end
+
+    def plan
+      EffectiveOrders.stripe_plans.find { |plan| plan.id == stripe_plan_id }
     end
 
     def stripe_plan
@@ -57,6 +61,8 @@ module Effective
       else
         raise 'must have a customer and stripe_plan_id assigned to create a stripe subscription' unless customer.present? && stripe_plan_id.present?
 
+        Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{customer} #{stripe_plan_id} and #{stripe_coupon_id.presence || 'no coupon'}"
+
         customer.stripe_customer.subscriptions.create(plan: stripe_plan_id, coupon: stripe_coupon_id.presence).tap do |stripe_subscription|
           self.stripe_subscription_id = stripe_subscription.id
           assign_price_and_title
@@ -71,7 +77,7 @@ module Effective
     private
 
     def assign_price_and_title
-      if (plan = EffectiveOrders.stripe_plans[stripe_plan_id])
+      if plan.present?
         if stripe_coupon
           self.price = price_with_coupon(plan[:amount], stripe_coupon)
           self.title = plan[:name] + ' ' + stripe_plan_description(plan) + 'with coupon: ' + stripe_coupon_description(stripe_coupon)

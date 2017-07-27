@@ -25,13 +25,13 @@ module ActsAsSubscribable
     subscripter.assign_attributes(atts)
   end
 
-  def subcription(name)
-    plan = EffectiveOrders.stripe_plans[name.to_s] || raise("unknown stripe plan: #{name}")
+  def subcription(stripe_plan_id)
+    plan = EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id } || raise("unknown stripe plan: #{stripe_plan_id}")
     subscriptions.find { |subscription| subscription.stripe_plan_id == plan[:id] }
   end
 
-  def subscribed_to?(name)
-    subcription(name).present?
+  def subscribed?(stripe_plan_id)
+    subcription(stripe_plan_id).present?
   end
 
 end
