@@ -98,7 +98,8 @@ module EffectiveOrders
       :note, :terms_and_conditions,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
-      user_attributes: (EffectiveOrders.collect_user_fields || [])
+      user_attributes: (EffectiveOrders.collect_user_fields || []),
+      subscripter: [:subscribable, :plan]
     ]
   end
 
