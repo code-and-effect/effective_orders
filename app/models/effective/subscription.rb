@@ -20,6 +20,7 @@ module Effective
     validates :customer, presence: true
     validates :subscribable, presence: true
     validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.map { |plan| plan[:id] } }
+    validates :stripe_subscription_id, presence: true
 
     with_options(if: -> { stripe_plan_id.present? }) do
       validates :title, presence: true
@@ -66,6 +67,25 @@ module Effective
           assign_price_and_title
         end
       end
+    end
+
+    def change!(stripe_plan_id:)
+      raise 'subscription must be persisted' unless persisted?
+      raise 'stripe subscription must exist' unless stripe_subscription.present?
+
+      # Change myself
+      self.stripe_plan_id = stripe_plan_id
+      assign_price_and_title
+
+      raise 'invalid' unless valid?
+
+      stripe_subscription.plan = stripe_plan_id
+      stripe_subscription.proration_date = Time.zone.now.to_i
+      stripe_subscription.save || raise('unable to save stripe subscription')
+
+      Rails.logger.info "STRIPE SUBSCRIPTION CHANGE: #{customer} #{stripe_plan_id} and #{stripe_coupon_id.presence || 'no coupon'}"
+
+      save!
     end
 
     private

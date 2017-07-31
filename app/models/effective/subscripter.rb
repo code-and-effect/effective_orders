@@ -31,13 +31,18 @@ module Effective
         begin
           # Create the customer
           if customer.stripe_customer_id.blank? && plan[:amount] > 0
-            raise "unable to subscribe to #{plan[:name]}. Subscribing to a plan with amount > 0 requires a customer token"
+            raise "unable to subscribe to #{plan[:name]}. Subscribing to a non-free plan requires a customer token"
           end
 
           stripe_token.present? ? customer.update_card!(stripe_token) : customer.save!
 
-          # Create the subscription
-          subscribable.subscriptions.build(customer: customer, subscribable: subscribable, stripe_plan_id: plan[:id]).save!
+          # Create or Update the subscription (single subscription per customer implementation)
+          if (subscription = subscribable.subscriptions.first)
+            subscription.change!(stripe_plan_id: plan[:id])
+          else
+            subscribable.subscriptions.build(customer: customer, subscribable: subscribable, stripe_plan_id: plan[:id]).save!
+          end
+
           @current_plan = plan
 
           return true

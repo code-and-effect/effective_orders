@@ -109,11 +109,7 @@ module EffectiveStripeHelper
   end
 
   def stripe_order_description(order)
-    if order.num_items == 1 && order.order_items.all? { |oi| oi.purchasable.kind_of?(Effective::Subscription) }
-      order.order_items.first.purchasable.stripe_plan.name
-    else
-      "#{order.num_items} items (#{price_to_currency(order.total)})"
-    end
+    "#{order.num_items} items (#{price_to_currency(order.total)})"
   end
 
 end
