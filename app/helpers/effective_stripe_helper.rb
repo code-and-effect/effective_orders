@@ -44,7 +44,14 @@ module EffectiveStripeHelper
         required: required,
         item_wrapper_class: item_wrapper_class,
         selected_class: selected_class,
-        wrapper_class: wrapper_class,
+        stripe: {
+          email: form.object.subscripter.email,
+          image: stripe_site_image_url,
+          key: EffectiveOrders.stripe[:publishable_key],
+          name: EffectiveOrders.stripe[:site_title],
+          plans: EffectiveOrders.stripe_plans
+        },
+        wrapper_class: wrapper_class
       }
     )
   end
@@ -68,7 +75,7 @@ module EffectiveStripeHelper
         subscribed: f.object.subscribable.subscribed?(plan[:id])
       })
 
-      [content, plan[:id], { 'data-amount' => plan[:amount] }]
+      [content, plan[:id]]
     end
   end
 
@@ -83,20 +90,7 @@ module EffectiveStripeHelper
 
     raise("unknown stripe plan: #{obj}") unless plan.kind_of?(Hash) && plan[:id].present?
 
-    occurrence = case plan[:interval]
-      when 'daily'    ; '/day'
-      when 'weekly'   ; '/week'
-      when 'monthly'  ; '/month'
-      when 'yearly'   ; '/year'
-      when 'day'      ; plan[:interval_count] == 1 ? '/day' : " every #{plan[:interval_count]} days"
-      when 'week'     ; plan[:interval_count] == 1 ? '/week' : " every #{plan[:interval_count]} weeks"
-      when 'month'    ; plan[:interval_count] == 1 ? '/month' : " every #{plan[:interval_count]} months"
-      when 'year'     ; plan[:interval_count] == 1 ? '/year' : " every #{plan[:interval_count]} years"
-      else            ; plan[:interval]
-    end
-
-    # We call helpers here, because stripe_plan_description is sometimes called in models
-    "#{ActionController::Base.helpers.price_to_currency(plan[:amount])} #{plan[:currency].upcase}#{occurrence}"
+    plan[:description]
   end
 
   def stripe_coupon_description(coupon)

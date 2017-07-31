@@ -1,10 +1,6 @@
 module Effective
   class Subscription < ActiveRecord::Base
-    include EffectiveStripeHelper
-
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
-
-    #attr_accessor :has_coupon  # For the form
 
     belongs_to :customer, class_name: 'Effective::Customer'
     belongs_to :subscribable, polymorphic: true
@@ -72,20 +68,16 @@ module Effective
       end
     end
 
-    def has_coupon
-      stripe_coupon_id.present?
-    end
-
     private
 
     def assign_price_and_title
       if plan.present?
         if stripe_coupon
           self.price = price_with_coupon(plan[:amount], stripe_coupon)
-          self.title = plan[:name] + ' ' + stripe_plan_description(plan) + 'with coupon: ' + stripe_coupon_description(stripe_coupon)
+          self.title = "#{plan[:name]} #{plan[:description]} with coupon #{stripe_coupon.id}"
         else
           self.price = plan[:amount]
-          self.title = plan[:name] + ' ' + stripe_plan_description(plan)
+          self.title = "#{plan[:name]} #{plan[:description]}"
         end
       end
     end

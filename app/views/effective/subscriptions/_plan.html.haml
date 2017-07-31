@@ -1,7 +1,7 @@
 .panel.panel-default{class: (selected_class if selected)}
   .panel-heading.text-center
     %h3= plan[:name]
-    %p= stripe_plan_description(plan)
+    %p= plan[:description]
   .panel-body
     %p Includes features
 

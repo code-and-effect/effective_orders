@@ -99,7 +99,7 @@ module EffectiveOrders
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
       user_attributes: (EffectiveOrders.collect_user_fields || []),
-      subscripter: [:stripe_plan_id]
+      subscripter: [:stripe_plan_id, :stripe_token]
     ]
   end
 
@@ -150,10 +150,24 @@ module EffectiveOrders
 
     @stripe_plans ||= (
       Stripe::Plan.all.map do |plan|
+        occurrence = case plan.interval
+          when 'daily'    ; '/day'
+          when 'weekly'   ; '/week'
+          when 'monthly'  ; '/month'
+          when 'yearly'   ; '/year'
+          when 'day'      ; plan.interval_count == 1 ? '/day' : " every #{plan.interval_count} days"
+          when 'week'     ; plan.interval_count == 1 ? '/week' : " every #{plan.interval_count} weeks"
+          when 'month'    ; plan.interval_count == 1 ? '/month' : " every #{plan.interval_count} months"
+          when 'year'     ; plan.interval_count == 1 ? '/year' : " every #{plan.interval_count} years"
+          else            ; plan.interval
+        end
+
         {
           id: plan.id,
           name: plan.name,
           amount: plan.amount,
+          description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}",
+          occurrence: "#{occurrence}",
           currency: plan.currency,
           interval: plan.interval,
           interval_count: plan.interval_count

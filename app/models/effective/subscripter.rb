@@ -4,7 +4,8 @@ module Effective
   class Subscripter
     include ActiveModel::Model
 
-    attr_accessor :subscribable, :stripe_plan_id
+    attr_accessor :subscribable, :stripe_plan_id, :stripe_token
+    delegate :email, to: :customer
 
     validates :subscribable, presence: true
     validates :plan, if: -> { @stripe_plan_id }, inclusion: { in: EffectiveOrders.stripe_plans, message: 'unknown plan' }
@@ -33,7 +34,7 @@ module Effective
             raise "unable to subscribe to #{plan[:name]}. Subscribing to a plan with amount > 0 requires a customer token"
           end
 
-          customer.save!
+          stripe_token.present? ? customer.update_card!(stripe_token) : customer.save!
 
           # Create the subscription
           subscribable.subscriptions.build(customer: customer, subscribable: subscribable, stripe_plan_id: plan[:id]).save!
