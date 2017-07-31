@@ -21,10 +21,6 @@
       %th Current Period End
       %td= Time.zone.at(@subscription.stripe_subscription.current_period_end).strftime("%d-%b-%Y")
 
-%h2 Initial Order
-
-= render_orders(@subscription.purchased_order)
-
 %h2= "#{@plan.interval.chomp('ly').titleize}ly Invoices"
 
 %table.table

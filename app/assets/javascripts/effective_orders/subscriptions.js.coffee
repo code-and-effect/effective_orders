@@ -1,14 +1,17 @@
-# Add .panel-primary to the selected stripe_plan_id panels
+# Add selected_class to each plans content
 $(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event) ->
   $plans = $(event.currentTarget).closest('.effective-orders-stripe-plans')
 
-  $plans.find("input[name$='[subscripter][stripe_plan_id]']").each ->
-    if $(this).is(':checked')
-      $(this).siblings('.panel').addClass('panel-primary selected')
-    else
-      $(this).siblings('.panel').removeClass('panel-primary selected')
+  selected_class = $plans.data('selected-class')
 
-$(document).on 'click', '.effective-orders-stripe-plan .btn-select', (event) ->
+  $plans.find("input[name$='[subscripter][stripe_plan_id]']").each (_, item) =>
+    if $(item).is(':checked')
+      $(item).siblings('.panel').addClass(selected_class)
+    else
+      $(item).siblings('.panel').removeClass(selected_class)
+
+# When the 'Select' button is clicked, set the radio button input
+$(document).on 'click', '.effective-orders-stripe-plan .btn-select-plan', (event) ->
   val = $(event.currentTarget).closest('.effective-orders-stripe-plan').find('input:radio').val()
   $(event.currentTarget).closest('.effective-orders-stripe-plans').find('input:radio').val([val]).trigger('change')
   false

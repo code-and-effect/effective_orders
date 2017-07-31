@@ -23,24 +23,12 @@
   }
 
   .price { text-align: right; }
-
-  .effective-stripe-subscription {
-    input {
-      margin-top: 5px;
-      width: 30%;
-      min-width: 200px;
-    }
-  }
 }
 
 // Print - Resend Receipt.  Ontop of order.
 .effective-order-actions {
   text-align: right;
   margin-bottom: 10px;
-}
-
-.effective-order-admin-purchase-actions {
-  margin-top: 10px;
 }
 
 // Checkout buttons. Bottom of order.
@@ -50,6 +38,10 @@
   > * {
     display: inline-block;
   }
+}
+
+.effective-order-admin-purchase-actions {
+  margin-top: 10px;
 }
 
 form.new_effective_order {

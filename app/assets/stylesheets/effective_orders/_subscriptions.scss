@@ -1,19 +1,8 @@
-// .panel-effective-orders-stripe-plan {
-//   input { display: none; }
-//   cursor: pointer;
-
-//   .visible-when-selected { display: none; }
-//   .visible-when-unselected { display: block; }
-// }
-
-// .panel-effective-orders-stripe-plan.panel-primary {
-//   .visible-when-selected { display: block; }
-//   .visible-when-unselected { display: none; }
-// }
-
-
-.effective-orders-stripe-plan {
+// This is the radio button form input
+.effective-orders-stripe-plans {
   input { display: none; }
+  label { width: 100%; padding-left: 0px; }
+  .radio + .radio { margin-top: 10px; }
 
   .visible-when-selected { display: none; }
   .visible-when-unselected { display: block; }

@@ -1,0 +1,7 @@
+= form.simple_fields_for :subscripter, form.object.subscripter do |fs|
+  = fs.input :stripe_plan_id, as: :radio_buttons, collection: stripe_plans_collection(fs, selected_class: selected_class),
+    label: label,
+    required: required,
+    wrapper_html: { class: "effective-orders-stripe-plans #{wrapper_class}", 'data-selected-class': selected_class },
+    item_wrapper_class: "effective-orders-stripe-plan #{item_wrapper_class}",
+    item_wrapper_tag: 'div'

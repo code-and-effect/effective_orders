@@ -32,13 +32,30 @@ module EffectiveStripeHelper
   end
 
   ### Subscriptions Helpers
-  def stripe_plans_collection(f)
+  def effective_subscription_fields(form, label: false, required: true, item_wrapper_class: 'col-sm-6 col-md-4 col-lg-3', selected_class: 'selected panel-primary', wrapper_class: 'row')
+    raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
+    raise 'form object must be an acts_as_subscribable object' unless form.object.subscripter.present?
+
+    render(
+      partial: 'effective/subscriptions/fields',
+      locals: {
+        form: form,
+        label: label,
+        required: required,
+        item_wrapper_class: item_wrapper_class,
+        selected_class: selected_class,
+        wrapper_class: wrapper_class,
+      }
+    )
+  end
+
+  def stripe_plans_collection(f, selected_class: 'selected panel-primary')
     EffectiveOrders.stripe_plans.map do |plan|
       partial = (
         if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
           "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
         else
-          "effective/subscriptions/plan" # Render effective_orders default plan panel
+          'effective/subscriptions/plan' # Render effective_orders default plan panel
         end
       )
 
@@ -46,6 +63,7 @@ module EffectiveStripeHelper
         f: f,
         plan: plan,
         selected: Array(f.object.stripe_plan_id).include?(plan[:id]),
+        selected_class: selected_class,
         subscribable: f.object.subscribable,
         subscribed: f.object.subscribable.subscribed?(plan[:id])
       })
