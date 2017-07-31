@@ -32,10 +32,6 @@ module Effective
       self.errors.add(:stripe_coupon_id, 'is an invalid coupon') unless stripe_coupon
     end
 
-    def tax_exempt
-      true
-    end
-
     def plan
       if stripe_subscription_id.present?
         @plan ||= EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }

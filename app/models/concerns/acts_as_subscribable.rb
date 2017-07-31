@@ -18,21 +18,25 @@ module ActsAsSubscribable
   end
 
   def subscripter
-    @subscripter ||= Effective::Subscripter.new(subscribable: self)
+    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self)
   end
 
   def subscripter=(atts)
     subscripter.assign_attributes(atts)
   end
 
-  def subcription(stripe_plan_id)
-    plan = EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id } || raise("unknown stripe plan: #{stripe_plan_id}")
-    subscriptions.find { |subscription| subscription.stripe_plan_id == plan[:id] }
+  def subscription(stripe_plan_id = nil)
+    @_effective_subscription ||= (
+      if stripe_plan_id.nil?
+        subscriptions.to_a.first
+      else
+        subscriptions.to_a.find { |sub| sub.stripe_plan_id == stripe_plan_id }
+      end
+    )
   end
 
   def subscribed?(stripe_plan_id)
-    sub = subcription(stripe_plan_id)
-    sub.present? && sub.persisted?
+    subscriptions.to_a.find { |sub| sub.stripe_plan_id == stripe_plan_id && sub.persisted? }.present?
   end
 
 end

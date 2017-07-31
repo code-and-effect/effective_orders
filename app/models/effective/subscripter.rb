@@ -37,8 +37,8 @@ module Effective
           stripe_token.present? ? customer.update_card!(stripe_token) : customer.save!
 
           # Create or Update the subscription (single subscription per customer implementation)
-          if (subscription = subscribable.subscriptions.first)
-            subscription.change!(stripe_plan_id: plan[:id])
+          if subscribable.subscription
+            subscribable.subscription.change!(stripe_plan_id: plan[:id])
           else
             subscribable.subscriptions.build(customer: customer, subscribable: subscribable, stripe_plan_id: plan[:id]).save!
           end
@@ -73,10 +73,7 @@ module Effective
     end
 
     def current_plan
-      @current_plan ||= (
-        id = subscribable.subscriptions.map { |subscription| subscription.stripe_plan_id }.first
-        EffectiveOrders.stripe_plans.find { |plan| plan[:id] == id } || {}
-      )
+      @current_plan ||= subscribable.subscription.try(:plan) || {}
     end
 
   end
