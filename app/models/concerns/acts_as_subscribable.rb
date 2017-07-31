@@ -31,7 +31,8 @@ module ActsAsSubscribable
   end
 
   def subscribed?(stripe_plan_id)
-    subcription(stripe_plan_id).present?
+    sub = subcription(stripe_plan_id)
+    sub.present? && sub.persisted?
   end
 
 end
