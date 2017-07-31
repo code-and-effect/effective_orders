@@ -23,9 +23,8 @@ module Effective
 
     def save!
       raise 'is invalid' unless valid?
-      return true if current_plan == plan # No work to be done
 
-      error = nil
+      return true if current_plan == plan # No work to be done
 
       Effective::Subscription.transaction do
         begin
@@ -42,12 +41,12 @@ module Effective
 
           return true
         rescue => e
-          error = e.message
+          self.errors.add(:base, e.message)
           raise ::ActiveRecord::Rollback
         end
       end
 
-      raise "unable to subscribe to #{plan[:id]}: #{error}"
+      raise "unable to subscribe to #{plan[:id]}: #{errors.full_messages.to_sentence}"
     end
 
     def subscribe!(stripe_plan_id)
