@@ -4,18 +4,16 @@ module Effective
   class Subscripter
     include ActiveModel::Model
 
-    attr_accessor :subscribable, :stripe_plan_id
+    attr_accessor :subscribable, :stripe_plan_id, :plan
 
     validates :subscribable, presence: true
+    validates :plan, inclusion: { allow_nil: true, in: EffectiveOrders.stripe_plans, message: 'unkown stripe plan' }
 
     validate(if: -> { subscribable.present? }) do
       subscribable.errors.add(:subscripter, 'is invalid') if self.errors.present?
     end
 
-    validate do
-      self.errors.add(:stripe_plan_id, 'oh man')
-    end
-
+    # This is for the Choose Plan form's selected value.
     def stripe_plan_id
       @stripe_plan_id ||= subscribable.subscriptions.map { |subscription| subscription.stripe_plan_id }.first
     end
@@ -39,10 +37,10 @@ module Effective
           subscribable.subscriptions.build(customer: customer, subscribable: subscribable, stripe_plan_id: plan[:id]).save!
 
           return true
-        rescue => e
-          error = e.message
-          raise ::ActiveRecord::Rollback
-        end
+       rescue => e
+         error = e.message
+         raise ::ActiveRecord::Rollback
+       end
       end
 
       raise "unable to subscribe to #{stripe_plan_id}: #{error}"
@@ -54,8 +52,8 @@ module Effective
       @customer ||= (subscribable.customer || subscribable.build_customer(buyer: subscribable))
     end
 
-    def assign_plan(name)
-      self.plan = EffectiveOrders.stripe_plans[name.to_s]
+    def assign_plan(stripe_plan_id)
+      @plan = EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }
     end
 
   end

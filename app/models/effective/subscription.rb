@@ -40,7 +40,9 @@ module Effective
     end
 
     def plan
-      EffectiveOrders.stripe_plans.find { |plan| plan.id == stripe_plan_id }
+      if stripe_subscription_id.present?
+        @plan ||= EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }
+      end
     end
 
     def stripe_plan
