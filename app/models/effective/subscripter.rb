@@ -9,7 +9,12 @@ module Effective
     validates :subscribable, presence: true
     validates :plan, if: -> { @stripe_plan_id }, inclusion: { in: EffectiveOrders.stripe_plans, message: 'unknown plan' }
 
-    validate(if: -> { subscribable.present? && errors.present? }) { subscribable.errors.add(:subscripter, 'is invalid') }
+    # validate(if: -> { @stripe_plan_id && plan[:amount].to_i > 0 }) do
+    #   self.errors.add(:customer, 'customer payment required for non-free plan') unless customer.stripe_customer_id.present?
+    # end
+
+    # Copy any errors upto subscribable
+    validate(if: -> { errors.present? }) { subscribable.errors.add(:subscripter, errors.full_messages.to_sentence) if subscribable }
 
     # This is for Choose Plan form's selected value.
     def stripe_plan_id
@@ -57,12 +62,14 @@ module Effective
     end
 
     def plan # Don't memoize
-      EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id } || {}
+      if @stripe_plan_id
+        EffectiveOrders.stripe_plans.find { |plan| plan[:id] == @stripe_plan_id }
+      end || {}
     end
 
     def current_plan
       @current_plan ||= (
-        id = (subscribable.try(:subscriptions) || []).map { |subscription| subscription.stripe_plan_id }.first
+        id = subscribable.subscriptions.map { |subscription| subscription.stripe_plan_id }.first
         EffectiveOrders.stripe_plans.find { |plan| plan[:id] == id } || {}
       )
     end
