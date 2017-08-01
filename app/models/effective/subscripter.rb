@@ -8,19 +8,16 @@ module Effective
     delegate :email, to: :customer
 
     validates :subscribable, presence: true
-    validates :plan, if: -> { @stripe_plan_id }, inclusion: { in: EffectiveOrders.stripe_plans, message: 'unknown plan' }
+    validates :plan, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans, message: 'unknown plan' }
 
-    # validate(if: -> { @stripe_plan_id && plan[:amount].to_i > 0 }) do
-    #   self.errors.add(:customer, 'customer payment required for non-free plan') unless customer.stripe_customer_id.present?
-    # end
+    validate(if: -> { stripe_plan_id && subscribable && plan.present? }) do
+      if plan[:amount] > 0 && customer.stripe_active_card.blank?
+        self.errors.add(:customer, 'customer payment token required for non-free plan')
+      end
+    end
 
     # Copy any errors upto subscribable
-    validate(if: -> { errors.present? }) { subscribable.errors.add(:subscripter, errors.full_messages.to_sentence) if subscribable }
-
-    # This is for Choose Plan form's selected value.
-    def stripe_plan_id
-      @stripe_plan_id || current_plan[:id]
-    end
+    validate(if: -> { errors.present? && subscribable }) { subscribable.errors.add(:subscripter, errors.full_messages.to_sentence) }
 
     def save!
       raise 'is invalid' unless valid?
@@ -29,11 +26,6 @@ module Effective
 
       Effective::Subscription.transaction do
         begin
-          # Create the customer
-          if customer.stripe_customer_id.blank? && plan[:amount] > 0
-            raise "unable to subscribe to #{plan[:name]}. Subscribing to a non-free plan requires a customer token"
-          end
-
           stripe_token.present? ? customer.update_card!(stripe_token) : customer.save!
 
           # Create or Update the subscription (single subscription per customer implementation)
@@ -60,20 +52,16 @@ module Effective
       save!
     end
 
-    private
+    def current_plan
+      @current_plan ||= subscribable.subscription.try(:plan) || {}
+    end
 
     def customer
       @customer ||= (subscribable.customer || subscribable.build_customer(buyer: subscribable))
     end
 
-    def plan # Don't memoize
-      if @stripe_plan_id
-        EffectiveOrders.stripe_plans.find { |plan| plan[:id] == @stripe_plan_id }
-      end || {}
-    end
-
-    def current_plan
-      @current_plan ||= subscribable.subscription.try(:plan) || {}
+    def plan
+      @plan ||= (EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id } if stripe_plan_id) || {}
     end
 
   end

@@ -30,7 +30,7 @@ $(document).on 'click', "input[type='submit'].effective-orders-subscription-cust
   selected_plan_id = $plans.find("input[name$='[subscripter][stripe_plan_id]']:checked").val()
 
   stripe = $plans.data('stripe')
-  plan = stripe.plans.find (plan, _) => plan['id'] == selected_plan_id
+  plan = stripe.plans.find (plan, _) => plan.id == selected_plan_id
 
   stripeSubscriptionHandler(stripe.key, $form).open
     image: stripe.image
@@ -59,9 +59,9 @@ $(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event)
     else
       $(item).siblings('.panel').removeClass(selected_class)
 
-  stripe_plan = $plans.data('stripe').plans.find (plan, _) => plan['id'] == selected_plan_id
+  plan = $plans.data('stripe').plans.find (plan, _) => plan.id == selected_plan_id
 
-  if (stripe_plan['amount'] || 0) > 0
+  if (plan.amount || 0) > 0
     $plans.closest('form').find("input[type='submit']").addClass('effective-orders-subscription-customer-token-required')
   else
     $plans.closest('form').find("input[type='submit']").removeClass('effective-orders-subscription-customer-token-required')
