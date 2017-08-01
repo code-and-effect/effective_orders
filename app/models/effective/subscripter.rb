@@ -22,7 +22,7 @@ module Effective
     def save!
       raise 'is invalid' unless valid?
 
-      return true if current_plan == plan # No work to be done
+      return true if current_plan.present? && current_plan == plan # No work to be done
 
       Effective::Subscription.transaction do
         begin
@@ -34,8 +34,6 @@ module Effective
           else
             subscribable.subscriptions.build(customer: customer, subscribable: subscribable, stripe_plan_id: plan[:id]).save!
           end
-
-          @current_plan = plan
 
           return true
         rescue => e
@@ -52,16 +50,20 @@ module Effective
       save!
     end
 
-    def current_plan
-      @current_plan ||= subscribable.subscription.try(:plan) || {}
-    end
-
     def customer
       @customer ||= (subscribable.customer || subscribable.build_customer(buyer: subscribable))
     end
 
+    def current_plan
+      if subscribable.subscription
+        subscribable.subscription.plan
+      end || {}
+    end
+
     def plan
-      @plan ||= (EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id } if stripe_plan_id) || {}
+      if stripe_plan_id
+        EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }
+      end || {}
     end
 
   end

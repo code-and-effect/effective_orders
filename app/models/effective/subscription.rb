@@ -75,6 +75,7 @@ module Effective
 
       raise 'invalid' unless valid?
 
+      # Change with Stripe
       stripe_subscription.plan = stripe_plan_id
       stripe_subscription.proration_date = Time.zone.now.to_i
       stripe_subscription.save || raise('unable to save stripe subscription')
