@@ -8,8 +8,8 @@ module ActsAsSubscribable
   end
 
   included do
-    has_one :customer, as: :buyer, class_name: 'Effective::Customer'
-    has_many :subscriptions, as: :subscribable, class_name: 'Effective::Subscription'
+    has_one :customer, through: :subscription, class_name: 'Effective::Customer'
+    has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription'
 
     validates :subscripter, associated: true
   end
@@ -18,25 +18,15 @@ module ActsAsSubscribable
   end
 
   def subscripter
-    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self)
+    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self, user: buyer)
   end
 
   def subscripter=(atts)
     subscripter.assign_attributes(atts)
   end
 
-  def subscription(stripe_plan_id = nil)
-    @_effective_subscription ||= (
-      if stripe_plan_id.nil?
-        subscriptions.to_a.first
-      else
-        subscriptions.to_a.find { |sub| sub.stripe_plan_id == stripe_plan_id }
-      end
-    )
-  end
-
-  def subscribed?(stripe_plan_id)
-    subscriptions.to_a.find { |sub| sub.stripe_plan_id == stripe_plan_id && sub.persisted? }.present?
+  def buyer
+    raise 'acts_as_subscribable object requires the buyer be defined to return the User buying this item.'
   end
 
 end

@@ -146,10 +146,10 @@ module EffectiveOrders
 
   # We query stripe for the plans just once and cache it forever.
   def self.stripe_plans
-    return [] unless (stripe_enabled && stripe_subscriptions_enabled)
+    return {} unless (stripe_enabled && stripe_subscriptions_enabled)
 
     @stripe_plans ||= (
-      Stripe::Plan.all.map do |plan|
+      Stripe::Plan.all.inject({}) do |h, plan|
         occurrence = case plan.interval
           when 'daily'    ; '/day'
           when 'weekly'   ; '/week'
@@ -162,7 +162,7 @@ module EffectiveOrders
           else            ; plan.interval
         end
 
-        {
+        h[plan.id] = {
           id: plan.id,
           name: plan.name,
           amount: plan.amount,
@@ -171,7 +171,7 @@ module EffectiveOrders
           currency: plan.currency,
           interval: plan.interval,
           interval_count: plan.interval_count
-        }
+        }; h
       end
     )
   end

@@ -4,42 +4,59 @@ module Effective
 
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
-    belongs_to :buyer, polymorphic: true  # Probably a User
-    delegate :email, to: :buyer, allow_nil: true
+    belongs_to :user
+    has_many :subscriptions, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
+    has_many :subscribables, through: :subscriptions, source: :subscribable
+
+    accepts_nested_attributes_for :subscriptions
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
     # stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
-    # stripe_connect_access_token   :string  # If using StripeConnect and this buyer is a connected Seller
+    # stripe_subscription_id        :string  # Each user gets one stripe subscription object, which can contain many items
+    # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
     #
     # timestamps
 
-    before_validation(if: -> { stripe_customer_id.blank? && buyer.present? }) { stripe_customer }
 
-    validates :buyer, presence: true
+
+    before_validation(if: -> { stripe_customer_id.blank? && user && user.email.present? }) { stripe_customer }
+
+    validates :user, presence: true
     validates :stripe_customer_id, presence: true
 
-    def self.for_buyer(buyer)
-      Effective::Customer.where(buyer: buyer).first_or_create
+    before_save do
+      if subscriptions.any? { |sub| sub.changed? }
+      end
+    end
+
+    def self.for_user(user)
+      Effective::Customer.where(user: user).first_or_initialize
     end
 
     def to_s
-      buyer.to_s.presence || 'New Customer'
+      user.to_s.presence || 'New Customer'
     end
 
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
-        raise 'must have a buyer assigned to create a stripe customer' unless buyer.present?
-        raise "buyer email can't be blank" unless email.present?
-
-        description = "#{buyer.class.name} #{buyer.to_param}"
-
-        Rails.logger.info "STRIPE CUSTOMER CREATE: #{email} and #{description}"
-
-        ::Stripe::Customer.create(email: email, description: description).tap do |stripe_customer|
+        Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email} and #{user.id}"
+        ::Stripe::Customer.create(email: user.email, description: "User #{user.id}").tap do |stripe_customer|
           self.stripe_customer_id = stripe_customer.id
+        end
+      end
+    end
+
+    def stripe_subscription
+      @stripe_subscription ||= if stripe_subscription_id.present?
+        stripe_customer.subscriptions.retrieve(stripe_subscription_id)
+      else
+        Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
+
+        ::Stripe::Customer.create(customer: stripe_customer_id).tap do |stripe_subscription_id|
+          self.stripe_subscription_id = stripe_subscription_id.id
         end
       end
     end
