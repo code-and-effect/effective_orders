@@ -4,7 +4,7 @@ module EffectiveStripeHelper
   STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
 
   def is_stripe_connect_seller?(user)
-    Effective::Customer.for_buyer(user).try(:is_stripe_connect_seller?) == true
+    Effective::Customer.for_buyer(user).stripe_connect_access_token.present?
   end
 
   def link_to_new_stripe_connect_customer(opts = {})

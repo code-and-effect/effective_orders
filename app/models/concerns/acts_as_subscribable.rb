@@ -8,10 +8,8 @@ module ActsAsSubscribable
   end
 
   included do
+    has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription', autosave: true
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
-    has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription'
-
-    validates :subscripter, associated: true
   end
 
   module ClassMethods

@@ -4,7 +4,7 @@ module Effective
   class Subscription < ActiveRecord::Base
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
 
-    belongs_to :customer, class_name: 'Effective::Customer', counter_cache: true
+    belongs_to :customer, class_name: 'Effective::Customer', counter_cache: true, autosave: true
     belongs_to :subscribable, polymorphic: true
 
     # Attributes
