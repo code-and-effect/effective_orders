@@ -32,6 +32,11 @@ module Effective
       self.stripe_subscription_id = stripe_subscription.id
     end
 
+    before_save(if: -> { subscriptions.any? { |sub| sub.changed? } }) do
+      # I'm not sure how to update! It might be a full delete and recreate as a new subscription
+      #::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items, metadata: { user_id: user.id })
+    end
+
     def self.for_user(user)
       Effective::Customer.where(user: user).first_or_initialize
     end
@@ -46,7 +51,7 @@ module Effective
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
         Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email} and #{user.id}"
-        ::Stripe::Customer.create(email: user.email, description: "User #{user.id}")
+        ::Stripe::Customer.create(email: user.email, description: "User #{user.id}", metadata: { user_id: user.id })
       end
     end
 
@@ -56,7 +61,7 @@ module Effective
         ::Stripe::Subscription.retrieve(stripe_subscription_id)
       else
         Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
-        ::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items)
+        ::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items, metadata: { user_id: user.id })
       end
     end
 
@@ -68,6 +73,7 @@ module Effective
     private
 
     def subscription_items
+      binding.pry
       # TODO the real subscriptions man.
       [{plan: 'bronze', quantity: 1}]
     end
@@ -77,7 +83,7 @@ module Effective
 
       stripe_customer.source = token
 
-      Rails.logger.info "STRIPE CUSTOMER SAVE TOKEN: #{token}"
+      Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{token}"
       if stripe_customer.save == false
         self.errors.add(:stripe_active_card, 'unable to update stripe active card')
         raise 'unable to update stripe active card'

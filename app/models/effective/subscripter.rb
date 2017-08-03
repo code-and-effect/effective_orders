@@ -1,4 +1,4 @@
-# Form object to select a subscription, and to handle all the logic
+# Form object to select a plan, and build the correct subscription and customer
 
 module Effective
   class Subscripter
@@ -46,14 +46,23 @@ module Effective
       # Build the customer
       customer = subscription.customer || subscription.build_customer(user: user)
 
-      # Make sure a new customer has the correct subscriptions data
-      customer.subscriptions << subscription unless customer.subscriptions.find { |sub| sub.subscribable == subscribable }
-
-      # Assign stripe plan id
-      subscription.stripe_plan_id = plan[:id] if plan
-
       # Assign stripe token - make sure we update the customer
       customer.stripe_source = stripe_token if stripe_token
+
+      # Assign stripe plan id
+      if plan
+        subscription.stripe_plan_id = plan[:id]
+
+        # Make sure a new customer has the correct subscriptions data.
+        # The subscription and customer.subscriptions are out of sync here. So we sync them.
+        # The changes we make to customer.subscriptions get thrown away
+        # And the subscribable.subscription's autosave makes sure the subscription is saved
+        if(index = customer.subscriptions.index { |sub| sub.subscribable == subscribable }).present?
+          customer.subscriptions[index].stripe_plan_id = plan[:id]
+        else
+          customer.subscriptions << subscription
+        end
+      end
 
       # Return the subscription
       subscription
