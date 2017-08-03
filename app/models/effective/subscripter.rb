@@ -17,10 +17,6 @@ module Effective
     #   end
     # end
 
-    # validate(if: -> { errors.blank? && stripe_plan_id.present? && subscribable.subscription.blank? }) do
-    #   Rails.logger.info "OKAY WE ARE BUILDING"
-    # end
-
     def build(stripe_plan_id)
       return false unless subscribable && user
 

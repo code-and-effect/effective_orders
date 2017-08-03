@@ -17,13 +17,15 @@ module Effective
     # timestamps
 
     validates :user, presence: true
+    validates :stripe_customer_id, if: -> { persisted? }, presence: true
 
-    validate do
-      self.errors.add(:base, 'uhoh customer')
+    before_save(if: -> { stripe_customer_id.blank? }) do
+      self.stripe_customer_id = stripe_customer.id
     end
 
-    #validates :stripe_customer, presence: true, if: -> { stripe_customer_id.blank? && errors.blank? }
-    #validates :stripe_customer_id, presence: true
+    before_save(if: -> { subscriptions.present? && stripe_subscription_id.blank? }) do
+      self.stripe_subscription_id = stripe_subscription.id
+    end
 
     def self.for_user(user)
       Effective::Customer.where(user: user).first_or_initialize
@@ -38,9 +40,7 @@ module Effective
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
         Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email} and #{user.id}"
-        ::Stripe::Customer.create(email: user.email, description: "User #{user.id}").tap do |stripe_customer|
-          self.stripe_customer_id = stripe_customer.id
-        end
+        ::Stripe::Customer.create(email: user.email, description: "User #{user.id}")
       end
     end
 
@@ -49,10 +49,7 @@ module Effective
         stripe_customer.subscriptions.retrieve(stripe_subscription_id)
       else
         Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
-
-        ::Stripe::Customer.create(customer: stripe_customer_id).tap do |stripe_subscription_id|
-          self.stripe_subscription_id = stripe_subscription_id.id
-        end
+        ::Stripe::Subscription.create(customer: stripe_customer_id, items: [{plan: 'bronze'}])
       end
     end
 
