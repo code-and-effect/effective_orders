@@ -9,7 +9,7 @@ module Effective
 
     validates :user, presence: true
     validates :subscribable, presence: true
-    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
+    validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
     # validate(if: -> { stripe_plan_id && subscribable && plan.present? }) do
     #   if plan[:amount] > 0 && customer.stripe_active_card.blank? && stripe_token.blank?
@@ -17,58 +17,14 @@ module Effective
     #   end
     # end
 
-    def build(stripe_plan_id)
-      return false unless subscribable && user
-
-      Rails.logger.info "BUILDING SUBSCRIPTION!!!"
-
-      # Use or build customer
-      customer = user.customer || user.build_customer
-
-      # Use or build subscription
-      subscription = customer.subscriptions.find { |sub| sub.subscribable == subscribable } || customer.subscriptions.build(subscribable: subscribable, customer: customer)
-
-      # Assign Stripe Plan
-      subscription.stripe_plan_id = stripe_plan_id
-
-      # Make sure subscribable has the correct subscription applied
-      subscribable.subscription = subscription
-    end
-
     def save!
       raise 'is invalid' unless valid?
-
-      return true if current_plan == plan # No work to be done
-
-      Effective::Subscription.transaction do
-        begin
-          # Make sure an Effective::Customer exists
-          customer = Effective::Customer.where(user: user).first_or_initialize
-          customer.assign_card(stripe_token)
-
-          # Create a subscription item
-          subscription = customer.subscriptions.find { |sub| sub.subscribable == subscribable } || customer.subscriptions.build(subscribable: subscribable, customer: customer)
-          subscription.stripe_plan_id = plan[:id]
-
-          customer.save!
-
-          return true
-        rescue => e
-          self.errors.add(:base, e.message)
-          raise ::ActiveRecord::Rollback
-        end
-      end
-
-      raise "unable to subscribe to #{plan[:id]}: #{errors.full_messages.to_sentence}"
+      build && subscribable.save!
     end
 
     def subscribe!(stripe_plan_id)
       self.stripe_plan_id = stripe_plan_id
       save!
-    end
-
-    def customer
-      @customer ||= (subscribable.customer || subcsribable.build_customer(buyer: subscribable))
     end
 
     def current_plan
@@ -77,6 +33,30 @@ module Effective
 
     def plan
       EffectiveOrders.stripe_plans[stripe_plan_id]
+    end
+
+    private
+
+    def build
+      return false unless subscribable && user && (plan || stripe_token)
+
+      # Build the subscription
+      subscription = subscribable.subscription || subscribable.build_subscription(customer: user.customer)
+
+      # Build the customer
+      customer = subscription.customer || subscription.build_customer(user: user)
+
+      # Make sure a new customer has the correct subscriptions data
+      customer.subscriptions << subscription unless customer.subscriptions.find { |sub| sub.subscribable == subscribable }
+
+      # Assign stripe plan id
+      subscription.stripe_plan_id = plan[:id] if plan
+
+      # Assign stripe token - make sure we update the customer
+      customer.stripe_source = stripe_token if stripe_token
+
+      # Return the subscription
+      subscription
     end
 
   end

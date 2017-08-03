@@ -1,7 +1,7 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
 = form.simple_fields_for :subscripter, form.object.subscripter do |fs|
-  - fs.object.stripe_plan_id ||= fs.object.current_plan[:id]
+  - fs.object.stripe_plan_id ||= (fs.object.current_plan || {})[:id]
 
   = fs.input :stripe_token, as: :hidden
 

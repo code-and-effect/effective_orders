@@ -2,6 +2,7 @@ module Effective
   class Customer < ActiveRecord::Base
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
+    attr_accessor :stripe_source # This is the stripe subscription token
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
     belongs_to :user
@@ -23,6 +24,10 @@ module Effective
       self.stripe_customer_id = stripe_customer.id
     end
 
+    before_save(if: -> { stripe_source.present? }) do
+      assign_card!(stripe_source)
+    end
+
     before_save(if: -> { subscriptions.present? && stripe_subscription_id.blank? }) do
       self.stripe_subscription_id = stripe_subscription.id
     end
@@ -37,6 +42,7 @@ module Effective
 
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
+        Rails.logger.info "STRIPE CUSTOMER RETRIEVE: #{stripe_customer_id}"
         ::Stripe::Customer.retrieve(stripe_customer_id)
       else
         Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email} and #{user.id}"
@@ -46,23 +52,35 @@ module Effective
 
     def stripe_subscription
       @stripe_subscription ||= if stripe_subscription_id.present?
-        stripe_customer.subscriptions.retrieve(stripe_subscription_id)
+        Rails.logger.info "STRIPE SUBSCRIPTION RETRIEVE: #{stripe_subscription_id}"
+        ::Stripe::Subscription.retrieve(stripe_subscription_id)
       else
         Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
-        ::Stripe::Subscription.create(customer: stripe_customer_id, items: [{plan: 'bronze'}])
+        ::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items)
       end
     end
 
-    def assign_card(token)
+    def stripe_source=(token)
+      @stripe_source = token;
+      self.updated_at = Time.zone.now if token.present?
+    end
+
+    private
+
+    def subscription_items
+      # TODO the real subscriptions man.
+      [{plan: 'bronze', quantity: 1}]
+    end
+
+    def assign_card!(token)
       return true unless token.present?
 
       stripe_customer.source = token
 
       Rails.logger.info "STRIPE CUSTOMER SAVE TOKEN: #{token}"
-
       if stripe_customer.save == false
         self.errors.add(:stripe_active_card, 'unable to update stripe active card')
-        return false
+        raise 'unable to update stripe active card'
       end
 
       if stripe_customer.default_source.present?

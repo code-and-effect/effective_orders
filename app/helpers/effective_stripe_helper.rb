@@ -45,11 +45,11 @@ module EffectiveStripeHelper
         item_wrapper_class: item_wrapper_class,
         selected_class: selected_class,
         stripe: {
-          email: form.object.subscripter.email,
+          email: form.object.subscripter.user.email,
           image: stripe_site_image_url,
           key: EffectiveOrders.stripe[:publishable_key],
           name: EffectiveOrders.stripe[:site_title],
-          plans: EffectiveOrders.stripe_plans
+          plans: EffectiveOrders.stripe_plans.values
         },
         wrapper_class: wrapper_class
       }
@@ -57,7 +57,7 @@ module EffectiveStripeHelper
   end
 
   def stripe_plans_collection(f, selected_class: 'selected panel-primary')
-    EffectiveOrders.stripe_plans.map do |plan|
+    EffectiveOrders.stripe_plans.map do |_, plan|
       partial = (
         if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
           "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml

@@ -23,6 +23,10 @@ module ActsAsSubscribable
     subscripter.assign_attributes(atts)
   end
 
+  def subscribed?(stripe_plan_id)
+    subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
+  end
+
   def buyer
     raise 'acts_as_subscribable object requires the buyer be defined to return the User buying this item.'
   end
