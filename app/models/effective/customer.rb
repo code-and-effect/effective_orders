@@ -61,7 +61,13 @@ module Effective
         ::Stripe::Subscription.retrieve(stripe_subscription_id)
       else
         Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
-        ::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items, metadata: { user_id: user.id })
+
+        ::Stripe::Subscription.create(
+          customer: stripe_customer_id,
+          items: subscription_items,
+          metadata: subscription_metadata,
+          trial_end: subscription_trial_end
+        )
       end
     end
 
@@ -72,10 +78,18 @@ module Effective
 
     private
 
+    def subscription_trial_end
+      subscriptions.map { |sub| sub.current_period_end }.compact.min.try(:to_i)
+    end
+
+    def subscription_metadata
+      { user_id: user.id, subscribable_ids: subscriptions.map { |sub| sub.subscribable.id }.compact.join(',') }
+    end
+
     def subscription_items
-      binding.pry
-      # TODO the real subscriptions man.
-      [{plan: 'bronze', quantity: 1}]
+      subscriptions.group_by { |sub| sub.stripe_plan_id }.map do |plan, subs|
+        { plan: plan, quantity: subs.length }
+      end
     end
 
     def assign_card!(token)

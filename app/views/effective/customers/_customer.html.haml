@@ -1,10 +1,12 @@
-%h3.effective-heading= subscription.plan[:name]
+- if subscription.present?
 
-%table.table
-  %tbody
-    %tr
-      %th Plan
-      %td= subscription.plan[:description]
+  %h3.effective-heading= subscription.plan[:name]
+
+  %table.table
+    %tbody
+      %tr
+        %th Plan
+        %td= subscription.plan[:description]
 /     %tr
 /       %th Started
 /       %td= Time.zone.at(subscription.stripe_subscription.start).strftime("%d-%b-%Y")
@@ -40,10 +42,11 @@
 /           = Time.zone.at(invoice.lines.first.period.end).strftime("%d-%b-%Y")
 /         %td= price_to_currency(invoice.total)
 
-%h2 Customer
+- if customer.present?
+  %h2 Customer
 
-%h3 Stripe Customer
-%p= tableize_hash(customer.stripe_customer.to_h)
+  %h3 Stripe Customer
+  %p= tableize_hash(customer.stripe_customer.to_h)
 
-%h3 Stripe Subscription
-%p= tableize_hash(customer.stripe_subscription.to_h)
+  %h3 Stripe Subscription
+  %p= tableize_hash(customer.stripe_subscription.to_h)

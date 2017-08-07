@@ -149,7 +149,7 @@ module EffectiveOrders
     return {} unless (stripe_enabled && stripe_subscriptions_enabled)
 
     @stripe_plans ||= (
-      Stripe::Plan.all.inject({}) do |h, plan|
+      plans = Stripe::Plan.all.inject({}) do |h, plan|
         occurrence = case plan.interval
           when 'daily'    ; '/day'
           when 'weekly'   ; '/week'
@@ -166,13 +166,26 @@ module EffectiveOrders
           id: plan.id,
           name: plan.name,
           amount: plan.amount,
+          currency: plan.currency,
           description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}",
           occurrence: "#{occurrence}",
-          currency: plan.currency,
           interval: plan.interval,
           interval_count: plan.interval_count
         }; h
       end
+
+      # plans[nil] = {
+      #   id: nil,
+      #   name: 'Trial',
+      #   amount: 0,
+      #   currency: 'usd',
+      #   description: "45-Day Trial Mode",
+      #   occurrence: "daily",
+      #   interval: '/day',
+      #   interval_count: 1
+      # }
+
+      plans
     )
   end
 
