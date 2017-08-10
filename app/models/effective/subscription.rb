@@ -9,7 +9,6 @@ module Effective
 
     # Attributes
     # stripe_plan_id          :string  # This will be 'bronze' or something like that
-    # current_period_end      :datetime
     #
     # name                    :string
     # price                   :integer, default: 0

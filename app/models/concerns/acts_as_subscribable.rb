@@ -27,6 +27,10 @@ module ActsAsSubscribable
     subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
   end
 
+  def trialing?
+    customer && customer.trialing?
+  end
+
   def buyer
     raise 'acts_as_subscribable object requires the buyer be defined to return the User buying this item.'
   end

@@ -2,7 +2,8 @@ module Effective
   class Customer < ActiveRecord::Base
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
-    attr_accessor :stripe_source # This is the stripe subscription token
+    attr_accessor :stripe_source # This is the stripe subscription tokene
+    attr_accessor :trial_end
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
     belongs_to :user
@@ -11,8 +12,12 @@ module Effective
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
-    # stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
+    # active_card                   :string  # **** **** **** 4242 Visa 05/12
+
     # stripe_subscription_id        :string  # Each user gets one stripe subscription object, which can contain many items
+    # current_period_end            :datetime
+    # status                        :string
+
     # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
     #
     # timestamps
@@ -30,10 +35,12 @@ module Effective
 
     before_save(if: -> { subscriptions.present? && stripe_subscription_id.blank? }) do
       self.stripe_subscription_id = stripe_subscription.id
+      self.status = stripe_subscription.status
+      self.current_period_end = Time.zone.at(stripe_subscription.current_period_end)
     end
 
-    before_save(if: -> { subscriptions.any? { |sub| sub.changed? } }) do
-      # I'm not sure how to update! It might be a full delete and recreate as a new subscription
+    before_save(if: -> { subscriptions.any? { |sub| sub.changed? } || stripe_source.present? }) do
+      sync_subscription!
       #::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items, metadata: { user_id: user.id })
     end
 
@@ -60,7 +67,7 @@ module Effective
         Rails.logger.info "STRIPE SUBSCRIPTION RETRIEVE: #{stripe_subscription_id}"
         ::Stripe::Subscription.retrieve(stripe_subscription_id)
       else
-        Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
+        Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id} #{subscription_items} #{trial_end}"
 
         ::Stripe::Subscription.create(
           customer: stripe_customer_id,
@@ -72,14 +79,28 @@ module Effective
     end
 
     def stripe_source=(token)
-      @stripe_source = token;
+      @stripe_source = token
       self.updated_at = Time.zone.now if token.present?
     end
+
+    def trialing?
+      status == 'trialing'
+    end
+
+    # def stripe_trialing
+    #   return @trialing unless @trialing.nil?
+
+    #   @trialing = (
+    #     persisted? && stripe_subscription_id && stripe_subscription &&
+    #     stripe_subscription.trial_end.present? && (Time.zone.at(stripe_subscription.trial_end) > Time.zone.now)
+    #   )
+    # end
 
     private
 
     def subscription_trial_end
-      subscriptions.map { |sub| sub.current_period_end }.compact.min.try(:to_i)
+      trial_end.to_i if trial_end
+      #subscriptions.map { |sub| sub.current_period_end }.compact.min.try(:to_i)
     end
 
     def subscription_metadata
@@ -92,6 +113,20 @@ module Effective
       end
     end
 
+    def sync_subscription!
+      Rails.logger.info "STRIPE SUBSCRIPTION UPDATE: #{stripe_subscription_id} #{subscription_items}"
+
+      sub = stripe_subscription
+
+      #binding.pry
+
+      #sub.items = subscription_items
+      #sub.metadata = subscription_metadata
+      sub.trial_end = 'now' if active_card.present?
+
+      sub.save
+    end
+
     def assign_card!(token)
       return true unless token.present?
 
@@ -99,13 +134,13 @@ module Effective
 
       Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{token}"
       if stripe_customer.save == false
-        self.errors.add(:stripe_active_card, 'unable to update stripe active card')
+        self.errors.add(:active_card, 'unable to update stripe active card')
         raise 'unable to update stripe active card'
       end
 
       if stripe_customer.default_source.present?
         card = stripe_customer.sources.retrieve(stripe_customer.default_source)
-        self.stripe_active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
+        self.active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
       end
 
       true

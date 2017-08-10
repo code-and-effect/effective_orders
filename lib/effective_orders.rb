@@ -145,6 +145,15 @@ module EffectiveOrders
   end
 
   # We query stripe for the plans just once and cache it forever.
+  def self.stripe_trialing_plan
+    {
+      id: 'trialing',
+      name: 'Trialing',
+      amount: 0,
+      description: "45-Day Free Trial",
+    }
+  end
+
   def self.stripe_plans
     return {} unless (stripe_enabled && stripe_subscriptions_enabled)
 

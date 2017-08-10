@@ -36,6 +36,14 @@ module EffectiveStripeHelper
     raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscripter.present?
 
+    plans = (
+      if form.object.trialing?
+        [EffectiveOrders.stripe_trialing_plan] + EffectiveOrders.stripe_plans.values
+      else
+        EffectiveOrders.stripe_plans.values
+      end
+    )
+
     render(
       partial: 'effective/subscriptions/fields',
       locals: {
@@ -49,15 +57,23 @@ module EffectiveStripeHelper
           image: stripe_site_image_url,
           key: EffectiveOrders.stripe[:publishable_key],
           name: EffectiveOrders.stripe[:site_title],
-          plans: EffectiveOrders.stripe_plans.values
+          plans: plans
         },
         wrapper_class: wrapper_class
       }
     )
   end
 
-  def stripe_plans_collection(f, selected_class: 'selected panel-primary')
-    EffectiveOrders.stripe_plans.map do |_, plan|
+  def stripe_plans_collection(form, selected_class: 'selected panel-primary')
+    plans = (
+      if form.object.subscribable.trialing?
+        [EffectiveOrders.stripe_trialing_plan] + EffectiveOrders.stripe_plans.values
+      else
+        EffectiveOrders.stripe_plans.values
+      end
+    )
+
+    plans.map do |plan|
       partial = (
         if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
           "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
@@ -66,13 +82,21 @@ module EffectiveStripeHelper
         end
       )
 
+      subscribed = (
+        if form.object.subscribable.trialing?
+          plan == EffectiveOrders.stripe_trialing_plan
+        else
+          form.object.subscribable.subscribed?(plan[:id])
+        end
+      )
+
       content = render(partial: partial, locals: {
-        f: f,
+        f: form,
         plan: plan,
-        selected: Array(f.object.stripe_plan_id).include?(plan[:id]),
+        selected: Array(form.object.stripe_plan_id).include?(plan[:id]),
         selected_class: selected_class,
-        subscribable: f.object.subscribable,
-        subscribed: f.object.subscribable.subscribed?(plan[:id])
+        subscribable: form.object.subscribable,
+        subscribed: subscribed
       })
 
       [content, plan[:id]]

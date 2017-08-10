@@ -9,7 +9,7 @@ module Effective
 
     validates :user, presence: true
     validates :subscribable, presence: true
-    validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
+    validates :stripe_plan_id, inclusion: { in: (EffectiveOrders.stripe_plans.keys + [EffectiveOrders.stripe_trialing_plan[:id]]), message: 'unknown plan' }
 
     # validate(if: -> { stripe_plan_id && subscribable && plan.present? }) do
     #   if plan[:amount] > 0 && customer.stripe_active_card.blank? && stripe_token.blank?
@@ -18,6 +18,8 @@ module Effective
     # end
 
     def save!
+      return true if stripe_plan_id == EffectiveOrders.stripe_trialing_plan[:id]
+
       raise 'is invalid' unless valid?
       build && subscribable.save!
     end
@@ -28,7 +30,8 @@ module Effective
     end
 
     def current_plan
-      (subscribable.subscription.plan if subscribable.subscription)
+      return nil unless subscribable
+      subscribable.trialing? ? EffectiveOrders.stripe_trialing_plan : subscribable.subscription.plan
     end
 
     def plan
@@ -49,10 +52,13 @@ module Effective
       # Assign stripe token - make sure we update the customer
       customer.stripe_source = stripe_token if stripe_token
 
+      if trial_end
+        customer.trial_end = trial_end
+      end
+
       # Assign stripe plan id
       if plan
         subscription.stripe_plan_id = plan[:id]
-        subscription.current_period_end = trial_end
 
         # Make sure a new customer has the correct subscriptions data.
         # The subscription and customer.subscriptions are out of sync here. So we sync them.
