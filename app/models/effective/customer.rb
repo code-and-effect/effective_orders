@@ -104,27 +104,40 @@ module Effective
     end
 
     def subscription_metadata
-      { user_id: user.id, subscribable_ids: subscriptions.map { |sub| sub.subscribable.id }.compact.join(',') }
+      { user_id: user.id, ids: subscriptions.map { |sub| sub.subscribable.id }.compact.sort.join(',') }
     end
 
     def subscription_items
       subscriptions.group_by { |sub| sub.stripe_plan_id }.map do |plan, subs|
-        { plan: plan, quantity: subs.length }
+        { plan: plan, quantity: subs.length, metadata: { ids: subs.map { |sub| sub.subscribable.id }.compact.sort.join(',') } }
       end
     end
 
     def sync_subscription!
       Rails.logger.info "STRIPE SUBSCRIPTION UPDATE: #{stripe_subscription_id} #{subscription_items}"
 
-      sub = stripe_subscription
+      stripe_subscription.items.each do |stripe_item|
+        if(item = subscription_items.find { |item| item[:plan] == stripe_item['plan']['id'] })
+          if item[:quantity] != stripe_item['quantity'] || item[:metadata] != stripe_item['metadata'].to_h
+            stripe_item.quantity = item[:quantity]
+            stripe_item.metadata = item[:metadata]
+            stripe_item.save
+          end
+        else
+          stripe_item.delete
+        end
+      end
 
-      #binding.pry
+      subscription_items.each do |item|
+        unless stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
+          stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
+        end
+      end
 
-      #sub.items = subscription_items
-      #sub.metadata = subscription_metadata
-      sub.trial_end = 'now' if active_card.present?
+      stripe_subscription.metadata = subscription_metadata
+      stripe_subscription.trial_end = 'now' if active_card.present?
 
-      sub.save
+      stripe_subscription.save
     end
 
     def assign_card!(token)
