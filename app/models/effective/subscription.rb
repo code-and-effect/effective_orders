@@ -22,7 +22,7 @@ module Effective
 
     validates :customer, presence: true
     validates :subscribable, presence: true
-    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.keys }
+    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.except('blank').keys }
 
     validates :name, presence: true
     validates :price, numericality: { greater_than_or_equal_to: 0, only_integer: true }

@@ -24,11 +24,11 @@ module ActsAsSubscribable
   end
 
   def subscribed?(stripe_plan_id)
-    subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
-  end
-
-  def trialing?
-    customer && customer.trialing?
+    if [nil, EffectiveOrders.stripe_blank_plan[:id]].include?(stripe_plan_id)
+      subscription.blank? || subscription.new_record? || subscription.stripe_plan_id == stripe_plan_id
+    else
+      subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
+    end
   end
 
   def buyer

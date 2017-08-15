@@ -3,7 +3,6 @@ module Effective
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
     attr_accessor :stripe_source # This is the stripe subscription tokene
-    attr_accessor :trial_end
     attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
 
     belongs_to :user
@@ -39,9 +38,8 @@ module Effective
       self.current_period_end = Time.zone.at(stripe_subscription.current_period_end)
     end
 
-    before_save(if: -> { subscriptions.any? { |sub| sub.changed? } || stripe_source.present? }) do
+    before_save(if: -> { subscriptions.any? { |sub| sub.changed? || sub.new_record? }}) do
       sync_subscription!
-      #::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items, metadata: { user_id: user.id })
     end
 
     def self.for_user(user)
@@ -67,14 +65,8 @@ module Effective
         Rails.logger.info "STRIPE SUBSCRIPTION RETRIEVE: #{stripe_subscription_id}"
         ::Stripe::Subscription.retrieve(stripe_subscription_id)
       else
-        Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id} #{subscription_items} #{trial_end}"
-
-        ::Stripe::Subscription.create(
-          customer: stripe_customer_id,
-          items: subscription_items,
-          metadata: subscription_metadata,
-          trial_end: subscription_trial_end
-        )
+        Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{stripe_customer_id}"
+        ::Stripe::Subscription.create(customer: stripe_customer_id, items: subscription_items(metadata: false), metadata: subscription_metadata)
       end
     end
 
@@ -83,61 +75,61 @@ module Effective
       self.updated_at = Time.zone.now if token.present?
     end
 
-    def trialing?
-      status == 'trialing'
-    end
-
-    # def stripe_trialing
-    #   return @trialing unless @trialing.nil?
-
-    #   @trialing = (
-    #     persisted? && stripe_subscription_id && stripe_subscription &&
-    #     stripe_subscription.trial_end.present? && (Time.zone.at(stripe_subscription.trial_end) > Time.zone.now)
-    #   )
-    # end
-
     private
 
-    def subscription_trial_end
-      trial_end.to_i if trial_end
-      #subscriptions.map { |sub| sub.current_period_end }.compact.min.try(:to_i)
-    end
-
     def subscription_metadata
-      { user_id: user.id, ids: subscriptions.map { |sub| sub.subscribable.id }.compact.sort.join(',') }
+      { user_id: user.id.to_s, ids: subscriptions.map { |sub| sub.subscribable.id }.compact.sort.join(',') }
     end
 
-    def subscription_items
+    def subscription_items(metadata: true)
       subscriptions.group_by { |sub| sub.stripe_plan_id }.map do |plan, subs|
-        { plan: plan, quantity: subs.length, metadata: { ids: subs.map { |sub| sub.subscribable.id }.compact.sort.join(',') } }
+        if metadata
+          { plan: plan, quantity: subs.length, metadata: { ids: subs.map { |sub| sub.subscribable.id }.compact.sort.join(',') } }
+        else
+          { plan: plan, quantity: subs.length }
+        end
       end
     end
 
     def sync_subscription!
-      Rails.logger.info "STRIPE SUBSCRIPTION UPDATE: #{stripe_subscription_id} #{subscription_items}"
+      Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{stripe_subscription_id} #{subscription_items}"
 
+      # Update quantities
       stripe_subscription.items.each do |stripe_item|
         if(item = subscription_items.find { |item| item[:plan] == stripe_item['plan']['id'] })
           if item[:quantity] != stripe_item['quantity'] || item[:metadata] != stripe_item['metadata'].to_h
             stripe_item.quantity = item[:quantity]
             stripe_item.metadata = item[:metadata]
+            Rails.logger.info " -> UPDATE: #{item[:plan]}"
             stripe_item.save
           end
-        else
-          stripe_item.delete
         end
       end
 
+      # Create new ones
       subscription_items.each do |item|
         unless stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
+          Rails.logger.info " -> CREATE: #{item[:plan]}"
           stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
         end
       end
 
-      stripe_subscription.metadata = subscription_metadata
-      stripe_subscription.trial_end = 'now' if active_card.present?
+      # Delete existing
+      stripe_subscription.items.each do |stripe_item|
+        if subscription_items.find { |item| item[:plan] == stripe_item['plan']['id'] }.blank?
+          Rails.logger.info " -> DELETE: #{stripe_item['plan']['id']}"
+          stripe_item.delete
+        end
+      end
 
-      stripe_subscription.save
+      # Update metadata
+      if stripe_subscription.metadata.to_h != subscription_metadata
+        Rails.logger.info " -> METATADA: #{subscription_metadata}"
+        stripe_subscription.metadata = subscription_metadata
+        stripe_subscription.save
+      end
+
+      true
     end
 
     def assign_card!(token)

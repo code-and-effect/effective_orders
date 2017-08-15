@@ -5,7 +5,7 @@
 
   = fs.input :stripe_token, as: :hidden
 
-  = fs.input :stripe_plan_id, as: :radio_buttons, collection: stripe_plans_collection(fs, selected_class: selected_class),
+  = fs.input :stripe_plan_id, as: :radio_buttons, collection: stripe_plans_collection(fs, include_blank: include_blank, selected_class: selected_class),
     label: label,
     required: required,
     wrapper_html: { class: "effective-orders-stripe-plans #{wrapper_class}", data: { selected_class: selected_class, stripe: stripe } },

@@ -145,13 +145,8 @@ module EffectiveOrders
   end
 
   # We query stripe for the plans just once and cache it forever.
-  def self.stripe_trialing_plan
-    {
-      id: 'trialing',
-      name: 'Trialing',
-      amount: 0,
-      description: "45-Day Free Trial",
-    }
+  def self.stripe_blank_plan
+    stripe_plans['blank'] || {}
   end
 
   def self.stripe_plans
@@ -183,16 +178,12 @@ module EffectiveOrders
         }; h
       end
 
-      # plans[nil] = {
-      #   id: nil,
-      #   name: 'Trial',
-      #   amount: 0,
-      #   currency: 'usd',
-      #   description: "45-Day Trial Mode",
-      #   occurrence: "daily",
-      #   interval: '/day',
-      #   interval_count: 1
-      # }
+      plans['blank'] = {
+        id: 'blank',
+        name: 'Free Trial',
+        amount: 0,
+        description: '45-Day Free Trial'
+      }
 
       plans
     )
