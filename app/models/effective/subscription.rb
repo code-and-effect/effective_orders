@@ -4,7 +4,7 @@ module Effective
   class Subscription < ActiveRecord::Base
     self.table_name = EffectiveOrders.subscriptions_table_name.to_s
 
-    belongs_to :customer, class_name: 'Effective::Customer', counter_cache: true, autosave: true
+    belongs_to :customer, class_name: 'Effective::Customer', counter_cache: true
     belongs_to :subscribable, polymorphic: true
 
     # Attributes
@@ -15,7 +15,7 @@ module Effective
     #
     # timestamps
 
-    before_validation(if: -> { stripe_plan_id_changed? && plan }) do
+    before_validation(if: -> { plan && (stripe_plan_id_changed? || new_record?) }) do
       self.name = "#{plan[:name]} #{plan[:description]}"
       self.price = plan[:amount]
     end
@@ -26,9 +26,6 @@ module Effective
 
     validates :name, presence: true
     validates :price, numericality: { greater_than_or_equal_to: 0, only_integer: true }
-
-    validates :customer_id, if: -> { subscribable },
-      uniqueness: { scope: [:subscribable_id, :subscribable_type], message: "can't subscribe to same subscribable twice" }
 
     def to_s
       name.presence || 'New Subscription'
