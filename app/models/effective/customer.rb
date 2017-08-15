@@ -9,6 +9,8 @@ module Effective
     has_many :subscriptions, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
     has_many :subscribables, through: :subscriptions, source: :subscribable
 
+    accepts_nested_attributes_for :subscriptions
+
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
     # active_card                   :string  # **** **** **** 4242 Visa 05/12
@@ -20,6 +22,8 @@ module Effective
     # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
     #
     # timestamps
+
+    scope :deep, -> { includes(subscriptions: :subscribable) }
 
     validates :user, presence: true
     validates :stripe_customer_id, if: -> { persisted? }, presence: true
