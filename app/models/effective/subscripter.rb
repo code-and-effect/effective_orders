@@ -11,10 +11,6 @@ module Effective
     validates :subscribable, presence: true
     validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
-    # validate do
-    #   self.errors.add(:base, 'oh man')
-    # end
-
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
       if plan[:amount] > 0 && stripe_token.blank? && customer.stripe_active_card.blank?
         self.errors.add(:stripe_token, 'payment token required for non-free plan')
@@ -142,17 +138,17 @@ module Effective
 
     # The stripe metadata limit is 500 characters
     def metadata(subscriptions: nil)
-      retval = { user_id: user.id.to_s, user: user.to_s.truncate(495) }
+      retval = { user_id: user.id.to_s, user: user.to_s.truncate(500) }
 
       (subscriptions || customer.subscriptions).group_by { |sub| sub.subscribable_type }.each do |subscribable_type, subs|
         subs = subs.sort
 
         if subs.length == 1
           retval[subscribable_type.downcase + '_id'] = subs.map { |sub| sub.id }.join(',')
-          retval[subscribable_type.downcase] = subs.map { |sub| sub.subscribable.to_s }.join(', ').truncate(495)
+          retval[subscribable_type.downcase] = subs.map { |sub| sub.subscribable.to_s }.join(',').truncate(500)
         else
           retval[subscribable_type.downcase + '_ids'] = subs.map { |sub| sub.id }.join(',')
-          retval[subscribable_type.downcase.pluralize] = subs.map { |sub| sub.subscribable.to_s }.join(', ').truncate(495)
+          retval[subscribable_type.downcase.pluralize] = subs.map { |sub| sub.subscribable.to_s }.join(',').truncate(500)
         end
       end
 
