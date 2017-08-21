@@ -50,7 +50,8 @@ module EffectiveStripeHelper
           image: stripe_site_image_url,
           key: EffectiveOrders.stripe[:publishable_key],
           name: EffectiveOrders.stripe[:site_title],
-          plans: EffectiveOrders.stripe_plans.values
+          plans: EffectiveOrders.stripe_plans.values,
+          token_required: form.object.subscripter.token_required?
         },
         wrapper_class: wrapper_class
       }

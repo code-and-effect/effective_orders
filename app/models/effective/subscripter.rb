@@ -12,7 +12,7 @@ module Effective
     validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
-      if plan[:amount] > 0 && stripe_token.blank? && customer.stripe_active_card.blank?
+      if plan[:amount] > 0 && stripe_token.blank? && token_required?
         self.errors.add(:stripe_token, 'payment token required for non-free plan')
       end
     end
@@ -42,16 +42,20 @@ module Effective
       save!
     end
 
-    private
-
     def customer
       @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
     end
 
+    def token_required?
+      customer.active_card.blank?
+    end
+
+    private
+
     def subscription
       @subscription ||= (
         customer.subscriptions.find { |sub| sub.subscribable == subscribable } ||
-        customer.subscriptions.build(subscribable: subscribable)
+        customer.subscriptions.build(subscribable: subscribable, customer: customer)
       )
     end
 

@@ -15,7 +15,7 @@ stripeSubscriptionHandler = (key, form) ->
 
         form.submit()
 
-$(document).on 'click', "input[type='submit'].effective-orders-subscription-customer-token-required", (event) ->
+$(document).on 'click', "input[type='submit'].effective-orders-subscripter-token-required", (event) ->
   event.preventDefault()
 
   $submit = $(event.currentTarget)
@@ -60,15 +60,20 @@ $(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event)
       $(item).siblings('.panel').removeClass(selected_class)
 
   plan = $plans.data('stripe').plans.find (plan, _) => plan.id == selected_plan_id
+  token_required = $plans.data('stripe').token_required
 
-  if (plan.amount || 0) > 0
-    $plans.closest('form').find("input[type='submit']").addClass('effective-orders-subscription-customer-token-required')
+  if (plan.amount || 0) > 0 && token_required
+    $plans.closest('form').find("input[type='submit']").addClass('effective-orders-subscripter-token-required')
   else
-    $plans.closest('form').find("input[type='submit']").removeClass('effective-orders-subscription-customer-token-required')
-
+    $plans.closest('form').find("input[type='submit']").removeClass('effective-orders-subscripter-token-required')
 
 # When the 'Select' button is clicked, set the radio button input
 $(document).on 'click', '.effective-orders-stripe-plan .btn-select-plan', (event) ->
   val = $(event.currentTarget).closest('.effective-orders-stripe-plan').find('input:radio').val()
   $(event.currentTarget).closest('.effective-orders-stripe-plans').find('input:radio').val([val]).trigger('change')
+  false
+
+# When we click 'Change credit card', make sure the form collects a credit card
+$(document).on 'click', '.effective-orders-active-card .btn-change-card', (event) ->
+  console.log 'yup'
   false

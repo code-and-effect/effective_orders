@@ -35,5 +35,9 @@ module Effective
       EffectiveOrders.stripe_plans[stripe_plan_id]
     end
 
+    def <=>(other)
+      (name || '') <=> (other.try(:name) || '')
+    end
+
   end
 end

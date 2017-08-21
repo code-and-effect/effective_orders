@@ -2,6 +2,7 @@
 
 = form.simple_fields_for :subscripter, form.object.subscripter do |fs|
   - fs.object.stripe_plan_id ||= (fs.object.current_plan || {})[:id]
+  - fs.object.stripe_token = nil
 
   = fs.input :stripe_token, as: :hidden
 
@@ -11,3 +12,8 @@
     wrapper_html: { class: "effective-orders-stripe-plans #{wrapper_class}", data: { selected_class: selected_class, stripe: stripe } },
     item_wrapper_class: "effective-orders-stripe-plan #{item_wrapper_class}",
     item_wrapper_tag: 'div'
+
+  - if fs.object.customer.active_card.present?
+    .effective-orders-active-card
+      %p This plan will be billed to your existing card: <strong>#{fs.object.customer.active_card}</strong>.
+      %p= link_to 'Change Credit Card', '#', class: 'btn btn-default btn-change-card'
