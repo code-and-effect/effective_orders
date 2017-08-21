@@ -148,10 +148,10 @@ module Effective
         subs = subs.sort
 
         if subs.length == 1
-          retval[subscribable_type.downcase + '_id'] = subs.map { |sub| sub.id }.join(',')
+          retval[subscribable_type.downcase + '_id'] = subs.map { |sub| sub.subscribable.id }.join(',')
           retval[subscribable_type.downcase] = subs.map { |sub| sub.subscribable.to_s }.join(',').truncate(500)
         else
-          retval[subscribable_type.downcase + '_ids'] = subs.map { |sub| sub.id }.join(',')
+          retval[subscribable_type.downcase + '_ids'] = subs.map { |sub| sub.subscribable.id }.join(',')
           retval[subscribable_type.downcase.pluralize] = subs.map { |sub| sub.subscribable.to_s }.join(',').truncate(500)
         end
       end
