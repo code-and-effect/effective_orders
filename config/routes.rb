@@ -38,7 +38,9 @@ EffectiveOrders::Engine.routes.draw do
       end
     end
 
-    if true || EffectiveOrders.stripe_subscriptions_enabled
+    if EffectiveOrders.stripe_subscriptions_enabled
+      resources :customers, only: [:edit, :update]
+
       resources :subscriptions, only: [:index, :show, :new, :create, :destroy]
       match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]
       get 'plans', to: 'subscriptions#new', as: :plans

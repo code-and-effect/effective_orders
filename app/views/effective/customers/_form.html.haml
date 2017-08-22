@@ -1,0 +1,10 @@
+= simple_form_for(customer, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.customer_path(customer))) do |f|
+  - f.object.stripe_token = nil
+
+  = f.input :stripe_token
+
+  - if f.object.active_card.present?
+    = effective_customer_fields(f.object)
+
+
+

@@ -31,7 +31,7 @@ module Effective
     end
 
     def save!
-      return true if plan == EffectiveOrders.stripe_blank_plan # TODO Delete?
+      return true if (plan == current_plan) && stripe_token.blank?  # No work to do
 
       raise 'is invalid' unless valid?
       build! && sync! && customer.save!

@@ -2,7 +2,7 @@ module Effective
   class Customer < ActiveRecord::Base
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
-    attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
+    attr_accessor :stripe_token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
     attr_accessor :stripe_customer, :stripe_subscription
 
     belongs_to :user
@@ -47,6 +47,13 @@ module Effective
       @stripe_subscription ||= if stripe_subscription_id.present?
         Rails.logger.info "STRIPE SUBSCRIPTION RETRIEVE: #{stripe_subscription_id}"
         ::Stripe::Subscription.retrieve(stripe_subscription_id)
+      end
+    end
+
+    def upcoming_invoice
+      @upcoming_invoice ||= if stripe_customer_id.present?
+        Rails.logger.info "STRIPE UPCOMING INVOICE RETRIEVE: #{stripe_customer_id}"
+        ::Stripe::Invoice.upcoming(customer: stripe_customer_id)
       end
     end
 
