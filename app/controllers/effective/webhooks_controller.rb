@@ -13,6 +13,7 @@ module Effective
       Effective::Customer.transaction do
         begin
           case @event.type
+          # customer.source.updated
           when 'customer.created' then stripe_customer_created(@event)
           when 'customer.deleted' then stripe_customer_deleted(@event)
           when 'customer.subscription.created' then stripe_subscription_created(@event)

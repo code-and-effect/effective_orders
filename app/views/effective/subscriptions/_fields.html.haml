@@ -14,6 +14,4 @@
     item_wrapper_tag: 'div'
 
   - if fs.object.customer.active_card.present?
-    .effective-orders-active-card
-      %p This plan will be billed to your existing card: <strong>#{fs.object.customer.active_card}</strong>.
-      %p= link_to 'Change Credit Card', '#', class: 'btn btn-default btn-change-card'
+    = effective_customer_fields(fs.object.customer)

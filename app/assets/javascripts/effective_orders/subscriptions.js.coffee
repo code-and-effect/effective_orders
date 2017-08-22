@@ -1,6 +1,9 @@
 stripeSubscriptionHandler = (key, form) ->
   StripeCheckout.configure
     key: key
+    closed: ->
+      form.find("input[type='submit']").removeAttr('disabled')
+      $('input[data-disable-with]').each -> try $.rails.enableFormElement($(this))
     token: (token, args) ->
       if token.error
         form.find("input[type='submit']").removeAttr('disabled')
@@ -34,14 +37,11 @@ $(document).on 'click', "input[type='submit'].effective-orders-subscripter-token
 
   stripeSubscriptionHandler(stripe.key, $form).open
     image: stripe.image
-    name: plan.name
-    description: stripe.name
+    name: stripe.name
+    description: plan.name
     email: stripe.email
     amount: plan.amount
     panelLabel: "{{amount}}#{plan.occurrence} Go!"
-    closed: ->
-      $form.find("input[type='submit']").removeAttr('disabled')
-      $('input[data-disable-with]').each -> try $.rails.enableFormElement($(this))
 
 # When a plan is selected, toggle the selected-class on each plan.
 # Set the submit button's class if a customer token is required
@@ -71,9 +71,4 @@ $(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event)
 $(document).on 'click', '.effective-orders-stripe-plan .btn-select-plan', (event) ->
   val = $(event.currentTarget).closest('.effective-orders-stripe-plan').find('input:radio').val()
   $(event.currentTarget).closest('.effective-orders-stripe-plans').find('input:radio').val([val]).trigger('change')
-  false
-
-# When we click 'Change credit card', make sure the form collects a credit card
-$(document).on 'click', '.effective-orders-active-card .btn-change-card', (event) ->
-  console.log 'yup'
   false
