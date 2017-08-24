@@ -1,10 +1,14 @@
+= javascript_include_tag 'https://checkout.stripe.com/checkout.js'
+
 = simple_form_for(customer, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.customer_path(customer))) do |f|
-  - f.object.stripe_token = nil
+  = f.input :stripe_token, as: :hidden, input_html: { value: nil }
 
-  = f.input :stripe_token
+  = render(f.object) do
+    - if f.object.active_card.present?
+      %h3.effective-heading Card
+      = effective_customer_fields(f.object, submit: true)
 
-  - if f.object.active_card.present?
-    = effective_customer_fields(f.object)
-
+  .form-actions
+    = f.button :submit, 'Save', data: { disable_with: 'Saving...' }
 
 

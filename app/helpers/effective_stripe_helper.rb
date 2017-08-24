@@ -89,13 +89,14 @@ module EffectiveStripeHelper
     end
   end
 
-  def effective_customer_fields(customer)
+  def effective_customer_fields(customer, submit: false)
     raise 'expected an Effective::Customer object' unless customer.class.name == 'Effective::Customer'
 
     render(
       partial: 'effective/customers/fields',
       locals: {
         customer: customer,
+        submit: submit,
         stripe: {
           email: customer.user.email,
           image: stripe_site_image_url,

@@ -12,9 +12,14 @@ stripeCustomerChangeCardHandler = (key, form) ->
         alert("An error ocurred when contacting Stripe. Your card has not been charged. Your subscription has not changed. Please refresh the page and try again. #{token.error.message}")
       else
         form.find("input[name$='[stripe_token]']").val('' + token['id'])
-        activeCard = "**** **** **** #{token.card.last4} #{token.card.brand} #{token.card.exp_month}/#{token.card.exp_year}"
 
-        form.find('.effective-orders-customer').find('.active-card').html(activeCard)
+        customer = form.find('.effective-orders-customer')
+        customer.find('.active-card').html("**** **** **** #{token.card.last4} #{token.card.brand} #{token.card.exp_month}/#{token.card.exp_year}")
+
+        if customer.data('submit')
+          form.find("input[type='submit']").prop('disabled', true)
+          $('input[data-disable-with]').each -> try $.rails.disableFormElement($(this))
+          form.submit()
 
 # When we click 'Change credit card', make sure the form collects a credit card
 $(document).on 'click', '.effective-orders-customer .btn-change-card', (event) ->

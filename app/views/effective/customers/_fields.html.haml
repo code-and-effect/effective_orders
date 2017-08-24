@@ -1,6 +1,6 @@
-.effective-orders-customer{ data: { stripe: stripe.to_json } }
+.effective-orders-customer{ data: { stripe: stripe.to_json, submit: submit.to_json } }
   %p
     All charges will be billed to your existing card:
-    %strong.active-card= customer.active_card
+    %span.active-card= customer.active_card
 
   %p= link_to 'Update Card Details', '#', class: 'btn btn-default btn-change-card'

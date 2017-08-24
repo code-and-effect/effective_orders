@@ -1,10 +1,9 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
 = form.simple_fields_for :subscripter, form.object.subscripter do |fs|
-  - fs.object.stripe_plan_id ||= (fs.object.current_plan || {})[:id]
-  - fs.object.stripe_token = nil
+  = fs.input :stripe_token, as: :hidden, input_html: { value: nil }
 
-  = fs.input :stripe_token, as: :hidden
+  - fs.object.stripe_plan_id ||= (fs.object.current_plan || {})[:id]
 
   = fs.input :stripe_plan_id, as: :radio_buttons, collection: stripe_plans_collection(fs, include_blank: include_blank, selected_class: selected_class),
     label: label,

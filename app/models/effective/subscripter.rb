@@ -68,9 +68,7 @@ module Effective
       end
 
       # Update stripe customer card
-      if stripe_token.present?
-        customer.assign_card!(stripe_token)
-      end
+      customer.assign_card!(stripe_token) if stripe_token.present?
 
       # Assign stripe plan
       if plan
@@ -90,14 +88,16 @@ module Effective
     def sync!
       Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
 
+      changed = false
+
       # Update stripe subscription items
       customer.stripe_subscription.items.each do |stripe_item|
         if(item = items.find { |item| item[:plan] == stripe_item['plan']['id'] })
-          if item[:quantity] != stripe_item['quantity'] || item[:metadata] != stripe_item['metadata'].to_h
+          if item[:quantity] != stripe_item['quantity']
             stripe_item.quantity = item[:quantity]
             stripe_item.metadata = item[:metadata]
             Rails.logger.info " -> UPDATE: #{item[:plan]}"
-            stripe_item.save
+            changed = stripe_item.save
           end
         end
       end
@@ -106,7 +106,7 @@ module Effective
       items.each do |item|
         unless customer.stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
           Rails.logger.info " -> CREATE: #{item[:plan]}"
-          customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
+          changed = customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
         end
       end
 
@@ -114,7 +114,7 @@ module Effective
       customer.stripe_subscription.items.each do |stripe_item|
         if items.find { |item| item[:plan] == stripe_item['plan']['id'] }.blank?
           Rails.logger.info " -> DELETE: #{stripe_item['plan']['id']}"
-          stripe_item.delete
+          changed = stripe_item.delete
         end
       end
 
@@ -124,6 +124,12 @@ module Effective
         customer.stripe_subscription.metadata = metadata
         customer.stripe_subscription.save
       end
+
+      # Invoice immediately if needed
+      # if changed
+      #   Rails.logger.info " -> INVOICE GENERATED"
+      #   Stripe::Invoice.create(customer: customer.stripe_customer_id)
+      # end
 
       true
     end

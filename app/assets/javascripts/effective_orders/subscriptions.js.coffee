@@ -11,11 +11,10 @@ stripeSubscriptionHandler = (key, form) ->
 
         alert("An error ocurred when contacting Stripe. Your card has not been charged. Your subscription has not changed. Please refresh the page and try again. #{token.error.message}")
       else
-        form.find("input[name$='[subscripter][stripe_token]']").val('' + token['id'])
+        form.find("input[name$='[stripe_token]']").val('' + token['id'])
 
         form.find("input[type='submit']").prop('disabled', true)
         $('input[data-disable-with]').each -> try $.rails.disableFormElement($(this))
-
         form.submit()
 
 $(document).on 'click', "input[type='submit'].effective-orders-subscripter-token-required", (event) ->

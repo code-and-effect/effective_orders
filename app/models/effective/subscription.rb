@@ -1,4 +1,4 @@
-# This is not a Stripe Subscription object.  This is a subscription's item.
+# This is not a Stripe Subscription object. This is a subscription's item.
 
 module Effective
   class Subscription < ActiveRecord::Base

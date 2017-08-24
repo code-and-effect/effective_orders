@@ -14,8 +14,6 @@
         - if customer.stripe_customer.default_source.present?
           - card = customer.stripe_customer.sources.retrieve(customer.stripe_customer.default_source)
           = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
-          %br
-          = effective_customer_fields(customer)
         - else
           None
 
@@ -28,6 +26,8 @@
       %tr
         %th Balance
         %td= price_to_currency(customer.stripe_customer.account_balance.to_i)
+
+= yield if block_given?
 
 - if customer.stripe_subscription_id.present?
   %h3.effective-heading Subscription
@@ -135,7 +135,7 @@
         %th Items
         %td
           - customer.upcoming_invoice.lines.each do |line|
-            %p= "#{line.quantity}x #{line.plan.name} #{price_to_currency(line.amount)} #{('(' + line.description + ')' if line.description.present?)}"
+            %p= "#{line.quantity}x #{line.plan.name} #{price_to_currency(line.amount)} (#{Time.zone.at(line.period.start).strftime('%F')} to #{Time.zone.at(line.period.end).strftime('%F')}) #{line.description}"
       %tr
         %th Total
         %td= price_to_currency(customer.upcoming_invoice.total)
