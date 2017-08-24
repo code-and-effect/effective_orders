@@ -110,30 +110,36 @@ module Effective
 
       # Update stripe subscription items
       customer.stripe_subscription.items.each do |stripe_item|
-        if(item = items.find { |item| item[:plan] == stripe_item['plan']['id'] })
-          if item[:quantity] != stripe_item['quantity']
-            stripe_item.quantity = item[:quantity]
-            stripe_item.metadata = item[:metadata]
-            Rails.logger.info " -> UPDATE: #{item[:plan]}"
-            changed = stripe_item.save
-          end
-        end
+        item = items.find { |item| item[:plan] == stripe_item['plan']['id'] }
+        next if item.blank? || item[:quantity] == stripe_item['quantity']
+
+        stripe_item.quantity = item[:quantity]
+        stripe_item.metadata = item[:metadata]
+
+        Rails.logger.info " -> UPDATE: #{item[:plan]}"
+        changed = stripe_item.save
       end
 
       # Create stripe subscription items
       items.each do |item|
-        unless customer.stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
-          Rails.logger.info " -> CREATE: #{item[:plan]}"
-          changed = customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
-        end
+        next if customer.stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
+
+        Rails.logger.info " -> CREATE: #{item[:plan]}"
+        changed = customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
       end
 
       # Delete stripe subscription items
       customer.stripe_subscription.items.each do |stripe_item|
-        if items.find { |item| item[:plan] == stripe_item['plan']['id'] }.blank?
-          Rails.logger.info " -> DELETE: #{stripe_item['plan']['id']}"
-          changed = stripe_item.delete
-        end
+        next if items.find { |item| item[:plan] == stripe_item['plan']['id'] }
+
+        Rails.logger.info " -> DELETE: #{stripe_item['plan']['id']}"
+        changed = stripe_item.delete
+      end
+
+      # When upgrading a plan, invoice immediately.
+      if changed && plan && plan[:amount] > current_plan[:amount]
+        Rails.logger.info " -> INVOICE GENERATED"
+        Stripe::Invoice.create(customer: customer.stripe_customer_id)
       end
 
       # Update metadata
@@ -141,13 +147,6 @@ module Effective
         Rails.logger.info " -> METATADA: #{metadata}"
         customer.stripe_subscription.metadata = metadata
         customer.stripe_subscription.save
-      end
-
-      # Invoice immediately if upgrading
-      # Delay invoice if downgrading
-      if changed && plan[:amount] > current_plan[:amount]
-        Rails.logger.info " -> INVOICE GENERATED"
-        Stripe::Invoice.create(customer: customer.stripe_customer_id)
       end
 
       customer.save!
