@@ -1,0 +1,6 @@
+%h1.effective-admin-heading= @page_title
+
+%p.text-right.effective-admin-actions
+  = link_to 'Stripe Customer', "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers/#{@customer.stripe_customer_id}", class: 'btn btn-primary'
+
+= render 'effective/customers/customer', customer: @customer

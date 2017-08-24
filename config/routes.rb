@@ -53,7 +53,7 @@ EffectiveOrders::Engine.routes.draw do
   end
 
   namespace :admin do
-    resources :customers, only: [:index]
+    resources :customers, only: [:index, :show]
     resources :orders do
       member do
         post :send_payment_request

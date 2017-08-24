@@ -102,8 +102,7 @@ module Effective
       if items.length == 0
         customer.stripe_subscription.delete
         customer.stripe_subscription_id = nil
-        customer.save!
-        return true
+        return customer.save!
       end
 
       changed = false
@@ -111,6 +110,7 @@ module Effective
       # Update stripe subscription items
       customer.stripe_subscription.items.each do |stripe_item|
         item = items.find { |item| item[:plan] == stripe_item['plan']['id'] }
+
         next if item.blank? || item[:quantity] == stripe_item['quantity']
 
         stripe_item.quantity = item[:quantity]
