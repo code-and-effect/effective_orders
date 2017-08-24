@@ -29,7 +29,7 @@
 
 = yield if block_given?
 
-- if customer.stripe_subscription_id.present?
+- if customer.stripe_subscription.present?
   %h3.effective-heading Subscription
 
   %table.table
@@ -92,6 +92,10 @@
             %td= sub
             %td= link_to 'change', edit_polymorphic_path(sub.subscribable)
 
+- if customer.stripe_subscription.blank?
+  %h3.effective-heading Subscription
+  %p No current subscriptions
+
 - if customer.stripe_customer.invoices.present?
   %h3.effective-heading Invoices
 
@@ -114,7 +118,7 @@
             = Time.zone.at(invoice.lines.first.period.end).strftime('%F')
           %td
             - invoice.lines.each do |line|
-              %p= stripe_invoice_line_description(line)
+              %p #{line.quantity}x #{line.plan.name} #{line.description}
 
           %td= price_to_currency(invoice.total)
 
@@ -135,8 +139,14 @@
       %tr
         %th Items
         %td
-          - customer.upcoming_invoice.lines.each do |line|
-            %p= stripe_invoice_line_description(line)
+          %table.table
+            %tbody
+              - customer.upcoming_invoice.lines.each do |line|
+                %tr
+                  %td #{line.quantity}x #{line.plan.name}
+                  %td #{Time.zone.at(line.period.start).strftime('%F')} to #{Time.zone.at(line.period.end).strftime('%F')}
+                  %td= line.description
+                  %td= price_to_currency(line.amount)
       %tr
         %th Total
         %td= price_to_currency(customer.upcoming_invoice.total)

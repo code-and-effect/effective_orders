@@ -21,6 +21,10 @@ module Effective
       subscribable.errors.add(:subscripter, 'is invalid') if self.errors.present?
     end
 
+    def customer
+      @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
+    end
+
     def current_plan
       return nil unless subscribable
       subscribable.subscription.blank? ? EffectiveOrders.stripe_blank_plan : subscribable.subscription.plan
@@ -30,11 +34,15 @@ module Effective
       EffectiveOrders.stripe_plans[stripe_plan_id]
     end
 
+    def token_required?
+      customer.active_card.blank?
+    end
+
     def save!
       return true if (plan == current_plan) && stripe_token.blank?  # No work to do
 
       raise 'is invalid' unless valid?
-      build! && sync! && customer.save!
+      build! && sync!
     end
 
     def subscribe!(stripe_plan_id)
@@ -42,12 +50,15 @@ module Effective
       save!
     end
 
-    def customer
-      @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
-    end
+    def destroy!
+      return true unless subscription&.persisted? && customer.stripe_subscription.present?
 
-    def token_required?
-      customer.active_card.blank?
+      raise 'is invalid' unless valid?
+
+      subscription.destroy!
+      customer.subscriptions.reload
+
+      sync!
     end
 
     private
@@ -88,6 +99,13 @@ module Effective
     def sync!
       Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
 
+      if items.length == 0
+        customer.stripe_subscription.delete
+        customer.stripe_subscription_id = nil
+        customer.save!
+        return true
+      end
+
       changed = false
 
       # Update stripe subscription items
@@ -125,13 +143,14 @@ module Effective
         customer.stripe_subscription.save
       end
 
-      # Invoice immediately if needed
-      # if changed
-      #   Rails.logger.info " -> INVOICE GENERATED"
-      #   Stripe::Invoice.create(customer: customer.stripe_customer_id)
-      # end
+      # Invoice immediately if upgrading
+      # Delay invoice if downgrading
+      if changed && plan[:amount] > current_plan[:amount]
+        Rails.logger.info " -> INVOICE GENERATED"
+        Stripe::Invoice.create(customer: customer.stripe_customer_id)
+      end
 
-      true
+      customer.save!
     end
 
     private

@@ -152,9 +152,9 @@ module EffectiveStripeHelper
       "#{line.quantity}x",
       line.plan.name,
       price_to_currency(line.amount),
-      ("(#{Time.zone.at(line.period.start).strftime('%F')}" unless simple),
+      ("#{Time.zone.at(line.period.start).strftime('%F')}" unless simple),
       ('to' unless simple),
-      ("#{Time.zone.at(line.period.end).strftime('%F')})" unless simple),
+      ("#{Time.zone.at(line.period.end).strftime('%F')}" unless simple),
       line.description.presence
     ].compact.join(' ')
   end

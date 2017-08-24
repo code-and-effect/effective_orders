@@ -51,9 +51,9 @@ module Effective
     end
 
     def upcoming_invoice
-      @upcoming_invoice ||= if stripe_customer_id.present?
+      @upcoming_invoice ||= if stripe_customer_id.present? && stripe_subscription_id.present?
         Rails.logger.info "STRIPE UPCOMING INVOICE RETRIEVE: #{stripe_customer_id}"
-        ::Stripe::Invoice.upcoming(customer: stripe_customer_id)
+        ::Stripe::Invoice.upcoming(customer: stripe_customer_id) rescue nil
       end
     end
 
