@@ -147,6 +147,18 @@ module EffectiveStripeHelper
     plan[:description]
   end
 
+  def stripe_invoice_line_description(line, simple: false)
+    [
+      "#{line.quantity}x",
+      line.plan.name,
+      price_to_currency(line.amount),
+      ("(#{Time.zone.at(line.period.start).strftime('%F')}" unless simple),
+      ('to' unless simple),
+      ("#{Time.zone.at(line.period.end).strftime('%F')})" unless simple),
+      line.description.presence
+    ].compact.join(' ')
+  end
+
   def stripe_coupon_description(coupon)
     amount = coupon.amount_off.present? ? ActionController::Base.helpers.price_to_currency(coupon.amount_off) : "#{coupon.percent_off}%"
 

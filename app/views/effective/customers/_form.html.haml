@@ -1,6 +1,6 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
-= simple_form_for(customer, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.customer_path(customer))) do |f|
+= simple_form_for(customer, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.customer_settings_path)) do |f|
   = f.input :stripe_token, as: :hidden, input_html: { value: nil }
 
   = render(f.object) do

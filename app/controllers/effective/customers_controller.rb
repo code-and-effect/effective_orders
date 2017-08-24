@@ -1,25 +1,26 @@
 module Effective
   class CustomersController < ApplicationController
-
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:customers] : EffectiveOrders.layout)
 
     before_action :authenticate_user!
 
+    # Get here by visiting /customer/settings
     def edit
-      @page_title ||= "Customer #{current_user.to_s}"
       @customer = Effective::Customer.where(user: current_user).first!
       EffectiveOrders.authorized?(self, :edit, @customer)
+
+      @page_title ||= "Customer #{current_user.to_s}"
     end
 
     def update
-      @page_title ||= "Customer #{current_user.to_s}"
-
-      @customer = Effective::Customer.find(params[:id])
+      @customer = Effective::Customer.where(user: current_user).first!
       EffectiveOrders.authorized?(self, :edit, @customer)
+
+      @page_title ||= "Customer #{current_user.to_s}"
 
       if (@customer.update_card!(customer_params[:stripe_token]) rescue false)
         flash[:success] = "Successfully updated customer"
-        redirect_to(effective_orders.edit_customer_path(@customer))
+        redirect_to(effective_orders.customer_settings_path)
       else
         flash.now[:danger] = "Unable to update customer: #{@customer.errors.full_messages.to_sentence}"
         render :edit

@@ -114,7 +114,8 @@
             = Time.zone.at(invoice.lines.first.period.end).strftime('%F')
           %td
             - invoice.lines.each do |line|
-              %p= "#{line.quantity}x #{line.plan.name}#{(line.description.present? ? (' ' + line.description + ' '): ' ')} #{price_to_currency(line.amount)}"
+              %p= stripe_invoice_line_description(line)
+
           %td= price_to_currency(invoice.total)
 
 - if customer.upcoming_invoice.present?
@@ -135,7 +136,7 @@
         %th Items
         %td
           - customer.upcoming_invoice.lines.each do |line|
-            %p= "#{line.quantity}x #{line.plan.name} #{price_to_currency(line.amount)} (#{Time.zone.at(line.period.start).strftime('%F')} to #{Time.zone.at(line.period.end).strftime('%F')}) #{line.description}"
+            %p= stripe_invoice_line_description(line)
       %tr
         %th Total
         %td= price_to_currency(customer.upcoming_invoice.total)
