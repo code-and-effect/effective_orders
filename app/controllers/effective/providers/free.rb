@@ -18,8 +18,8 @@ module Effective
           details: 'free order. no payment required.',
           provider: 'free',
           card: 'none',
-          purchased_url: params[:purchased_url].presence || effective_orders.admin_order_path(@order),
-          declined_url: params[:declined_url].presence || effective_orders.admin_order_path(@order),
+          purchased_url: params[:purchased_url],
+          declined_url: params[:declined_url],
           email: false
         )
       end
