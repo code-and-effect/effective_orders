@@ -175,12 +175,14 @@ module EffectiveOrders
         }; h
       end
 
-      plans['trial'] = {
-        id: 'trial',
-        amount: 0,
-        name: ((subscription || {})[:trial_name] || 'Free Trial'),
-        description: ((subscription || {})[:trial_description] || 'Free Trial')
-      }
+      if subscription.kind_of?(Hash)
+        plans['trial'] = {
+          id: 'trial',
+          amount: 0,
+          name: (subscription[:trial_name] || 'Free Trial'),
+          description: (subscription[:trial_description] || 'Free Trial')
+        }
+      end
 
       plans
     )
