@@ -2,7 +2,6 @@ module Effective
   class WebhooksController < ApplicationController
     protect_from_forgery except: [:stripe]
     skip_authorization_check if defined?(CanCan)
-    log_page_views if defined?(EffectiveLogging)
 
     def stripe
       @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscription[:webhook_secret]) rescue nil)
@@ -12,17 +11,33 @@ module Effective
 
       Effective::Customer.transaction do
         case @event.type
-        when 'customer.created'
-        when 'customer.updated'
-        when 'customer.source.created'   # When we update card info
-        when 'customer.subscription.created'
-        when 'customer.subscription.updated'
-        when 'invoice.created'
+        # when 'customer.created'
+        # when 'customer.updated'
+        # when 'customer.source.created'   # When we update card info
+        # when 'customer.source.deleted'
+        # when 'customer.subscription.created'
+        # when 'customer.subscription.updated'
+        # when 'invoice.created'
+        # when 'invoice.payment_succeeded' # THINK THIS IS THE ONLY ONE I CARE ABOUT
+        # when 'invoiceitem.created'
+        # when 'invoiceitem.updated'
+        # when 'charge.succeeded'
+        # when 'charge.failed' # Card declined. 4000 0000 0000 0341
+
         when 'invoice.payment_succeeded'
-        when 'invoiceitem.created'
-        when 'invoiceitem.updated'
-        when 'charge.succeeded'
-        when 'charge.failed' # Card declined. 4000 0000 0000 0341
+          customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
+          customer.update_attributes!(status: 'active')
+
+          # Send an invoice
+        when 'invoice.payment_failed'
+          customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
+          customer.update_attributes!(status: 'past_due')
+
+          # Hey, we didn't get your payment. Come back to the site already and update it.
+        when 'customer.subscription.deleted'
+          customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
+          Effective::Subscription.where(customer: customer).destroy_all
+          customer.update_attributes!(stripe_subscription_id: nil, status: nil, active_card: nil)
         else
           Rails.logger.info "[STRIPE WEBHOOK] Unhandled event type #{@event.type}"
         end

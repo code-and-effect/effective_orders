@@ -30,7 +30,7 @@ module Effective
 
     validates :user, presence: true
     validates :stripe_customer_id, presence: true
-    validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: %w(trialing active past_due canceled unpaid) }
+    validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: %w(active past_due) }
 
     def self.for_user(user)
       Effective::Customer.where(user: user).first_or_initialize
@@ -85,7 +85,7 @@ module Effective
     end
 
     def token_required?
-      active_card.blank? || %w(past_due canceled unpaid).include?(status)
+      active_card.blank? || (active_card.present? && stripe_subscription_id.present? && status != 'active')
     end
 
   end

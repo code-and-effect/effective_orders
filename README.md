@@ -891,7 +891,7 @@ To set up stripe:
 
 2.) Ceate one or more plans. Don't include any trial or trial periods.
 
-3.) Subscription Settings:   3-days, 3-days, 5-days, 7-days, mark subscription as unpaid.
+3.) Subscription Settings: 3-days. Then 1-day, 3-days, 3-days, then Cancel subscription
 
 4.) Click API -> Webhooks and add an endpoint `root_url/webhooks/stripe`. You will need something like ngrok to test this.
 
