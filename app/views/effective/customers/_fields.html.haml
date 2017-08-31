@@ -9,4 +9,9 @@
       All charges will be billed to your existing card:
       %span.active-card= customer.active_card
 
+  - elsif customer.active_card.blank?
+    %p
+      No credit card on file. Plese click below to add a card:
+      %span.active-card
+
   %p= link_to 'Update Card Details', '#', class: 'btn btn-default btn-change-card'
