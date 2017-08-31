@@ -247,7 +247,8 @@ EffectiveOrders.setup do |config|
   config.subscription = {
     trial_name: 'Free Trial',
     trial_description: '45-Day Free Trial',
-    trial_period: 45.days
+    trial_period: 45.days,
+    webhook_secret: 'whsec_1234567890'
   }
 
   if Rails.env.production?

@@ -42,7 +42,13 @@ module Effective
       return true if (plan == current_plan) && stripe_token.blank?  # No work to do
 
       raise 'is invalid' unless valid?
-      build! && sync!
+
+      begin
+        build! && sync!
+      rescue => e
+        reload!
+        raise(e)
+      end
     end
 
     def subscribe!(stripe_plan_id)
@@ -59,6 +65,13 @@ module Effective
       customer.subscriptions.reload
 
       sync!
+    end
+
+    def reload!
+      @stripe_token = nil
+      @stripe_plan_id = nil
+      @customer = nil
+      @subscription = nil
     end
 
     private
