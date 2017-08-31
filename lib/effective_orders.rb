@@ -146,11 +146,6 @@ module EffectiveOrders
     true
   end
 
-  # We query stripe for the plans just once and cache it forever.
-  def self.stripe_blank_plan
-    stripe_plans['blank'] || {}
-  end
-
   def self.stripe_plans
     return {} unless (stripe_enabled && subscriptions_enabled)
 
@@ -180,8 +175,8 @@ module EffectiveOrders
         }; h
       end
 
-      plans['blank'] = {
-        id: 'blank',
+      plans['trial'] = {
+        id: 'trial',
         amount: 0,
         name: ((subscription || {})[:trial_name] || 'Free Trial'),
         description: ((subscription || {})[:trial_description] || 'Free Trial')

@@ -22,9 +22,9 @@ module EffectiveSubscriptionsHelper
     raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscribable.subscripter.present?
 
-    include_blank = form.object.subscribable.subscribed?('blank') if include_blank.nil?
+    include_blank = form.object.subscribable.subscribed?('trial') if include_blank.nil?
 
-    plans = include_blank ? EffectiveOrders.stripe_plans : EffectiveOrders.stripe_plans.except('blank')
+    plans = include_blank ? EffectiveOrders.stripe_plans : EffectiveOrders.stripe_plans.except('trial')
     plans = plans.values.sort { |x, y| (amount = x[:amount] <=> y[:amount]) != 0 ? amount : x[:name] <=> y[:name] }
 
     plans.map do |plan|

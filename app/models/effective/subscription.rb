@@ -24,7 +24,7 @@ module Effective
     validates :customer, presence: true
     validates :subscribable, presence: true
 
-    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.except('blank').keys }
+    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.except('trial').keys }
     validates :status, presence: true, inclusion: { in: %w(trialing active past_due canceled unpaid) }
 
     validates :name, presence: true

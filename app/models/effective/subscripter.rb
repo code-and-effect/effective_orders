@@ -27,7 +27,7 @@ module Effective
 
     def current_plan
       return nil unless subscribable
-      subscribable.subscription.blank? ? EffectiveOrders.stripe_blank_plan : subscribable.subscription.plan
+      subscribable.subscription.blank? ? EffectiveOrders.stripe_plans['trial'] : subscribable.subscription.plan
     end
 
     def plan

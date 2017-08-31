@@ -29,7 +29,7 @@ module ActsAsSubscribable
     case stripe_plan_id
     when nil
       subscription.present?  # Subscribed to any subscription?
-    when EffectiveOrders.stripe_blank_plan[:id]
+    when (EffectiveOrders.stripe_plans['trial'] || {})[:id]
       subscription.blank? || subscription.new_record? || subscription.stripe_plan_id == stripe_plan_id
     else
       subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
