@@ -4,9 +4,9 @@
   = f.input :stripe_token, as: :hidden, input_html: { value: nil }
 
   = render(f.object) do
-    - if f.object.active_card.present?
+    - if f.object.customer.persisted?
       %h3.effective-heading Card
-      = effective_customer_fields(f.object, submit: true)
+      = effective_customer_fields(f.object)
 
   .form-actions
     = f.button :submit, 'Save', data: { disable_with: 'Saving...' }

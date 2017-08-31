@@ -65,8 +65,9 @@ module EffectiveOrders
   mattr_accessor :paypal_enabled
 
   mattr_accessor :stripe_enabled
-  mattr_accessor :stripe_subscriptions_enabled
   mattr_accessor :stripe_connect_enabled
+
+  mattr_accessor :subscriptions_enabled
 
   # application fee is required if stripe_connect_enabled is true
   mattr_accessor :stripe_connect_application_fee_method
@@ -79,6 +80,7 @@ module EffectiveOrders
   mattr_accessor :moneris
   mattr_accessor :paypal
   mattr_accessor :stripe
+  mattr_accessor :subscription
 
   mattr_accessor :deliver_method
 
@@ -150,7 +152,7 @@ module EffectiveOrders
   end
 
   def self.stripe_plans
-    return {} unless (stripe_enabled && stripe_subscriptions_enabled)
+    return {} unless (stripe_enabled && subscriptions_enabled)
 
     @stripe_plans ||= (
       plans = Stripe::Plan.all.inject({}) do |h, plan|
@@ -180,9 +182,9 @@ module EffectiveOrders
 
       plans['blank'] = {
         id: 'blank',
-        name: 'Free Trial',
         amount: 0,
-        description: '45-Day Free Trial'
+        name: ((subscription || {})[:trial_name] || 'Free Trial'),
+        description: ((subscription || {})[:trial_description] || 'Free Trial')
       }
 
       plans

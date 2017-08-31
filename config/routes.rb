@@ -38,7 +38,7 @@ EffectiveOrders::Engine.routes.draw do
       end
     end
 
-    if EffectiveOrders.stripe_subscriptions_enabled
+    if EffectiveOrders.subscriptions_enabled
       match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
       match 'customer/settings', to: 'customers#update', via: [:patch, :put]
       match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]

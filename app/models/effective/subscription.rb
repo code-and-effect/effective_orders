@@ -9,6 +9,7 @@ module Effective
 
     # Attributes
     # stripe_plan_id          :string  # This will be 'bronze' or something like that
+    # status                  :string
     #
     # name                    :string
     # price                   :integer, default: 0
@@ -22,7 +23,9 @@ module Effective
 
     validates :customer, presence: true
     validates :subscribable, presence: true
+
     validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.except('blank').keys }
+    validates :status, presence: true, inclusion: { in: %w(trialing active past_due canceled unpaid) }
 
     validates :name, presence: true
     validates :price, numericality: { greater_than_or_equal_to: 0, only_integer: true }
@@ -33,6 +36,10 @@ module Effective
 
     def plan
       EffectiveOrders.stripe_plans[stripe_plan_id]
+    end
+
+    def active?
+      status == 'active'
     end
 
     def <=>(other)

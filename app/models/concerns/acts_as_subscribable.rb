@@ -25,12 +25,27 @@ module ActsAsSubscribable
     subscripter.assign_attributes(atts)
   end
 
-  def subscribed?(stripe_plan_id)
-    if [nil, EffectiveOrders.stripe_blank_plan[:id]].include?(stripe_plan_id)
+  def subscribed?(stripe_plan_id = nil)
+    case stripe_plan_id
+    when nil
+      subscription.present?  # Subscribed to any subscription?
+    when EffectiveOrders.stripe_blank_plan[:id]
       subscription.blank? || subscription.new_record? || subscription.stripe_plan_id == stripe_plan_id
     else
       subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
     end
+  end
+
+  def subscription_active?
+    (trialing? && !trial_expired?) || (subscribed? && subscription.active?)
+  end
+
+  def trialing?
+    !subscribed?
+  end
+
+  def trial_expired?
+    (Time.zone.now - created_at) > EffectiveOrders.subscription[:trial_period]
   end
 
   def buyer

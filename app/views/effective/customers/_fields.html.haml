@@ -1,6 +1,12 @@
 .effective-orders-customer{ data: { stripe: stripe.to_json, submit: submit.to_json } }
-  %p
-    All charges will be billed to your existing card:
-    %span.active-card= customer.active_card
+  - if customer.token_required?
+    %p
+      Please update your billing details to continue:
+      %span.active-card
+
+  - elsif customer.active_card.present?
+    %p
+      All charges will be billed to your existing card:
+      %span.active-card= customer.active_card
 
   %p= link_to 'Update Card Details', '#', class: 'btn btn-default btn-change-card'

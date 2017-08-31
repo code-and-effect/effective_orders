@@ -12,5 +12,5 @@
     item_wrapper_class: "effective-orders-stripe-plan #{item_wrapper_class}",
     item_wrapper_tag: 'div'
 
-  - if fs.object.customer.active_card.present?
+  - if fs.object.customer.persisted?
     = effective_customer_fields(fs.object.customer)

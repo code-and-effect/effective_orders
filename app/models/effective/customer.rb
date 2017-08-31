@@ -16,7 +16,6 @@ module Effective
     # active_card                   :string  # **** **** **** 4242 Visa 05/12
 
     # stripe_subscription_id        :string  # Each user gets one stripe subscription object, which can contain many items
-    # current_period_end            :datetime
     # status                        :string
 
     # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
@@ -25,8 +24,13 @@ module Effective
 
     scope :deep, -> { includes(subscriptions: :subscribable) }
 
+    before_validation do
+      subscriptions.each { |subscription| subscription.status = status }
+    end
+
     validates :user, presence: true
     validates :stripe_customer_id, presence: true
+    validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: %w(trialing active past_due canceled unpaid) }
 
     def self.for_user(user)
       Effective::Customer.where(user: user).first_or_initialize
@@ -78,6 +82,10 @@ module Effective
 
     def update_card!(token)
       assign_card!(token) && save!
+    end
+
+    def token_required?
+      active_card.blank? || %w(past_due canceled unpaid).include?(status)
     end
 
   end

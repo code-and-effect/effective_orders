@@ -69,9 +69,13 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
     create_table <%= @customers_table_name %> do |t|
       t.integer   :user_id
+
       t.string    :stripe_customer_id
-      t.string    :stripe_active_card
+      t.string    :active_card
+
       t.string    :stripe_subscription_id
+      t.string    :status
+
       t.string    :stripe_connect_access_token
 
       t.integer   :subscriptions_count, :default => 0
@@ -80,14 +84,16 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
     end
 
     add_index <%= @customers_table_name %>, :user_id
-    add_index <%= @customers_table_name %>, [:buyer_type, :buyer_id]
 
     create_table <%= @subscriptions_table_name %> do |t|
       t.integer   :customer_id
+
       t.integer   :subscribable_id
       t.string    :subscribable_type
+
       t.string    :stripe_plan_id
-      t.datetime  :current_period_end
+      t.string    :status
+
       t.string    :name
       t.integer   :price, :default => 0
 
@@ -95,7 +101,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
     end
 
     add_index <%= @subscriptions_table_name %>, :customer_id
-    add_index <%= @subscriptions_table_name %>, :current_period_end
     add_index <%= @subscriptions_table_name %>, :subscribable_id
     add_index <%= @subscriptions_table_name %>, [:subscribable_type, :subscribable_id]
 

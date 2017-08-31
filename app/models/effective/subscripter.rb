@@ -35,7 +35,7 @@ module Effective
     end
 
     def token_required?
-      customer.active_card.blank?
+      customer.token_required?
     end
 
     def save!
@@ -51,7 +51,7 @@ module Effective
     end
 
     def destroy!
-      return true unless subscription&.persisted? && customer.stripe_subscription.present?
+      return true unless subscription && subscription.persisted? && customer.stripe_subscription.present?
 
       raise 'is invalid' unless valid?
 
@@ -90,6 +90,7 @@ module Effective
           Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{items(metadata: false)}"
           customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
           customer.stripe_subscription_id = customer.stripe_subscription.id
+          customer.status = customer.stripe_subscription.status
         end
       end
 
