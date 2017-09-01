@@ -1,11 +1,13 @@
 module EffectiveSubscriptionsHelper
 
-  def effective_customer_fields(customer, submit: true)
-    raise 'expected an Effective::Customer object' unless customer.class.name == 'Effective::Customer'
+  def effective_customer_fields(form, customer, submit: true)
+    raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
+    raise 'customer must be an an Effective::Customer object' unless customer.present?
 
     render(
       partial: 'effective/customers/fields',
       locals: {
+        f: form,
         customer: customer,
         submit: submit,
         stripe: {

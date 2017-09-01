@@ -13,4 +13,4 @@
     item_wrapper_tag: 'div'
 
   - if fs.object.customer.persisted?
-    = effective_customer_fields(fs.object.customer)
+    = effective_customer_fields(fs, fs.object.customer)

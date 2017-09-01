@@ -5,7 +5,7 @@
 
   = render(f.object) do
     %h3.effective-heading Card
-    = effective_customer_fields(f.object)
+    = effective_customer_fields(f, f.object)
 
   .form-actions
     = f.button :submit, 'Save', data: { disable_with: 'Saving...' }

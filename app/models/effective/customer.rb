@@ -67,10 +67,13 @@ module Effective
       stripe_customer.source = token
 
       Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{token}"
+
       if stripe_customer.save == false
         self.errors.add(:active_card, 'unable to update stripe active card')
         raise 'unable to update stripe active card'
       end
+
+      # if unpaid. Pay the latest invoice immediately.....?
 
       if stripe_customer.default_source.present?
         card = stripe_customer.sources.retrieve(stripe_customer.default_source)
@@ -86,6 +89,18 @@ module Effective
 
     def token_required?
       active_card.blank? || (active_card.present? && stripe_subscription_id.present? && status != 'active')
+    end
+
+    def payment_status
+      if status == 'past_due'
+        'We ran into an error processing your last payment. Please update or confirm your card details to continue.'
+      elsif active_card.present? && token_required?
+        'Please update or comfirm your card details to continue.'
+      elsif active_card.present?
+        'Thank You for your support! The card we have on file is'
+      else
+        'No credit card on file. Please add a card.'
+      end.html_safe
     end
 
   end

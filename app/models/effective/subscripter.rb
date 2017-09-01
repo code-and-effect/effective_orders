@@ -13,7 +13,8 @@ module Effective
 
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
       if plan[:amount] > 0 && stripe_token.blank? && token_required?
-        self.errors.add(:stripe_token, 'payment token required for non-free plan')
+        self.errors.add(:stripe_token, 'payment card details required')
+        customer.errors.add(:stripe_token, 'payment card details required')
       end
     end
 
@@ -163,6 +164,7 @@ module Effective
         customer.stripe_subscription.save
       end
 
+      customer.status = customer.stripe_subscription.status
       customer.save!
     end
 
