@@ -1,12 +1,12 @@
 .effective-orders-customer{ data: { stripe: stripe.to_json, submit: submit.to_json } }
   - if f.object.token_required?
     = f.input :stripe_token, as: :effective_static_control, label: 'Credit Card', required: true,
-      value: customer.payment_status + ' ' + content_tag(:span, '', class: 'active-card')
+      value: f.object.customer.payment_status + ' ' + content_tag(:span, '', class: 'active-card')
 
     %p= link_to 'Update Card Details', '#', class: 'btn btn-primary btn-change-card'
 
   - else
     = f.input :stripe_token, as: :effective_static_control, label: 'Credit Card', required: false,
-      value: customer.payment_status + ' ' + content_tag(:span, customer.active_card, class: 'active-card')
+      value: f.object.customer.payment_status + ' ' + content_tag(:span, f.object.customer.active_card, class: 'active-card')
 
     %p= link_to 'Update Card Details', '#', class: 'btn btn-default btn-change-card'

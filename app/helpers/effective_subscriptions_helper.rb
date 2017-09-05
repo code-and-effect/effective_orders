@@ -1,17 +1,16 @@
 module EffectiveSubscriptionsHelper
 
-  def effective_customer_fields(form, customer, submit: true)
+  def effective_customer_fields(form, submit: true)
     raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
-    raise 'customer must be an an Effective::Customer object' unless customer.present?
+    raise 'form object must be an Effective::Subscripter object' unless form.object.class.name == 'Effective::Subscripter'
 
     render(
       partial: 'effective/customers/fields',
       locals: {
         f: form,
-        customer: customer,
         submit: submit,
         stripe: {
-          email: customer.user.email,
+          email: form.object.customer.user.email,
           image: stripe_site_image_url,
           key: EffectiveOrders.stripe[:publishable_key],
           name: EffectiveOrders.stripe[:site_title],
@@ -20,13 +19,13 @@ module EffectiveSubscriptionsHelper
     )
   end
 
-  def stripe_plans_collection(form, include_blank: nil, selected_class: 'selected panel-primary')
+  def stripe_plans_collection(form, include_trial: nil, selected_class: 'selected panel-primary')
     raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscribable.subscripter.present?
 
-    include_blank = form.object.subscribable.subscribed?('trial') if include_blank.nil?
+    include_trial = form.object.subscribable.subscribed?('trial') if include_trial.nil?
 
-    plans = include_blank ? EffectiveOrders.stripe_plans : EffectiveOrders.stripe_plans.except('trial')
+    plans = include_trial ? EffectiveOrders.stripe_plans : EffectiveOrders.stripe_plans.except('trial')
     plans = plans.values.sort { |x, y| (amount = x[:amount] <=> y[:amount]) != 0 ? amount : x[:name] <=> y[:name] }
 
     plans.map do |plan|
@@ -51,7 +50,7 @@ module EffectiveSubscriptionsHelper
     end
   end
 
-  def effective_subscription_fields(form, label: false, required: true, include_blank: nil, item_wrapper_class: 'col-sm-6 col-md-4 col-lg-3', selected_class: 'selected panel-primary', wrapper_class: 'row')
+  def effective_subscription_fields(form, label: false, required: true, include_trial: nil, item_wrapper_class: 'col-sm-6 col-md-4 col-lg-3', selected_class: 'selected panel-primary', wrapper_class: 'row')
     raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscripter.present?
 
@@ -61,7 +60,7 @@ module EffectiveSubscriptionsHelper
         form: form,
         label: label,
         required: required,
-        include_blank: include_blank,
+        include_trial: include_trial,
         item_wrapper_class: item_wrapper_class,
         selected_class: selected_class,
         stripe: {

@@ -4,22 +4,22 @@ module Effective
   class Subscripter
     include ActiveModel::Model
 
-    attr_accessor :user, :subscribable
+    attr_accessor :user, :subscribable, :customer
     attr_accessor :stripe_plan_id, :stripe_token
 
     validates :user, presence: true
-    validates :subscribable, presence: true
+    validates :subscribable, presence: true, if: -> { stripe_plan_id }
     validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
       if plan[:amount] > 0 && stripe_token.blank? && token_required?
-        self.errors.add(:stripe_token, 'payment card details required')
-        customer.errors.add(:stripe_token, 'payment card details required')
+        self.errors.add(:stripe_token, 'updated payment card required')
+        customer.errors.add(:stripe_token, 'updated payment card required')
       end
     end
 
-    validate(if: -> { subscribable.present? }) do
-      subscribable.errors.add(:subscripter, 'is invalid') if self.errors.present?
+    validate(if: -> { subscribable }) do
+      subscribable.errors.add(:subscripter, errors.messages.values.flatten.to_sentence) if self.errors.present?
     end
 
     def customer
@@ -45,9 +45,11 @@ module Effective
       raise 'is invalid' unless valid?
 
       begin
-        build! && sync!
+        build! && sync_plan! && sync!
       rescue => e
         reload!
+
+        self.errors.add(:base, e.message)
         raise(e)
       end
     end
@@ -78,6 +80,7 @@ module Effective
     private
 
     def subscription
+      return nil unless subscribable
       @subscription ||= (
         customer.subscriptions.find { |sub| sub.subscribable == subscribable } ||
         customer.subscriptions.build(subscribable: subscribable, customer: customer)
@@ -87,13 +90,33 @@ module Effective
     def build!
       # Ensure stripe customer exists
       if customer.stripe_customer.blank?
+        Rails.logger.info "STRIPE CUSTOMER CHECK FOR EXISTING: #{user.email}"
+
+        customers = Stripe::Customer.list(created: { gt: (user.created_at - 1.hour).to_i } ).data
+
+        if (existing = customers.find { |cus| cus.email == user.email && (cus.metadata || {})[:user_id] == user.id.to_s })
+          customer.stripe_customer = existing
+          customer.stripe_customer_id = existing.id
+        end
+      end
+
+      if customer.stripe_customer.blank?
         Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email}"
         customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
         customer.stripe_customer_id = customer.stripe_customer.id
       end
 
       # Update stripe customer card
-      customer.assign_card!(stripe_token) if stripe_token.present?
+      if stripe_token.present?
+        Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{stripe_token}"
+        customer.stripe_customer.source = stripe_token
+        customer.stripe_customer.save
+
+        if customer.stripe_customer.default_source.present?
+          card = customer.stripe_customer.sources.retrieve(customer.stripe_customer.default_source)
+          customer.active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
+        end
+      end
 
       # Assign stripe plan
       if plan
@@ -104,14 +127,15 @@ module Effective
           Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{items(metadata: false)}"
           customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
           customer.stripe_subscription_id = customer.stripe_subscription.id
-          customer.status = customer.stripe_subscription.status
         end
       end
 
       true
     end
 
-    def sync!
+    def sync_plan!
+      return true unless plan && customer.stripe_subscription
+
       Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
 
       if items.length == 0
@@ -119,8 +143,6 @@ module Effective
         customer.stripe_subscription_id = nil
         return customer.save!
       end
-
-      changed = false
 
       # Update stripe subscription items
       customer.stripe_subscription.items.each do |stripe_item|
@@ -132,7 +154,7 @@ module Effective
         stripe_item.metadata = item[:metadata]
 
         Rails.logger.info " -> UPDATE: #{item[:plan]}"
-        changed = stripe_item.save
+        stripe_item.save
       end
 
       # Create stripe subscription items
@@ -140,7 +162,7 @@ module Effective
         next if customer.stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
 
         Rails.logger.info " -> CREATE: #{item[:plan]}"
-        changed = customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
+        customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
       end
 
       # Delete stripe subscription items
@@ -148,13 +170,7 @@ module Effective
         next if items.find { |item| item[:plan] == stripe_item['plan']['id'] }
 
         Rails.logger.info " -> DELETE: #{stripe_item['plan']['id']}"
-        changed = stripe_item.delete
-      end
-
-      # When upgrading a plan, invoice immediately.
-      if changed && plan && plan[:amount] > current_plan[:amount]
-        Rails.logger.info " -> INVOICE GENERATED"
-        Stripe::Invoice.create(customer: customer.stripe_customer_id)
+        stripe_item.delete
       end
 
       # Update metadata
@@ -164,7 +180,20 @@ module Effective
         customer.stripe_subscription.save
       end
 
-      customer.status = customer.stripe_subscription.status
+      true
+    end
+
+    def sync!
+      # When upgrading a plan, invoice immediately.
+      if plan && current_plan && current_plan[:id] != 'trial' && plan[:amount] > current_plan[:amount]
+        Rails.logger.info " -> INVOICE GENERATED"
+        Stripe::Invoice.create(customer: customer.stripe_customer_id).pay rescue false
+      end
+
+      if customer.stripe_subscription_id.present?
+        customer.status = customer.stripe_subscription.status
+      end
+
       customer.save!
     end
 

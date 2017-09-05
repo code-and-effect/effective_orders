@@ -118,7 +118,7 @@
             = Time.zone.at(invoice.lines.first.period.end).strftime('%F')
           %td
             - invoice.lines.each do |line|
-              %p #{line.quantity}x #{line.plan.name} #{line.description}
+              %p #{line.quantity}x #{line.plan.try(:name)} #{line.description}
 
           %td= price_to_currency(invoice.total)
 
