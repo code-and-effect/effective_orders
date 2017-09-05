@@ -3,7 +3,8 @@ module Effective
     module Stripe
       extend ActiveSupport::Concern
 
-      # TODO: Make stripe charge work with admin checkout workflow
+      # TODO: Make stripe charge work with admin checkout workflow, purchased_url and declined_url
+      # Make it save the customer and not require typing in a CC every time.
 
       def stripe_charge
         @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
@@ -16,12 +17,12 @@ module Effective
           order_purchased(
             details: response,
             provider: (EffectiveOrders.stripe_connect_enabled ? 'stripe_connect' : 'stripe'),
-            card: (response['charge']['card']['brand'] rescue nil)
+            card: (response[:charge]['source']['brand'] rescue nil)
           )
         else
           @page_title = 'Checkout'
           flash.now[:danger] = @stripe_charge.errors.full_messages.to_sentence
-          render :checkout_step2
+          render :show
         end
       end
 
@@ -30,13 +31,13 @@ module Effective
       def process_stripe_charge(charge)
         Effective::Order.transaction do
           begin
-            @buyer = Effective::Customer.for_buyer(charge.order.user)
-            @buyer.update_card!(charge.token)
+            subscripter = Effective::Subscripter.new(user: charge.order.user, stripe_token: charge.stripe_token)
+            subscripter.save!
 
             if EffectiveOrders.stripe_connect_enabled
-              return charge_with_stripe_connect(charge, @buyer)
+              return charge_with_stripe_connect(charge, subscripter.customer)
             else
-              return charge_with_stripe(charge, @buyer)
+              return charge_with_stripe(charge, subscripter.customer)
             end
           rescue => e
             charge.errors.add(:base, "Unable to process order with Stripe. Your credit card has not been charged. Message: \"#{e.message}\".")
@@ -47,35 +48,15 @@ module Effective
         false
       end
 
-      def charge_with_stripe(charge, buyer)
-        results = { subscriptions: {}, charge: nil }
+      def charge_with_stripe(charge, customer)
+        results = { charge: nil }
 
-        # Process subscriptions.
-        charge.subscriptions.each do |subscription|
-          next if subscription.stripe_plan_id.blank?
-
-          stripe_subscription = if subscription.stripe_coupon_id.present?
-            buyer.stripe_customer.subscriptions.create(plan: subscription.stripe_plan_id, coupon: subscription.stripe_coupon_id)
-          else
-            buyer.stripe_customer.subscriptions.create(plan: subscription.stripe_plan.id)
-          end
-
-          subscription.stripe_subscription_id = stripe_subscription.id
-          subscription.save!
-
-          results[:subscriptions][subscription.stripe_plan_id] = JSON.parse(stripe_subscription.to_json)
-        end
-
-        # Process regular order_items.
-        amount = charge.order_items.map { |oi| oi.total }.sum # A positive integer in cents representing how much to charge the card. The minimum amount is 50 cents.
-        description = "Charge for Order ##{charge.order.to_param}"
-
-        if amount > 0
+        if charge.order.total > 0
           results[:charge] = JSON.parse(::Stripe::Charge.create(
-            amount: amount,
+            amount: charge.order.total,
             currency: EffectiveOrders.stripe[:currency],
-            customer: buyer.stripe_customer.id,
-            description: description
+            customer: customer.stripe_customer.id,
+            description: "Charge for Order ##{charge.order.to_param}"
           ).to_json)
         end
 
@@ -115,7 +96,7 @@ module Effective
 
       # StrongParameters
       def stripe_charge_params
-        params.require(:effective_providers_stripe_charge).permit(:token, :effective_order_id)
+        params.require(:effective_providers_stripe_charge).permit(:stripe_token, :effective_order_id)
       end
 
     end

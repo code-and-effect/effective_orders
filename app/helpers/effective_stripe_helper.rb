@@ -76,4 +76,17 @@ module EffectiveStripeHelper
     "#{order.num_items} items (#{price_to_currency(order.total)})"
   end
 
+  def stripe_charge_data(order)
+    {
+      stripe: {
+        key: EffectiveOrders.stripe[:publishable_key],
+        name: EffectiveOrders.stripe[:site_title],
+        image: stripe_site_image_url,
+        email: order.user.email,
+        amount: order.total,
+        description: stripe_order_description(order)
+      }.to_json
+    }
+  end
+
 end
