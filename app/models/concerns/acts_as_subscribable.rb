@@ -45,7 +45,11 @@ module ActsAsSubscribable
   end
 
   def trial_expired?
-    (Time.zone.now - created_at) > EffectiveOrders.subscription[:trial_period]
+    Time.zone.now > trial_expires_at
+  end
+
+  def trial_expires_at
+    (created_at || Time.zone.now) + EffectiveOrders.subscription[:trial_period]
   end
 
   def buyer

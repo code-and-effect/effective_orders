@@ -60,6 +60,61 @@ module Effective
       )
     end
 
+    # Sent by the invoice.payment_succeeded webhook event
+    def subscription_payment_succeeded(customer_param)
+      @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
+
+      mail(
+        to: @customer.user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_subscription_payment_succeeded(@customer)
+      )
+    end
+
+    # Sent by the invoice.payment_failed webhook event
+    def subscription_payment_failed(customer_param)
+      @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
+
+      mail(
+        to: @customer.user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_subscription_payment_failed(@customer)
+      )
+    end
+
+    # Sent by the invoice.payment_failed webhook event
+    def subscription_canceled(customer_param)
+      @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
+
+      mail(
+        to: @customer.user.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_subscription_canceled(@customer)
+      )
+    end
+
+    # Sent by the effective_orders:notify_trial_users rake task.
+    def subscription_trial_expiring(subscribable)
+      @subscribable = subscribable
+
+      mail(
+        to: @subscribable.buyer.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_subscription_trial_expiring(@subscribable)
+      )
+    end
+
+    # Sent by the effective_orders:notify_trial_users rake task.
+    def subscription_trial_expired(subscribable)
+      @subscribable = subscribable
+
+      mail(
+        to: @subscribable.buyer.email,
+        from: EffectiveOrders.mailer[:default_from],
+        subject: subject_for_subscription_trial_expired(@subscribable)
+      )
+    end
+
     def order_error(order: nil, error: nil, to: nil, from: nil, subject: nil, template: 'order_error')
       if order.present?
         @order = (order.kind_of?(Effective::Order) ? order : Effective::Order.find(order))
@@ -77,7 +132,6 @@ module Effective
       ) do |format|
         format.html { render(template) }
       end
-
     end
 
     private
@@ -103,7 +157,7 @@ module Effective
     end
 
     def subject_for_order_receipt_to_seller(order, order_items, seller)
-      string_or_callable = EffectiveOrders.mailer[:subject_for_seller_receipt]
+      string_or_callable = EffectiveOrders.mailer[:subject_for_order_receipt_to_seller]
 
       if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
         string_or_callable = self.instance_exec(order, order_items, seller, &string_or_callable)
@@ -132,6 +186,55 @@ module Effective
       prefix_subject(string_or_callable.presence || "Pending Order: ##{order.to_param}")
     end
 
+    def subject_for_subscription_payment_succeeded(customer)
+      string_or_callable = EffectiveOrders.mailer[:subject_for_subscription_payment_succeeded]
+
+      if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
+        string_or_callable = self.instance_exec(order, &string_or_callable)
+      end
+
+      prefix_subject(string_or_callable.presence || 'Thank you for your payment')
+    end
+
+    def subject_for_subscription_payment_failed(customer)
+      string_or_callable = EffectiveOrders.mailer[:subject_for_subscription_payment_failed]
+
+      if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
+        string_or_callable = self.instance_exec(order, &string_or_callable)
+      end
+
+      prefix_subject(string_or_callable.presence || 'Payment failed - please update your card details')
+    end
+
+    def subject_for_subscription_canceled(customer)
+      string_or_callable = EffectiveOrders.mailer[:subject_for_subscription_canceled]
+
+      if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
+        string_or_callable = self.instance_exec(order, &string_or_callable)
+      end
+
+      prefix_subject(string_or_callable.presence || 'Subscription canceled')
+    end
+
+    def subject_for_subscription_trial_expiring(customer)
+      string_or_callable = EffectiveOrders.mailer[:subject_for_subscription_trial_expiring]
+
+      if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
+        string_or_callable = self.instance_exec(order, &string_or_callable)
+      end
+
+      prefix_subject(string_or_callable.presence || 'Trial expiring soon')
+    end
+
+    def subject_for_subscription_trial_expired(customer)
+      string_or_callable = EffectiveOrders.mailer[:subject_for_subscription_trial_expired]
+
+      if string_or_callable.respond_to?(:call) # This is a Proc or a function, not a string
+        string_or_callable = self.instance_exec(order, &string_or_callable)
+      end
+
+      prefix_subject(string_or_callable.presence || 'Trial expired')
+    end
 
     def prefix_subject(text)
       prefix = (EffectiveOrders.mailer[:subject_prefix].to_s rescue '')
