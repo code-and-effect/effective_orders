@@ -50,7 +50,7 @@ module Effective
         reload!
 
         self.errors.add(:base, e.message)
-        raise(e)
+        raise e
       end
     end
 

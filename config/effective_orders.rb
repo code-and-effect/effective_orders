@@ -251,16 +251,16 @@ EffectiveOrders.setup do |config|
 
   # Stripe configuration
   config.stripe_enabled = false
+  config.subscriptions_enabled = false # https://stripe.com/docs/subscriptions
 
   config.stripe_connect_enabled = false # https://stripe.com/docs/connect
   config.stripe_connect_application_fee_method = Proc.new { |order_item| order_item.total * 0.10 } # 10 percent
-
-  config.subscriptions_enabled = false # https://stripe.com/docs/subscriptions
 
   config.subscription = {
     trial_name: 'Free Trial',
     trial_description: '45-Day Free Trial',
     trial_period: 45.days,
+    trial_remind_at: [1.day, 3.days, 7.days],  # Send email notification to trialing users 1, 3 and 7 days before expiring. false to disable.
     webhook_secret: 'whsec_1234567890'
   }
 

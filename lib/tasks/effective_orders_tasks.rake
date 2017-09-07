@@ -27,4 +27,44 @@ namespace :effective_orders do
       end
     end
   end
+
+  desc 'Sends trial expiring and expired emails to each subscribable. Schedule me to run once per day.'
+  task send_trial_expiring_emails: :environment do
+    trial_remind_at = Array(EffectiveOrders.subscription[:trial_remind_at]).compact
+    exit unless trial_remind_at.present? && trial_remind_at.all? { |x| x.present? }
+
+    Rails.application.eager_load!
+
+    today = Time.zone.now.beginning_of_day
+    reminders = trial_remind_at.select { |remind_at| remind_at.kind_of?(ActiveSupport::Duration) }
+
+    begin
+      ActsAsSubscribable.descendants.each do |klass|
+        klass.trialing.find_each do |subscribable|
+          if subscribable.trial_expires_at == today
+            puts "sending trial expired to #{subscribable}"
+            Effective::OrdersMailer.subscription_trial_expired(subscribable).deliver_now
+          end
+
+          next if subscribable.trial_expired? # We already notified them
+
+          reminders.each do |remind_at|
+            next unless subscribable.trial_expires_at == (today + remind_at)
+
+            puts "sending trial expiring to #{subscribable}. expires in #{(subscribable.trial_expires_at - today) / 1.day.to_i} days."
+            Effective::OrdersMailer.subscription_trial_expiring(subscribable).deliver_now
+          end
+        end
+      end
+
+      puts 'send_trial_expiring_emails completed'
+      EffectiveLogger.success('scheduled task send_trial_expiring_emails completed') if defined?(EffectiveLogger)
+    rescue => e
+      ExceptionNotifier.notify_exception(e) if defined?(ExceptionNotifier)
+      raise e
+    end
+
+    true
+  end
+
 end

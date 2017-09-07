@@ -5,6 +5,8 @@ module Effective
     layout EffectiveOrders.mailer[:layout].presence || 'effective_orders_mailer_layout'
 
     def order_receipt_to_admin(order_param)
+      return true unless EffectiveOrders.mailer[:send_order_receipt_to_admin]
+
       @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
@@ -15,6 +17,8 @@ module Effective
     end
 
     def order_receipt_to_buyer(order_param)  # Buyer
+      return true unless EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+
       @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
@@ -25,6 +29,8 @@ module Effective
     end
 
     def order_receipt_to_seller(order_param, seller, order_items)
+      return true unless EffectiveOrders.mailer[:send_order_receipt_to_seller]
+
       @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
       @user = seller.user
       @order_items = order_items
@@ -40,6 +46,8 @@ module Effective
     # This is sent when an admin creates a new order or /admin/orders/new
     # Or uses the order action Send Payment Request
     def payment_request_to_buyer(order_param)
+      return true unless EffectiveOrders.mailer[:send_payment_request_to_buyer]
+
       @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
@@ -51,6 +59,8 @@ module Effective
 
     # This is sent when someone chooses to Pay by Cheque
     def pending_order_invoice_to_buyer(order_param)
+      return true unless EffectiveOrders.mailer[:send_pending_order_invoice_to_buyer]
+
       @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
 
       mail(
@@ -62,6 +72,8 @@ module Effective
 
     # Sent by the invoice.payment_succeeded webhook event
     def subscription_payment_succeeded(customer_param)
+      return true unless EffectiveOrders.mailer[:send_subscription_payment_succeeded]
+
       @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
 
       mail(
@@ -73,6 +85,8 @@ module Effective
 
     # Sent by the invoice.payment_failed webhook event
     def subscription_payment_failed(customer_param)
+      return true unless EffectiveOrders.mailer[:send_subscription_payment_failed]
+
       @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
 
       mail(
@@ -84,6 +98,8 @@ module Effective
 
     # Sent by the invoice.payment_failed webhook event
     def subscription_canceled(customer_param)
+      return true unless EffectiveOrders.mailer[:send_subscription_canceled]
+
       @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
 
       mail(
@@ -95,6 +111,8 @@ module Effective
 
     # Sent by the effective_orders:notify_trial_users rake task.
     def subscription_trial_expiring(subscribable)
+      return true unless EffectiveOrders.mailer[:send_subscription_trial_expiring]
+
       @subscribable = subscribable
 
       mail(
@@ -106,6 +124,8 @@ module Effective
 
     # Sent by the effective_orders:notify_trial_users rake task.
     def subscription_trial_expired(subscribable)
+      return true unless EffectiveOrders.mailer[:send_subscription_trial_expired]
+
       @subscribable = subscribable
 
       mail(

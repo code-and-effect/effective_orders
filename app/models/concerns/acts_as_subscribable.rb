@@ -1,9 +1,13 @@
 module ActsAsSubscribable
   extend ActiveSupport::Concern
 
+  mattr_accessor :descendants
+
   module ActiveRecord
     def acts_as_subscribable(*options)
+      @acts_as_subscribable = options || []
       include ::ActsAsSubscribable
+      (ActsAsSubscribable.descendants ||= []) << self
     end
   end
 
@@ -12,6 +16,9 @@ module ActsAsSubscribable
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
 
     validates :subscripter, associated: true
+
+    scope :subscribed, -> { where(id: joins(:subscription)) }  # All resources with a subscription
+    scope :trialing, -> { where.not(id: joins(:subscription)) } # All resources without a subscription
   end
 
   module ClassMethods
@@ -49,7 +56,8 @@ module ActsAsSubscribable
   end
 
   def trial_expires_at
-    (created_at || Time.zone.now) + EffectiveOrders.subscription[:trial_period]
+    # The rake task send_trial_expiring_emails depends on this beginning_of_day
+    ((created_at || Time.zone.now) + EffectiveOrders.subscription[:trial_period]).beginning_of_day
   end
 
   def buyer
