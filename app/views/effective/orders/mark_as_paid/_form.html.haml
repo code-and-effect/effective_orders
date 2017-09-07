@@ -3,6 +3,8 @@
     %h2 Admin: Offline Payment
 
     = simple_form_for order, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
+      = hidden_field_tag(:purchased_url, purchased_url)
+      = hidden_field_tag(:declined_url, declined_url)
       = f.input :payment_provider,
         as: :effective_select,
         collection: (EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers).sort,
