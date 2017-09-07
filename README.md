@@ -871,7 +871,7 @@ before_action :set_subscription_notice
 def set_subscription_notice
   return unless team && team.subscription_active? == false
 
-  if team.trialing? && team.trial_expired?
+  if team.trial_expired?
     flash.now[:warning] = 'Your trial has expired'
   elsif team.subscription_active? == false
     flash.now[:warning] = 'Your subscription has become unpaid'

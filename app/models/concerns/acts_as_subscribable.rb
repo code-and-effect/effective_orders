@@ -45,7 +45,7 @@ module ActsAsSubscribable
   end
 
   def trial_expired?
-    Time.zone.now > trial_expires_at
+    trialing? && Time.zone.now > trial_expires_at
   end
 
   def trial_expires_at

@@ -45,7 +45,7 @@ module Effective
       raise 'is invalid' unless valid?
 
       begin
-        build! && sync_plan! && sync!
+        build! && sync! && customer.save!
       rescue => e
         reload!
 
@@ -67,7 +67,7 @@ module Effective
       subscription.destroy!
       customer.subscriptions.reload
 
-      sync!
+      sync! && customer.save!
     end
 
     def reload!
@@ -88,7 +88,8 @@ module Effective
     end
 
     def build!
-      # Ensure stripe customer exists
+      # Check for an existing customer created within the last hour with this email
+      # This catches an edge case in which a stripe customer is created twice when a first time customer is using a declined card
       if customer.stripe_customer.blank?
         Rails.logger.info "STRIPE CUSTOMER CHECK FOR EXISTING: #{user.email}"
 
@@ -100,6 +101,7 @@ module Effective
         end
       end
 
+      # Create customer
       if customer.stripe_customer.blank?
         Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email}"
         customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
@@ -133,7 +135,7 @@ module Effective
       true
     end
 
-    def sync_plan!
+    def sync!
       return true unless plan && customer.stripe_subscription
 
       Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
@@ -141,7 +143,8 @@ module Effective
       if items.length == 0
         customer.stripe_subscription.delete
         customer.stripe_subscription_id = nil
-        return customer.save!
+        customer.status = nil
+        return true
       end
 
       # Update stripe subscription items
@@ -180,21 +183,16 @@ module Effective
         customer.stripe_subscription.save
       end
 
-      true
-    end
-
-    def sync!
       # When upgrading a plan, invoice immediately.
-      if plan && current_plan && current_plan[:id] != 'trial' && plan[:amount] > current_plan[:amount]
+      if current_plan && current_plan[:id] != 'trial' && plan[:amount] > current_plan[:amount]
         Rails.logger.info " -> INVOICE GENERATED"
         Stripe::Invoice.create(customer: customer.stripe_customer_id).pay rescue false
       end
 
-      if customer.stripe_subscription_id.present?
-        customer.status = customer.stripe_subscription.status
-      end
+      # Sync status
+      customer.status = customer.stripe_subscription.status
 
-      customer.save!
+      true
     end
 
     private

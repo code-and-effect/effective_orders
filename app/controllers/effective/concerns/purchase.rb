@@ -21,7 +21,7 @@ module Effective
 
           redirect_to (purchased_url.presence || effective_orders.purchased_order_path(':id')).gsub(':id', @order.to_param.to_s)
         rescue => e
-          flash[:danger] = "An error occurred while processing your payment: #{e.message}.  Please try again."
+          flash[:danger] = "An error occurred while processing your payment: #{e.message}. Please try again."
           redirect_to(declined_url.presence || effective_orders.cart_path).gsub(':id', @order.to_param.to_s)
         end
       end
