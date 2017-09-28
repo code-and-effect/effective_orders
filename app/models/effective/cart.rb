@@ -22,10 +22,10 @@ module Effective
       existing = (
         if unique.kind_of?(Proc)
           cart_items.find { |cart_item| instance_exec(item, cart_item.purchasable, &unique) }
-        elsif unique.kind_of?(Symbol) || unique.kind_of?(String)
+        elsif unique.kind_of?(Symbol) || (unique.kind_of?(String) && unique != 'true')
           raise "expected item to respond to unique #{unique}" unless item.respond_to?(unique)
           cart_items.find { |cart_item| cart_item.purchasable.respond_to?(unique) && item.send(unique) == cart_item.purchasable.send(unique) }
-        elsif unique
+        elsif unique.present?
           find(item)
         end
       )
