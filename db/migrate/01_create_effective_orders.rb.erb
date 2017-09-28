@@ -58,6 +58,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.string    :purchasable_type
       t.integer   :purchasable_id
 
+      t.boolean   :unique
       t.integer   :quantity
 
       t.timestamps
