@@ -22,8 +22,8 @@ module Effective
       existing = (
         if unique.kind_of?(Proc)
           cart_items.find { |cart_item| instance_exec(item, cart_item.purchasable, &unique) }
-        elsif unique.kind_of?(Symbol)
-          raise 'expected item to respond to unique symbol' unless item.respond_to?(unique)
+        elsif unique.kind_of?(Symbol) || unique.kind_of?(String)
+          raise "expected item to respond to unique #{unique}" unless item.respond_to?(unique)
           cart_items.find { |cart_item| cart_item.purchasable.respond_to?(unique) && item.send(unique) == cart_item.purchasable.send(unique) }
         elsif unique
           find(item)
@@ -31,8 +31,8 @@ module Effective
       )
 
       if existing
-        if unique || (existing.unique?)
-          existing.assign_attributes(purchasable: item, quantity: quantity, unique: true)
+        if unique || (existing.unique.present?)
+          existing.assign_attributes(purchasable: item, quantity: quantity, unique: existing.unique)
         else
           existing.quantity = existing.quantity + quantity
         end
@@ -42,7 +42,7 @@ module Effective
         raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
       end
 
-      existing ||= cart_items.build(purchasable: item, quantity: quantity, unique: unique.present?)
+      existing ||= cart_items.build(purchasable: item, quantity: quantity, unique: (unique.to_s if unique.kind_of?(Symbol) || unique.kind_of?(String) || unique == true))
       save!
     end
 
