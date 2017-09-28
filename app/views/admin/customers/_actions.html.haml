@@ -1,2 +1,1 @@
-- if customer.stripe_customer_id.present?
-  = link_to 'Manage', "https://manage.stripe.com/customers/#{customer.stripe_customer_id}"
+= link_to 'Manage', "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers/#{customer.stripe_customer_id}"

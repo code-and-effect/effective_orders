@@ -10,7 +10,7 @@ describe Effective::OrdersController, type: :controller do
 
   let(:stripe_helper) { StripeMock.create_test_helper }
   let(:order) { FactoryGirl.create(:order) }
-  let(:buyer) { Effective::Customer.for_user(order.user) }
+  let(:buyer) { Effective::Customer.for_buyer(order.user) }
   let(:token) { stripe_helper.generate_card_token }
   let(:stripe_charge_params) do
     {:effective_providers_stripe_charge => {'effective_order_id' => order.to_param, 'token' => token}}
@@ -91,7 +91,7 @@ describe Effective::OrdersController, type: :controller do
 
   describe '#stripe_charge with a subscription' do
     let(:order) { FactoryGirl.create(:order_with_subscription) }
-    let(:buyer) { Effective::Customer.for_user(order.user) }
+    let(:buyer) { Effective::Customer.for_buyer(order.user) }
     let(:subscription) { order.order_items[1].purchasable }
     let(:token) { stripe_helper.generate_card_token }
     let(:stripe_charge_params) do

@@ -1,6 +1,9 @@
 stripeCheckoutHandler = (key, form) ->
   StripeCheckout.configure
     key: key
+    closed: ->
+      form.find("input[type='submit']").removeAttr('disabled')
+      $('input[data-disable-with]').each -> try $.rails.enableFormElement($(this))
     token: (token, args) ->
       if token.error
         form.find("input[type='submit']").removeAttr('disabled')
@@ -8,28 +11,26 @@ stripeCheckoutHandler = (key, form) ->
 
         alert("An error ocurred when contacting Stripe. Your card has not been charged. Please refresh the page and try again. #{token.error.message}")
       else
-        form.find('input#effective_providers_stripe_charge_token').val('' + token['id'])
+        form.find("input[name$='[stripe_token]']").val('' + token['id'])
 
         form.find("input[type='submit']").prop('disabled', true)
         $('input[data-disable-with]').each -> try $.rails.disableFormElement($(this))
-
         form.submit()
 
 $(document).on 'click', "#effective-orders-new-charge-form form input[type='submit']", (event) ->
   event.preventDefault()
 
   obj = $('#effective-orders-new-charge-form')
-  form = obj.find('form').first()
+  $form = obj.find('form').first()
+  stripe = obj.data('stripe')
 
-  form.find("input[type='submit']").prop('disabled', true)
+  # Disable the form
+  $form.find("input[type='submit']").prop('disabled', true)
   $('input[data-disable-with]').each -> try $.rails.disableFormElement($(this))
 
-  stripeCheckoutHandler(obj.data('key'), form).open
-    name: obj.data('name')
-    email: obj.data('email')
-    description: obj.data('description')
-    amount: obj.data('amount')
-    image: obj.data('image')
-    closed: ->
-      form.find("input[type='submit']").removeAttr('disabled')
-      $('input[data-disable-with]').each -> try $.rails.enableFormElement($(this))
+  stripeCheckoutHandler(stripe.key, $form).open
+    image: stripe.image
+    name: stripe.name
+    description: stripe.description
+    email: stripe.email
+    amount: stripe.amount

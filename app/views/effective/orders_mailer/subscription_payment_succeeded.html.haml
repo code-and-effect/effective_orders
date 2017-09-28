@@ -1,0 +1,9 @@
+%p.effective-orders-receipt-info Payment succeeded
+
+%p Thank you for your payment.
+
+%p We have charged your credit card #{@customer.active_card}.
+
+%p Please click the following link to view past invoices or update your card settings:
+
+%p= link_to(effective_orders.customer_settings_url, effective_orders.customer_settings_url)

@@ -14,7 +14,7 @@ module Effective
           customer = Effective::Customer.for_user(current_user)
 
           if token_params['access_token'].present? && customer.present?
-            if customer.update_attributes(:stripe_connect_access_token => token_params['access_token'])
+            if customer.update_attributes(stripe_connect_access_token: token_params['access_token'])
               flash[:success] = 'Successfully Connected with Stripe Connect'
             else
               flash[:danger] = "Unable to update customer: #{customer.errors[:base].first}"

@@ -38,10 +38,10 @@ EffectiveOrders::Engine.routes.draw do
       end
     end
 
-    if true || EffectiveOrders.stripe_subscriptions_enabled
-      resources :subscriptions, only: [:index, :show, :new, :create, :destroy]
+    if EffectiveOrders.subscriptions_enabled
+      match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
+      match 'customer/settings', to: 'customers#update', via: [:patch, :put]
       match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]
-      get 'plans', to: 'subscriptions#new', as: :plans
     end
 
     match 'cart', to: 'carts#show', as: 'cart', via: :get
@@ -53,7 +53,7 @@ EffectiveOrders::Engine.routes.draw do
   end
 
   namespace :admin do
-    resources :customers, only: [:index]
+    resources :customers, only: [:index, :show]
     resources :orders do
       member do
         post :send_payment_request

@@ -1,0 +1,13 @@
+= javascript_include_tag 'https://checkout.stripe.com/checkout.js'
+
+= simple_form_for(subscripter, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.customer_settings_path, method: :put)) do |f|
+  = f.input :stripe_token, as: :hidden, input_html: { value: nil }
+
+  = render(f.object.customer) do
+    %h3.effective-heading Card
+    = effective_customer_fields(f)
+
+  .form-actions
+    = f.button :submit, 'Save', data: { disable_with: 'Saving...' }
+
+

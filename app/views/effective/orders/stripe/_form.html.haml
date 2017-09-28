@@ -1,7 +1,7 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
-#effective-orders-new-charge-form{data: { key: EffectiveOrders.stripe[:publishable_key], name: EffectiveOrders.stripe[:site_title], image: stripe_site_image_url, email: order.user.email, amount: order.total, description: stripe_order_description(order) }}
-  = simple_form_for(@stripe_charge || Effective::Providers::StripeCharge.new(order), (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.stripe_charge_orders_path)) do |f|
+#effective-orders-new-charge-form{data: stripe_charge_data(order) }
+  = simple_form_for(@stripe_charge || Effective::Providers::StripeCharge.new(order: order), url: effective_orders.stripe_charge_orders_path) do |f|
+    = f.input :stripe_token, as: :hidden, input_html: { value: nil }
     = f.input :effective_order_id, as: :hidden
-    = f.input :token, as: :hidden
     = f.submit order_checkout_label(:stripe), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }

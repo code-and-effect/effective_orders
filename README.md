@@ -795,7 +795,7 @@ Stripe Connect allows effective_orders to collect payments on behalf of users.
 
 First register your application with Stripe
 
-Stripe Dashbaord -> Your Account (dropdown) -> Account Settings -> Apps
+Stripe Dashboard -> Your Account (dropdown) -> Account Settings -> Apps
 
 Register your application
 
@@ -843,11 +843,59 @@ end
 
 ### Stripe Subscriptions
 
-Subscriptions and Stripe Connect do not currently work together.
+To set up stripe subscriptions:
 
-Register an additional Webhook, to accept Stripe subscription creation events from Stripe
+Define your model
 
-root_url/webhooks/stripe
+```ruby
+acts_as_subscribable
+```
+
+and then in your form, to choose a subscription:
+
+```ruby
+= effective_subscription_fields(f, item_wrapper_class: 'col-sm-3')
+```
+
+and in your controller:
+
+```ruby
+@team.save! && @team.subscripter.save!
+```
+
+and in your application controller:
+
+```ruby
+before_action :set_subscription_notice
+
+def set_subscription_notice
+  return unless team && team.subscription_active? == false
+
+  if team.trial_expired?
+    flash.now[:warning] = 'Your trial has expired'
+  elsif team.subscription_active? == false
+    flash.now[:warning] = 'Your subscription has become unpaid'
+  end
+end
+```
+
+And you can link to the customer#show page
+
+```ruby
+link_to 'Customer', effective_orders.customer_settings_path
+```
+
+To set up stripe:
+
+1.) Set up a stripe account as above.
+
+2.) Ceate one or more plans. Don't include any trial or trial periods.
+
+3.) Subscription Settings: 3-days. Then 1-day, 3-days, 3-days, then Cancel subscription
+
+4.) Click API -> Webhooks and add an endpoint `root_url/webhooks/stripe`. You will need something like ngrok to test this.
+
+5.) Record the webhook Signing secret in `config.subscription[:webhook_secret]`
 
 
 ## Paying Via PayPal

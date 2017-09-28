@@ -13,5 +13,12 @@ module Admin
       EffectiveOrders.authorized?(self, :index, Effective::Customer)
     end
 
+    def show
+      @customer = Effective::Customer.find(params[:id])
+
+      @page_title ||= @customer.to_s
+      EffectiveOrders.authorized?(self, :show, Effective::Customer)
+    end
+
   end
 end

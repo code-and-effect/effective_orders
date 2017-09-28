@@ -4,7 +4,7 @@ module EffectiveStripeHelper
   STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
 
   def is_stripe_connect_seller?(user)
-    Effective::Customer.for_user(user).try(:is_stripe_connect_seller?) == true
+    Effective::Customer.for_buyer(user).stripe_connect_access_token.present?
   end
 
   def link_to_new_stripe_connect_customer(opts = {})
@@ -26,29 +26,35 @@ module EffectiveStripeHelper
     stripe_user_params = opts.delete :stripe_user
     authorize_params.merge!({stripe_user: stripe_user_params}) if stripe_user_params.is_a?(Hash)
 
-    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL.chomp('/') + '?' + authorize_params.to_query
+    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL + '?' + authorize_params.to_query
     options = {}.merge(opts)
     link_to image_tag('/assets/effective_orders/stripe_connect.png'), authorize_url, options
   end
 
-  ### Subscriptions Helpers
-  def stripe_plans_collection(plans)
-    (plans || []).map { |plan| [(plan.name + ' ' + stripe_plan_description(plan)), plan.id, {'data-amount' => plan.amount}] }
+  def stripe_plan_description(obj)
+    plan = (
+      case obj
+      when Hash            ; obj
+      when ::Stripe::Plan  ; EffectiveOrders.stripe_plans.find { |plan| plan.id == obj.id }
+      else                 ; raise 'unexpected object'
+      end
+    )
+
+    raise("unknown stripe plan: #{obj}") unless plan.kind_of?(Hash) && plan[:id].present?
+
+    plan[:description]
   end
 
-  def stripe_plan_description(plan)
-    occurrence = case plan.interval
-      when 'weekly'   ; '/week'
-      when 'monthly'  ; '/month'
-      when 'yearly'   ; '/year'
-      when 'week'     ; plan.interval_count == 1 ? '/week' : " every #{plan.interval_count} weeks"
-      when 'month'    ; plan.interval_count == 1 ? '/month' : " every #{plan.interval_count} months"
-      when 'year'     ; plan.interval_count == 1 ? '/year' : " every #{plan.interval_count} years"
-      else            ; plan.interval
-    end
-
-    # We call helpers here, because stripe_plan_description is sometimes called in models
-    "#{ActionController::Base.helpers.price_to_currency(plan.amount)} #{plan.currency.upcase}#{occurrence}"
+  def stripe_invoice_line_description(line, simple: false)
+    [
+      "#{line.quantity}x",
+      line.plan.name,
+      price_to_currency(line.amount),
+      ("#{Time.zone.at(line.period.start).strftime('%F')}" unless simple),
+      ('to' unless simple),
+      ("#{Time.zone.at(line.period.end).strftime('%F')}" unless simple),
+      line.description.presence
+    ].compact.join(' ')
   end
 
   def stripe_coupon_description(coupon)
@@ -67,11 +73,20 @@ module EffectiveStripeHelper
   end
 
   def stripe_order_description(order)
-    if order.num_items == 1 && order.order_items.all? { |oi| oi.purchasable.kind_of?(Effective::Subscription) }
-      order.order_items.first.purchasable.stripe_plan.name
-    else
-      "#{order.num_items} items (#{price_to_currency(order.total)})"
-    end
+    "#{order.num_items} items (#{price_to_currency(order.total)})"
+  end
+
+  def stripe_charge_data(order)
+    {
+      stripe: {
+        key: EffectiveOrders.stripe[:publishable_key],
+        name: EffectiveOrders.stripe[:site_title],
+        image: stripe_site_image_url,
+        email: order.user.email,
+        amount: order.total,
+        description: stripe_order_description(order)
+      }.to_json
+    }
   end
 
 end

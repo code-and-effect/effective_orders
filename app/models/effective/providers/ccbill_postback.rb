@@ -20,7 +20,7 @@ class Effective::Providers::CcbillPostback
 
   def denial?
     # denialId is for subscriptions only
-    [:reasonForDeclineCode, :reasonForDecline, :denialId].any? {|key| params[key].present?}
+    [:reasonForDeclineCode, :reasonForDecline, :denialId].any? { |key| params[key].present? }
   end
 
   def order_details

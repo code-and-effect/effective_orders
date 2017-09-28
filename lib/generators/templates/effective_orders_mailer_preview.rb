@@ -11,7 +11,6 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
   end
 
-  # This email is only sent to sellers having sold items via StripeConnect
   def order_receipt_to_seller
     order = build_preview_order
     Effective::OrdersMailer.order_receipt_to_seller(order, preview_customer, order.order_items)
@@ -25,8 +24,28 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.pending_order_invoice_to_buyer(build_preview_order)
   end
 
+  def subscription_payment_succeeded
+    Effective::OrdersMailer.subscription_payment_succeeded(preview_customer)
+  end
+
+  def subscription_payment_failed
+    Effective::OrdersMailer.subscription_payment_failed(preview_customer)
+  end
+
+  def subscription_canceled
+    Effective::OrdersMailer.subscription_canceled(preview_customer)
+  end
+
+  def subscription_trial_expiring
+    Effective::OrdersMailer.subscription_trial_expiring(preview_subscribable)
+  end
+
+  def subscription_trial_expired
+    Effective::OrdersMailer.subscription_trial_expired(preview_subscribable)
+  end
+
   def order_error
-    Effective::OrdersMailer.order_error(order: build_preview_order, error: "Something didn't work out")
+    Effective::OrdersMailer.order_error(order: build_preview_order, error: 'Something did not work out')
   end
 
   protected
@@ -49,15 +68,15 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   # so that this mailer will not have to guess at your app's acts_as_purchasable objects
   def preview_order_items
     [
-      { title: 'Item One', quantity: 2, price: 999, tax_exempt: false },
-      { title: 'Item Two', quantity: 1, price: 25000, tax_exempt: false },
-      { title: 'Item Three', quantity: 1, price: 8999, tax_exempt: false },
-      { title: 'Item Four', quantity: 1, price: 100000, tax_exempt: false }
+      {title: 'Item One', quantity: 2, price: 999, tax_exempt: false},
+      {title: 'Item Two', quantity: 1, price: 25000, tax_exempt: false},
+      {title: 'Item Three', quantity: 1, price: 8999, tax_exempt: false},
+      {title: 'Item Four', quantity: 1, price: 100000, tax_exempt: false}
     ]
   end
 
   def preview_user
-    User.new(email: 'buyer@example.com').tap do |user|
+    User.new(email: 'buyer@website.com').tap do |user|
       user.name = 'Valued Customer' if user.respond_to?(:name=)
       user.full_name = 'Valued Customer' if user.respond_to?(:full_name=)
 
@@ -71,6 +90,22 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   end
 
   def preview_customer
-    Effective::Customer.new(user: preview_user)
+    Effective::Customer.new(user: preview_user, active_card: '**** **** **** 1234 Visa 04/20')
   end
+
+  def preview_subscribable
+    Class.new do
+      include ActiveModel::Model
+      attr_accessor :buyer
+
+      def to_s
+        'My cool service'
+      end
+
+      def trial_expires_at
+        Time.zone.now + 1.day
+      end
+    end.new(buyer: preview_user)
+  end
+
 end
