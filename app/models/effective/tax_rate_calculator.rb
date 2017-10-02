@@ -1,6 +1,6 @@
 module Effective
   class TaxRateCalculator
-    attr_reader :order
+    attr_reader :order, :country_code, :state_code
 
     RATES = {
       'CA' => {         # Canada
@@ -20,15 +20,18 @@ module Effective
       }
     }
 
-    def initialize(order:)
+    def initialize(order: nil, country_code: nil, state_code: nil)
       @order = order
+      @country_code = country_code
+      @state_code = state_code
+
+      raise 'expected an order, or a country and state code' unless (order || country_code)
+      raise 'expected an order OR a country and state code. Not both.' if (order && country_code)
     end
 
     def tax_rate
-      return unless order.billing_address && order.billing_address.country_code.present?
-
-      country = order.billing_address.country_code
-      state = order.billing_address.state_code
+      country = country_code || (order.billing_address.country_code if order.billing_address.present?)
+      state = state_code || (order.billing_address.state_code if order.billing_address.present?)
 
       rate = RATES[country]
       return rate if rate.kind_of?(Numeric)
@@ -38,7 +41,7 @@ module Effective
     end
 
     def unknown_tax_rate
-      order.skip_buyer_validations? ? nil : 0
+      (order && order.skip_buyer_validations?) ? nil : 0
     end
 
   end

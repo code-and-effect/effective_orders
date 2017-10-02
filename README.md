@@ -314,6 +314,12 @@ Or to apply 0% tax:
 config.order_tax_rate_method = Proc.new { |order| 0 }
 ```
 
+Or, hardcode a country and state code:
+
+```ruby
+config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(country_code: 'CA', state_code: 'AB').tax_rate }
+```
+
 Please see the initializer file for more information.
 
 
