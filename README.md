@@ -634,15 +634,17 @@ We are also going to use ngrok to give us a public facing URL
 
 Visit https://esqa.moneris.com/mpg/ and login with: demouser / store1 / password
 
-Select ADMIN -> hosted config from the menu
+Select Admin -> Hosted Paypage Config from the menu
 
 Click the 'Generate a New Configuration' button which should bring us to a "Hosted Paypage Configuration"
 
 ### Basic Configuration
 
-Description:  'My Test store'
+Description: My Test Store
 
 Transaction Type: Purchase
+
+Payment Methods: Credit Cards
 
 Response Method: Sent to your server as a POST
 
@@ -651,6 +653,10 @@ Approved URL: https://myapp.herokuapp.com/orders/moneris_postback
 Declined URL: https://myapp.herokuapp.com/orders/moneris_postback
 
 Note: The Approved and Declined URLs must match the effective_orders.moneris_postback_orders_path value in your application. By default it is /orders/moneris_postback
+
+Use 'Enhanced Cancel': false
+Use 'Enhanced Response Feedback': false
+
 
 Click 'Save Changes'
 
@@ -692,11 +698,11 @@ Display billing address details: true
 
 Display shipping address details: true
 
-Enable input of Billing, Shipping and extra fields: false
+Enable input of Billing, Shipping, and extra data fields on the hosted paypage: false
 
-Display merchange name: true, if you have an SSL cert
+Display merchant name: true, if you have an SSL cert
 
-Cancel Button Text:  'Cancel'
+Cancel Button Text: Cancel
 
 Cancel Button URL: https://myapp.herokuapp.com/
 
@@ -704,13 +710,15 @@ Click 'Save Appearance Settings'
 
 Click 'Return to main configuration'
 
-### Response Fields
+### Response/Receipt Data
+
+Click 'Configure Response Fields' from the main Hosted Paypage Configuration
 
 None of the 'Return...' checkboxes are needed. Leave unchecked.
 
-Perform asynchronous data post:  false, unchecked
+Perform asynchronous data post: false, unchecked
 
-Async Response URL:  leave blank
+Async Response URL: leave blank
 
 Click 'Save Response Settings'
 
@@ -719,7 +727,9 @@ Click 'Return to main configuration'
 
 ### Security
 
-Referring URL: https://myapp.herokuapp.com/
+Click 'Configure Security' from the main Hosted Paypage Configuration
+
+Referring URL -> Add URL: https://myapp.herokuapp.com/
 
 Enable Card Verification: false, unused
 
@@ -747,20 +757,20 @@ With this test store set up, you can make a successful purchase with:
 
 Cardholder Name: Any name
 
-Credit Card Number: 4242 4242 4242 4242
+Credit Card Number: 4502 2850 7000 0007
 
 Expiry Date: Any future date
 
 Some gotchas:
 
-1. When using a test store, if your order total price is less than $10, the penny amount may be used to raise an error code.
+1. When using a test store, there are a whole bunch of ways to simulate failures by posting an order less than $10.00
 
-Order totals ending in .00 will be Approved
-Order totals ending in .05 will be Declined
+Please refer to:
 
-And there's a whole bunch more.  Please refer to:
+https://developer.moneris.com/en/More/Testing/Penny%20Value%20Simulator
 
-https://www.collinsharper.com/downloadable/download/sample/sample_id/5/
+The following card will always be approved: 4502 2850 7000 0007
+The following card will always be declined: 4355 3100 0257 6375
 
 2. Moneris will not process a duplicate order ID
 
