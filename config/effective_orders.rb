@@ -166,12 +166,25 @@ EffectiveOrders.setup do |config|
     send_pending_order_invoice_to_buyer: true,
     send_order_receipts_when_mark_as_paid: false,
 
+    send_subscription_payment_succeeded: true,
+    send_subscription_payment_failed: true,
+    send_subscription_canceled: true,
+    send_subscription_trial_expiring: true,   # Only if you schedule the rake task to run
+    send_subscription_trial_expired: true,    # Only if you schedule the rake task to run
+
     subject_prefix: '[example]',
+
     subject_for_order_receipt_to_admin: '',
     subject_for_order_receipt_to_buyer: '',
     subject_for_order_receipt_to_seller: '',
     subject_for_pending_order_invoice_to_buyer: '',
     subject_for_payment_request_to_buyer: '',
+
+    subject_for_subscription_payment_succeeded: '',
+    subject_for_subscription_payment_failed: '',
+    subject_for_subscription_canceled: '',
+    subject_for_subscription_trial_expiring: '',
+    subject_for_subscription_trial_expired: '',
 
     layout: 'effective_orders_mailer_layout',
 
@@ -179,7 +192,7 @@ EffectiveOrders.setup do |config|
     admin_email: 'admin@example.com',
 
     deliver_method: nil,   # :deliver (rails < 4.2), :deliver_now (rails >= 4.2) or :deliver_later
-    delayed_job_deliver: false
+    delayed_job_deliver: false   # Use the oldschool pre-ActiveJob delayed_job way of sending email
   }
 
   #######################################
@@ -238,9 +251,18 @@ EffectiveOrders.setup do |config|
 
   # Stripe configuration
   config.stripe_enabled = false
-  config.stripe_subscriptions_enabled = false # https://stripe.com/docs/subscriptions
+  config.subscriptions_enabled = false # https://stripe.com/docs/subscriptions
+
   config.stripe_connect_enabled = false # https://stripe.com/docs/connect
   config.stripe_connect_application_fee_method = Proc.new { |order_item| order_item.total * 0.10 } # 10 percent
+
+  config.subscription = {
+    trial_name: 'Free Trial',
+    trial_description: '45-Day Free Trial',
+    trial_period: 45.days,
+    trial_remind_at: [1.day, 3.days, 7.days],  # Send email notification to trialing users 1, 3 and 7 days before expiring. false to disable.
+    webhook_secret: 'whsec_1234567890'
+  }
 
   if Rails.env.production?
     config.stripe = {

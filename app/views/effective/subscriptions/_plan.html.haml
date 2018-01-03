@@ -1,0 +1,21 @@
+.panel.panel-default{class: (selected_class if selected)}
+  .panel-heading.text-center
+    %h3= plan[:name]
+    %p= plan[:description]
+  .panel-body
+    %p Includes features
+
+    - if plan[:amount] == 0
+      %p Free plan
+
+    %hr
+    .visible-when-unselected.text-center
+      = link_to 'Select', '#', class: 'btn btn-default btn-select-plan'
+
+    .visible-when-selected.text-center
+      - if subscribed
+        %p
+          %strong Your current plan
+      - else
+        %p This is #{['an amazing', 'a great', 'an excellent', 'an exceptional', 'a marvelous', 'a wonderful'].sample} plan
+

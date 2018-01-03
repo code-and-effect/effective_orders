@@ -19,7 +19,7 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
-    before_action :authenticate_user!, except: [:paypal_postback, :ccbill_postback]
+    before_action :authenticate_user!, except: [:ccbill_postback, :free, :paypal_postback, :pretend]
     before_action :set_page_title, except: [:show]
 
     # This is the entry point for any Checkout button

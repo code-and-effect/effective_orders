@@ -3,7 +3,9 @@ module Effective
     self.table_name = EffectiveOrders.carts_table_name.to_s
 
     belongs_to :user    # Optional. We want non-logged-in users to have carts too.
-    has_many :cart_items, -> { order(:updated_at) }, dependent: :delete_all, class_name: 'Effective::CartItem'
+    has_many :cart_items, -> { includes(:purchasable).order(:updated_at) }, dependent: :delete_all, class_name: 'Effective::CartItem'
+
+    accepts_nested_attributes_for :cart_items
 
     # Attributes
     # cart_items_count        :integer
@@ -11,38 +13,47 @@ module Effective
 
     scope :deep, -> { includes(cart_items: :purchasable) }
 
-    def add(item, quantity: 1, unique: false)
+    # cart.add(@product, unique: -> (a, b) { a.kind_of?(Product) && b.kind_of?(Product) && a.category == b.category })
+    # cart.add(@product, unique: :category)
+    # cart.add(@product, unique: false) # Add as many as you want
+    def add(item, quantity: 1, unique: true)
       raise 'expecting an acts_as_purchasable object' unless item.kind_of?(ActsAsPurchasable)
 
-      # If unique == true, we can only have 1 of this object type in our cart
-      if unique
-        cart_items.each { |cart_item| cart_item.destroy if cart_item.purchasable_type == item.class.name }
-        cart_items.build(purchasable: item, quantity: 1).save!
-        return
-      end
-
-      # Otherwise, we check existance and quantity
-      if (existing = find(item))
-        if item.quantity_enabled? && (quantity + (existing.quantity rescue 0)) > item.quantity_remaining
-          raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
+      existing = (
+        if unique.kind_of?(Proc)
+          cart_items.find { |cart_item| instance_exec(item, cart_item.purchasable, &unique) }
+        elsif unique.kind_of?(Symbol) || (unique.kind_of?(String) && unique != 'true')
+          raise "expected item to respond to unique #{unique}" unless item.respond_to?(unique)
+          cart_items.find { |cart_item| cart_item.purchasable.respond_to?(unique) && item.send(unique) == cart_item.purchasable.send(unique) }
+        elsif unique.present?
+          find(item)
         end
+      )
 
-        existing.quantity = existing.quantity + quantity
-        existing.save!
-        return
+      if existing
+        if unique || (existing.unique.present?)
+          existing.assign_attributes(purchasable: item, quantity: quantity, unique: existing.unique)
+        else
+          existing.quantity = existing.quantity + quantity
+        end
       end
 
-      # Otherwise this is a new item we just add
-      cart_items.build(purchasable: item, quantity: quantity).save!
+      if item.quantity_enabled? && (existing ? existing.quantity : quantity) > item.quantity_remaining
+        raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
+      end
+
+      existing ||= cart_items.build(purchasable: item, quantity: quantity, unique: (unique.to_s if unique.kind_of?(Symbol) || unique.kind_of?(String) || unique == true))
+      save!
     end
 
     def clear!
-      cart_items.each { |cart_item| cart_item.destroy }
-      reload
+      cart_items.each { |cart_item| cart_item.mark_for_destruction }
+      save!
     end
 
-    def remove(obj)
-      cart_items.find(obj).try(:destroy)
+    def remove(item)
+      find(item).try(:mark_for_destruction)
+      save!
     end
 
     def includes?(item)
@@ -50,7 +61,11 @@ module Effective
     end
 
     def find(item)
-      cart_items.to_a.find { |cart_item| cart_item == item || cart_item.purchasable == item }
+      cart_items.find { |cart_item| cart_item == item || cart_item.purchasable == item }
+    end
+
+    def purchasables
+      cart_items.map { |cart_item| cart_item.purchasable }
     end
 
     def size
@@ -62,7 +77,7 @@ module Effective
     end
 
     def blank?
-      size == 0
+      size <= 0
     end
 
     def subtotal

@@ -5,19 +5,21 @@ module EffectiveCartsHelper
       user = for_user || (current_user rescue nil) # rescue protects me against Devise not being installed
 
       if user.present?
-        Effective::Cart.where(user_id: user.id).first_or_create.tap do |user_cart|
-          if session[:cart].present?
-            session_cart = Effective::Cart.where(user_id: nil).where(id: session[:cart]).first
+        user_cart = Effective::Cart.where(user: user).first_or_create
 
-            if session_cart.present?
-              session_cart.cart_items.update_all(cart_id: user_cart.id)
-              session_cart.destroy
-              user_cart.reload
-            end
+        # Merge session cart into user cart.
+        if session[:cart].present?
+          session_cart = Effective::Cart.where(user: nil).where(id: session[:cart]).first
 
-            session[:cart] = nil
+          if session_cart
+            session_cart.cart_items.each { |i| user_cart.add(i.purchasable, quantity: i.quantity, unique: i.unique) }
+            session_cart.destroy
           end
+
+          session[:cart] = nil
         end
+
+        user_cart
       elsif session[:cart].present?
         Effective::Cart.where(user_id: nil).where(id: session[:cart]).first_or_create
       else

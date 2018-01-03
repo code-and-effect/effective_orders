@@ -1,32 +1,26 @@
 class EffectiveCustomersDatatable < Effective::Datatable
    datatable do
-    order :email
 
     col :id, visible: false
-    col :email, sql_column: 'users.email' do |user|
-      mail_to user.email, user.email
-    end
+    #col 'user.email'
 
     if EffectiveOrders.stripe_enabled
       col :stripe_customer_id
-      col :stripe_active_card
+      col :active_card
     end
 
     if EffectiveOrders.stripe_connect_enabled
       col :stripe_connect_access_token
     end
 
-    col :subscription_types, sql_column: 'subscription_types'
+    actions_col do |customer|
+      link_to('Manage', "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers/#{customer.stripe_customer_id}")
+    end
 
-    actions_col partial: 'admin/customers/actions', partial_as: :customer
   end
 
   collection do
-    Effective::Customer.customers.distinct
-      .joins(:user, :subscriptions)
-      .select('customers.*, users.email AS email')
-      .select("array_to_string(array(#{Effective::Subscription.purchased.select('subscriptions.stripe_plan_id').where('subscriptions.customer_id = customers.id').to_sql}), ' ,') AS subscription_types")
-      .group('customers.id, subscriptions.stripe_plan_id, users.email')
+    Effective::Customer.joins(:user).all
   end
 
   # def search_column(collection, table_column, search_term)

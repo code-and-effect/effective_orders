@@ -205,7 +205,7 @@ EffectiveOrders.setup do |config|
 
   # Stripe configuration
   config.stripe_enabled = true
-  config.stripe_subscriptions_enabled = true # https://stripe.com/docs/subscriptions
+  config.subscriptions_enabled = true # https://stripe.com/docs/subscriptions
   config.stripe_connect_enabled = false # https://stripe.com/docs/connect
   config.stripe_connect_application_fee_method = Proc.new { |order_item| order_item.total * 0.10 } # 10 percent
 

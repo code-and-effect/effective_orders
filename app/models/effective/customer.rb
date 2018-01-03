@@ -2,86 +2,80 @@ module Effective
   class Customer < ActiveRecord::Base
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
-    attr_accessor :token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
+    attr_accessor :stripe_token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
+    attr_accessor :stripe_customer, :stripe_subscription
 
     belongs_to :user
-    has_many :subscriptions, inverse_of: :customer, class_name: 'Effective::Subscription'
+    has_many :subscriptions, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
+    has_many :subscribables, through: :subscriptions, source: :subscribable
+
+    accepts_nested_attributes_for :subscriptions
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
-    # stripe_active_card            :string  # **** **** **** 4242 Visa 05/12
+    # active_card                   :string  # **** **** **** 4242 Visa 05/12
+
+    # stripe_subscription_id        :string  # Each user gets one stripe subscription object, which can contain many items
+    # status                        :string
+
     # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
     #
     # timestamps
 
-    validates :user, presence: true
-    validates :user_id, uniqueness: true
+    scope :deep, -> { includes(subscriptions: :subscribable) }
 
-    scope :customers, -> { where.not(stripe_customer_id: nil) }
+    before_validation do
+      subscriptions.each { |subscription| subscription.status = status }
+    end
+
+    validates :user, presence: true
+    validates :stripe_customer_id, presence: true
+    validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: %w(active past_due) }
 
     def self.for_user(user)
-      Effective::Customer.where(user_id: user.id).first_or_create
+      Effective::Customer.where(user: user).first_or_initialize
+    end
+
+    def to_s
+      user.to_s.presence || 'New Customer'
     end
 
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
+        Rails.logger.info "STRIPE CUSTOMER RETRIEVE: #{stripe_customer_id}"
         ::Stripe::Customer.retrieve(stripe_customer_id)
+      end
+    end
+
+    def stripe_subscription
+      @stripe_subscription ||= if stripe_subscription_id.present?
+        Rails.logger.info "STRIPE SUBSCRIPTION RETRIEVE: #{stripe_subscription_id}"
+        ::Stripe::Subscription.retrieve(stripe_subscription_id)
+      end
+    end
+
+    def upcoming_invoice
+      @upcoming_invoice ||= if stripe_customer_id.present? && stripe_subscription_id.present?
+        Rails.logger.info "STRIPE UPCOMING INVOICE RETRIEVE: #{stripe_customer_id}"
+        ::Stripe::Invoice.upcoming(customer: stripe_customer_id) rescue nil
+      end
+    end
+
+    def token_required?
+      active_card.blank? || (active_card.present? && stripe_subscription_id.present? && status != 'active')
+    end
+
+    def payment_status
+      if status == 'past_due'
+        'We ran into an error processing your last payment. Please update or confirm your card details to continue.'
+      elsif active_card.present? && token_required?
+        'Please update or confirm your card details to continue.'
+      elsif active_card.present?
+        'Thanks for your support! The card we have on file is'
       else
-        ::Stripe::Customer.create(email: user.email, description: user.id.to_s).tap do |stripe_customer|
-          self.update_attributes(stripe_customer_id: stripe_customer.id)
-        end
-      end
+        'No credit card on file. Please add a card.'
+      end.html_safe
     end
 
-    def update_card!(token)
-      if token.present? # Oh, so they want to use a new credit card...
-        if stripe_customer.respond_to?(:cards)
-          stripe_customer.card = token  # This sets the default_card to the new card
-        elsif stripe_customer.respond_to?(:sources)
-          stripe_customer.source = token
-        else
-          raise 'unknown stripe card/source token method'
-        end
-
-        if stripe_customer.save && default_card.present?
-          card = cards.retrieve(default_card)
-
-          self.stripe_active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
-          self.save!
-        else
-          raise 'unable to update stripe customer with new card'
-        end
-      end
-    end
-
-    def is_stripe_connect_seller?
-      stripe_connect_access_token.present?
-    end
-
-    def current_plan_ids
-      @current_plan_ids ||= subscriptions.purchased.map { |subscription| subscription.stripe_plan_id }
-    end
-
-    private
-
-    def default_card
-      if stripe_customer.respond_to?(:default_card)
-        stripe_customer.default_card
-      elsif stripe_customer.respond_to?(:default_source)
-        stripe_customer.default_source
-      else
-        raise 'unknown stripe default card method'
-      end
-    end
-
-    def cards
-      if stripe_customer.respond_to?(:cards)
-        stripe_customer.cards
-      elsif stripe_customer.respond_to?(:sources)
-        stripe_customer.sources
-      else
-        raise 'unknown stripe cards method'
-      end
-    end
   end
 end

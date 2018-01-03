@@ -65,8 +65,9 @@ module EffectiveOrders
   mattr_accessor :paypal_enabled
 
   mattr_accessor :stripe_enabled
-  mattr_accessor :stripe_subscriptions_enabled
   mattr_accessor :stripe_connect_enabled
+
+  mattr_accessor :subscriptions_enabled
 
   # application fee is required if stripe_connect_enabled is true
   mattr_accessor :stripe_connect_application_fee_method
@@ -79,6 +80,7 @@ module EffectiveOrders
   mattr_accessor :moneris
   mattr_accessor :paypal
   mattr_accessor :stripe
+  mattr_accessor :subscription
 
   mattr_accessor :deliver_method
 
@@ -98,7 +100,8 @@ module EffectiveOrders
       :note, :terms_and_conditions,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
-      user_attributes: (EffectiveOrders.collect_user_fields || [])
+      user_attributes: (EffectiveOrders.collect_user_fields || []),
+      subscripter: [:stripe_plan_id, :stripe_token]
     ]
   end
 
@@ -141,6 +144,48 @@ module EffectiveOrders
     return false if collect_user_fields.present?
 
     true
+  end
+
+  def self.stripe_plans
+    return {} unless (stripe_enabled && subscriptions_enabled)
+
+    @stripe_plans ||= (
+      plans = Stripe::Plan.all.inject({}) do |h, plan|
+        occurrence = case plan.interval
+          when 'daily'    ; '/day'
+          when 'weekly'   ; '/week'
+          when 'monthly'  ; '/month'
+          when 'yearly'   ; '/year'
+          when 'day'      ; plan.interval_count == 1 ? '/day' : " every #{plan.interval_count} days"
+          when 'week'     ; plan.interval_count == 1 ? '/week' : " every #{plan.interval_count} weeks"
+          when 'month'    ; plan.interval_count == 1 ? '/month' : " every #{plan.interval_count} months"
+          when 'year'     ; plan.interval_count == 1 ? '/year' : " every #{plan.interval_count} years"
+          else            ; plan.interval
+        end
+
+        h[plan.id] = {
+          id: plan.id,
+          name: plan.name,
+          amount: plan.amount,
+          currency: plan.currency,
+          description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}",
+          occurrence: "#{occurrence}",
+          interval: plan.interval,
+          interval_count: plan.interval_count
+        }; h
+      end
+
+      if subscription.kind_of?(Hash)
+        plans['trial'] = {
+          id: 'trial',
+          amount: 0,
+          name: (subscription[:trial_name] || 'Free Trial'),
+          description: (subscription[:trial_description] || 'Free Trial')
+        }
+      end
+
+      plans
+    )
   end
 
   class SoldOutException < Exception; end

@@ -1,7 +1,7 @@
 %h1.effective-admin-heading= @page_title
 
 %p.text-right.effective-admin-actions
-  = link_to 'Stripe Dashboard: Customers', 'https://manage.stripe.com/customers', :class => 'btn btn-primary'
+  = link_to 'Stripe Customers', "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers", class: 'btn btn-primary'
 
 - if @datatable.present?
   = render_datatable @datatable
