@@ -9,8 +9,6 @@ EffectiveOrders::Engine.routes.draw do
 
     resources :orders, except: [:destroy] do
       member do
-        post :update
-
         get :purchased
         get :declined
         get :send_buyer_receipt
@@ -40,6 +38,8 @@ EffectiveOrders::Engine.routes.draw do
       end
     end
 
+    post 'orders/:id', to: 'orders#update'
+
     if EffectiveOrders.subscriptions_enabled
       match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
       match 'customer/settings', to: 'customers#update', via: [:patch, :put]
@@ -68,6 +68,9 @@ EffectiveOrders::Engine.routes.draw do
       end
 
     end
+
+    post 'orders/:id', to: 'orders#update'
+
     resources :order_items, only: [:index]
   end
 
