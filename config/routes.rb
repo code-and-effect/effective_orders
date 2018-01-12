@@ -9,6 +9,8 @@ EffectiveOrders::Engine.routes.draw do
 
     resources :orders, except: [:destroy] do
       member do
+        post :update
+
         get :purchased
         get :declined
         get :send_buyer_receipt
