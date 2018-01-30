@@ -325,15 +325,29 @@ Please see the initializer file for more information.
 
 ### Callbacks
 
+There are three interesting callbacks you can define on the purchasable object, `before_purchase`, `after_purchase` and `after_decline`.
+
+The `before_purchase` callback runs just before the `order` object is saved.  This callback lets you do things in the same transaction the order is saved in.
+
+The `after_purchase` callback runs just after the `order` object is saved. It runs outside and just after the order save transaction.
+
+All three of these callbacks will re-raise any exceptions when in development mode, and swallow them in production.
+
 When defined, upon purchase the following callback will be triggered:
 
 ```ruby
 class Product
   acts_as_purchasable
 
+  before_purchase do |order, order_item
+    self.some_date = Time.zone.now
+  end  # Will automatically be saved
+
   after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
-    self.do_something() # self is the newly purchased instance of this Product
-  end
+    do_something()
+    self.completed_at = Time.zone.now
+    save!
+  end # Have to save on your own.
 
 end
 ```

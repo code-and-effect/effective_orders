@@ -288,6 +288,7 @@ module Effective
       return false if purchased?
 
       success = false
+      error = nil
 
       Effective::Order.transaction do
         begin
@@ -300,23 +301,27 @@ module Effective
 
           self.skip_buyer_validations = skip_buyer_validations
 
-          save!(validate: validate)
+          run_purchasable_callbacks(:before_purchase)
 
-          order_items.each { |item| (item.purchasable.purchased!(self, item) rescue nil) }
+          save!(validate: validate)
 
           success = true
         rescue => e
           self.purchase_state = purchase_state_was
           self.purchased_at = purchased_at_was
 
+          error = e.message
           raise ::ActiveRecord::Rollback
         end
       end
 
-      send_order_receipts! if (success && email)
+      raise "Failed to purchase Effective::Order: #{error || errors.full_messages.to_sentence}" unless success
 
-      raise "Failed to purchase Effective::Order: #{self.errors.full_messages.to_sentence}" unless success
-      success
+      send_order_receipts! if email
+
+      run_purchasable_callbacks(:after_purchase)
+
+      true
     end
 
     def decline!(details: 'none', provider: 'none', card: 'none', validate: true)
@@ -325,6 +330,7 @@ module Effective
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 
       success = false
+      error = nil
 
       Effective::Order.transaction do
         begin
@@ -337,16 +343,21 @@ module Effective
 
           save!(validate: validate)
 
-          order_items.each { |item| (item.purchasable.declined!(self, item) rescue nil) }
-
           success = true
         rescue => e
+          self.purchase_state = purchase_state_was
+          self.purchased_at = purchased_at_was
+
+          error = e.message
           raise ::ActiveRecord::Rollback
         end
       end
 
-      raise "Failed to decline! Effective::Order: #{self.errors.full_messages.to_sentence}" unless success
-      success
+      raise "Failed to decline! Effective::Order: #{error || errors.full_messages.to_sentence}" unless success
+
+      run_purchasable_callbacks(:after_decline)
+
+      true
     end
 
     def abandoned?
@@ -434,6 +445,15 @@ module Effective
       if user.respond_to?(:shipping_address=) && shipping_address.present?
         user.shipping_address = shipping_address
         user.shipping_address.save
+      end
+    end
+
+    def run_purchasable_callbacks(name)
+      binding.pry
+      begin
+        order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
+      rescue => e
+        raise e unless Rails.env.production?
       end
     end
 
