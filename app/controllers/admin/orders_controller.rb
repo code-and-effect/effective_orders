@@ -13,7 +13,7 @@ module Admin
 
       if params[:duplicate_id]
         @duplicate = Effective::Order.deep.find(params[:duplicate_id])
-        EffectiveOrders.authorized?(self, :show, @duplicate)
+        EffectiveOrders.authorize!(self, :show, @duplicate)
 
         @order.add(@duplicate)
       end
@@ -194,8 +194,8 @@ module Admin
     end
 
     def authorize_effective_order!
-      EffectiveOrders.authorized?(self, :admin, :effective_orders)
-      EffectiveOrders.authorized?(self, action_name.to_sym, @order || Effective::Order)
+      EffectiveOrders.authorize!(self, :admin, :effective_orders)
+      EffectiveOrders.authorize!(self, action_name.to_sym, @order || Effective::Order)
     end
 
     def admin_redirect_path

@@ -26,7 +26,7 @@ module Effective
     def new
       @order ||= Effective::Order.new(current_cart, user: current_user)
 
-      EffectiveOrders.authorized?(self, :new, @order)
+      EffectiveOrders.authorize!(self, :new, @order)
 
       # We're only going to check for a subset of errors on this step,
       # with the idea that we don't want to create an Order object if the Order is totally invalid
@@ -49,7 +49,7 @@ module Effective
 
     def create
       @order ||= Effective::Order.new(current_cart, user: current_user)
-      EffectiveOrders.authorized?(self, :create, @order)
+      EffectiveOrders.authorize!(self, :create, @order)
 
       @order.assign_attributes(checkout_params) if params[:effective_order]
 
@@ -68,12 +68,12 @@ module Effective
 
     def edit
       @order ||= Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :edit, @order)
+      EffectiveOrders.authorize!(self, :edit, @order)
     end
 
     def update
       @order ||= Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :update, @order)
+      EffectiveOrders.authorize!(self, :update, @order)
 
       @order.assign_attributes(checkout_params)
 
@@ -92,7 +92,7 @@ module Effective
 
     def show
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :show, @order)
+      EffectiveOrders.authorize!(self, :show, @order)
 
       @page_title ||= ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
     end
@@ -101,20 +101,20 @@ module Effective
       @orders = Effective::Order.deep.purchased_by(current_user)
       @pending_orders = Effective::Order.deep.pending.where(user: current_user)
 
-      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
+      EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Basically an index page.
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
       @orders = Effective::Order.deep.purchased_by(current_user)
-      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
+      EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Sales is a list of what products beign sold by me have been purchased
     def my_sales
       @order_items = Effective::OrderItem.deep.sold_by(current_user)
-      EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
+      EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Thank you for Purchasing this Order. This is where a successfully purchased order ends up
@@ -129,21 +129,21 @@ module Effective
         redirect_to(effective_orders.my_purchases_orders_path) and return
       end
 
-      EffectiveOrders.authorized?(self, :show, @order)
+      EffectiveOrders.authorize!(self, :show, @order)
 
       redirect_to(effective_orders.order_path(@order)) unless @order.purchased?
     end
 
     def declined
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :show, @order)
+      EffectiveOrders.authorize!(self, :show, @order)
 
       redirect_to(effective_orders.order_path(@order)) unless @order.declined?
     end
 
     def send_buyer_receipt
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorized?(self, :show, @order)
+      EffectiveOrders.authorize!(self, :show, @order)
 
       if @order.send_order_receipt_to_buyer!
         flash[:success] = "A receipt has been sent to #{@order.user.email}"
@@ -164,10 +164,10 @@ module Effective
       @orders = Effective::Order.purchased.where(id: params[:ids])
 
       begin
-        EffectiveOrders.authorized?(self, :index, Effective::Order.new(user: current_user))
+        EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
 
         @orders.each do |order|
-          next unless (EffectiveOrders.authorized?(self, :show, order) rescue false)
+          next unless (EffectiveOrders.authorize!(self, :show, order) rescue false)
 
           order.send_order_receipt_to_buyer!
         end

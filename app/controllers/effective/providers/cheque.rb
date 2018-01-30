@@ -7,7 +7,7 @@ module Effective
         @order ||= Order.find(params[:id])
         @page_title = 'Payment Required'
 
-        EffectiveOrders.authorized?(self, :update, @order)
+        EffectiveOrders.authorize!(self, :update, @order)
 
         @order.purchase_state = EffectiveOrders::PENDING
         @order.payment_provider = 'cheque'

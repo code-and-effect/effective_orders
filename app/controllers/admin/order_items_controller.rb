@@ -9,8 +9,8 @@ module Admin
 
       @page_title = 'Order Items'
 
-      EffectiveOrders.authorized?(self, :admin, :effective_orders)
-      EffectiveOrders.authorized?(self, :index, Effective::OrderItem)
+      EffectiveOrders.authorize!(self, :admin, :effective_orders)
+      EffectiveOrders.authorize!(self, :index, Effective::OrderItem)
     end
   end
 end

@@ -11,7 +11,7 @@ module Effective
         @stripe_charge = Effective::Providers::StripeCharge.new(stripe_charge_params)
         @stripe_charge.order = @order
 
-        EffectiveOrders.authorized?(self, :update, @order)
+        EffectiveOrders.authorize!(self, :update, @order)
 
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(

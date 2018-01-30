@@ -26,7 +26,7 @@
     - if EffectiveOrders.ccbill_enabled
       = render partial: '/effective/orders/ccbill/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
-    - if EffectiveOrders.app_checkout_enabled && (EffectiveOrders.authorized?(controller, :app_checkout, order) rescue false)
+    - if EffectiveOrders.app_checkout_enabled && EffectiveOrders.authorized?(controller, :app_checkout, order)
       = render partial: '/effective/orders/app_checkout/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
     - if EffectiveOrders.cheque_enabled && order.user == current_user
@@ -36,7 +36,7 @@
     %br
     %p= EffectiveOrders.allow_pretend_purchase_in_production_message
 
-- if (EffectiveOrders.authorized?(controller, :admin, :effective_orders) rescue false) && order.user != current_user
+- if EffectiveOrders.authorized?(controller, :admin, :effective_orders) && order.user != current_user
   - if EffectiveOrders.allow_refunds && order.refund?
     .effective-order.effective-order-admin-purchase-actions
       = render partial: '/effective/orders/refund/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }

@@ -13,7 +13,7 @@ module Effective
         postback = Effective::Providers::CcbillPostback.new(params)
         @order ||= Effective::Order.find(postback.order_id)
 
-        (EffectiveOrders.authorized?(self, :update, @order) rescue false)
+        (EffectiveOrders.authorize!(self, :update, @order) rescue false)
 
         if @order.present? && postback.verified?
           if @order.purchased?
