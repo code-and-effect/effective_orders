@@ -449,7 +449,6 @@ module Effective
     end
 
     def run_purchasable_callbacks(name)
-      binding.pry
       begin
         order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
       rescue => e
