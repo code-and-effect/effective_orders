@@ -41,6 +41,10 @@ module ActsAsPurchasable
   end
 
   module ClassMethods
+    def before_purchase(&block)
+      send :define_method, :before_purchase do |order, order_item| self.instance_exec(order, order_item, &block) end
+    end
+
     def after_purchase(&block)
       send :define_method, :after_purchase do |order, order_item| self.instance_exec(order, order_item, &block) end
     end
@@ -107,16 +111,6 @@ module ActsAsPurchasable
 
   def sold_out?
     quantity_enabled? ? (quantity_remaining == 0) : false
-  end
-
-  def purchased!(order = nil, order_item = nil)
-    after_purchase(order, order_item) if self.respond_to?(:after_purchase)
-    save!
-  end
-
-  def declined!(order = nil, order_item = nil)
-    after_decline(order, order_item) if self.respond_to?(:after_decline)
-    save!
   end
 
   # Override me if this is a digital purchase.
