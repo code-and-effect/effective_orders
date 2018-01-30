@@ -339,15 +339,16 @@ When defined, upon purchase the following callback will be triggered:
 class Product
   acts_as_purchasable
 
-  before_purchase do |order, order_item
-    self.some_date = Time.zone.now
-  end  # Will automatically be saved
+  # Will automatically be saved when order is saved
+  before_purchase do |order, order_item|
+    self.completed_at = Time.zone.now
+  end
 
-  after_purchase do |order, order_item|   # These are optional, if you don't care about the order or order_item
-    do_something()
+  # Won't be automatically saved. You need to call save on your own.
+  after_purchase do |order, order_item|
     self.completed_at = Time.zone.now
     save!
-  end # Have to save on your own.
+  end
 
 end
 ```
