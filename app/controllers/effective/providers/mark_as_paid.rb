@@ -6,8 +6,8 @@ module Effective
       def mark_as_paid
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorized?(self, :update, @order)
-        EffectiveOrders.authorized?(self, :admin, :effective_orders)
+        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveOrders.authorize!(self, :admin, :effective_orders)
 
         @order.assign_attributes(mark_as_paid_params.except(:payment, :payment_provider, :payment_card))
 

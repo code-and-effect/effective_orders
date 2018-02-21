@@ -10,7 +10,7 @@ module Effective
       def moneris_postback
         @order ||= Effective::Order.find(params[:response_order_id])
 
-        (EffectiveOrders.authorized?(self, :update, @order) rescue false)
+        (EffectiveOrders.authorize!(self, :update, @order) rescue false)
 
         # Delete the Purchased and Declined Redirect URLs
         purchased_url = params.delete(:rvar_purchased_url)

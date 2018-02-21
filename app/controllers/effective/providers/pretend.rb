@@ -6,7 +6,7 @@ module Effective
       def pretend
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorized?(self, :update, @order)
+        EffectiveOrders.authorize!(self, :update, @order)
 
         order_purchased(
           details: 'for pretend',

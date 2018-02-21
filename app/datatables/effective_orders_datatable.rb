@@ -1,6 +1,6 @@
 class EffectiveOrdersDatatable < Effective::Datatable
   bulk_actions do
-    if (EffectiveOrders.authorized?(view.controller, :admin, :effective_orders) rescue false)
+    if EffectiveOrders.authorized?(view.controller, :admin, :effective_orders)
       bulk_action(
       'Send payment request email to selected pending orders',
         effective_orders.bulk_send_payment_request_admin_orders_path,

@@ -11,7 +11,7 @@ module Effective
       def app_checkout
         @order = Order.find(params[:id])
 
-        (EffectiveOrders.authorized?(self, :update, @order) rescue false)
+        (EffectiveOrders.authorize!(self, :update, @order) rescue false)
 
         checkout = EffectiveOrders.app_checkout[:service].call(order: @order)
         if checkout.success?

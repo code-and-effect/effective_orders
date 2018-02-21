@@ -6,8 +6,8 @@ module Effective
       def refund
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorized?(self, :update, @order)
-        EffectiveOrders.authorized?(self, :admin, :effective_orders)
+        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveOrders.authorize!(self, :admin, :effective_orders)
 
         unless @order.refund?
           flash[:danger] = 'Unable to process refund with a non-negative total'

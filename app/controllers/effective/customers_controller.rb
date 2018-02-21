@@ -7,7 +7,7 @@ module Effective
     # Get here by visiting /customer/settings
     def edit
       @customer = Effective::Customer.where(user: current_user).first!
-      EffectiveOrders.authorized?(self, :edit, @customer)
+      EffectiveOrders.authorize!(self, :edit, @customer)
 
       @subscripter = Effective::Subscripter.new(customer: @customer, user: @customer.user)
 
@@ -16,7 +16,7 @@ module Effective
 
     def update
       @customer = Effective::Customer.where(user: current_user).first!
-      EffectiveOrders.authorized?(self, :update, @customer)
+      EffectiveOrders.authorize!(self, :update, @customer)
 
       @subscripter = Effective::Subscripter.new(customer: @customer, user: @customer.user)
       @subscripter.assign_attributes(subscripter_params)

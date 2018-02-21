@@ -9,13 +9,13 @@ module Effective
       @pending_orders = Effective::Order.pending.where(user: current_user) if current_user.present?
 
       @page_title ||= 'My Cart'
-      EffectiveOrders.authorized?(self, :show, @cart)
+      EffectiveOrders.authorize!(self, :show, @cart)
     end
 
     def destroy
       @cart = current_cart
 
-      EffectiveOrders.authorized?(self, :destroy, @cart)
+      EffectiveOrders.authorize!(self, :destroy, @cart)
 
       if @cart.destroy
         flash[:success] = 'Successfully emptied cart.'
@@ -29,7 +29,7 @@ module Effective
     def add_to_cart
       @purchasable = (add_to_cart_params[:purchasable_type].constantize.find(add_to_cart_params[:purchasable_id].to_i) rescue nil)
 
-      EffectiveOrders.authorized?(self, :update, current_cart)
+      EffectiveOrders.authorize!(self, :update, current_cart)
 
       begin
         raise "Please select a valid #{add_to_cart_params[:purchasable_type] || 'item' }." unless @purchasable
@@ -48,7 +48,7 @@ module Effective
     def remove_from_cart
       @cart_item = current_cart.cart_items.find(remove_from_cart_params[:id])
 
-      EffectiveOrders.authorized?(self, :update, current_cart)
+      EffectiveOrders.authorize!(self, :update, current_cart)
 
       if @cart_item.destroy
         flash[:success] = 'Successfully removed item from cart.'

@@ -6,7 +6,7 @@ module Effective
       def free
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorized?(self, :update, @order)
+        EffectiveOrders.authorize!(self, :update, @order)
 
         unless @order.free?
           flash[:danger] = 'Unable to process free order with a non-zero total'
