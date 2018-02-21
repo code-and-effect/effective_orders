@@ -1,4 +1,4 @@
-# This is not a Stripe Subscription object. This is a subscription's item.
+# This links the acts_as_subscribable_buyer (customer) to the acts_as_subscribable (subscribable)
 
 module Effective
   class Subscription < ActiveRecord::Base

@@ -21,10 +21,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'devise'
   s.add_dependency 'jquery-rails'
   s.add_dependency 'sass-rails'
-  s.add_dependency 'simple_form'
   s.add_dependency 'effective_addresses', '>= 1.6.0'
   s.add_dependency 'effective_datatables', '>= 3.0.0'
-  s.add_dependency 'effective_form_inputs'
 
   s.add_development_dependency 'stripe-ruby-mock', '>= 2.0.4'
   s.add_development_dependency 'factory_girl_rails'
