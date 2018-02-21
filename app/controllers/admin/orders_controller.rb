@@ -30,6 +30,7 @@ module Admin
       @order = Effective::Order.new(user: @user)
 
       authorize_effective_order!
+      error = nil
 
       Effective::Order.transaction do
         begin
@@ -48,12 +49,13 @@ module Admin
 
           redirect_to(admin_redirect_path) and return
         rescue => e
+          error = e.message
           raise ActiveRecord::Rollback
         end
       end
 
       @page_title = 'New Order'
-      flash.now[:danger] = "Unable to create order: #{@order.errors.full_messages.to_sentence}"
+      flash.now[:danger] = "Unable to create order: #{error || @order.errors.full_messages.to_sentence}"
       render :new
     end
 
