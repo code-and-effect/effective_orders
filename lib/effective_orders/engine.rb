@@ -4,17 +4,6 @@ module EffectiveOrders
 
     config.autoload_paths += Dir["#{config.root}/app/models/**/"]
 
-    # Include Helpers to base application
-    initializer 'effective_orders.action_controller' do |app|
-      ActiveSupport.on_load :action_controller do
-        helper EffectiveOrdersHelper
-        helper EffectiveCartsHelper
-        helper EffectivePaypalHelper if EffectiveOrders.paypal_enabled
-        helper EffectiveStripeHelper if EffectiveOrders.stripe_enabled
-        helper EffectiveCcbillHelper if EffectiveOrders.ccbill_enabled
-      end
-    end
-
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_orders.active_record' do |app|
       ActiveSupport.on_load :active_record do
