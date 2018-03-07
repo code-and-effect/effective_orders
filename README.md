@@ -10,6 +10,14 @@ Sends order receipt emails automatically.
 
 Has Order History, My Purchases, My Sales and Admin screens.
 
+## effective_orders 4.0
+
+This is the 4.0 series of effective_orders.
+
+This requires Twitter Bootstrap 4 and Rails 5.1+
+
+Please check out [Effective Orders 3.x](https://github.com/code-and-effect/effective_orders/tree/bootstrap3) for more information using this gem with Bootstrap 3.
+
 ## Getting Started
 
 Please first install the [effective_addresses](https://github.com/code-and-effect/effective_addresses), [effective_datatables](https://github.com/code-and-effect/effective_datatables) and [effective_form_inputs](https://github.com/code-and-effect/effective_form_inputs) gems.
