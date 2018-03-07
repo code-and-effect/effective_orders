@@ -26,7 +26,7 @@ Please first install the [effective_addresses](https://github.com/code-and-effec
 Add to your Gemfile:
 
 ```ruby
-gem 'effective_orders'
+gem 'effective_orders', '~> 3.0'
 ```
 
 Run the bundle command to install it:
