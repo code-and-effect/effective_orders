@@ -10,6 +10,15 @@ Sends order receipt emails automatically.
 
 Has Order History, My Purchases, My Sales and Admin screens.
 
+## Bootstrap3
+
+This is the `bootstrap3` branch of effective_orders which supports Twitter Bootstrap 3.
+
+All published effective_orders 3.x gems will support Twitter Bootstrap 3 and SimpleForm.
+
+For Bootstrap 4 please see the master branch and/or effective_orders 4.x gems.
+
+
 ## Getting Started
 
 Please first install the [effective_addresses](https://github.com/code-and-effect/effective_addresses), [effective_datatables](https://github.com/code-and-effect/effective_datatables) and [effective_form_inputs](https://github.com/code-and-effect/effective_form_inputs) gems.
