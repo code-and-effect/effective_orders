@@ -1,7 +1,5 @@
 module Effective
   class CartsController < ApplicationController
-    include EffectiveCartsHelper
-
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:carts] : EffectiveOrders.layout)
 
     def show

@@ -13,7 +13,7 @@
   = hidden_field_tag(:email, order.user.try(:email))
   = hidden_field_tag(:cust_id, order.user.to_param)
 
-  = hidden_field_tag(:order_id, [order.to_param, order.billing_name.try(:parameterize).presence, Time.zone.now.to_i].compact.join('-'))
+  = hidden_field_tag(:order_id, [order.to_param, order.billing_name.to_s.parameterize.presence, Time.zone.now.to_i].compact.join('-'))
   = hidden_field_tag(:gst, '%.2f' % (order.tax / 100.0))
   = hidden_field_tag(:charge_total, '%.2f' % (order.total / 100.0))
 

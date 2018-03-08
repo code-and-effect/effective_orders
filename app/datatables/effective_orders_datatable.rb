@@ -29,15 +29,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
         link_to order.user.email, (edit_admin_user_path(order.user) rescue admin_user_path(order.user) rescue '#')
       end
 
-      if EffectiveOrders.require_billing_address && EffectiveOrders.use_address_full_name
-        val :buyer_name, visible: false do |order|
-          order.billing_address.try(:full_name)
-        end
-      else
-        val :buyer_name, visible: false do |order|
-          order.user.to_s
-        end
-      end
+      col :billing_name
     end
 
     if EffectiveOrders.require_billing_address
@@ -63,7 +55,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
     col :total, as: :price
 
-    col :payment_provider, label: 'Provider', visible: false, search: { collection: ['nil'] + (EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers).sort }
+    col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.payment_providers }
     col :payment_card, label: 'Card'
 
     col :note, visible: false

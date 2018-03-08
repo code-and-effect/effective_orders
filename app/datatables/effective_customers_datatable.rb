@@ -4,13 +4,9 @@ class EffectiveCustomersDatatable < Effective::Datatable
     col :id, visible: false
     #col 'user.email'
 
-    if EffectiveOrders.stripe_enabled
+    if EffectiveOrders.stripe?
       col :stripe_customer_id
       col :active_card
-    end
-
-    if EffectiveOrders.stripe_connect_enabled
-      col :stripe_connect_access_token
     end
 
     actions_col do |customer|

@@ -4,7 +4,7 @@ Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
 
 A Rails Engine to handle the purchase workflow in a Rails 3.2.x / Rails 4 application.
 
-Also works with Stripe Connect and Stripe Subscriptions with coupons.
+Also works with Stripe Subscriptions.
 
 Sends order receipt emails automatically.
 
@@ -262,10 +262,6 @@ acts_as_purchsable provides the following scopes:
 `Product.purchased` all the Products that have been purchased
 
 `Product.purchased_by(user)` all the Products purchased by a given user.
-
-`Product.sold` all the Products that have been solid (same as purchased)
-
-`Product.sold_by(user)` all the Products that this user has sold via Stripe Connect
 
 `Product.not_purchased` all unpurchased Products
 
@@ -828,58 +824,6 @@ You an find these keys from the Stripe Dashbaord -> Your Account (dropdown) -> A
 
 You're ready to accept payments.
 
-### Stripe Connect
-
-Stripe Connect allows effective_orders to collect payments on behalf of users.
-
-First register your application with Stripe
-
-Stripe Dashboard -> Your Account (dropdown) -> Account Settings -> Apps
-
-Register your application
-
-Name: Your Application Name
-Website URL:  root_url
-
-Development:
-
-client_id: given by stripe, we need to record this.
-redirect_uri: stripe_connect_redirect_uri_url  # http://www.example.com/effective/orders/stripe_connect_redirect_uri
-webhook_uri: none
-
-And add these values to the app/config/effective_orders.rb initializer:
-
-```ruby
-config.stripe = {
-  secret_key: 'sk_live_IKd6HDaYUfoRjflWQTXfFNfc',
-  publishable_key: 'pk_live_liEGn9f0mcxKmoSjoeNbbuE1',
-  currency: 'usd',
-  connect_client_id: 'ca_35jLok5G9kosyYF7quTOwcauJjTnUnud'
-}
-```
-
-There are a few additional steps you need to take on the rails application side of things:
-
-
-Before allowing one of your Users to create a Product for sale, you must enforce that they have a Stripe Connect account setup and configured.
-
-You can check if they have an account set up using the built in helper `is_stripe_connect_seller?(current_user)`
-
-If the above check returns false, you must send them to Stripe to set up their StripeConnect account, using the built in helper `link_to_new_stripe_connect_customer`
-
-Once they've registered their account on the Stripe side, Stripe sends a webhook request, which is processed by the `webhooks_controller.rb`
-
-In the webhook controller, an `Effective::Customer` object is created, and your user is now ready to sell stuff via StripeConnect.
-
-
-Your product model must also define a `seller` method so that effective_orders knows who is selling the Product.  Add the following to your `acts_as_purchasable` model:
-
-```ruby
-def seller
-  User.find(user_id)
-end
-```
-
 ### Stripe Subscriptions
 
 To set up stripe subscriptions:
@@ -1152,15 +1096,6 @@ end
 ## License
 
 MIT License.  Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)
-
-## Testing
-
-Run tests by:
-
-```ruby
-rspec
-```
-
 
 ## Contributing
 

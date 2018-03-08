@@ -1,36 +1,5 @@
 module EffectiveStripeHelper
 
-  STRIPE_CONNECT_AUTHORIZE_URL = 'https://connect.stripe.com/oauth/authorize'
-  STRIPE_CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token'
-
-  def is_stripe_connect_seller?(user)
-    Effective::Customer.for_buyer(user).stripe_connect_access_token.present?
-  end
-
-  def link_to_new_stripe_connect_customer(opts = {})
-    client_id = EffectiveOrders.stripe[:connect_client_id]
-
-    raise 'effective_orders config: stripe.connect_client_id has not been set' unless client_id.present?
-
-    authorize_params = {
-      response_type: :code,
-      client_id: client_id,            # This is the Application's ClientID
-      scope: :read_write,
-      state: {
-        form_authenticity_token: form_authenticity_token,   # Rails standard CSRF
-        redirect_to: URI.encode(request.original_url)  # TODO: Allow this to be customized
-      }.to_json
-    }
-
-    # Add the stripe_user parameter if it's possible
-    stripe_user_params = opts.delete :stripe_user
-    authorize_params.merge!({stripe_user: stripe_user_params}) if stripe_user_params.is_a?(Hash)
-
-    authorize_url = STRIPE_CONNECT_AUTHORIZE_URL + '?' + authorize_params.to_query
-    options = {}.merge(opts)
-    link_to image_tag('/assets/effective_orders/stripe_connect.png'), authorize_url, options
-  end
-
   def stripe_plan_description(obj)
     plan = (
       case obj
@@ -58,7 +27,7 @@ module EffectiveStripeHelper
   end
 
   def stripe_coupon_description(coupon)
-    amount = coupon.amount_off.present? ? ActionController::Base.helpers.price_to_currency(coupon.amount_off) : "#{coupon.percent_off}%"
+    amount = coupon.amount_off.present? ? price_to_currency(coupon.amount_off) : "#{coupon.percent_off}%"
 
     if coupon.duration_in_months.present?
       "#{coupon.id} - #{amount} off for #{coupon.duration_in_months} months"
@@ -68,7 +37,7 @@ module EffectiveStripeHelper
   end
 
   def stripe_site_image_url
-    return nil unless EffectiveOrders.stripe && (url = EffectiveOrders.stripe[:site_image].to_s).present?
+    return nil unless EffectiveOrders.stripe? && (url = EffectiveOrders.stripe[:site_image].to_s).present?
     url.start_with?('http') ? url : asset_url(url)
   end
 

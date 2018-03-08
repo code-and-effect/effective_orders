@@ -2,22 +2,24 @@ module EffectivePaypalHelper
   class ConfigReader
     def self.cert_or_key(config)
       if File.exist?(EffectiveOrders.paypal[config])
-        File.read(EffectiveOrders.paypal[config]) rescue {}
+        (File.read(EffectiveOrders.paypal[config]) rescue nil)
       else
-        EffectiveOrders.paypal[config] || {}
+        EffectiveOrders.paypal[config]
       end
     end
   end
 
   # These're constants so they only get read once, not every order request
-  PAYPAL_CERT_PEM = ConfigReader.cert_or_key(:paypal_cert)
-  APP_CERT_PEM    = ConfigReader.cert_or_key(:app_cert)
-  APP_KEY_PEM     = ConfigReader.cert_or_key(:app_key)
+  if EffectiveOrders.paypal?
+    PAYPAL_CERT_PEM = ConfigReader.cert_or_key(:paypal_cert)
+    APP_CERT_PEM    = ConfigReader.cert_or_key(:app_cert)
+    APP_KEY_PEM     = ConfigReader.cert_or_key(:app_key)
+  end
 
   def paypal_encrypted_payload(order)
-    raise "unable to read EffectiveOrders PayPal paypal_cert #{EffectiveOrders.paypal[:paypal_cert]}" unless PAYPAL_CERT_PEM.present?
-    raise "unable to read EffectiveOrders PayPal app_cert #{EffectiveOrders.paypal[:app_cert]}" unless APP_CERT_PEM.present?
-    raise "unable to read EffectiveOrders PayPal app_key #{EffectiveOrders.paypal[:app_key]}" unless APP_KEY_PEM.present?
+    raise 'required paypal paypal_cert is missing' unless PAYPAL_CERT_PEM.present?
+    raise 'required paypal app_cert is missing' unless APP_CERT_PEM.present?
+    raise 'required paypal app_key is missing' unless APP_KEY_PEM.present?
 
     values = {
       business: EffectiveOrders.paypal[:seller_email],

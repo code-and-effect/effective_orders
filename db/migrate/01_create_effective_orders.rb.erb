@@ -9,6 +9,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.text      :note_to_buyer
       t.text      :note_internal
 
+      t.string    :billing_name
       t.text      :payment
 
       t.string    :payment_provider
@@ -28,7 +29,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
     create_table <%= @order_items_table_name %> do |t|
       t.integer   :order_id
-      t.integer   :seller_id
       t.string    :purchasable_type
       t.integer   :purchasable_id
 
@@ -76,8 +76,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
       t.string    :stripe_subscription_id
       t.string    :status
-
-      t.string    :stripe_connect_access_token
 
       t.integer   :subscriptions_count, :default => 0
 

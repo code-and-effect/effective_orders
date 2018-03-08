@@ -13,5 +13,5 @@
   %h2 Pending Orders
   = render_orders(@pending_orders)
 
-- if EffectiveOrders.show_order_history_button
+- if @cart.user && Effective::Order.purchased.where(user: @cart.user).exists?
   = link_to_my_purchases(label: 'Order History')

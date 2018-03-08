@@ -1,8 +1,0 @@
-== README
-
-To change the test database in this dummy app:
-
-- Delete the existing test.sqlite3
-- No migrations, so just make whatever changes you want to schema.rb
-
- bundle exec rake app:db:test:prepare

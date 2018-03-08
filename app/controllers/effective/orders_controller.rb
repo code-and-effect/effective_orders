@@ -4,18 +4,14 @@ module Effective
 
     include Concerns::Purchase
 
-    include Providers::AppCheckout if EffectiveOrders.app_checkout_enabled
-    include Providers::Ccbill if EffectiveOrders.ccbill_enabled
-    include Providers::Cheque if EffectiveOrders.cheque_enabled
-    include Providers::Free if EffectiveOrders.allow_free_orders
-    include Providers::MarkAsPaid if EffectiveOrders.mark_as_paid_enabled
-    include Providers::Moneris if EffectiveOrders.moneris_enabled
-    include Providers::Paypal if EffectiveOrders.paypal_enabled
-    include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
-    include Providers::Pretend if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
-    include Providers::Refund if EffectiveOrders.allow_refunds
-    include Providers::Stripe if EffectiveOrders.stripe_enabled
-    include Providers::StripeConnect if EffectiveOrders.stripe_connect_enabled
+    include Providers::Cheque if EffectiveOrders.cheque?
+    include Providers::Free if EffectiveOrders.free?
+    include Providers::MarkAsPaid if EffectiveOrders.mark_as_paid?
+    include Providers::Moneris if EffectiveOrders.moneris?
+    include Providers::Paypal if EffectiveOrders.paypal?
+    include Providers::Pretend if EffectiveOrders.pretend?
+    include Providers::Refund if EffectiveOrders.refunds?
+    include Providers::Stripe if EffectiveOrders.stripe?
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
@@ -108,12 +104,6 @@ module Effective
     # Purchases is an Order History page.  List of purchased orders
     def my_purchases
       @orders = Effective::Order.deep.purchased_by(current_user)
-      EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
-    end
-
-    # Sales is a list of what products beign sold by me have been purchased
-    def my_sales
-      @order_items = Effective::OrderItem.deep.sold_by(current_user)
       EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 

@@ -32,7 +32,8 @@ module Effective
     # note_to_buyer     :text
     # note_internal     :text
     #
-    # payment           :text   # serialized hash containing all the payment details.  see below.
+    # billing_name      :string
+    # payment           :text   # serialized hash containing all the payment details.
     #
     # payment_provider  :string
     # payment_card      :string
@@ -48,6 +49,7 @@ module Effective
     serialize :payment, Hash
 
     before_validation { assign_totals! }
+    before_validation { assign_billing_name }
 
     # Order validations
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
@@ -59,8 +61,7 @@ module Effective
         greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
         message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
       }, unless: -> {
-        (total == 0 && EffectiveOrders.allow_free_orders) ||
-        (total < 0 && EffectiveOrders.allow_refunds && skip_minimum_charge_validation?)
+        (total == 0 && EffectiveOrders.free?) || (total < 0 && EffectiveOrders.refunds? && skip_minimum_charge_validation?)
       }
     end
 
@@ -70,6 +71,7 @@ module Effective
       order.validates :tax, presence: true
 
       unless EffectiveOrders.skip_user_validation
+        order.validates :billing_name, presence: true
         order.validates :user_id, presence: true
         order.validates :user, associated: true
       end
@@ -92,18 +94,20 @@ module Effective
       order.validates :purchased_at, presence: true
       order.validates :payment, presence: true
 
-      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers }
+      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers }
       order.validates :payment_card, presence: true
     end
 
-    before_save { assign_totals! unless self[:total].present? } # Incase we save!(validate: false)
-    before_save :save_addresses
+    # Incase we save!(validate: false)
+    before_save(if: -> { self[:total].blank? }) { assign_totals! }
+    before_save(if: -> { billing_name.blank? }) { assign_billing_name }
+    before_save :save_user_addresses
 
-    scope :deep, -> { includes(:user).includes(order_items: :purchasable) }
-    scope :sorted, -> { order(created_at: :desc) }
+    scope :deep, -> { includes(:user, order_items: :purchasable) }
+    scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { sorted.where(purchase_state: EffectiveOrders::PURCHASED) }
-    scope :purchased_by, lambda { |user| purchased.where(user_id: user.try(:id)) }
+    scope :purchased_by, lambda { |user| purchased.where(user: user) }
     scope :declined, -> { where(purchase_state: EffectiveOrders::DECLINED) }
     scope :pending, -> { where(purchase_state: EffectiveOrders::PENDING) }
 
@@ -180,8 +184,6 @@ module Effective
     def user=(user)
       super
 
-      return unless user.present?
-
       # Copy user addresses into this order if they are present
       if user.respond_to?(:billing_address) && user.billing_address.present?
         self.billing_address = user.billing_address
@@ -224,8 +226,26 @@ module Effective
       end
     end
 
+    def abandoned?
+      purchase_state == EffectiveOrders::ABANDONED
+    end
+
+    def declined?
+      purchase_state == EffectiveOrders::DECLINED
+    end
+
     def free?
       total == 0
+    end
+
+    def pending?
+      purchase_state == EffectiveOrders::PENDING
+    end
+
+    def purchased?(provider = nil)
+      return false if (purchase_state != EffectiveOrders::PURCHASED)
+      return true if provider.nil? || payment_provider == provider.to_s
+      false
     end
 
     def refund?
@@ -272,16 +292,6 @@ module Effective
       truthy?(skip_minimum_charge_validation) || skip_buyer_validations?
     end
 
-    def billing_name
-      name ||= billing_address.try(:full_name).presence
-      name ||= user.try(:full_name).presence
-      name ||= (user.try(:first_name).to_s + ' ' + user.try(:last_name).to_s).presence
-      name ||= user.try(:email).presence
-      name ||= user.to_s
-      name ||= "User #{user.try(:id)}"
-      name
-    end
-
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
     def purchase!(details: 'none', provider: 'none', card: 'none', validate: true, email: true, skip_buyer_validations: false)
@@ -315,7 +325,7 @@ module Effective
         end
       end
 
-      raise "Failed to purchase Effective::Order: #{error || errors.full_messages.to_sentence}" unless success
+      raise "Failed to purchase order: #{error || errors.full_messages.to_sentence}" unless success
 
       send_order_receipts! if email
 
@@ -353,38 +363,16 @@ module Effective
         end
       end
 
-      raise "Failed to decline! Effective::Order: #{error || errors.full_messages.to_sentence}" unless success
+      raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless success
 
       run_purchasable_callbacks(:after_decline)
 
       true
     end
 
-    def abandoned?
-      purchase_state == EffectiveOrders::ABANDONED
-    end
-
-    def purchased?(provider = nil)
-      return false if (purchase_state != EffectiveOrders::PURCHASED)
-      return true if provider.nil? || payment_provider == provider.to_s
-
-      unless EffectiveOrder.payment_providers.include?(provider.to_s)
-        raise "Unknown provider #{provider}. Known providers are #{EffectiveOrders.payment_providers}"
-      end
-    end
-
-    def declined?
-      purchase_state == EffectiveOrders::DECLINED
-    end
-
-    def pending?
-      purchase_state == EffectiveOrders::PENDING
-    end
-
     def send_order_receipts!
       send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
       send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
-      send_order_receipt_to_seller! if EffectiveOrders.mailer[:send_order_receipt_to_seller]
     end
 
     def send_order_receipt_to_admin!
@@ -393,14 +381,6 @@ module Effective
 
     def send_order_receipt_to_buyer!
       send_email(:order_receipt_to_buyer, to_param) if purchased?
-    end
-
-    def send_order_receipt_to_seller!
-      return false unless (EffectiveOrders.stripe_connect_enabled && purchased?(:stripe_connect))
-
-      order_items.group_by { |oi| oi.seller }.each do |seller, order_items|
-        send_email(:order_receipt_to_seller, to_param, seller, order_items)
-      end
     end
 
     def send_payment_request_to_buyer!
@@ -436,7 +416,11 @@ module Effective
       self.total = subtotal + (tax || 0)
     end
 
-    def save_addresses
+    def assign_billing_name
+      self.billing_name = [(billing_address.full_name.presence if billing_address.present?), (user.to_s.presence)].compact.first
+    end
+
+    def save_user_addresses
       if user.respond_to?(:billing_address=) && billing_address.present?
         user.billing_address = billing_address
         user.billing_address.save
@@ -449,26 +433,11 @@ module Effective
     end
 
     def run_purchasable_callbacks(name)
-      begin
-        order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
-      rescue => e
-        raise e unless Rails.env.production?
-      end
+      order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
     end
 
     def send_email(email, *mailer_args)
-      begin
-        if EffectiveOrders.mailer[:delayed_job_deliver] && EffectiveOrders.mailer[:deliver_method] == :deliver_later
-          Effective::OrdersMailer.delay.public_send(email, *mailer_args)
-        elsif EffectiveOrders.mailer[:deliver_method].present?
-          Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
-        else
-          Effective::OrdersMailer.public_send(email, *mailer_args).deliver_now
-        end
-      rescue => e
-        raise e unless Rails.env.production?
-        return false
-      end
+      Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
     end
 
     def truthy?(value)

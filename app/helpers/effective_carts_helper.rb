@@ -47,14 +47,7 @@ module EffectiveCartsHelper
   def link_to_add_to_cart(purchasable, opts = {})
     raise 'expecting an acts_as_purchasable object' unless purchasable.kind_of?(ActsAsPurchasable)
 
-    options = {
-      label: 'Add to Cart',
-      class: 'btn btn-primary',
-      rel: :nofollow,
-      data: {
-        disable_with: 'Adding...'
-      }
-    }.merge(opts)
+    options = { label: 'Add to Cart', class: 'btn btn-primary', rel: :nofollow }.merge(opts)
 
     label = options.delete(:label)
     options[:class] = ((options[:class] || '') + ' btn-add-to-cart')
@@ -69,10 +62,7 @@ module EffectiveCartsHelper
       label: 'Remove',
       class: 'btn btn-primary',
       rel: :nofollow,
-      data: {
-        confirm: 'Are you sure? This cannot be undone!',
-        disable_with: 'Removing...'
-      },
+      data: { confirm: 'Are you sure? This cannot be undone!' },
       method: :delete
     }.merge(opts)
 
@@ -87,10 +77,7 @@ module EffectiveCartsHelper
       label: 'Empty Cart',
       class: 'btn btn-danger',
       rel: :nofollow,
-      data: {
-        confirm: 'This will clear your entire cart.  Are you sure?',
-        disable_with: 'Emptying...'
-      },
+      data: { confirm: 'This will clear your entire cart. Are you sure?' },
       method: :delete
     }.merge(opts)
 
@@ -101,14 +88,7 @@ module EffectiveCartsHelper
   end
 
   def link_to_checkout(opts = {})
-    options = {
-      label: 'Checkout',
-      class: 'btn btn-primary',
-      rel: :nofollow,
-      data: {
-        disable_with: 'Continuing...'
-      },
-    }.merge(opts)
+    options = { label: 'Checkout', class: 'btn btn-primary', rel: :nofollow }.merge(opts)
 
     order = options.delete(:order)
     label = options.delete(:label)

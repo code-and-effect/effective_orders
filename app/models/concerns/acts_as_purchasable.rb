@@ -64,8 +64,6 @@ module ActsAsPurchasable
   def price=(value)
     if value.kind_of?(Integer)
       super
-    elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
-      super
     else
       raise 'expected price to be an Integer representing the number of cents.'
     end
@@ -77,12 +75,6 @@ module ActsAsPurchasable
 
   def tax_exempt
     self[:tax_exempt] || false
-  end
-
-  def seller
-    if EffectiveOrders.stripe_connect_enabled
-      raise 'acts_as_purchasable object requires the seller be defined to return the User selling this item. This is only a requirement when using StripeConnect.'
-    end
   end
 
   def purchased_order

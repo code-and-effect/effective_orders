@@ -1,13 +1,12 @@
 require 'effective_addresses'
 require 'effective_orders/engine'
 require 'effective_orders/version'
-require 'effective_orders/app_checkout_service'
 
 module EffectiveOrders
-  ABANDONED = 'abandoned'
-  PURCHASED = 'purchased'
-  DECLINED = 'declined'
-  PENDING = 'pending'
+  ABANDONED = 'abandoned'.freeze
+  PURCHASED = 'purchased'.freeze
+  DECLINED = 'declined'.freeze
+  PENDING = 'pending'.freeze
 
   PURCHASE_STATES = { nil => ABANDONED, PURCHASED => PURCHASED, DECLINED => DECLINED, PENDING => PENDING }
 
@@ -22,22 +21,17 @@ module EffectiveOrders
 
   mattr_accessor :authorization_method
 
-  mattr_accessor :skip_mount_engine
-  mattr_accessor :orders_collection_scope
-
-  mattr_accessor :order_tax_rate_method
+  mattr_accessor :pretend_purchase_in_development_enabled
+  mattr_accessor :pretend_purchase_in_production_enabled
+  mattr_accessor :pretend_purchase_in_production_message
 
   mattr_accessor :layout
-  mattr_accessor :simple_form_options
-  mattr_accessor :admin_simple_form_options
-  mattr_accessor :show_order_history_button
+  mattr_accessor :mailer
+
+  mattr_accessor :orders_collection_scope
+  mattr_accessor :order_tax_rate_method
 
   mattr_accessor :obfuscate_order_ids
-
-  mattr_accessor :allow_pretend_purchase_in_development
-  mattr_accessor :allow_pretend_purchase_in_production
-  mattr_accessor :allow_pretend_purchase_in_production_message
-
   mattr_accessor :require_billing_address
   mattr_accessor :require_shipping_address
   mattr_accessor :use_address_full_name
@@ -53,35 +47,16 @@ module EffectiveOrders
   mattr_accessor :terms_and_conditions_label
 
   mattr_accessor :minimum_charge
-  mattr_accessor :allow_free_orders
-  mattr_accessor :allow_refunds
-
-  mattr_accessor :app_checkout_enabled
-  mattr_accessor :ccbill_enabled
-  mattr_accessor :cheque_enabled
+  mattr_accessor :free_enabled
   mattr_accessor :mark_as_paid_enabled
-  mattr_accessor :moneris_enabled
-  mattr_accessor :paypal_enabled
+  mattr_accessor :refunds_enabled
 
-  mattr_accessor :stripe_enabled
-  mattr_accessor :stripe_connect_enabled
-
-  mattr_accessor :subscriptions_enabled
-
-  # application fee is required if stripe_connect_enabled is true
-  mattr_accessor :stripe_connect_application_fee_method
-
-  # These are hashes of configs
-  mattr_accessor :app_checkout
-  mattr_accessor :ccbill
+  # Payment processors. false or Hash
   mattr_accessor :cheque
-  mattr_accessor :mailer
   mattr_accessor :moneris
   mattr_accessor :paypal
   mattr_accessor :stripe
-  mattr_accessor :subscription
-
-  mattr_accessor :deliver_method
+  mattr_accessor :subscriptions  # Stripe subscriptions
 
   def self.setup
     yield self
@@ -114,35 +89,59 @@ module EffectiveOrders
     ]
   end
 
+  def self.cheque?
+    cheque.kind_of?(Hash)
+  end
+
+  def self.free?
+    free_enabled == true
+  end
+
+  def self.mark_as_paid?
+    mark_as_paid_enabled == true
+  end
+
+  def self.moneris?
+    moneris.kind_of?(Hash)
+  end
+
+  def self.paypal?
+    paypal.kind_of?(Hash)
+  end
+
+  def self.pretend?
+    (pretend_purchase_in_production_enabled && Rails.env.production?) || (pretend_purchase_in_development_enabled && !Rails.env.production?)
+  end
+
+  def self.refunds?
+    refunds_enabled == true
+  end
+
+  def self.stripe?
+    stripe.kind_of?(Hash)
+  end
+
+  def self.subscriptions?
+    subscriptions.kind_of?(Hash)
+  end
+
   def self.single_payment_processor?
-    [
-      moneris_enabled,
-      paypal_enabled,
-      stripe_enabled,
-      cheque_enabled,
-      ccbill_enabled,
-      app_checkout_enabled
-    ].select { |enabled| enabled }.length == 1
+    [cheque?, moneris?, paypal?, stripe?].select { |enabled| enabled }.length == 1
   end
 
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
-    @payment_providers ||= [
-      ('app_checkout' if app_checkout_enabled),
-      ('ccbill' if ccbill_enabled),
-      ('cheque' if cheque_enabled),
-      ('free' if allow_free_orders),
-      ('moneris' if moneris_enabled),
-      ('paypal' if paypal_enabled),
-      ('pretend' if (allow_pretend_purchase_in_production && Rails.env.production?) || (allow_pretend_purchase_in_development && !Rails.env.production?)),
-      ('stripe' if stripe_enabled),
-      ('stripe_connect' if stripe_connect_enabled)
+    [
+      ('cheque' if cheque?),
+      ('free' if free?),
+      ('moneris' if moneris?),
+      ('paypal' if paypal?),
+      ('pretend' if pretend?),
+      ('stripe' if stripe?),
+      ('credit card' if mark_as_paid?),
+      ('none' if mark_as_paid?),
+      ('other' if mark_as_paid?),
     ].compact
-  end
-
-  # One of these is used when Admin marks as paid
-  def self.other_payment_providers
-    ['credit card', 'none', 'other']
   end
 
   def self.can_skip_checkout_step1?
@@ -151,12 +150,11 @@ module EffectiveOrders
     return false if collect_note
     return false if terms_and_conditions
     return false if collect_user_fields.present?
-
     true
   end
 
   def self.stripe_plans
-    return {} unless (stripe_enabled && subscriptions_enabled)
+    return {} unless (stripe? && subscriptions?)
 
     @stripe_plans ||= (
       plans = Stripe::Plan.all.inject({}) do |h, plan|
@@ -184,14 +182,12 @@ module EffectiveOrders
         }; h
       end
 
-      if subscription.kind_of?(Hash)
-        plans['trial'] = {
-          id: 'trial',
-          amount: 0,
-          name: (subscription[:trial_name] || 'Free Trial'),
-          description: (subscription[:trial_description] || 'Free Trial')
-        }
-      end
+      plans['trial'] = {
+        id: 'trial',
+        amount: 0,
+        name: (subscription[:trial_name] || 'Free Trial'),
+        description: (subscription[:trial_description] || 'Free Trial')
+      }
 
       plans
     )

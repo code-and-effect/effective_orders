@@ -27,11 +27,11 @@ class EffectiveOrderItemsDatatable < Effective::Datatable
       end
     end
 
-    if EffectiveOrders.require_billing_address && attributes[:user_id].blank?
-      col :buyer_name, sort: false, label: 'Buyer Name' do |order_item|
-        (order_item[:buyer_name] || '').split('!!SEP!!').find(&:present?)
-      end
-    end
+    # if EffectiveOrders.require_billing_address && attributes[:user_id].blank?
+    #   col :buyer_name, sort: false, label: 'Buyer Name' do |order_item|
+    #     (order_item[:buyer_name] || '').split('!!SEP!!').find(&:present?)
+    #   end
+    # end
 
     col :purchase_state, sql_column: 'orders.purchase_state', search: { collection: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
       order_item[:purchase_state] || 'abandoned'

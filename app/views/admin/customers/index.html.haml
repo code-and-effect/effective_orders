@@ -3,7 +3,4 @@
 %p.text-right.effective-admin-actions
   = link_to 'Stripe Customers', "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers", class: 'btn btn-primary'
 
-- if @datatable.present?
-  = render_datatable @datatable
-- else
-  %p There are no customers present
+= render_datatable(@datatable)

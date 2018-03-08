@@ -36,22 +36,22 @@ module EffectiveOrdersHelper
     return 'Checkout' if (EffectiveOrders.single_payment_processor? && ![:pretend, :mark_as_paid, :free, :refund].include?(processor))
 
     case processor
-    when :mark_as_paid
-      'Mark as paid'
+    when :cheque
+      'Pay by cheque'
     when :free
       'Checkout free'
-    when :refund
-      'Complete refund'
-    when :moneris, :stripe, :ccbill
+    when :mark_as_paid
+      'Mark as paid'
+    when :moneris
       'Checkout with credit card'
     when :paypal
       'Checkout with PayPal'
     when :pretend
-      EffectiveOrders.allow_pretend_purchase_in_production ? 'Purchase Order' : 'Purchase Order (development only)'
-    when :cheque
-      'Pay by cheque'
-    when :app_checkout
-      EffectiveOrders.app_checkout[:checkout_label].presence || 'Checkout'
+      EffectiveOrders.pretend_purchase_in_production_enabled ? 'Purchase Order' : 'Purchase Order (development only)'
+    when :refund
+      'Complete refund'
+    when :stripe
+      'Checkout with credit card'
     else
       'Checkout'
     end
@@ -63,25 +63,8 @@ module EffectiveOrdersHelper
   end
 
   def order_payment_to_html(order)
-    payment = order.payment
-
-    if order.purchased?(:stripe_connect) && order.payment.kind_of?(Hash)
-      payment = Hash[
-        order.payment.map do |seller_id, v|
-          if (user = Effective::Customer.find(seller_id).try(:user))
-            [link_to(user, admin_user_path(user)), order.payment[seller_id]]
-          else
-            [seller_id, order.payment[seller_id]]
-          end
-        end
-      ]
-    end
-
     content_tag(:pre) do
-      raw JSON.pretty_generate(payment).html_safe
-        .gsub('\"', '')
-        .gsub("[\n\n    ]", '[]')
-        .gsub("{\n    }", '{}')
+      raw JSON.pretty_generate(order.payment).html_safe.gsub('\"', '').gsub("[\n\n    ]", '[]').gsub("{\n    }", '{}')
     end
   end
 

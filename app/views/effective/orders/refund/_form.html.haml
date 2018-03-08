@@ -7,7 +7,7 @@
       = hidden_field_tag(:declined_url, declined_url)
       = f.input :payment_provider,
         as: :effective_select,
-        collection: (EffectiveOrders.payment_providers + EffectiveOrders.other_payment_providers).sort,
+        collection: EffectiveOrders.payment_providers,
         required: true
 
       = f.input :payment_card,

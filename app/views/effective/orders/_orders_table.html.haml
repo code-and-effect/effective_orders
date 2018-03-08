@@ -11,12 +11,8 @@
         %tr
           %td ##{order.to_param}
           %td
-            - if order.purchased?
-              Purchased
-              = order.purchased_at.strftime("%Y-%m-%d %H:%M")
-            - else
-              Created
-              = order.created_at.strftime("%Y-%m-%d %H:%M")
+            = (order.purchased? ? 'Purchased' : 'Created')
+            = (order.purchased_at || order.created_at).strftime("%F %H:%M")
           %td= order_summary(order)
           %td
             - if order.pending?

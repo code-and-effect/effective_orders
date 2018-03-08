@@ -1,6 +1,3 @@
 %h1.effective-admin-heading= @page_title
 
-- if @datatable.present?
-  = render_datatable @datatable
-- else
-  %p There are no order items present
+= render_datatable(@datatable)

@@ -2,7 +2,6 @@ module Effective
   class Customer < ActiveRecord::Base
     self.table_name = EffectiveOrders.customers_table_name.to_s
 
-    attr_accessor :stripe_token # This is a convenience method so we have a place to store StripeConnect temporary access tokens
     attr_accessor :stripe_customer, :stripe_subscription
 
     belongs_to :user
@@ -18,8 +17,6 @@ module Effective
     # stripe_subscription_id        :string  # Each user gets one stripe subscription object, which can contain many items
     # status                        :string
 
-    # stripe_connect_access_token   :string  # If using StripeConnect and this user is a connected Seller
-    #
     # timestamps
 
     scope :deep, -> { includes(subscriptions: :subscribable) }

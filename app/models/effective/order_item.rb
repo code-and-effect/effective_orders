@@ -4,7 +4,6 @@ module Effective
 
     belongs_to :order, class_name: 'Effective::Order'
     belongs_to :purchasable, polymorphic: true
-    belongs_to :seller, class_name: 'User'
 
     delegate :purchased_download_url, to: :purchasable
     delegate :purchased?, :declined?, to: :order
@@ -23,8 +22,6 @@ module Effective
     validates :quantity, presence: true, numericality: { greater_than: 0 }
     validates :price, presence: true
     validates :tax_exempt, inclusion: { in: [true, false] }
-
-    validates :seller_id, presence: true, if: -> { EffectiveOrders.stripe_connect_enabled }
 
     scope :sold, -> { joins(:order).where(orders: { purchase_state: EffectiveOrders::PURCHASED }) }
     scope :sold_by, lambda { |user| sold().where(seller_id: user.id) }
@@ -52,26 +49,10 @@ module Effective
     def price=(value)
       if value.kind_of?(Integer)
         super
-      elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
-        super
-      else # Could be Float, BigDecimal, or String like 9.99
+      else
         raise 'expected price to be an Integer representing the number of cents.'
       end
     end
 
-    # This is going to return an Effective::Customer object that matches the purchasable.user
-    # And is the Customer representing who is selling the product
-    # This is really only used for StripeConnect
-    def seller
-      @seller ||= Effective::Customer.for_buyer(purchasable.seller)
-    end
-
-    def stripe_connect_application_fee
-      @stripe_connect_application_fee ||= (
-        self.instance_exec(self, &EffectiveOrders.stripe_connect_application_fee_method).to_i.tap do |fee|
-          raise "expected EffectiveOrders.stripe_connect_application_fee_method to return a value between 0 and the order_item total (#{self.total}). Received #{fee}." if (fee > total || fee < 0)
-        end
-      )
-    end
   end
 end
