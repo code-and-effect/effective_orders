@@ -14,24 +14,13 @@ Gem::Specification.new do |s|
   s.licenses    = ['MIT']
 
   s.files = Dir['{app,config,db,lib,active_admin}/**/*'] + ['MIT-LICENSE', 'Rakefile', 'README.md']
-  s.test_files = Dir['spec/**/*']
 
   s.add_dependency 'rails', '>= 3.2.0'
   s.add_dependency 'coffee-rails'
   s.add_dependency 'devise'
   s.add_dependency 'jquery-rails'
   s.add_dependency 'sass-rails'
-  s.add_dependency 'effective_addresses', '>= 1.6.0'
-  s.add_dependency 'effective_datatables', '>= 3.0.0'
-
-  s.add_development_dependency 'stripe-ruby-mock', '>= 2.0.4'
-  s.add_development_dependency 'factory_girl_rails'
-  s.add_development_dependency 'rspec-rails'
-  s.add_development_dependency 'shoulda-matchers'
-  s.add_development_dependency 'sqlite3'
-  s.add_development_dependency 'effective_obfuscation', '>= 1.0.2'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'pry-stack_explorer'
-  s.add_development_dependency 'pry-byebug'
+  s.add_dependency 'effective_addresses'
+  s.add_dependency 'effective_datatables', '~> 3.0'
 
 end
