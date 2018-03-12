@@ -118,26 +118,36 @@ module Effective
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
-    # Effective::Order.new(Product.all)
-    # Effective::Order.new(Product.first, user: User.first)
-    # Effective::Order.new(Product.first, Product.second, user: User.first)
-    # Effective::Order.new(user: User.first)
     # Effective::Order.new(current_cart)
+    # Effective::Order.new(Effective::Order.last)
 
-    # items can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
-    def initialize(*items, user: nil, billing_address: nil, shipping_address: nil)
+    # Effective::Order.new(items: Product.first)
+    # Effective::Order.new(items: [Product.first, Product.second], user: User.first)
+    # Effective::Order.new(items: Product.first, user: User.first, billing_address: Effective::Address.new, shipping_address: Effective::Address.new)
+
+    def initialize(atts = nil, &block)
       super() # Call super with no arguments
+      return unless atts.present?
 
-      # Assign user
-      self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
+      if atts.kind_of?(Hash)
+        if (keywords = (atts.keys - [:item, :items, :user, :billing_address, :shipping_address])).present?
+          raise ArgumentError.new("unknown keyword: #{keywords.join(' ')}")
+        end
 
-      # Assign addresses
-      self.billing_address = billing_address if billing_address
-      self.shipping_address = shipping_address if shipping_address
+        items = Array(atts[:item]) + Array(atts[:items])
 
-      add(items) if items.present?
+        self.user = atts[:user] || (items.first.user if items.first.respond_to?(:user))
+        self.billing_address = atts[:billing_address] if atts.key?(:billing_address)
+        self.shipping_address = atts[:shipping_address] if atts.key?(:shipping_address)
+        add(items) if items.present?
+
+      else # Attributes are not a Hash
+        self.user = atts.user if atts.respond_to?(:user)
+        add(atts)
+      end
     end
 
+    # Items can be an Effective::Cart, an Effective::order, a single acts_as_purchasable, or multiple acts_as_purchasables
     # add(Product.first) => returns an Effective::OrderItem
     # add(Product.first, current_cart) => returns an array of Effective::OrderItems
     def add(*items, quantity: 1)
@@ -173,8 +183,7 @@ module Effective
           title: item.title,
           quantity: item.quantity,
           price: item.price,
-          tax_exempt: item.tax_exempt || false,
-          seller_id: (item.purchasable.try(:seller).try(:id) rescue nil)
+          tax_exempt: (item.tax_exempt || false),
         ).tap { |order_item| order_item.purchasable = item.purchasable }
       end
 
