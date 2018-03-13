@@ -69,22 +69,15 @@ module Effective
       if (@order.confirm! rescue false)
         redirect_to(effective_orders.order_path(@order))
       else
-        flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
+        flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
         render :edit
       end
     end
 
     def index
-      @orders = Effective::Order.deep.purchased_by(current_user)
+      @orders = Effective::Order.deep.purchased.where(user: current_user)
       @pending_orders = Effective::Order.deep.pending.where(user: current_user)
 
-      EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
-    end
-
-    # Basically an index page.
-    # Purchases is an Order History page.  List of purchased orders
-    def my_purchases
-      @orders = Effective::Order.deep.purchased_by(current_user)
       EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
@@ -97,7 +90,7 @@ module Effective
       end
 
       if @order.blank?
-        redirect_to(effective_orders.my_purchases_orders_path) and return
+        redirect_to(effective_orders.my_orders_path) and return
       end
 
       EffectiveOrders.authorize!(self, :show, @order)
@@ -162,9 +155,7 @@ module Effective
 
     def set_page_title
       @page_title ||= case params[:action]
-        when 'index'        ; 'Orders'
-        when 'my_purchases' ; 'Order History'
-        when 'my_sales'     ; 'Sales History'
+        when 'index'        ; 'Order History'
         when 'purchased'    ; 'Thank You'
         when 'declined'     ; 'Payment Declined'
         else 'Checkout'

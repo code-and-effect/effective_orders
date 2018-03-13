@@ -7,5 +7,6 @@
 - if @orders.present?
   %h2 Purchased Orders
   = render_orders(@orders)
-- else
+
+- unless (@pending_orders.present? || @orders.present?)
   %p You have no purchased orders.

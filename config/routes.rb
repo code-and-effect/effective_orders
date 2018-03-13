@@ -14,7 +14,6 @@ EffectiveOrders::Engine.routes.draw do
       end
 
       collection do
-        get :my_purchases
         post :bulk_send_buyer_receipt
 
         post :moneris_postback if EffectiveOrders.moneris?

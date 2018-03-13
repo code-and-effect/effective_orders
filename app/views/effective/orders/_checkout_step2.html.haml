@@ -1,7 +1,8 @@
 = render(order)
 
-.effective-order-change-items.pull-left
-  = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow, class: 'btn btn-secondary'
+- if order.persisted?
+  .effective-order-change-items
+    = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow, class: 'btn btn-secondary'
 
 .effective-order.effective-order-purchase-actions.form-actions
   - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }

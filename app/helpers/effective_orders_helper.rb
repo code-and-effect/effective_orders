@@ -107,20 +107,6 @@ module EffectiveOrdersHelper
     end
   end
 
-  def link_to_my_purchases(opts = {})
-    options = {
-      label: 'My Purchases',
-      class: 'btn btn-default',
-      rel: :nofollow
-    }.merge(opts)
-
-    label = options.delete(:label)
-    options[:class] = ((options[:class] || '') + ' btn-my-purchases')
-
-    link_to(label, effective_orders.my_purchases_orders_path, options)
-  end
-  alias_method :link_to_order_history, :link_to_my_purchases
-
   def render_orders(obj, opts = {})
     orders = Array(obj.kind_of?(User) ? Effective::Order.purchased_by(obj) : obj)
 
@@ -130,10 +116,6 @@ module EffectiveOrdersHelper
 
     render(partial: 'effective/orders/orders_table', locals: { orders: orders }.merge(opts))
   end
-
-  alias_method :render_purchases, :render_orders
-  alias_method :render_my_purchases, :render_orders
-  alias_method :render_order_history, :render_orders
 
   def payment_card_label(card)
     card = card.to_s.downcase.gsub(' ', '').strip

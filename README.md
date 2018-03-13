@@ -549,31 +549,9 @@ There also exist the scopes: `Effective::Order.purchased` and `Effective::Order.
 
 ### My Purchases / Order History
 
-This screen displays all past purchases made by the current user.  You can add it to your site's main menu or User profile area:
-
 ```ruby
-= link_to_my_purchases()  # To display My Purchases
+= link_to 'Order History', effective_orders.orders_path
 ```
-
-or
-
-```ruby
-= link_to_my_purchases(label: 'Order History', class: 'btn btn-primary')
-```
-
-or
-
-```ruby
-= link_to 'My Order History', effective_orders.my_purchases_orders_path
-```
-
-or render it inline on an existing page with
-
-```ruby
-render_order_history(user_or_orders)
-```
-
-If a user is passed, a call to `Effective::Order.purchased_by(user)` will be made to assign all purchased orders.
 
 Totally optional, but another way of displaying the Order History is to use the included datatable, based on [effective_datatables](https://github.com/code-and-effect/effective_datatables/)
 

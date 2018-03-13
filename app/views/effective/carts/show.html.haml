@@ -2,7 +2,8 @@
 
 - if @cart.blank?
   %p No items in cart.
-- else
+
+- if @cart.present?
   %p Your cart has #{@cart.cart_items.length} items.
 
   = render_cart(@cart)
@@ -13,4 +14,4 @@
   = render_orders(@pending_orders)
 
 - if @cart.user && Effective::Order.purchased.where(user: @cart.user).exists?
-  = link_to_my_purchases(label: 'Order History')
+  = link_to 'Order History', effective_orders.orders_path, rel: :nofollow, class: 'btn btn-secondary'
