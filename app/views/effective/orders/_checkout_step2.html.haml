@@ -1,6 +1,6 @@
-= render(order)
+= render partial: 'effective/orders/order', locals: { order: order }
 
-- if order.persisted?
+- if order.persisted? && order.user == current_user
   .effective-order-change-items
     = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow, class: 'btn btn-secondary'
 

@@ -62,6 +62,8 @@ module ActsAsPurchasable
   def price=(value)
     if value.kind_of?(Integer)
       super
+    elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
+      super
     else
       raise 'expected price to be an Integer representing the number of cents.'
     end

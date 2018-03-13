@@ -4,6 +4,10 @@ module Admin
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
 
+    # def effective_resource
+    #   @_effective_resource ||= Effective::Resource.new('effective/order', namespace: :admin)
+    # end
+
     def new
       @order = Effective::Order.new
 
@@ -56,7 +60,7 @@ module Admin
       end
 
       @page_title = 'New Order'
-      flash.now[:danger] = "Unable to create order: #{error || @order.errors.full_messages.to_sentence}"
+      flash.now[:danger] = flash_danger(@order)
       render :new
     end
 

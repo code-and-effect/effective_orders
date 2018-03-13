@@ -1,5 +1,3 @@
-%p.text-right
-  = form.button :submit, 'Save', data: { disable_with: 'Saving...' }
-  = form.button :submit, 'Save and Continue', data: { disable_with: 'Saving...' }
-  = form.button :submit, 'Save and Add New', data: { disable_with: 'Saving...' }
-  = form.button :submit, 'Save and Duplicate', data: { disable_with: 'Saving...' }
+- @_effective_resource ||= Effective::Resource.new('effective/order', namespace: :admin)
+= effective_submit(form) do
+  = form.save 'Save and Duplicate'

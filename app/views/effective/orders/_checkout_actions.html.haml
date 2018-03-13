@@ -1,5 +1,3 @@
 - if (order.pending? || order.confirmed?) && current_cart.present? && order.user == current_user
   .effective-order-change-items
     = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-secondary'
-
-- if (order.confirmed?)
