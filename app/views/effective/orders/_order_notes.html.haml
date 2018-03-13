@@ -1,0 +1,15 @@
+- if order.note.present? || order.note_to_buyer.present?
+  .effective-order-notes
+    %table.table
+      %thead
+        %tr
+          - if order.note.present?
+            %th Note
+          - if order.note_to_buyer.present?
+            %th Receipt note
+      %tbody
+        %tr
+          - if order.note.present?
+            %td= order.note
+          - if order.note_to_buyer.present?
+            %td= order.note_to_buyer

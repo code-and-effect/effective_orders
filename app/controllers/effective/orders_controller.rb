@@ -16,79 +16,62 @@ module Effective
     before_action :authenticate_user!, except: [:ccbill_postback, :free, :paypal_postback, :pretend]
     before_action :set_page_title, except: [:show]
 
-    # This is the entry point for any Checkout button
+    # This is the entry point for any Checkout button.
+    # It's basically a create action for a pending order, creating from the cart.
     def new
       @order ||= Effective::Order.new(current_cart)
 
       EffectiveOrders.authorize!(self, :new, @order)
 
-      # We're only going to check for a subset of errors on this step,
-      # with the idea that we don't want to create an Order object if the Order is totally invalid
-      @order.valid?
-
-      if @order.errors[:order_items].present?
-        flash[:danger] = @order.errors[:order_items].first
-        redirect_to(effective_orders.cart_path)
-        return
-      elsif @order.errors[:total].present?
-        flash[:danger] = @order.errors[:total].first
+      unless @order.valid?
+        flash[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
         redirect_to(effective_orders.cart_path)
         return
       end
-
-      @order.errors.clear
-      @order.billing_address.errors.clear if @order.billing_address
-      @order.shipping_address.errors.clear if @order.shipping_address
     end
 
+    # Confirms the order
     def create
       @order ||= Effective::Order.new(current_cart)
       EffectiveOrders.authorize!(self, :create, @order)
 
-      @order.assign_attributes(checkout_params) if params[:effective_order]
+      @order.assign_attributes(checkout_params)
 
-      Effective::Order.transaction do
-        begin
-          @order.save!
-          redirect_to(effective_orders.order_path(@order)) and return
-        rescue => e
-          raise ActiveRecord::Rollback
-        end
+      if (@order.confirm! rescue false)
+        redirect_to(effective_orders.order_path(@order))
+      else
+        flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
+        render :new
       end
-
-      flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
-      render :new
     end
 
+    # Always step1
     def edit
       @order ||= Effective::Order.find(params[:id])
       EffectiveOrders.authorize!(self, :edit, @order)
     end
 
+    # Might render step1 or step2
+    def show
+      @order = Effective::Order.find(params[:id])
+      EffectiveOrders.authorize!(self, :show, @order)
+
+      @page_title ||= ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
+    end
+
+    # Confirms the order
     def update
       @order ||= Effective::Order.find(params[:id])
       EffectiveOrders.authorize!(self, :update, @order)
 
       @order.assign_attributes(checkout_params)
 
-      Effective::Order.transaction do
-        begin
-          @order.save!
-          redirect_to(effective_orders.order_path(@order)) and return
-        rescue => e
-          raise ActiveRecord::Rollback
-        end
+      if (@order.confirm! rescue false)
+        redirect_to(effective_orders.order_path(@order))
+      else
+        flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
+        render :edit
       end
-
-      flash.now[:danger] = "Unable to proceed: #{@order.errors.full_messages.to_sentence}. Please try again."
-      render :edit
-    end
-
-    def show
-      @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorize!(self, :show, @order)
-
-      @page_title ||= ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
     end
 
     def index

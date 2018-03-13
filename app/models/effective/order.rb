@@ -152,12 +152,11 @@ module Effective
         end
 
         if atts.key?(:shipping_address)
-          self.billing_address = atts[:billing_address]
-          self.billing_address.full_name ||= user.to_s.presence
+          self.shipping_address = atts[:shipping_address]
+          self.shipping_address.full_name ||= user.to_s.presence
         end
 
         add(items) if items.present?
-
       else # Attributes are not a Hash
         self.user = atts.user if atts.respond_to?(:user)
         add(atts)
@@ -298,6 +297,11 @@ module Effective
       true
     end
 
+    def confirm!
+      self.state = EffectiveOrders::CONFIRMED
+      save!
+    end
+
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
     def purchase!(details: 'none', provider: 'none', card: 'none', validate: true, email: true, skip_buyer_validations: false)
@@ -429,7 +433,8 @@ module Effective
     def assign_last_address
       return unless user.present?
       return unless (EffectiveOrders.billing_address || EffectiveOrders.shipping_address)
-      return unless billing_address.blank? || shipping_address.blank?
+      return if EffectiveOrders.billing_address && billing_address.present?
+      return if EffectiveOrders.shipping_address && shipping_address.present?
 
       last_order = Effective::Order.sorted.where(user: user).last
       return unless last_order.present?

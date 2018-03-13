@@ -1,28 +1,32 @@
-= render partial: 'effective/orders/order', locals: { order: order }
-- partial_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }
+= render(order)
 
-.effective-order.effective-order-purchase-actions
+.effective-order-change-items.pull-left
+  = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow, class: 'btn btn-secondary'
+
+.effective-order.effective-order-purchase-actions.form-actions
+  - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }
+
   - if EffectiveOrders.free? && order.free?
-    = render partial: '/effective/orders/free/form', locals: partial_locals
+    = render partial: '/effective/orders/free/form', locals: provider_locals
 
   - elsif EffectiveOrders.refunds? && order.refund?
     -# Nothing
 
   - else
     - if EffectiveOrders.pretend?
-      = render partial: '/effective/orders/pretend/form', locals: partial_locals
+      = render partial: '/effective/orders/pretend/form', locals: provider_locals
 
     - if EffectiveOrders.moneris?
-      = render partial: '/effective/orders/moneris/form', locals: partial_locals
+      = render partial: '/effective/orders/moneris/form', locals: provider_locals
 
     - if EffectiveOrders.paypal?
-      = render partial: '/effective/orders/paypal/form', locals: partial_locals
+      = render partial: '/effective/orders/paypal/form', locals: provider_locals
 
     - if EffectiveOrders.stripe?
-      = render partial: '/effective/orders/stripe/form', locals: partial_locals
+      = render partial: '/effective/orders/stripe/form', locals: provider_locals
 
     - if EffectiveOrders.cheque? && order.user == current_user
-      = render partial: '/effective/orders/cheque/form', locals: partial_locals
+      = render partial: '/effective/orders/cheque/form', locals: provider_locals
 
   - if EffectiveOrders.pretend? && Rails.env.production? && EffectiveOrders.pretend_purchase_in_production_message.present?
     %br
@@ -31,8 +35,8 @@
 - if EffectiveOrders.authorized?(controller, :admin, :effective_orders) && order.user != current_user
   - if EffectiveOrders.refunds? && order.refund?
     .effective-order.effective-order-admin-purchase-actions
-      = render partial: '/effective/orders/refund/form', locals: partial_locals
+      = render partial: '/effective/orders/refund/form', locals: provider_locals
   - elsif EffectiveOrders.mark_as_paid?
     .effective-order.effective-order-admin-purchase-actions
-      = render partial: '/effective/orders/mark_as_paid/form', locals: partial_locals
+      = render partial: '/effective/orders/mark_as_paid/form', locals: provider_locals
 

@@ -72,25 +72,28 @@ module EffectiveOrdersHelper
     render(partial: 'effective/orders/order', locals: { order: order })
   end
 
-  def render_checkout_step1(order, namespace: nil, purchased_url: nil, declined_url: nil)
+  def render_checkout(order, namespace: nil, purchased_url: nil, declined_url: nil)
     raise 'unable to checkout an order without a user' unless order && order.user
 
     locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
 
-    render partial: 'effective/orders/checkout_step1', locals: locals
+    if order.purchased?
+      render(partial: 'effective/orders/order', locals: locals)
+    elsif order.confirmed?
+      render(partial: 'effective/orders/checkout_step2', locals: locals)
+    else
+      render(partial: 'effective/orders/checkout_step1', locals: locals)
+    end
   end
-  alias_method :render_checkout, :render_checkout_step1
+
+  def render_checkout_step1(order, namespace: nil, purchased_url: nil, declined_url: nil)
+    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
+    render(partial: 'effective/orders/checkout_step1', locals: locals)
+  end
 
   def render_checkout_step2(order, namespace: nil, purchased_url: nil, declined_url: nil)
-    raise 'unable to checkout an order without a user' unless order && order.user
-
     locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
-
-    if order.new_record? || !order.valid?
-      render(partial: 'effective/orders/checkout_step1', locals: locals)
-    else
-      render(partial: 'effective/orders/checkout_step2', locals: locals)
-    end
+    render(partial: 'effective/orders/checkout_step2', locals: locals)
   end
 
   def checkout_step1_form_url(order, namespace = nil)
@@ -117,7 +120,6 @@ module EffectiveOrdersHelper
     link_to(label, effective_orders.my_purchases_orders_path, options)
   end
   alias_method :link_to_order_history, :link_to_my_purchases
-
 
   def render_orders(obj, opts = {})
     orders = Array(obj.kind_of?(User) ? Effective::Order.purchased_by(obj) : obj)

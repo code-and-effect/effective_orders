@@ -1,6 +1,6 @@
 %h1.effective-heading= @page_title
 
-- if (@order.purchased? == false) && (@order.user == current_user)
-  = render_checkout_step2(@order)
+- if @order.user == current_user
+  = render_checkout(@order)
 - else
   = render @order
