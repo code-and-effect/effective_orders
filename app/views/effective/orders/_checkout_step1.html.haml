@@ -1,32 +1,30 @@
 .effective-order
-  = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(url: checkout_step1_form_url(order, namespace))) do |f|
+  = effective_form_with(model: order, url: checkout_step1_form_url(order, namespace)) do |f|
     = render partial: 'effective/orders/order_items', locals: { order: order, form: f }
 
-    - unless f.object.pending? || (current_cart && current_cart.blank?)
-      = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-default'
+    - if current_cart.present? && !f.object.pending?
+      .effective-order-change-items
+        = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-secondary'
 
-    - if order.errors[:order_items].present?
-      %p.inline-errors= order.errors[:order_items].first
+    = f.error :total
 
-    - if order.errors[:total].present?
-      %p.inline-errors= order.errors[:total].first
-
-    - if EffectiveOrders.collect_user_fields.present? && (f.object.user rescue nil).present?
+    - if EffectiveOrders.collect_user_fields.present? && f.object.user.present?
       = render partial: 'effective/orders/order_user_fields', locals: { form: f, user: f.object.user }
 
     - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
 
     - if num_addresses > 0
-      .row
-        - if EffectiveOrders.require_billing_address
-          %div{class: "col-sm-#{12 / num_addresses}"}
-            %h2 Billing Address
-            = effective_address_fields(f, :billing_address)
+      .effective-order-addresses
+        .row
+          - if EffectiveOrders.require_billing_address
+            %div{class: "col-md-#{12 / num_addresses}"}
+              %h2 Billing Address
+              = effective_address_fields(f, :billing_address)
 
-        - if EffectiveOrders.require_shipping_address
-          %div{class: "col-sm-#{12 / num_addresses}"}
-            %h2 Shipping Address
-            = effective_address_fields(f, :shipping_address)
+          - if EffectiveOrders.require_shipping_address
+            %div{class: "col-md-#{12 / num_addresses}"}
+              %h2 Shipping Address
+              = effective_address_fields(f, :shipping_address)
 
     - if EffectiveOrders.collect_note
       = render partial: 'effective/orders/order_note_fields', locals: { form: f }
@@ -34,5 +32,7 @@
     - if EffectiveOrders.terms_and_conditions
       = render partial: 'effective/orders/order_terms_and_conditions_fields', locals: { form: f }
 
-    %p.text-right
-      = f.submit 'Save and Continue', class: 'btn btn-primary', rel: :nofollow, data: { disable_with: 'Saving...' }
+    = effective_save(f, 'Save and Continue')
+
+    / %p.text-right
+    /   = f.submit 'Save and Continue', class: 'btn btn-primary', rel: :nofollow, data: { disable_with: 'Saving...' }

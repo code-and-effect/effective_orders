@@ -6,7 +6,6 @@
   %p Your cart has #{@cart.cart_items.length} items.
 
   = render_cart(@cart)
-  %hr
   = render partial: '/effective/carts/cart_actions', locals: { cart: @cart }
 
 - if @pending_orders.present?

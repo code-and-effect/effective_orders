@@ -28,7 +28,11 @@
 // Print - Resend Receipt.  Ontop of order.
 .effective-order-actions {
   text-align: right;
-  margin-bottom: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.effective-order-change-items {
+  margin-bottom: 1rem;
 }
 
 // Checkout buttons. Bottom of order.
@@ -41,7 +45,7 @@
 }
 
 .effective-order-admin-purchase-actions {
-  margin-top: 10px;
+  margin-top: 0.5rem;
 }
 
 form.new_effective_order {

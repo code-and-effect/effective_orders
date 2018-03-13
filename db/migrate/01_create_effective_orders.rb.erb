@@ -2,7 +2,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
   def self.up
     create_table <%= @orders_table_name %> do |t|
       t.integer   :user_id
-      t.string    :purchase_state
+      t.string    :state
       t.datetime  :purchased_at
 
       t.text      :note

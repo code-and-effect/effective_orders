@@ -33,8 +33,8 @@ class EffectiveOrderItemsDatatable < Effective::Datatable
     #   end
     # end
 
-    col :purchase_state, sql_column: 'orders.purchase_state', search: { collection: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
-      order_item[:purchase_state] || 'abandoned'
+    col :state, sql_column: 'orders.state', search: { collection: [%w(abandoned abandoned), [EffectiveOrders::PURCHASED, EffectiveOrders::PURCHASED], [EffectiveOrders::DECLINED, EffectiveOrders::DECLINED]], selected: EffectiveOrders::PURCHASED } do |order_item|
+      order_item[:state] || 'abandoned'
     end
 
     col :title do |order_item|
@@ -83,8 +83,8 @@ class EffectiveOrderItemsDatatable < Effective::Datatable
   # def search_column(collection, table_column, search_term)
   #   if table_column[:name] == 'order'
   #     collection.where("#{EffectiveOrders.order_items_table_name.to_s}.order_id = ?", Effective::Order.deobfuscate(search_term))
-  #   elsif table_column[:name] == 'purchase_state' && search_term == 'abandoned'
-  #     collection.where("#{EffectiveOrders.orders_table_name.to_s}.purchase_state IS NULL")
+  #   elsif table_column[:name] == 'state' && search_term == 'abandoned'
+  #     collection.where("#{EffectiveOrders.orders_table_name.to_s}.state IS NULL")
   #   elsif table_column[:name] == 'subtotal'
   #     collection.having("#{query_subtotal} = ?", (search_term.gsub(/[^0-9.]/, '').to_f * 100.0).to_i)
   #   elsif table_column[:name] == 'tax'

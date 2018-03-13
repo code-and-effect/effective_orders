@@ -20,4 +20,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'devise'
   s.add_dependency 'sass-rails'
   s.add_dependency 'effective_datatables', '>= 4.0.0'
+  s.add_dependency 'effective_resources'
 end

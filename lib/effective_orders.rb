@@ -3,12 +3,12 @@ require 'effective_orders/engine'
 require 'effective_orders/version'
 
 module EffectiveOrders
-  ABANDONED = 'abandoned'.freeze
+  PENDING = 'pending'.freeze
+  CONFIRMED = 'confirmed'.freeze
   PURCHASED = 'purchased'.freeze
   DECLINED = 'declined'.freeze
-  PENDING = 'pending'.freeze
 
-  PURCHASE_STATES = { nil => ABANDONED, PURCHASED => PURCHASED, DECLINED => DECLINED, PENDING => PENDING }
+  STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, PURCHASED => PURCHASED, DECLINED => DECLINED }
 
   # The following are all valid config keys
   mattr_accessor :orders_table_name

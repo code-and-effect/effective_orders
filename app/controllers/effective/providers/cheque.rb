@@ -9,7 +9,7 @@ module Effective
 
         EffectiveOrders.authorize!(self, :update, @order)
 
-        @order.purchase_state = EffectiveOrders::PENDING
+        @order.state = EffectiveOrders::PENDING
         @order.payment_provider = 'cheque'
 
         begin

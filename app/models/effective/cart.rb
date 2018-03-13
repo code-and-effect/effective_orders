@@ -3,7 +3,7 @@ module Effective
     self.table_name = EffectiveOrders.carts_table_name.to_s
 
     belongs_to :user    # Optional. We want non-logged-in users to have carts too.
-    has_many :cart_items, -> { includes(:purchasable).order(:updated_at) }, dependent: :delete_all, class_name: 'Effective::CartItem'
+    has_many :cart_items, -> { order(:id) }, dependent: :delete_all, class_name: 'Effective::CartItem'
 
     accepts_nested_attributes_for :cart_items
 
@@ -42,13 +42,13 @@ module Effective
         raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
       end
 
-      existing ||= cart_items.build(purchasable: item, quantity: quantity, unique: (unique.to_s if unique.kind_of?(Symbol) || unique.kind_of?(String) || unique == true))
+      existing ||= cart_items.build(purchasable: item, quantity: quantity, unique: (unique.to_s unless unique.kind_of?(Proc)))
       save!
     end
 
     def clear!
       cart_items.each { |cart_item| cart_item.mark_for_destruction }
-      save!
+      cart_items.present? ? save! : true
     end
 
     def remove(item)

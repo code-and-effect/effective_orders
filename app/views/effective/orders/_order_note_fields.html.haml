@@ -1,6 +1,7 @@
-%h2 Note
+.effective-order-note
+  %h2 Note
 
-- if EffectiveOrders.collect_note_message.present?
-  %p= EffectiveOrders.collect_note_message.html_safe
+  - if EffectiveOrders.collect_note_message.present?
+    %p= EffectiveOrders.collect_note_message.html_safe
 
-= form.input :note, required: (EffectiveOrders.collect_note_required == true)
+  = form.text_area :note, required: (EffectiveOrders.collect_note_required == true)

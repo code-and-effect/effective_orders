@@ -57,7 +57,7 @@ EffectiveOrders.setup do |config|
   # If set, the orders#new screen will render effective/orders/_order_user_fields to capture this User Info
   # The partial can be overridden to customize the form, but the following fields are also fed into strong_paramters
   config.collect_user_fields = []
-  #config.collect_user_fields = [:salutation, :first_name, :last_name] # Must be valid fields on the User object
+  #config.collect_user_fields = [:first_name, :last_name] # Must be valid fields on the User object
 
   # Don't validate_associated :user when saving an Order
   config.skip_user_validation = false

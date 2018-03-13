@@ -59,6 +59,10 @@ module Effective
 
     private
 
+    def current_cart
+      view_context.current_cart
+    end
+
     def add_to_cart_params
       params.permit(:purchasable_type, :purchasable_id, :quantity)
     end

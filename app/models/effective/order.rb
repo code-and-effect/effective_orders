@@ -1,3 +1,12 @@
+# When an Order is first initialized it is done in the pending state
+# - when it's in the pending state, none of the buyer entered information is required
+# - when a pending order is rendered:
+# - if the user has a billing address, go to step 2
+# - if the user has no billing address, go to step 1
+#
+# After Step1, we go to the confirmed state
+# After Step2, we are in the purchased or declined state
+
 module Effective
   class Order < ActiveRecord::Base
     self.table_name = EffectiveOrders.orders_table_name.to_s
@@ -26,13 +35,14 @@ module Effective
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
     # Attributes
-    # purchase_state    :string
+    # state             :string
     # purchased_at      :datetime
     #
-    # note_to_buyer     :text
-    # note_internal     :text
+    # note              :text   # From buyer to admin
+    # note_to_buyer     :text   # From admin to buyer
+    # note_internal     :text   # Internal admin only
     #
-    # billing_name      :string
+    # billing_name      :string # name of buyer
     # payment           :text   # serialized hash containing all the payment details.
     #
     # payment_provider  :string
@@ -53,7 +63,7 @@ module Effective
 
     # Order validations
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
-    validates :purchase_state, inclusion: { in: EffectiveOrders::PURCHASE_STATES.keys }
+    validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
     validates :subtotal, presence: true
 
     if EffectiveOrders.minimum_charge.to_i > 0
@@ -66,7 +76,7 @@ module Effective
     end
 
     # User validations -- An admin skips these when working in the admin/ namespace
-    with_options unless: -> { skip_buyer_validations? } do |order|
+    with_options unless: -> { pending? || skip_buyer_validations? } do |order|
       order.validates :tax_rate, presence: { message: "can't be determined based on billing address" }
       order.validates :tax, presence: true
 
@@ -106,15 +116,12 @@ module Effective
     scope :deep, -> { includes(:user, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
-    scope :purchased, -> { sorted.where(purchase_state: EffectiveOrders::PURCHASED) }
-    scope :purchased_by, lambda { |user| purchased.where(user: user) }
-    scope :declined, -> { where(purchase_state: EffectiveOrders::DECLINED) }
-    scope :pending, -> { where(purchase_state: EffectiveOrders::PENDING) }
+    scope :pending, -> { where(state: EffectiveOrders::PENDING) }
+    scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
+    scope :purchased, -> { sorted.where(state: EffectiveOrders::PURCHASED) }
+    scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
 
-    scope :for_users, -> (users) {   # Expects a Users relation, an Array of ids, or Array of users
-      users = users.kind_of?(::ActiveRecord::Relation) ? users.pluck(:id) : Array(users)
-      where(user_id: (users.first.kind_of?(Integer) ? users : users.map { |user| user.id }))
-    }
+    scope :purchased_by, lambda { |user| purchased.where(user: user) }
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
@@ -126,7 +133,8 @@ module Effective
     # Effective::Order.new(items: Product.first, user: User.first, billing_address: Effective::Address.new, shipping_address: Effective::Address.new)
 
     def initialize(atts = nil, &block)
-      super() # Call super with no arguments
+      super(state: EffectiveOrders::PENDING) # Initialize with state: PENDING
+
       return unless atts.present?
 
       if atts.kind_of?(Hash)
@@ -205,24 +213,6 @@ module Effective
       user
     end
 
-    # This is called from admin/orders#create
-    # This is intended for use as an admin action only
-    # It skips any address or bad user validations
-    def create_as_pending!
-      return false unless new_record?
-
-      self.purchase_state = EffectiveOrders::PENDING
-
-      self.skip_buyer_validations = true
-      self.addresses.clear if addresses.any? { |address| address.valid? == false }
-
-      save!
-
-      send_payment_request_to_buyer! if send_payment_request_to_buyer?
-
-      true
-    end
-
     def to_s
       if refund?
         "Refund ##{to_param}"
@@ -235,34 +225,34 @@ module Effective
       end
     end
 
-    def abandoned?
-      purchase_state == EffectiveOrders::ABANDONED
+    def pending?
+      state == EffectiveOrders::PENDING
+    end
+
+    def confirmed?
+      state == EffectiveOrders::CONFIRMED
+    end
+
+    def purchased?(provider = nil)
+      return false if (state != EffectiveOrders::PURCHASED)
+      return true if provider.nil? || payment_provider == provider.to_s
+      false
     end
 
     def declined?
-      purchase_state == EffectiveOrders::DECLINED
+      state == EffectiveOrders::DECLINED
+    end
+
+    def purchasables
+      order_items.map { |order_item| order_item.purchasable }
     end
 
     def free?
       total == 0
     end
 
-    def pending?
-      purchase_state == EffectiveOrders::PENDING
-    end
-
-    def purchased?(provider = nil)
-      return false if (purchase_state != EffectiveOrders::PURCHASED)
-      return true if provider.nil? || payment_provider == provider.to_s
-      false
-    end
-
     def refund?
       total.to_i < 0
-    end
-
-    def purchasables
-      order_items.map { |order_item| order_item.purchasable }
     end
 
     def tax_rate
@@ -301,6 +291,24 @@ module Effective
       truthy?(skip_minimum_charge_validation) || skip_buyer_validations?
     end
 
+    # This is called from admin/orders#create
+    # This is intended for use as an admin action only
+    # It skips any address or bad user validations
+    def create_as_pending!
+      return false unless new_record?
+
+      self.state = EffectiveOrders::PENDING
+
+      self.skip_buyer_validations = true
+      self.addresses.clear if addresses.any? { |address| address.valid? == false }
+
+      save!
+
+      send_payment_request_to_buyer! if send_payment_request_to_buyer?
+
+      true
+    end
+
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
     def purchase!(details: 'none', provider: 'none', card: 'none', validate: true, email: true, skip_buyer_validations: false)
@@ -311,7 +319,7 @@ module Effective
 
       Effective::Order.transaction do
         begin
-          self.purchase_state = EffectiveOrders::PURCHASED
+          self.state = EffectiveOrders::PURCHASED
           self.purchased_at ||= Time.zone.now
 
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
@@ -326,7 +334,7 @@ module Effective
 
           success = true
         rescue => e
-          self.purchase_state = purchase_state_was
+          self.state = state_was
           self.purchased_at = purchased_at_was
 
           error = e.message
@@ -353,7 +361,7 @@ module Effective
 
       Effective::Order.transaction do
         begin
-          self.purchase_state = EffectiveOrders::DECLINED
+          self.state = EffectiveOrders::DECLINED
           self.purchased_at = nil
 
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
@@ -364,7 +372,7 @@ module Effective
 
           success = true
         rescue => e
-          self.purchase_state = purchase_state_was
+          self.state = state_was
           self.purchased_at = purchased_at_was
 
           error = e.message

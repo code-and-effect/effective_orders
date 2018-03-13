@@ -23,7 +23,7 @@ module Effective
     validates :price, presence: true
     validates :tax_exempt, inclusion: { in: [true, false] }
 
-    scope :sold, -> { joins(:order).where(orders: { purchase_state: EffectiveOrders::PURCHASED }) }
+    scope :sold, -> { joins(:order).where(orders: { state: EffectiveOrders::PURCHASED }) }
     scope :sold_by, lambda { |user| sold().where(seller_id: user.id) }
 
     def to_s

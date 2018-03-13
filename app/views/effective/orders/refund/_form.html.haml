@@ -2,31 +2,27 @@
   .panel-body
     %h2 Admin: Complete Refund
 
-    = simple_form_for order, (EffectiveOrders.simple_form_options || {}).merge(url: effective_orders.refund_order_path(order), method: :post) do |f|
+    = effective_form_with(model: order, url: effective_orders.refund_order_path(order), method: :post) do |f|
       = hidden_field_tag(:purchased_url, purchased_url)
       = hidden_field_tag(:declined_url, declined_url)
-      = f.input :payment_provider,
-        as: :effective_select,
-        collection: EffectiveOrders.payment_providers,
-        required: true
 
-      = f.input :payment_card,
+      = f.select :payment_provider, EffectiveOrders.payment_providers, required: true
+
+      = f.text_field :payment_card,
         label: 'Payment card type, cheque or transaction number',
         placeholder: 'visa',
         hint: 'Full credit card numbers should not be entered here, or anywhere.'
 
-      = f.input :payment,
-        as: :text,
+      = f.text_area :payment,
         label: 'Additional details',
         input_html: { value: f.object.payment.kind_of?(Hash) ? f.object.payment[:details] : f.object.payment.presence }
 
-      = f.input :send_mark_as_paid_email_to_buyer,
-        as: :boolean,
+      = f.check_box :send_mark_as_paid_email_to_buyer,
         label: 'Yes, send an refund receipt email to the buyer.',
         input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid] : f.object.send_mark_as_paid_email_to_buyer?) }
 
-      = f.input :note_to_buyer, hint: 'This is displayed to the buyer on all order receipts.'
+      = f.text_area :note_to_buyer, hint: 'This is displayed to the buyer on all order receipts.'
 
       .text-right
-        = f.submit order_checkout_label(:refund), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
+        = f.submit order_checkout_label(:refund), class: 'btn btn-primary'
 

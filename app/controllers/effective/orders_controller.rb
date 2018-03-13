@@ -1,7 +1,5 @@
 module Effective
   class OrdersController < ApplicationController
-    include EffectiveCartsHelper
-
     include Concerns::Purchase
 
     include Providers::Cheque if EffectiveOrders.cheque?
@@ -20,7 +18,7 @@ module Effective
 
     # This is the entry point for any Checkout button
     def new
-      @order ||= Effective::Order.new(current_cart, user: current_user)
+      @order ||= Effective::Order.new(current_cart)
 
       EffectiveOrders.authorize!(self, :new, @order)
 
@@ -44,7 +42,7 @@ module Effective
     end
 
     def create
-      @order ||= Effective::Order.new(current_cart, user: current_user)
+      @order ||= Effective::Order.new(current_cart)
       EffectiveOrders.authorize!(self, :create, @order)
 
       @order.assign_attributes(checkout_params) if params[:effective_order]
@@ -169,6 +167,10 @@ module Effective
     end
 
     private
+
+    def current_cart
+      view_context.current_cart
+    end
 
     # StrongParameters
     def checkout_params

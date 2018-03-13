@@ -17,7 +17,7 @@ module ActsAsPurchasable
     has_many :order_items, as: :purchasable, class_name: 'Effective::OrderItem'
     has_many :orders, -> { order(:id) }, through: :order_items, class_name: 'Effective::Order'
 
-    has_many :purchased_orders, -> { where(purchase_state: EffectiveOrders::PURCHASED).order(:purchased_at) },
+    has_many :purchased_orders, -> { where(state: EffectiveOrders::PURCHASED).order(:purchased_at) },
       through: :order_items, class_name: 'Effective::Order', source: :order
 
     validates_with Effective::SoldOutValidator, on: :create
@@ -31,10 +31,10 @@ module ActsAsPurchasable
     validates :quantity_purchased, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
     validates :quantity_max, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
 
-    scope :purchased, -> { joins(order_items: :order).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).distinct }
-    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: {user_id: user.try(:id), purchase_state: EffectiveOrders::PURCHASED}).distinct }
+    scope :purchased, -> { joins(order_items: :order).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
+    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: {user_id: user.try(:id), state: EffectiveOrders::PURCHASED}).distinct }
     scope :sold, -> { purchased() }
-    scope :sold_by, lambda { |user| joins(order_items: :order).where(order_items: {seller_id: user.try(:id)}).where(orders: {purchase_state: EffectiveOrders::PURCHASED}).distinct }
+    scope :sold_by, lambda { |user| joins(order_items: :order).where(order_items: {seller_id: user.try(:id)}).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
 
     scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
     scope :not_purchased_by, lambda { |user| where('id NOT IN (?)', purchased_by(user).pluck(:id).presence || [0]) }

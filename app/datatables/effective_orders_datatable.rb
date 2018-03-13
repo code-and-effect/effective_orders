@@ -40,8 +40,8 @@ class EffectiveOrdersDatatable < Effective::Datatable
       col :shipping_address
     end
 
-    col :purchase_state, label: 'State', search: { collection: EffectiveOrders::PURCHASE_STATES.invert } do |order|
-      EffectiveOrders::PURCHASE_STATES[order.purchase_state]
+    col :state, label: 'State', search: { collection: EffectiveOrders::STATES.invert } do |order|
+      EffectiveOrders::STATES[order.state]
     end
 
     col :order_items, search: { as: :string }
