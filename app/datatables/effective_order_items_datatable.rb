@@ -27,7 +27,7 @@ class EffectiveOrderItemsDatatable < Effective::Datatable
       end
     end
 
-    # if EffectiveOrders.require_billing_address && attributes[:user_id].blank?
+    # if EffectiveOrders.billing_address && attributes[:user_id].blank?
     #   col :buyer_name, sort: false, label: 'Buyer Name' do |order_item|
     #     (order_item[:buyer_name] || '').split('!!SEP!!').find(&:present?)
     #   end
@@ -56,7 +56,7 @@ class EffectiveOrderItemsDatatable < Effective::Datatable
       .select("#{query_subtotal} AS subtotal, #{query_tax} AS tax, #{query_total} AS total")
       .group('order_items.id, orders.id, users.email')
 
-    if EffectiveOrders.require_billing_address && defined?(EffectiveAddresses)
+    if EffectiveOrders.billing_address && defined?(EffectiveAddresses)
       addresses_tbl = EffectiveAddresses.addresses_table_name
 
       collection = collection

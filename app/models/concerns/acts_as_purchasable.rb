@@ -33,8 +33,6 @@ module ActsAsPurchasable
 
     scope :purchased, -> { joins(order_items: :order).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
     scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: {user_id: user.try(:id), state: EffectiveOrders::PURCHASED}).distinct }
-    scope :sold, -> { purchased() }
-    scope :sold_by, lambda { |user| joins(order_items: :order).where(order_items: {seller_id: user.try(:id)}).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
 
     scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
     scope :not_purchased_by, lambda { |user| where('id NOT IN (?)', purchased_by(user).pluck(:id).presence || [0]) }

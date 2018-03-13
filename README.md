@@ -459,7 +459,7 @@ And call `render_cart(current_cart)` to display the Cart anywhere.
 
 On the Checkout page (`effective_orders.new_order_path`) a new `Effective::Order` object is created and one or more `Effective::OrderItem`s are initialized based on the `current_cart`.
 
-If the configuration options `config.require_billing_address` and/or `config.require_shipping_address` options are `true` then the user will be prompted for the appropriate addresses, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
+If the configuration options `config.billing_address` and/or `config.shipping_address` options are `true` then the user will be prompted for the appropriate addresses, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
 
 If `config.use_address_full_name` is set to `true` then appropriate form field will be shown and the user will be prompted for the appropriate address full name during the checkout process, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
 

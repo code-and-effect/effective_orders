@@ -11,17 +11,17 @@
     - if EffectiveOrders.collect_user_fields.present? && f.object.user.present?
       = render partial: 'effective/orders/order_user_fields', locals: { form: f, user: f.object.user }
 
-    - num_addresses = [EffectiveOrders.require_billing_address, EffectiveOrders.require_shipping_address].count(true)
+    - num_addresses = [EffectiveOrders.billing_address, EffectiveOrders.shipping_address].count(true)
 
     - if num_addresses > 0
       .effective-order-addresses
         .row
-          - if EffectiveOrders.require_billing_address
+          - if EffectiveOrders.billing_address
             %div{class: "col-md-#{12 / num_addresses}"}
               %h2 Billing Address
               = effective_address_fields(f, :billing_address)
 
-          - if EffectiveOrders.require_shipping_address
+          - if EffectiveOrders.shipping_address
             %div{class: "col-md-#{12 / num_addresses}"}
               %h2 Shipping Address
               = effective_address_fields(f, :shipping_address)

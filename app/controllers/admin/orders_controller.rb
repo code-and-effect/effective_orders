@@ -41,7 +41,8 @@ module Admin
 
           @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
-          @order.create_as_pending!
+          # @order.pending!
+          @order.save!
 
           message = 'Successfully created order'
           message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?

@@ -32,8 +32,8 @@ module EffectiveOrders
   mattr_accessor :order_tax_rate_method
 
   mattr_accessor :obfuscate_order_ids
-  mattr_accessor :require_billing_address
-  mattr_accessor :require_shipping_address
+  mattr_accessor :billing_address
+  mattr_accessor :shipping_address
   mattr_accessor :use_address_full_name
 
   mattr_accessor :collect_user_fields

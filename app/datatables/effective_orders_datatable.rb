@@ -32,11 +32,11 @@ class EffectiveOrdersDatatable < Effective::Datatable
       col :billing_name
     end
 
-    if EffectiveOrders.require_billing_address
+    if EffectiveOrders.billing_address
       col :billing_address
     end
 
-    if EffectiveOrders.require_shipping_address
+    if EffectiveOrders.shipping_address
       col :shipping_address
     end
 

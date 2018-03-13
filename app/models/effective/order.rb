@@ -58,8 +58,9 @@ module Effective
 
     serialize :payment, Hash
 
-    before_validation { assign_totals! }
+    before_validation { assign_order_totals }
     before_validation { assign_billing_name }
+    before_validation { assign_last_address }
 
     # Order validations
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
@@ -86,11 +87,11 @@ module Effective
         order.validates :user, associated: true
       end
 
-      if EffectiveOrders.require_billing_address
+      if EffectiveOrders.billing_address
         order.validates :billing_address, presence: true
       end
 
-      if EffectiveOrders.require_shipping_address
+      if EffectiveOrders.shipping_address
         order.validates :shipping_address, presence: true
       end
 
@@ -108,10 +109,9 @@ module Effective
       order.validates :payment_card, presence: true
     end
 
-    # Incase we save!(validate: false)
-    before_save(if: -> { self[:total].blank? }) { assign_totals! }
-    before_save(if: -> { billing_name.blank? }) { assign_billing_name }
-    before_save :save_user_addresses
+    # Incase we save!(validate: false) - don't do that!
+    # before_save(if: -> { self[:total].blank? }) { assign_totals! }
+    # before_save(if: -> { billing_name.blank? }) { assign_billing_name }
 
     scope :deep, -> { includes(:user, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
@@ -145,8 +145,17 @@ module Effective
         items = Array(atts[:item]) + Array(atts[:items])
 
         self.user = atts[:user] || (items.first.user if items.first.respond_to?(:user))
-        self.billing_address = atts[:billing_address] if atts.key?(:billing_address)
-        self.shipping_address = atts[:shipping_address] if atts.key?(:shipping_address)
+
+        if atts.key?(:billing_address)
+          self.billing_address = atts[:billing_address]
+          self.billing_address.full_name ||= user.to_s.presence
+        end
+
+        if atts.key?(:shipping_address)
+          self.billing_address = atts[:billing_address]
+          self.billing_address.full_name ||= user.to_s.presence
+        end
+
         add(items) if items.present?
 
       else # Attributes are not a Hash
@@ -196,21 +205,6 @@ module Effective
       end
 
       retval.size == 1 ? retval.first : retval
-    end
-
-    def user=(user)
-      super
-
-      # Copy user addresses into this order if they are present
-      if user.respond_to?(:billing_address) && user.billing_address.present?
-        self.billing_address = user.billing_address
-      end
-
-      if user.respond_to?(:shipping_address) && user.shipping_address.present?
-        self.shipping_address = user.shipping_address
-      end
-
-      user
     end
 
     def to_s
@@ -294,18 +288,13 @@ module Effective
     # This is called from admin/orders#create
     # This is intended for use as an admin action only
     # It skips any address or bad user validations
-    def create_as_pending!
-      return false unless new_record?
-
+    # It's basically the same as save! on a new order, except it might send the payment request to buyer
+    def pending!
       self.state = EffectiveOrders::PENDING
-
-      self.skip_buyer_validations = true
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
-
       save!
 
       send_payment_request_to_buyer! if send_payment_request_to_buyer?
-
       true
     end
 
@@ -426,7 +415,7 @@ module Effective
 
     private
 
-    def assign_totals!
+    def assign_order_totals
       self.subtotal = order_items.map { |oi| oi.subtotal }.sum
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
@@ -437,15 +426,20 @@ module Effective
       self.billing_name = [(billing_address.full_name.presence if billing_address.present?), (user.to_s.presence)].compact.first
     end
 
-    def save_user_addresses
-      if user.respond_to?(:billing_address=) && billing_address.present?
-        user.billing_address = billing_address
-        user.billing_address.save
+    def assign_last_address
+      return unless user.present?
+      return unless (EffectiveOrders.billing_address || EffectiveOrders.shipping_address)
+      return unless billing_address.blank? || shipping_address.blank?
+
+      last_order = Effective::Order.sorted.where(user: user).last
+      return unless last_order.present?
+
+      if EffectiveOrders.billing_address && last_order.billing_address.present?
+        self.billing_address = last_order.billing_address
       end
 
-      if user.respond_to?(:shipping_address=) && shipping_address.present?
-        user.shipping_address = shipping_address
-        user.shipping_address.save
+      if EffectiveOrders.shipping_address && last_order.shipping_address.present?
+        self.shipping_address = last_order.shipping_address
       end
     end
 
