@@ -1,8 +1,10 @@
 .nested-fields.order-item
-  .row
-    = f.fields_for :purchasable, (f.object.purchasable || Effective::Product.new) do |purchasable|
-      .col-sm-2= f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
-      .col-sm-4= purchasable.text_field :title, maxlength: 255
-      .col-sm-2= purchasable.price_field :price
-      .col-sm-2= purchasable.check_box :tax_exempt, label: 'Tax Exempt', title: 'When checked, tax will not be applied to this item'
-      .col-sm-2.remove-nested-fields= link_to_remove_association('Remove line item', f)
+  .row.align-items-center
+    = f.fields_for :purchasable, (f.object.purchasable || Effective::Product.new) do |pf|
+      .col-md-1= f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
+      .col-md-5= pf.text_field :title, maxlength: 255
+      .col-md-2= pf.price_field :price
+      .col-md-2.mt-4= pf.check_box :tax_exempt, label: "Tax&nbsp;Exempt", title: 'When checked, tax will not be applied to this item'
+      .col-md-1.mt-4
+        = link_to_remove_association(f, 'data-confirm': 'Really remove this item?') do
+          = icon('x', class: 'btn-danger')

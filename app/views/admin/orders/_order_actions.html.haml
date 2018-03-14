@@ -1,3 +1,5 @@
-- @_effective_resource ||= Effective::Resource.new('effective/order', namespace: :admin)
-= effective_submit(form) do
-  = form.save 'Save and Duplicate'
+= effective_save(form) do
+  = form.save 'Save', class: 'btn btn-primary'
+  = form.save 'Duplicate', class: 'btn btn-primary'
+  = form.save 'Continue', class: 'btn btn-secondary'
+  = form.save 'Add New', class: 'btn btn-secondary'

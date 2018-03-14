@@ -4,4 +4,4 @@
   = render partial: 'effective/orders/order', locals: { order: @order }
   = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
 - else
-  = render_checkout_step2(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))
+  = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))

@@ -15,39 +15,53 @@ class EffectiveOrdersDatatable < Effective::Datatable
     )
   end
 
+  filters do
+    scope :purchased, default: true
+    scope :pending
+    scope :confirmed
+    scope :declined
+    scope :all
+  end
+
   datatable do
-    order :created_at, :desc
+    order :id
 
     bulk_actions_col
 
-    col :purchased_at
+    col :created_at, visible: false
+    col :updated_at, visible: false
+    col :id, visible: false
 
-    col :id
+    col :purchased_at do |order|
+      order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
+    end
 
     if attributes[:user_id].blank?
-      col :user, label: 'Buyer', search: :string, sort: :email do |order|
+      col :user
+
+      col :email, label: 'Email', visible: false, search: :string, sort: :email do |order|
         link_to order.user.email, (edit_admin_user_path(order.user) rescue admin_user_path(order.user) rescue '#')
       end
 
-      col :billing_name
+      col :billing_name, visible: false
     end
 
     if EffectiveOrders.billing_address
-      col :billing_address
+      col :billing_address, visible: false
     end
 
     if EffectiveOrders.shipping_address
-      col :shipping_address
+      col :shipping_address, visible: false
     end
 
-    col :state, label: 'State', search: { collection: EffectiveOrders::STATES.invert } do |order|
-      EffectiveOrders::STATES[order.state]
-    end
+    # col :state, label: 'State', search: { collection: EffectiveOrders::STATES.invert } do |order|
+    #   EffectiveOrders::STATES[order.state]
+    # end
 
     col :order_items, search: { as: :string }
 
-    col :subtotal, as: :price
-    col :tax, as: :price
+    col :subtotal, as: :price, visible: false
+    col :tax, as: :price, visible: false
 
     col :tax_rate, visible: false do |order|
       tax_rate_to_percentage(order.tax_rate)
@@ -56,14 +70,11 @@ class EffectiveOrdersDatatable < Effective::Datatable
     col :total, as: :price
 
     col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.payment_providers }
-    col :payment_card, label: 'Card'
+    col :payment_card, label: 'Card', visible: false
 
-    col :note, visible: false
+    col :note, visible: EffectiveOrders.collect_note
     col :note_to_buyer, visible: false
     col :note_internal, visible: false
-
-    col :created_at, visible: false
-    col :updated_at, visible: false
 
     actions_col partial: 'admin/orders/actions', partial_as: :order
 

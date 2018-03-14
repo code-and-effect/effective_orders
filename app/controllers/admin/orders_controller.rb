@@ -45,8 +45,7 @@ module Admin
 
           @order.attributes = order_params.except(:order_items_attributes, :user_id)
 
-          # @order.pending!
-          @order.save!
+          @order.pending!
 
           message = 'Successfully created order'
           message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
@@ -115,7 +114,7 @@ module Admin
       Effective::Order.transaction do
         begin
           @order.assign_attributes(checkout_params)
-          @order.save!
+          @order.confirm!
           redirect_to(effective_orders.admin_order_path(@order)) and return
         rescue => e
           raise ActiveRecord::Rollback
@@ -213,10 +212,6 @@ module Admin
 
       case params[:commit].to_s
       when 'Save'               ; effective_orders.admin_order_path(@order)
-
-      when 'Save and Continue'  ; effective_orders.admin_orders_path
-      when 'Save and Add New'   ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
-      when 'Save and Duplicate' ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
 
       when 'Continue'           ; effective_orders.admin_orders_path
       when 'Add New'            ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))

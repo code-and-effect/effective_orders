@@ -79,7 +79,7 @@ module EffectiveOrdersHelper
 
     if order.purchased?
       render(partial: 'effective/orders/order', locals: locals)
-    elsif order.confirmed?
+    elsif order.confirmed? && order.errors.blank?
       render(partial: 'effective/orders/checkout_step2', locals: locals)
     else
       render(partial: 'effective/orders/checkout_step1', locals: locals)
