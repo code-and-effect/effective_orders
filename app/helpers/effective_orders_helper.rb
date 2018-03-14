@@ -136,4 +136,8 @@ module EffectiveOrdersHelper
     end
   end
 
+  def checkout_icon_to(path, options = {})
+    icon_to('shopping-cart', path, { title: 'Checkout' }.merge(options))
+  end
+
 end

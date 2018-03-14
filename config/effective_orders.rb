@@ -39,8 +39,8 @@ EffectiveOrders.setup do |config|
     carts: 'application',
     orders: 'application',
     subscriptions: 'application',
-    admin_customers: 'application',
-    admin_orders: 'application'
+    admin_customers: 'admin',
+    admin_orders: 'admin'
   }
 
   # Filter the @orders on admin/orders#index screen

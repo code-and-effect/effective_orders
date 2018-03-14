@@ -1,11 +1,7 @@
 - if datatable.admin_namespace?
   - if order.purchased? == false
-    = link_to effective_orders.admin_order_path(order), title: 'Checkout' do
-      %span.glyphicon.glyphicon-usd
+    = checkout_icon_to(effective_orders.admin_order_path(order))
 
-  = link_to effective_orders.edit_admin_order_path(order), title: 'Edit' do
-    %span.glyphicon.glyphicon-edit
-
+  = edit_icon_to(effective_orders.edit_admin_order_path(order))
 - else
-  = link_to effective_orders.order_path(order), title: 'View' do
-    %span.glyphicon.glyphicon-eye-open
+  = show_icon_to(effective_orders.order_path(order))
