@@ -44,6 +44,8 @@ EffectiveOrders::Engine.routes.draw do
     resources :orders do
       member do
         post :send_payment_request
+
+        get :checkout
         post :checkout
         patch :checkout
       end

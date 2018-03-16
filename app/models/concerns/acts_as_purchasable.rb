@@ -7,13 +7,15 @@ module ActsAsPurchasable
     def acts_as_purchasable(*options)
       @acts_as_purchasable = options || []
       include ::ActsAsPurchasable
-      # Probably just extra memory leaks.
-      #(ActsAsPurchasable.descendants ||= []) << self
+
+      instance = new()
+      raise 'must respond_to price' unless instance.respond_to?(:price)
+      raise 'must respond_to purchased_order_id' unless instance.respond_to?(:purchased_order_id)
     end
   end
 
   included do
-    belongs_to :purchased_order, class_name: 'Effective::Order' # Optional
+    belongs_to :purchased_order, class_name: 'Effective::Order' # Set when purchased
 
     has_many :cart_items, as: :purchasable, dependent: :delete_all, class_name: 'Effective::CartItem'
 

@@ -1,7 +1,4 @@
 %h1.effective-admin-heading= @page_title
 
-- if @order.purchased?
-  = render partial: 'effective/orders/order', locals: { order: @order }
-  = render partial: 'admin/orders/form_note_internal', locals: { order: @order }
-- else
-  = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))
+= render partial: 'effective/orders/order', locals: { order: @order }
+= render partial: 'admin/orders/form_note_internal', locals: { order: @order }

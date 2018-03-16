@@ -109,19 +109,16 @@ module Effective
       order.validates :payment_card, presence: true
     end
 
-    # Incase we save!(validate: false) - don't do that!
-    # before_save(if: -> { self[:total].blank? }) { assign_totals! }
-    # before_save(if: -> { billing_name.blank? }) { assign_billing_name }
-
     scope :deep, -> { includes(:user, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
+    scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
+    scope :purchased_by, lambda { |user| purchased.where(user: user) }
+    scope :not_purchased, -> { where.not(state: EffectiveOrders::PURCHASED) }
+
     scope :pending, -> { where(state: EffectiveOrders::PENDING) }
     scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
-    scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
     scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
-
-    scope :purchased_by, lambda { |user| purchased.where(user: user) }
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
@@ -240,12 +237,8 @@ module Effective
       order_items.map { |order_item| order_item.purchasable }
     end
 
-    def free?
-      total == 0
-    end
-
-    def refund?
-      total.to_i < 0
+    def subtotal
+      self[:subtotal] || order_items.map { |oi| oi.subtotal }.sum
     end
 
     def tax_rate
@@ -256,12 +249,16 @@ module Effective
       self[:tax] || get_tax()
     end
 
-    def subtotal
-      self[:subtotal] || order_items.map { |oi| oi.subtotal }.sum
-    end
-
     def total
       (self[:total] || (subtotal + tax.to_i)).to_i
+    end
+
+    def free?
+      total == 0
+    end
+
+    def refund?
+      total.to_i < 0
     end
 
     def num_items
@@ -269,7 +266,7 @@ module Effective
     end
 
     def send_payment_request_to_buyer?
-      truthy?(send_payment_request_to_buyer)
+      truthy?(send_payment_request_to_buyer) && !free? && !refund?
     end
 
     def send_mark_as_paid_email_to_buyer?
@@ -300,6 +297,18 @@ module Effective
     def confirm!
       self.state = EffectiveOrders::CONFIRMED
       save!
+    end
+
+    # This lets us skip to the confirmed workflow for an admin...
+    def assign_confirmed_if_valid!
+      return unless pending?
+
+      self.state = EffectiveOrders::CONFIRMED
+      return true if valid?
+
+      self.errors.clear
+      self.state = EffectiveOrders::PENDING
+      false
     end
 
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')

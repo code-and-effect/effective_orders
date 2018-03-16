@@ -44,6 +44,7 @@ module Admin
           end
 
           @order.attributes = order_params.except(:order_items_attributes, :user_id)
+          @order.skip_minimum_charge_validation = true
 
           @order.pending!
 
@@ -72,7 +73,6 @@ module Admin
 
     def update
       @order = Effective::Order.find(params[:id])
-      @order.skip_minimum_charge_validation = true if @order.refund?
 
       @page_title ||= @order.to_s
 
@@ -81,6 +81,8 @@ module Admin
       Effective::Order.transaction do
         begin
           @order.assign_attributes(order_params)
+          @order.skip_minimum_charge_validation = true
+
           @order.save!
           redirect_to(admin_redirect_path) and return
         rescue => e
@@ -94,7 +96,6 @@ module Admin
 
     def show
       @order = Effective::Order.find(params[:id])
-      @order.skip_minimum_charge_validation = true if @order.refund?
 
       @page_title ||= @order.to_s
 
@@ -105,24 +106,28 @@ module Admin
     # See Effective::OrdersController checkout
     def checkout
       @order = Effective::Order.find(params[:id])
-      @order.skip_minimum_charge_validation = true if @order.refund?
-
-      @page_title ||= 'Checkout'
 
       authorize_effective_order!
+
+      if request.get?
+        @order.assign_confirmed_if_valid!
+        render :checkout and return
+      end
 
       Effective::Order.transaction do
         begin
           @order.assign_attributes(checkout_params)
+          @order.skip_minimum_charge_validation = true
+
           @order.confirm!
-          redirect_to(effective_orders.admin_order_path(@order)) and return
+          redirect_to(effective_orders.checkout_admin_order_path(@order)) and return
         rescue => e
           raise ActiveRecord::Rollback
         end
       end
 
-      flash.now[:danger] = "Unable to save order: #{@order.errors.full_messages.to_sentence}. Please try again."
-      render :show
+      flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
+      render :checkout
     end
 
     def index
@@ -134,7 +139,7 @@ module Admin
     end
 
     def destroy
-      @order = Effective::Order.find(params[:id])
+      @order = Effective::Order.all.not_purchased.find(params[:id])
 
       authorize_effective_order!
 
@@ -216,6 +221,7 @@ module Admin
       when 'Continue'           ; effective_orders.admin_orders_path
       when 'Add New'            ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
       when 'Duplicate'          ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
+      when 'Checkout'           ; effective_orders.checkout_admin_order_path(@order.to_param)
 
       else effective_orders.admin_order_path(@order)
       end
