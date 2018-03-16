@@ -1,7 +1,9 @@
-- if datatable.admin_namespace?
-  - if order.purchased? == false
-    = checkout_icon_to(effective_orders.admin_order_path(order))
+= dropdown(variation: :dropleft) do
+  - if datatable.admin_namespace?
+    = dropdown_link_to 'View', effective_orders.admin_order_path(order)
+    = dropdown_link_to 'Edit', effective_orders.edit_admin_order_path(order)
+    - if order.purchased? == false
+      = dropdown_link_to 'Checkout', effective_orders.admin_order_path(order)
 
-  = edit_icon_to(effective_orders.edit_admin_order_path(order))
-- else
-  = show_icon_to(effective_orders.order_path(order))
+  - else
+    = dropdown_link_to 'View', effective_orders.order_path(order)

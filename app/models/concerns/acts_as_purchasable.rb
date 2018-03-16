@@ -7,11 +7,14 @@ module ActsAsPurchasable
     def acts_as_purchasable(*options)
       @acts_as_purchasable = options || []
       include ::ActsAsPurchasable
-      (ActsAsPurchasable.descendants ||= []) << self
+      # Probably just extra memory leaks.
+      #(ActsAsPurchasable.descendants ||= []) << self
     end
   end
 
   included do
+    belongs_to :purchased_order, class_name: 'Effective::Order' # Optional
+
     has_many :cart_items, as: :purchasable, dependent: :delete_all, class_name: 'Effective::CartItem'
 
     has_many :order_items, as: :purchasable, class_name: 'Effective::OrderItem'
@@ -20,21 +23,22 @@ module ActsAsPurchasable
     has_many :purchased_orders, -> { where(state: EffectiveOrders::PURCHASED).order(:purchased_at) },
       through: :order_items, class_name: 'Effective::Order', source: :order
 
-    validates_with Effective::SoldOutValidator, on: :create
-
     # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
     validates :price, presence: true, numericality: { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
-
     validates :tax_exempt, inclusion: { in: [true, false] }
 
-    # These are breaking on the check for quanitty_enabled?.  More research is due
-    validates :quantity_purchased, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
-    validates :quantity_max, numericality: { allow_nil: true }, if: proc { |purchasable| (purchasable.quantity_enabled? rescue false) }
+    with_options(if: -> { quantity_enabled? }) do
+      validates :quantity_purchased, numericality: { allow_nil: true }
+      validates :quantity_max, numericality: { allow_nil: true }
+      validates_with Effective::SoldOutValidator, on: :create
+    end
 
-    scope :purchased, -> { joins(order_items: :order).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
-    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: {user_id: user.try(:id), state: EffectiveOrders::PURCHASED}).distinct }
+    scope :purchased, -> { where.not(purchased_order_id: nil) }
+    scope :not_purchased, -> { where(purchased_order_id: nil) }
 
-    scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
+    # scope :purchased, -> { joins(order_items: :order).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
+    # scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
+    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: { user_id: user.try(:id), state: EffectiveOrders::PURCHASED }).distinct }
     scope :not_purchased_by, lambda { |user| where('id NOT IN (?)', purchased_by(user).pluck(:id).presence || [0]) }
   end
 
@@ -53,10 +57,6 @@ module ActsAsPurchasable
   end
 
   # Regular instance methods
-
-  def price
-    self[:price] || 0
-  end
 
   # If I have a column type of Integer, and I'm passed a non-Integer, convert it here
   def price=(value)
@@ -77,37 +77,32 @@ module ActsAsPurchasable
     self[:tax_exempt] || false
   end
 
-  def purchased_order
-    @purchased_order ||= purchased_orders.first
-  end
-
   def purchased?
-    @is_purchased ||= purchased_order.present?
-  end
-
-  def purchased_by?(user)
-    purchased_orders.any? { |order| order.user_id == user.id }
+    purchased_order_id.present?
   end
 
   def purchased_at
     purchased_order.try(:purchased_at)
   end
 
+  def purchased_by?(user)
+    purchased_orders.any? { |order| order.user_id == user.id }
+  end
+
+  def purchased_download_url # Override me if this is a digital purchase.
+    false
+  end
+
   def quantity_enabled?
-    self.respond_to?(:quantity_enabled) ? quantity_enabled == true : false
+    false
   end
 
   def quantity_remaining
-    (quantity_max - quantity_purchased) rescue 0
+    quantity_max - quantity_purchased if quantity_enabled?
   end
 
   def sold_out?
-    quantity_enabled? ? (quantity_remaining == 0) : false
-  end
-
-  # Override me if this is a digital purchase.
-  def purchased_download_url
-    false
+    quantity_enabled? ? (quantity_remaining <= 0) : false
   end
 
 end

@@ -63,6 +63,7 @@ module Effective
     before_validation { assign_last_address }
 
     # Order validations
+    validates :user_id, presence: true
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
     validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
     validates :subtotal, presence: true
@@ -83,7 +84,6 @@ module Effective
 
       unless EffectiveOrders.skip_user_validation
         order.validates :billing_name, presence: true
-        order.validates :user_id, presence: true
         order.validates :user, associated: true
       end
 
@@ -118,7 +118,7 @@ module Effective
 
     scope :pending, -> { where(state: EffectiveOrders::PENDING) }
     scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
-    scope :purchased, -> { sorted.where(state: EffectiveOrders::PURCHASED) }
+    scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
     scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
 
     scope :purchased_by, lambda { |user| purchased.where(user: user) }
@@ -321,6 +321,8 @@ module Effective
 
           self.skip_buyer_validations = skip_buyer_validations
 
+          assign_purchased_order_to_purchasables
+
           run_purchasable_callbacks(:before_purchase)
 
           save!(validate: validate)
@@ -360,6 +362,7 @@ module Effective
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
           self.payment_provider = provider.to_s
           self.payment_card = card.to_s.presence || 'none'
+
 
           save!(validate: validate)
 
@@ -446,6 +449,10 @@ module Effective
       if EffectiveOrders.shipping_address && last_order.shipping_address.present?
         self.shipping_address = last_order.shipping_address
       end
+    end
+
+    def assign_purchased_order_to_purchasables
+      order_items.each { |oi| oi.purchasable.purchased_order = self }
     end
 
     def run_purchasable_callbacks(name)
