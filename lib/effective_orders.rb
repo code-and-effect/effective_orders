@@ -185,8 +185,8 @@ module EffectiveOrders
       plans['trial'] = {
         id: 'trial',
         amount: 0,
-        name: (subscription[:trial_name] || 'Free Trial'),
-        description: (subscription[:trial_description] || 'Free Trial')
+        name: (subscriptions[:trial_name] || 'Free Trial'),
+        description: (subscriptions[:trial_description] || 'Free Trial')
       }
 
       plans

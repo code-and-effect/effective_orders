@@ -57,7 +57,7 @@ module ActsAsSubscribable
 
   def trial_expires_at
     # The rake task send_trial_expiring_emails depends on this beginning_of_day
-    ((created_at || Time.zone.now) + EffectiveOrders.subscription[:trial_period]).beginning_of_day
+    ((created_at || Time.zone.now) + EffectiveOrders.subscriptions[:trial_period]).beginning_of_day
   end
 
   def buyer

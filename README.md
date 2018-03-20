@@ -856,7 +856,7 @@ To set up stripe:
 
 4.) Click API -> Webhooks and add an endpoint `root_url/webhooks/stripe`. You will need something like ngrok to test this.
 
-5.) Record the webhook Signing secret in `config.subscription[:webhook_secret]`
+5.) Record the webhook Signing secret in `config.subscriptions[:webhook_secret]`
 
 
 ## Paying Via PayPal
