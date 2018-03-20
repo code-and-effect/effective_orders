@@ -26,7 +26,6 @@ module Effective
     attr_accessor :send_payment_request_to_buyer # Set by Admin::Orders#new. Should the payment request email be sent after creating an order?
     attr_accessor :send_mark_as_paid_email_to_buyer  # Set by Admin::Orders#mark_as_paid
     attr_accessor :skip_buyer_validations # Set by Admin::Orders#create
-    attr_accessor :skip_minimum_charge_validation # Set by Admin::Orders#show
 
     belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
     has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem'
@@ -72,9 +71,7 @@ module Effective
       validates :total, presence: true, numericality: {
         greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
         message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
-      }, unless: -> {
-        (total == 0 && EffectiveOrders.free?) || (total < 0 && EffectiveOrders.refunds? && skip_minimum_charge_validation?)
-      }
+      }, unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refunds?) }
     end
 
     # User validations -- An admin skips these when working in the admin/ namespace
@@ -277,10 +274,6 @@ module Effective
       truthy?(skip_buyer_validations)
     end
 
-    def skip_minimum_charge_validation?
-      truthy?(skip_minimum_charge_validation) || skip_buyer_validations?
-    end
-
     # This is called from admin/orders#create
     # This is intended for use as an admin action only
     # It skips any address or bad user validations
@@ -371,7 +364,6 @@ module Effective
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
           self.payment_provider = provider.to_s
           self.payment_card = card.to_s.presence || 'none'
-
 
           save!(validate: validate)
 

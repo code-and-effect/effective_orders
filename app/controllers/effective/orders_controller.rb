@@ -140,7 +140,7 @@ module Effective
         EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
 
         @orders.each do |order|
-          next unless (EffectiveOrders.authorize!(self, :show, order) rescue false)
+          next unless EffectiveOrders.authorized?(self, :show, order)
 
           order.send_order_receipt_to_buyer!
         end

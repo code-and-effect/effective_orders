@@ -44,8 +44,6 @@ module Admin
           end
 
           @order.attributes = order_params.except(:order_items_attributes, :user_id)
-          @order.skip_minimum_charge_validation = true
-
           @order.pending!
 
           message = 'Successfully created order'
@@ -81,8 +79,6 @@ module Admin
       Effective::Order.transaction do
         begin
           @order.assign_attributes(order_params)
-          @order.skip_minimum_charge_validation = true
-
           @order.save!
           redirect_to(admin_redirect_path) and return
         rescue => e
@@ -117,8 +113,6 @@ module Admin
       Effective::Order.transaction do
         begin
           @order.assign_attributes(checkout_params)
-          @order.skip_minimum_charge_validation = true
-
           @order.confirm!
           redirect_to(effective_orders.checkout_admin_order_path(@order)) and return
         rescue => e
