@@ -34,6 +34,10 @@ module Effective
       price * quantity
     end
 
+    def quantity
+      self[:quantity] || 1
+    end
+
     def tax
       return 0 if tax_exempt?
       raise 'parent Effective::Order must have a tax_rate to compute order item tax' unless order.try(:tax_rate).present?

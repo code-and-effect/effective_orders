@@ -453,10 +453,6 @@ module Effective
       end
     end
 
-    def assign_purchased_order_to_purchasables
-      order_items.each { |oi| oi.purchasable.assign_attributes(purchased_order: self) }
-    end
-
     def update_purchasables_purchased_order!
       order_items.each { |oi| oi.purchasable.update_column(:purchased_order_id, self.id) }
     end
