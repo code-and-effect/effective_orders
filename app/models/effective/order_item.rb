@@ -16,7 +16,7 @@ module Effective
     # timestamps
 
     validates :purchasable, associated: true, presence: true
-    accepts_nested_attributes_for :purchasable, allow_destroy: false, reject_if: :all_blank, update_only: true
+    accepts_nested_attributes_for :purchasable
 
     validates :title, presence: true
     validates :quantity, presence: true, numericality: { greater_than: 0 }

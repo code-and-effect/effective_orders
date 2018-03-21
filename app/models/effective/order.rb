@@ -306,7 +306,7 @@ module Effective
 
     # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
     # order.purchase!(details: {key: value})
-    def purchase!(details: 'none', provider: 'none', card: 'none', validate: true, email: true, skip_buyer_validations: false)
+    def purchase!(details: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false)
       return false if purchased?
 
       success = false
@@ -323,11 +323,10 @@ module Effective
 
           self.skip_buyer_validations = skip_buyer_validations
 
-          assign_purchased_order_to_purchasables
-
           run_purchasable_callbacks(:before_purchase)
 
-          save!(validate: validate)
+          save!
+          update_purchasables_purchased_order!
 
           success = true
         rescue => e
@@ -364,6 +363,8 @@ module Effective
           self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
           self.payment_provider = provider.to_s
           self.payment_card = card.to_s.presence || 'none'
+
+          self.skip_buyer_validations = true # Might as well...
 
           save!(validate: validate)
 
@@ -453,7 +454,11 @@ module Effective
     end
 
     def assign_purchased_order_to_purchasables
-      order_items.each { |oi| oi.purchasable.purchased_order = self }
+      order_items.each { |oi| oi.purchasable.assign_attributes(purchased_order: self) }
+    end
+
+    def update_purchasables_purchased_order!
+      order_items.each { |oi| oi.purchasable.update_column(:purchased_order_id, self.id) }
     end
 
     def run_purchasable_callbacks(name)

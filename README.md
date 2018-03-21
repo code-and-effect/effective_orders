@@ -533,10 +533,10 @@ The one gotcha with the above two scenarios, is that when `purchase!` is called,
 - `validates_numericality_of :total, greater_than_or_equal_to: minimum_charge` where minimum_charge is the configured value, once again from the initializer
 - `validates_presence_of :order_items` the Order must have at least one OrderItem
 
-You can skip validations with the following command, but be careful as this skips all validations:
+You can skip some buyer validations with the following command:
 
 ```ruby
-Effective::Order.new(@product, user: @user).purchase!(validate: false)
+Effective::Order.new(@product, user: @user).purchase!(skip_buyer_validations: true)
 ```
 
 The `@product` is now considered purchased.

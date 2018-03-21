@@ -139,8 +139,8 @@ module EffectiveOrders
       ('pretend' if pretend?),
       ('stripe' if stripe?),
       ('credit card' if mark_as_paid?),
-      ('none' if mark_as_paid?),
       ('other' if mark_as_paid?),
+      'none'
     ].compact
   end
 
