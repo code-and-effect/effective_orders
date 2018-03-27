@@ -6,11 +6,16 @@ module ActsAsPurchasable
   module ActiveRecord
     def acts_as_purchasable(*options)
       @acts_as_purchasable = options || []
-      include ::ActsAsPurchasable
 
       instance = new()
       raise 'must respond_to price' unless instance.respond_to?(:price)
       raise 'must respond_to purchased_order_id' unless instance.respond_to?(:purchased_order_id)
+
+      if defined?(EffectiveQbSync)
+        raise 'must respond to qb_item_name' unless instance.respond_to?(:qb_item_name)
+      end
+
+      include ::ActsAsPurchasable
     end
   end
 
