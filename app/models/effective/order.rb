@@ -305,37 +305,32 @@ module Effective
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
     def purchase!(payment: 'none', provider: 'none', card: 'none', note: nil, email: true, skip_buyer_validations: false)
       return false if purchased?
-
-      success = false
       error = nil
+
+      assign_attributes(
+        state: EffectiveOrders::PURCHASED,
+        purchased_at: Time.zone.now,
+        payment: payment_to_h(payment),
+        payment_provider: provider,
+        payment_card: (card.presence || 'none'),
+        skip_buyer_validations: skip_buyer_validations
+      )
 
       Effective::Order.transaction do
         begin
-          self.state = EffectiveOrders::PURCHASED
-          self.purchased_at ||= Time.zone.now
-
-          self.payment = payment.kind_of?(Hash) ? payment: { details: payment.to_s }
-          self.payment_provider = provider
-          self.payment_card = card.to_s.presence || 'none'
-
-          self.skip_buyer_validations = skip_buyer_validations
-
           run_purchasable_callbacks(:before_purchase)
-
           save!
           update_purchasables_purchased_order!
-
-          success = true
         rescue => e
           self.state = state_was
-          self.purchased_at = purchased_at_was
+          self.purchased_at = nil
 
           error = e.message
           raise ::ActiveRecord::Rollback
         end
       end
 
-      raise "Failed to purchase order: #{error || errors.full_messages.to_sentence}" unless success
+      raise "Failed to purchase order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
       send_order_receipts! if email
 
@@ -349,33 +344,29 @@ module Effective
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
 
-      success = false
       error = nil
+
+      assign_attributes(
+        state: EffectiveOrders::DECLINED,
+        purchased_at: nil,
+        payment: payment_to_h(payment),
+        payment_provider: provider,
+        payment_card: (card.presence || 'none'),
+        skip_buyer_validations: true
+      )
 
       Effective::Order.transaction do
         begin
-          self.state = EffectiveOrders::DECLINED
-          self.purchased_at = nil
-
-          self.payment = payment.kind_of?(Hash) ? payment: { details: payment.to_s }
-          self.payment_provider = provider
-          self.payment_card = card.to_s.presence || 'none'
-
-          self.skip_buyer_validations = true # Might as well...
-
           save!(validate: validate)
-
-          success = true
         rescue => e
           self.state = state_was
-          self.purchased_at = purchased_at_was
 
           error = e.message
           raise ::ActiveRecord::Rollback
         end
       end
 
-      raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless success
+      raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
       run_purchasable_callbacks(:after_decline)
 
@@ -467,6 +458,16 @@ module Effective
         ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(value)
       else
         ::ActiveRecord::Type::Boolean.new.cast(value)
+      end
+    end
+
+    def payment_to_h(payment)
+      if payment.respond_to?(:to_unsafe_h)
+        payment.to_unsafe_h.to_h
+      elsif payment.respond_to?(:to_h)
+        payment.to_h
+      else
+        { details: (payment.to_s.presence || 'none') }
       end
     end
 

@@ -22,25 +22,25 @@ module Effective
           return order_purchased(payment: params, provider: 'moneris', card: params[:card], purchased_url: purchased_url)
         end
 
+        # Invalid Result
         if params[:result].to_s != '1' || params[:transactionKey].blank?
           return order_declined(payment: params, provider: 'moneris', card: params[:card], declined_url: declined_url)
         end
 
         # Verify response from moneris
-        verify_params = verify_moneris_request(params[:transactionKey])
+        payment = params.merge(verify_moneris_transaction(params[:transactionKey]))
+        valid = (1..49).include?(payment[:response_code].to_i)  # Must be > 0 and < 50 to be valid. Sometimes we get the string 'null'
 
-        response_code = verify_params[:response_code].to_i # Sometimes moneris sends us the string 'null'
-
-        if response_code > 0 && response_code < 50  # Less than 50 means a successful validation
-          order_purchased(payment: params.merge(verify_params), provider: 'moneris', card: params[:card], purchased_url: purchased_url)
-        else
-          order_declined(payment: params.merge(verify_params), provider: 'moneris', card: params[:card], declined_url: declined_url)
+        if valid == false
+          return order_declined(payment: payment, provider: 'moneris', card: params[:card], declined_url: declined_url)
         end
+
+        order_purchased(payment: payment, provider: 'moneris', card: params[:card], purchased_url: purchased_url)
       end
 
       private
 
-      def verify_moneris_request(transactionKey)
+      def verify_moneris_transaction(transactionKey)
         # Send a verification POST request
         uri = URI.parse(EffectiveOrders.moneris[:verify_url])
         params = { ps_store_id: EffectiveOrders.moneris[:ps_store_id], hpp_key: EffectiveOrders.moneris[:hpp_key], transactionKey: transactionKey }
