@@ -9,7 +9,7 @@ module Effective
         EffectiveOrders.authorize!(self, :update, @order)
 
         order_purchased(
-          details: 'for pretend',
+          payment: 'for pretend',
           provider: 'pretend',
           card: 'none',
           purchased_url: params[:purchased_url],

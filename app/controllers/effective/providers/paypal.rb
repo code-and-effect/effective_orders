@@ -16,11 +16,11 @@ module Effective
 
         if @order.present?
           if @order.purchased?
-            order_purchased(details: params, provider: 'paypal', card: params[:payment_type])
+            order_purchased(payment: params, provider: 'paypal', card: params[:payment_type])
           elsif (params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret])
-            order_purchased(details: params, provider: 'paypal', card: params[:payment_type])
+            order_purchased(payment: params, provider: 'paypal', card: params[:payment_type])
           else
-            order_declined(details: params, provider: 'paypal', card: params[:payment_type])
+            order_declined(payment: params, provider: 'paypal', card: params[:payment_type])
           end
         end
 

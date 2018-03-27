@@ -15,7 +15,7 @@ module Effective
 
         if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
           order_purchased(
-            details: response,
+            payment: response,
             provider: 'stripe',
             card: (response[:charge]['source']['brand'] rescue nil)
           )

@@ -18,7 +18,7 @@ module Effective
         @order.assign_attributes(refund_params.except(:payment, :payment_provider, :payment_card))
 
         order_purchased(
-          details: refund_params[:payment],
+          payment: refund_params[:payment],
           provider: refund_params[:payment_provider],
           card: refund_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,

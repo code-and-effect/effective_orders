@@ -35,7 +35,7 @@ module EffectiveCartsHelper
       label: 'My Cart',
       id: 'current_cart',
       rel: :nofollow,
-      class: 'btn btn-default'
+      class: 'btn btn-secondary'
     }.merge(opts)
 
     label = options.delete(:label)

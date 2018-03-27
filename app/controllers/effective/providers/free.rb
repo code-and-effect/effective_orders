@@ -15,7 +15,7 @@ module Effective
         end
 
         order_purchased(
-          details: 'free order. no payment required.',
+          payment: 'free order. no payment required.',
           provider: 'free',
           card: 'none',
           purchased_url: params[:purchased_url],

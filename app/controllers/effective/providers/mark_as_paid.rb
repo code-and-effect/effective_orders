@@ -12,7 +12,7 @@ module Effective
         @order.assign_attributes(mark_as_paid_params.except(:payment, :payment_provider, :payment_card))
 
         order_purchased(
-          details: mark_as_paid_params[:payment],
+          payment: mark_as_paid_params[:payment],
           provider: mark_as_paid_params[:payment_provider],
           card: mark_as_paid_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,
