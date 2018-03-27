@@ -132,23 +132,21 @@ module Effective
       return unless atts.present?
 
       if atts.kind_of?(Hash)
-        if (keywords = (atts.keys - [:item, :items, :user, :billing_address, :shipping_address])).present?
-          raise ArgumentError.new("unknown keyword: #{keywords.join(' ')}")
-        end
+        items = Array(atts.delete(:item)) + Array(atts.delete(:items))
 
-        items = Array(atts[:item]) + Array(atts[:items])
+        self.user = atts.delete(:user) || (items.first.user if items.first.respond_to?(:user))
 
-        self.user = atts[:user] || (items.first.user if items.first.respond_to?(:user))
-
-        if atts.key?(:billing_address)
-          self.billing_address = atts[:billing_address]
+        if (address = atts.delete(:billing_address)).present?
+          self.billing_address = address
           self.billing_address.full_name ||= user.to_s.presence
         end
 
-        if atts.key?(:shipping_address)
-          self.shipping_address = atts[:shipping_address]
+        if (address = atts.delete(:shipping_address)).present?
+          self.shipping_address = address
           self.shipping_address.full_name ||= user.to_s.presence
         end
+
+        atts.each { |key, value| self.send("#{key}=", value) }
 
         add(items) if items.present?
       else # Attributes are not a Hash
@@ -304,9 +302,8 @@ module Effective
       false
     end
 
-    # Effective::Order.new(Product.first, user: User.first).purchase!(details: 'manual purchase')
-    # order.purchase!(details: {key: value})
-    def purchase!(details: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false)
+    # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
+    def purchase!(payment: 'none', provider: 'none', card: 'none', note: nil, email: true, skip_buyer_validations: false)
       return false if purchased?
 
       success = false
@@ -317,8 +314,8 @@ module Effective
           self.state = EffectiveOrders::PURCHASED
           self.purchased_at ||= Time.zone.now
 
-          self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
-          self.payment_provider = provider.to_s
+          self.payment = payment.kind_of?(Hash) ? payment: { details: payment.to_s }
+          self.payment_provider = provider
           self.payment_card = card.to_s.presence || 'none'
 
           self.skip_buyer_validations = skip_buyer_validations
@@ -347,7 +344,7 @@ module Effective
       true
     end
 
-    def decline!(details: 'none', provider: 'none', card: 'none', validate: true)
+    def decline!(payment: 'none', provider: 'none', card: 'none', validate: true)
       return false if declined?
 
       raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
@@ -360,8 +357,8 @@ module Effective
           self.state = EffectiveOrders::DECLINED
           self.purchased_at = nil
 
-          self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
-          self.payment_provider = provider.to_s
+          self.payment = payment.kind_of?(Hash) ? payment: { details: payment.to_s }
+          self.payment_provider = provider
           self.payment_card = card.to_s.presence || 'none'
 
           self.skip_buyer_validations = true # Might as well...
