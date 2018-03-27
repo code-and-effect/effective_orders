@@ -1,3 +1,5 @@
+require 'net/http'
+
 module Effective
   module Providers
     module Moneris
@@ -17,33 +19,40 @@ module Effective
         declined_url = params.delete(:rvar_declined_url)
 
         if @order.purchased?  # Fallback to a success condition of the Order is already purchased
-          order_purchased(details: params, provider: 'moneris', card: params[:card], purchased_url: purchased_url)
-          return
+          return order_purchased(payment: params, provider: 'moneris', card: params[:card], purchased_url: purchased_url)
         end
 
-        if params[:result].to_s == '1' && params[:transactionKey].present?
-          verify_params = parse_moneris_response(send_moneris_verify_request(params[:transactionKey])) || {}
+        if params[:result].to_s != '1' || params[:transactionKey].blank?
+          return order_declined(payment: params, provider: 'moneris', card: params[:card], declined_url: declined_url)
+        end
 
-          response_code = verify_params[:response_code].to_i # Sometimes moneris sends us the string 'null'
+        # Verify response from moneris
+        verify_params = verify_moneris_request(params[:transactionKey])
 
-          if response_code > 0 && response_code < 50  # Less than 50 means a successful validation
-            order_purchased(details: params.merge(verify_params), provider: 'moneris', card: params[:card], purchased_url: purchased_url)
-          else
-            order_declined(details: params.merge(verify_params), provider: 'moneris', card: params[:card], declined_url: declined_url)
-          end
+        response_code = verify_params[:response_code].to_i # Sometimes moneris sends us the string 'null'
+
+        if response_code > 0 && response_code < 50  # Less than 50 means a successful validation
+          order_purchased(payment: params.merge(verify_params), provider: 'moneris', card: params[:card], purchased_url: purchased_url)
         else
-          order_declined(details: params, provider: 'moneris', card: params[:card], declined_url: declined_url)
+          order_declined(payment: params.merge(verify_params), provider: 'moneris', card: params[:card], declined_url: declined_url)
         end
       end
 
       private
 
-      def parse_moneris_response(text)
-        text.split("<br>").inject(Hash.new()) { |h, i| h[i.split(' ').first.to_sym] = i.split(' ').last ; h } rescue {response: text}
-      end
+      def verify_moneris_request(transactionKey)
+        # Send a verification POST request
+        uri = URI.parse(EffectiveOrders.moneris[:verify_url])
+        params = { ps_store_id: EffectiveOrders.moneris[:ps_store_id], hpp_key: EffectiveOrders.moneris[:hpp_key], transactionKey: transactionKey }
+        headers = { 'Referer': effective_orders.moneris_postback_orders_url }
 
-      def send_moneris_verify_request(verify_key)
-        `curl -F ps_store_id='#{EffectiveOrders.moneris[:ps_store_id]}' -F hpp_key='#{EffectiveOrders.moneris[:hpp_key]}' -F transactionKey='#{verify_key}' --referer #{effective_orders.moneris_postback_orders_url} #{EffectiveOrders.moneris[:verify_url]}`
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+
+        body = http.post(uri.path, params.to_query, headers).body
+
+        # Parse response into a Hash
+        body.split('<br>').inject({}) { |h, i| h[i.split(' ').first.to_sym] = i.split(' ').last; h }
       end
 
     end
