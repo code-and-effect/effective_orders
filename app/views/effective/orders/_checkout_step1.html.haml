@@ -31,4 +31,4 @@
     - if EffectiveOrders.terms_and_conditions
       = render partial: 'effective/orders/order_terms_and_conditions_fields', locals: { form: f }
 
-    = effective_save(f, 'Proceed to Checkout')
+    = f.submit 'Proceed to Checkout'
