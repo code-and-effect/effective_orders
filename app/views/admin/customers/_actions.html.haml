@@ -1,1 +1,2 @@
-= link_to 'Manage', "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers/#{customer.stripe_customer_id}"
+= dropdown(variation: :dropleft) do
+  = dropdown_link_to 'Manage',  "https://dashboard.stripe.com/#{'test/' if Rails.env.development?}customers/#{customer.stripe_customer_id}"
