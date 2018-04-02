@@ -4,4 +4,5 @@
   = effective_form_with(model: @stripe_charge || Effective::Providers::StripeCharge.new(order: order), url: effective_orders.stripe_charge_orders_path) do |f|
     = f.hidden_field :stripe_token
     = f.hidden_field :effective_order_id
-    = f.submit order_checkout_label(:stripe), class: 'btn btn-primary'
+
+    = f.submit order_checkout_label(:stripe), border: false

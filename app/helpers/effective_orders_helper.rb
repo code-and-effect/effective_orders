@@ -41,7 +41,7 @@ module EffectiveOrdersHelper
     when :free
       'Checkout free'
     when :mark_as_paid
-      'Mark as paid'
+      'Admin: Mark as paid'
     when :moneris
       'Checkout with credit card'
     when :paypal

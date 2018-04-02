@@ -1,5 +1,5 @@
-= form_tag(EffectiveOrders.paypal[:paypal_url], method: :post) do
-  = hidden_field_tag :cmd, '_s-xclick'
-  = hidden_field_tag :encrypted, paypal_encrypted_payload(order)
+= effective_form_with(scope: :paypal, url: EffectiveOrders.paypal[:paypal_url], method: :post) do |f|
+  = hidden_field_tag(:cmd, '_s-xclick')
+  = hidden_field_tag(:encrypted, paypal_encrypted_payload(order))
 
-  = submit_tag order_checkout_label(:paypal), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
+  = f.submit order_checkout_label(:paypal), border: false

@@ -1,4 +1,4 @@
-= form_tag(EffectiveOrders.moneris[:hpp_url], method: :post) do
+= effective_form_with(scope: :moneris, url: EffectiveOrders.moneris[:hpp_url], method: :post) do |f|
   = hidden_field_tag(:ps_store_id, EffectiveOrders.moneris[:ps_store_id])
   = hidden_field_tag(:hpp_key, EffectiveOrders.moneris[:hpp_key])
   = hidden_field_tag(:lang, 'en-ca')
@@ -44,4 +44,4 @@
     = hidden_field_tag(:ship_postal_code, address.postal_code)
     = hidden_field_tag(:ship_country, address.country)
 
-  = submit_tag order_checkout_label(:moneris), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }
+  = f.submit order_checkout_label(:moneris), border: false

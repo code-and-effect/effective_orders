@@ -110,6 +110,8 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.integer   :price
       t.boolean   :tax_exempt, :default => false
 
+      t.string    :qb_item_name
+
       t.timestamps
     end
 

@@ -1,6 +1,7 @@
-= effective_save(form) do
+= form.submit do
   = form.save 'Save', class: 'btn btn-primary'
   = form.save 'Duplicate', class: 'btn btn-primary'
+
   - unless form.object.purchased?
     = form.save 'Checkout', class: 'btn btn-success'
 

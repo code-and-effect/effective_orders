@@ -1,5 +1,5 @@
-.panel.panel-default
-  .panel-body
+.card
+  .card-body
     %h2 Admin: Offline Payment
 
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
@@ -22,5 +22,5 @@
 
       = f.text_area :note_to_buyer, hint: 'This message will be displayed on the receipt.'
 
-      = effective_save(f, 'Admin: Mark as Paid')
+      = f.submit order_checkout_label(:mark_as_paid)
 
