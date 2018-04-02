@@ -105,6 +105,8 @@ module Admin
 
       authorize_effective_order!
 
+      @page_title ||= 'Checkout'
+
       if request.get?
         @order.assign_confirmed_if_valid!
         render :checkout and return

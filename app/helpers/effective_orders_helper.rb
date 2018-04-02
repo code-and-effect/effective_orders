@@ -37,21 +37,21 @@ module EffectiveOrdersHelper
 
     case processor
     when :cheque
-      'Pay by cheque'
+      'Pay by Cheque'
     when :free
-      'Checkout free'
+      'Checkout Free'
     when :mark_as_paid
-      'Admin: Mark as paid'
+      'Admin: Mark as Paid'
     when :moneris
-      'Checkout with credit card'
+      'Checkout with Credit Card'
     when :paypal
       'Checkout with PayPal'
     when :pretend
       EffectiveOrders.pretend_purchase_in_production_enabled ? 'Purchase Order' : 'Purchase Order (development only)'
     when :refund
-      'Complete refund'
+      'Complete Refund'
     when :stripe
-      'Checkout with credit card'
+      'Checkout with Credit Card'
     else
       'Checkout'
     end
