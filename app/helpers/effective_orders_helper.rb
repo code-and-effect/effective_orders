@@ -47,7 +47,7 @@ module EffectiveOrdersHelper
     when :paypal
       'Checkout with PayPal'
     when :pretend
-      EffectiveOrders.pretend_purchase_in_production_enabled ? 'Purchase Order' : 'Purchase Order (development only)'
+      'Purchase Order (skip payment processor)'
     when :refund
       'Complete Refund'
     when :stripe

@@ -21,10 +21,6 @@ module EffectiveOrders
 
   mattr_accessor :authorization_method
 
-  mattr_accessor :pretend_purchase_in_development_enabled
-  mattr_accessor :pretend_purchase_in_production_enabled
-  mattr_accessor :pretend_purchase_in_production_message
-
   mattr_accessor :layout
   mattr_accessor :mailer
 
@@ -47,9 +43,13 @@ module EffectiveOrders
   mattr_accessor :terms_and_conditions_label
 
   mattr_accessor :minimum_charge
+
+  # Features
   mattr_accessor :free_enabled
   mattr_accessor :mark_as_paid_enabled
   mattr_accessor :refunds_enabled
+  mattr_accessor :pretend_enabled
+  mattr_accessor :pretend_message
 
   # Payment processors. false or Hash
   mattr_accessor :cheque
@@ -110,7 +110,7 @@ module EffectiveOrders
   end
 
   def self.pretend?
-    (pretend_purchase_in_production_enabled && Rails.env.production?) || (pretend_purchase_in_development_enabled && !Rails.env.production?)
+    pretend_enabled == true
   end
 
   def self.refunds?

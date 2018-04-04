@@ -103,23 +103,13 @@ EffectiveOrders.setup do |config|
   # Refunds don't perform any kind of refund action with the payment processor. This just changes the validations.
   config.refunds_enabled = false
 
-  # Pretend Purchase in Development
+  # Pretend Purchase
   # Display a 'Purchase order' button on the Checkout screen allowing the user
-  # to purchase an Order without going through the payment processor. Works in !Rails.env.production?
-  config.pretend_purchase_in_development_enabled = true
-
-  # Pretend Purchase in Production
+  # to purchase an Order without going through the payment processor.
   # WARNING: Setting this option to true will allow users to purchase! an Order without entering a credit card
   # WARNING: When true, users can purchase! anything without paying money
-  #
-  # This should basically always be false, but sometimes you want to make a Beta/Demo site
-  # where users may test the purchase workflow without actually paying money
-  #
-  # When true, there will be a 'Process Order' button on the Checkout screen.
-  # Clicking this button will mark an Order purchased and redirect the user to the
-  # Thank You page just as if they had successfully Checked Out through a payment processor
-  config.pretend_purchase_in_production_enabled = false
-  config.pretend_purchase_in_production_message = '* payment information is not required to process this order at this time.'
+  config.pretend_enabled = !Rails.env.production?
+  config.pretend_message = '* payment information is not required to process this order at this time.'
 
   # Mailer Settings
   # effective_orders will send out receipts to the buyer, seller and admins.

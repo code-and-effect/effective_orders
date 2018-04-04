@@ -30,10 +30,8 @@
       - if EffectiveOrders.cheque? && order.user == current_user
         = render partial: '/effective/orders/cheque/form', locals: provider_locals
 
-    - if EffectiveOrders.pretend? && Rails.env.production? && EffectiveOrders.pretend_purchase_in_production_message.present?
-      %br
-      %p= EffectiveOrders.pretend_purchase_in_production_message
-
+  - if EffectiveOrders.pretend? && EffectiveOrders.pretend_message.present?
+    %p.text-right= EffectiveOrders.pretend_message
 
   - if EffectiveOrders.authorized?(controller, :admin, :effective_orders) && order.user != current_user
     - if EffectiveOrders.refunds? && order.refund?
