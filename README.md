@@ -570,6 +570,24 @@ render_datatable @datatable
 Please refer to [effective_datatables](https://github.com/code-and-effect/effective_datatables/) for more information about that gem.
 
 
+### Subscriptions
+
+All subscriptions are completed via stripe subscriptions.
+
+There is a hardcoded trial mode, that does not reach out to stripe.
+
+Every `acts_as_subscribable` object starts as trial mode.
+
+Every `acts_as_subscribable_buyer` gets a single stripe subscription, and then can buy quantities of stripe products
+
+
+#### Stripe setup
+
+Create a Product with the name you want customers to see on their receipts
+
+Yearly and a Monthly per team
+
+
 ### Admin Screen
 
 To use the Admin screen, please also install the effective_datatables gem:

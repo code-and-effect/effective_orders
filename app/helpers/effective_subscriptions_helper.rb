@@ -1,7 +1,7 @@
 module EffectiveSubscriptionsHelper
 
   def effective_customer_fields(form, submit: true)
-    raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
+    raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be an Effective::Subscripter object' unless form.object.class.name == 'Effective::Subscripter'
 
     render(
@@ -19,8 +19,8 @@ module EffectiveSubscriptionsHelper
     )
   end
 
-  def stripe_plans_collection(form, include_trial: nil, selected_class: 'selected panel-primary')
-    raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
+  def stripe_plans_collection(form, include_trial: nil)
+    raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscribable.subscripter.present?
 
     include_trial = form.object.subscribable.subscribed?('trial') if include_trial.nil?
@@ -41,7 +41,6 @@ module EffectiveSubscriptionsHelper
         f: form,
         plan: plan,
         selected: Array(form.object.stripe_plan_id).include?(plan[:id]),
-        selected_class: selected_class,
         subscribable: form.object.subscribable,
         subscribed: form.object.subscribable.subscribed?(plan[:id])
       })
@@ -50,8 +49,8 @@ module EffectiveSubscriptionsHelper
     end
   end
 
-  def effective_subscription_fields(form, label: false, required: true, include_trial: nil, item_wrapper_class: 'col-sm-6 col-md-4 col-lg-3', selected_class: 'selected panel-primary', wrapper_class: 'row')
-    raise 'expected a SimpleForm::FormBuilder object' unless form.class.name == 'SimpleForm::FormBuilder'
+  def effective_subscription_fields(form, label: false, required: true, include_trial: nil, item_wrapper_class: 'col-sm-6 col-md-4 col-lg-3', selected_class: 'selected card-primary', wrapper_class: 'row')
+    raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscripter.present?
 
     render(

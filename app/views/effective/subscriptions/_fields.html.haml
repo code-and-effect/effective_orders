@@ -1,16 +1,12 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
-= form.simple_fields_for :subscripter, form.object.subscripter do |fs|
-  = fs.input :stripe_token, as: :hidden, input_html: { value: nil }
+= form.fields_for :subscripter, form.object.subscripter do |fs|
+  = fs.hidden_field :stripe_token, value: nil
 
   - fs.object.stripe_plan_id ||= (fs.object.current_plan || {})[:id]
 
-  = fs.input :stripe_plan_id, as: :radio_buttons, collection: stripe_plans_collection(fs, include_trial: include_trial, selected_class: selected_class),
+  = fs.radios :stripe_plan_id, stripe_plans_collection(fs, include_trial: include_trial),
     label: label,
     required: required,
-    wrapper_html: { class: "effective-orders-stripe-plans #{wrapper_class}", data: { selected_class: selected_class, stripe: stripe } },
-    item_wrapper_class: "effective-orders-stripe-plan #{item_wrapper_class}",
-    item_wrapper_tag: 'div'
-
-  - if fs.object.customer.persisted?
-    = effective_customer_fields(fs)
+    cards: true,
+    wrapper: { class: 'effective-orders-stripe-plans', data: { stripe: stripe } }

@@ -157,6 +157,12 @@ module EffectiveOrders
     return {} unless (stripe? && subscriptions?)
 
     @stripe_plans ||= (
+      Rails.logger.info "STRIPE PLAN LIST"
+
+      # {"id":"plan_ChLx90ggbWvB8i","object":"plan","amount":100000,"billing_scheme":"per_unit","created":1523984756,"currency":"usd",
+      #{ }"interval":"year","interval_count":1,"livemode":false,"metadata":{},"nickname":"Yearly","product":"prod_ChLwW0XqdykIki",
+      #{ }"tiers":null,"tiers_mode":null,"transform_usage":null,"trial_period_days":null,"usage_type":"licensed"},
+
       plans = Stripe::Plan.all.inject({}) do |h, plan|
         occurrence = case plan.interval
           when 'daily'    ; '/day'
@@ -172,7 +178,8 @@ module EffectiveOrders
 
         h[plan.id] = {
           id: plan.id,
-          name: plan.name,
+          product_id: plan.product,
+          name: plan.nickname,
           amount: plan.amount,
           currency: plan.currency,
           description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}",
@@ -185,8 +192,8 @@ module EffectiveOrders
       plans['trial'] = {
         id: 'trial',
         amount: 0,
-        name: (subscriptions[:trial_name] || 'Free Trial'),
-        description: (subscriptions[:trial_description] || 'Free Trial')
+        name: subscriptions.fetch(:trial_name, 'Free Trial'),
+        description: subscriptions.fetch(:trial_description, 'Free Trial')
       }
 
       plans
