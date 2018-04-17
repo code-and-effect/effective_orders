@@ -6,6 +6,11 @@ module ActsAsSubscribable
   module ActiveRecord
     def acts_as_subscribable(*options)
       @acts_as_subscribable = options || []
+
+      # instance = new()
+      # raise 'must respond_to subscribed_plan' unless instance.respond_to?(:subscribed_plan)
+      # raise 'must respond_to subscribed_until' unless instance.respond_to?(:subscribed_until)
+
       include ::ActsAsSubscribable
       (ActsAsSubscribable.descendants ||= []) << self
     end

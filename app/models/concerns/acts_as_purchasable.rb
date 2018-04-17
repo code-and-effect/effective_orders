@@ -20,7 +20,7 @@ module ActsAsPurchasable
   end
 
   included do
-    belongs_to :purchased_order, class_name: 'Effective::Order' # Set when purchased
+    belongs_to :purchased_order, class_name: 'Effective::Order', optional: true # Set when purchased
 
     has_many :cart_items, as: :purchasable, dependent: :delete_all, class_name: 'Effective::CartItem'
 
@@ -113,4 +113,3 @@ module ActsAsPurchasable
   end
 
 end
-
