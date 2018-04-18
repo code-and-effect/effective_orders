@@ -23,7 +23,7 @@ module EffectiveSubscriptionsHelper
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscribable.subscripter.present?
 
-    include_trial = form.object.subscribable.subscribed?('trial') if include_trial.nil?
+    include_trial = form.object.subscribable.trialing? if include_trial.nil?
 
     plans = include_trial ? EffectiveOrders.stripe_plans : EffectiveOrders.stripe_plans.except('trial')
     plans = plans.values.sort { |x, y| (amount = x[:amount] <=> y[:amount]) != 0 ? amount : x[:name] <=> y[:name] }
@@ -61,7 +61,7 @@ module EffectiveSubscriptionsHelper
         required: required,
         include_trial: include_trial,
         stripe: {
-          email: form.object.buyer.email,
+          email: form.object.subscribable_buyer.email,
           image: stripe_site_image_url,
           key: EffectiveOrders.stripe[:publishable_key],
           name: EffectiveOrders.stripe[:site_title],

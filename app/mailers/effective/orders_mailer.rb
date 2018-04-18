@@ -116,7 +116,7 @@ module Effective
       @subscribable = subscribable
 
       mail(
-        to: @subscribable.buyer.email,
+        to: @subscribable.subscribable_buyer.email,
         from: EffectiveOrders.mailer[:default_from],
         subject: subject_for_subscription_trial_expiring(@subscribable)
       )
@@ -129,7 +129,7 @@ module Effective
       @subscribable = subscribable
 
       mail(
-        to: @subscribable.buyer.email,
+        to: @subscribable.subscribable_buyer.email,
         from: EffectiveOrders.mailer[:default_from],
         subject: subject_for_subscription_trial_expired(@subscribable)
       )
