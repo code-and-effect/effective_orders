@@ -20,7 +20,7 @@ module ActsAsSubscribable
     has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription'
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
 
-    before_validate(if: -> { trialing_until.blank? && EffectiveOrders.trial? }) do
+    before_validation(if: -> { trialing_until.blank? && EffectiveOrders.trial? }) do
       self.trialing_until = (Time.zone.now + EffectiveOrders.trial.fetch(:length)).end_of_day
     end
 
@@ -42,15 +42,16 @@ module ActsAsSubscribable
   end
 
   def subscripter
-    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self, user: buyer)
+    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self, user: subscribable_buyer)
   end
 
   def subscripter=(atts)
     subscripter.assign_attributes(atts)
   end
 
-  def subscribed?
-    subscription_status.present?
+  def subscribed?(stripe_plan_id = nil)
+    return false if subscription_status.blank?
+    stripe_plan_id ? (subscription&.stripe_plan_id == stripe_plan_id) : true
   end
 
   def subscription_active?
@@ -66,15 +67,15 @@ module ActsAsSubscribable
   end
 
   def trial_active?
-    trialing? && trialing_until < Time.zone.now
-  end
-
-  def trial_past_due?
     trialing? && trialing_until > Time.zone.now
   end
 
-  def buyer
-    raise 'acts_as_subscribable object requires the buyer be defined to return the User buying this item.'
+  def trial_past_due?
+    trialing? && trialing_until < Time.zone.now
+  end
+
+  def subscribable_buyer
+    raise 'acts_as_subscribable object requires the subscribable_buyer method be defined to return the User buying this item.'
   end
 
 end
