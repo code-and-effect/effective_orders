@@ -12,6 +12,14 @@ module Effective
     validates :purchasable, presence: true
     validates :quantity, presence: true
 
+    def to_s
+      name || 'New Cart Item'
+    end
+
+    def name
+      purchasable&.purchasable_name
+    end
+
     def price
       if (purchasable.price || 0).kind_of?(Integer)
         purchasable.price || 0
@@ -20,12 +28,8 @@ module Effective
       end
     end
 
-    def title
-      purchasable.try(:title) || 'New Cart Item'
-    end
-
     def tax_exempt
-      purchasable.try(:tax_exempt) || false
+      purchasable&.tax_exempt || false
     end
 
     def subtotal

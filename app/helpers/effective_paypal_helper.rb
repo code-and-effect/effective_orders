@@ -37,7 +37,7 @@ module EffectivePaypalHelper
 
     order.order_items.each_with_index do |item, x|
       values["item_number_#{x+1}"] = x+1
-      values["item_name_#{x+1}"] = item.title
+      values["item_name_#{x+1}"] = item.name
       values["quantity_#{x+1}"] = item.quantity
       values["amount_#{x+1}"] = '%.2f' % (item.price / 100.0)
       values["tax_#{x+1}"] = '%.2f' % ((item.tax / 100.0) / item.quantity)  # Tax for 1 of these items

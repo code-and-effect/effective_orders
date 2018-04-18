@@ -39,7 +39,7 @@ module Effective
       end
 
       if item.quantity_enabled? && (existing ? existing.quantity : quantity) > item.quantity_remaining
-        raise EffectiveOrders::SoldOutException, "#{item.title} is sold out"
+        raise EffectiveOrders::SoldOutException, "#{item.purchasable_name} is sold out"
       end
 
       existing ||= cart_items.build(purchasable: item, quantity: quantity, unique: (unique.to_s unless unique.kind_of?(Proc)))

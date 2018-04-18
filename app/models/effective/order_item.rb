@@ -9,7 +9,7 @@ module Effective
     delegate :purchased?, :declined?, to: :order
 
     # Attributes
-    # title                 :string
+    # name                  :string
     # quantity              :integer
     # price                 :integer, default: 0
     # tax_exempt            :boolean
@@ -18,7 +18,7 @@ module Effective
     validates :purchasable, associated: true, presence: true
     accepts_nested_attributes_for :purchasable
 
-    validates :title, presence: true
+    validates :name, presence: true
     validates :quantity, presence: true, numericality: { greater_than: 0 }
     validates :price, presence: true
     validates :tax_exempt, inclusion: { in: [true, false] }

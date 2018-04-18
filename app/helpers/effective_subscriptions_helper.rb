@@ -49,7 +49,7 @@ module EffectiveSubscriptionsHelper
     end
   end
 
-  def effective_subscription_fields(form, label: false, required: true, include_trial: nil, item_wrapper_class: 'col-sm-6 col-md-4 col-lg-3', selected_class: 'selected card-primary', wrapper_class: 'row')
+  def effective_subscription_fields(form, label: false, required: true, include_trial: nil)
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be an acts_as_subscribable object' unless form.object.subscripter.present?
 
@@ -60,8 +60,6 @@ module EffectiveSubscriptionsHelper
         label: label,
         required: required,
         include_trial: include_trial,
-        item_wrapper_class: item_wrapper_class,
-        selected_class: selected_class,
         stripe: {
           email: form.object.buyer.email,
           image: stripe_site_image_url,
@@ -70,7 +68,6 @@ module EffectiveSubscriptionsHelper
           plans: EffectiveOrders.stripe_plans.values,
           token_required: form.object.subscripter.token_required?
         },
-        wrapper_class: wrapper_class
       }
     )
   end

@@ -179,7 +179,7 @@ module Effective
           self.note_internal ||= item.note_internal
 
           item.order_items.select { |oi| oi.purchasable.kind_of?(Effective::Product) }.map do |oi|
-            product = Effective::Product.new(title: oi.purchasable.title, price: oi.purchasable.price, tax_exempt: oi.purchasable.tax_exempt)
+            product = Effective::Product.new(name: oi.purchasable.purchasable_name, price: oi.purchasable.price, tax_exempt: oi.purchasable.tax_exempt)
             Effective::CartItem.new(quantity: oi.quantity, purchasable: product)
           end
         else
@@ -194,7 +194,7 @@ module Effective
 
       retval = cart_items.map do |item|
         order_items.build(
-          title: item.title,
+          name: item.name,
           quantity: item.quantity,
           price: item.price,
           tax_exempt: (item.tax_exempt || false),

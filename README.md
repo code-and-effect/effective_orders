@@ -185,7 +185,7 @@ or
 So back on the Product#show page, we will render the product with an Add To Cart link
 
 ```haml
-%h4= @product.title
+%h4= @product
 %p= price_to_currency(@product.price)
 %p= link_to_add_to_cart(@product, class: 'btn btn-primary', label: 'Add To My Shopping Cart')
 ```
@@ -616,16 +616,16 @@ render_datatable @datatable
 
 ## Rake Tasks
 
-### Overwrite order item titles
+### Overwrite order item names
 
-When an order is purchased, the `title()` of each `acts_as_purchasable` object is saved to the database.
+When an order is purchased, the `purchasable_name()` of each `acts_as_purchasable` object is saved to the database. Normally this is just `to_s`.
 
-If you change the output of `acts_as_purchasable`.`title`, any existing order items will remain unchanged.
+If you change the output of `acts_as_purchasable`.`purchasable_name`, any existing order items will remain unchanged.
 
-Run this script to overwrite all saved order item titles with the current `acts_as_purchasable`.`title`.
+Run this script to overwrite all saved order item names with the current `acts_as_purchasable`.`purchasable_name`.
 
 ```ruby
-rake effective_orders:overwrite_order_item_titles
+rake effective_orders:overwrite_order_item_names
 ```
 
 ## Testing in Development

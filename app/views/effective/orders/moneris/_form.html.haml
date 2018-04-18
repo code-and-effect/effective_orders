@@ -19,7 +19,7 @@
 
   - order.order_items.each_with_index do |item, x|
     = hidden_field_tag("id#{x}", x)
-    = hidden_field_tag("description#{x}", item.title)
+    = hidden_field_tag("description#{x}", item.name)
     = hidden_field_tag("quantity#{x}", item.quantity)
     = hidden_field_tag("price#{x}", '%.2f' % (item.price / 100.0))
     = hidden_field_tag("subtotal#{x}", '%.2f' % (item.subtotal / 100.0))
