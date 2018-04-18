@@ -8,7 +8,6 @@ module ActsAsSubscribable
       @acts_as_subscribable = options || []
 
       instance = new()
-
       raise 'must respond to trialing_until' unless instance.respond_to?(:trialing_until)
       raise 'must respond to subscription_status' unless instance.respond_to?(:subscription_status)
 
