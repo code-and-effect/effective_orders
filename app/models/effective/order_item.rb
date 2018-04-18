@@ -27,7 +27,7 @@ module Effective
     scope :sold_by, lambda { |user| sold().where(seller_id: user.id) }
 
     def to_s
-      (quantity || 0) > 1 ? "#{quantity}x #{title}" : title
+      (quantity || 0) > 1 ? "#{quantity}x #{name}" : name
     end
 
     def subtotal

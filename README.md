@@ -118,12 +118,12 @@ class Product < ActiveRecord::Base
   acts_as_purchasable
 
   # Attributes
-  # title               :string
+  # name                :string
   # price               :integer, default: 0
   # tax_exempt          :boolean, default: false
   # timestamps
 
-  validates_presence_of :title
+  validates_presence_of :name
   validates_numericality_of :price, greater_than_or_equal_to: 0
 end
 ```
@@ -134,7 +134,7 @@ The database migration will look like the following:
 class CreateProducts < ActiveRecord::Migration
   def self.up
     create_table :products do |t|
-      t.string :title
+      t.string :name
       t.integer :price, :default=>0
       t.boolean :tax_exempt, :default=>false
       t.datetime :updated_at
@@ -160,7 +160,7 @@ This is available for simple_form, formtastic and Rails default FormBuilder.
 
 ```haml
 = simple_form_for(@product) do |f|
-  = f.input :title
+  = f.input :name
   = f.input :tax_exempt
   = f.input :price, as: :effective_price
   = f.button :submit

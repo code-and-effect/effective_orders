@@ -37,8 +37,8 @@ class EffectiveOrderItemsDatatable < Effective::Datatable
       order_item[:state] || 'abandoned'
     end
 
-    col :title do |order_item|
-      order_item.quantity == 1 ? order_item.title : "#{order_item.title} (#{order_item.quantity} purchased)"
+    col :name do |order_item|
+      order_item.quantity == 1 ? order_item.name : "#{order_item.name} (#{order_item.quantity} purchased)"
     end
 
     # col :subtotal, as: :price

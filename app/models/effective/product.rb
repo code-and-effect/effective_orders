@@ -5,18 +5,18 @@ module Effective
     acts_as_purchasable
 
     # Attributes
-    # title         :string
+    # name          :string
     # price         :integer, default: 0
     # tax_exempt    :boolean, default: false
     #
     # timestamps
 
-    validates :title, presence: true
+    validates :name, presence: true
     validates :price, presence: true
     validates :tax_exempt, inclusion: { in: [true, false] }
 
     def to_s
-      self[:title] || 'New Product'
+      name || 'New Product'
     end
 
   end

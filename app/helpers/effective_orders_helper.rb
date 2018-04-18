@@ -14,9 +14,9 @@ module EffectiveOrdersHelper
     order_item_list = content_tag(:ul) do
       order.order_items.map do |item|
         content_tag(:li) do
-          title = item.title.split('<br>')
-          "#{item.quantity}x #{title.first} for #{price_to_currency(item.price)}".tap do |output|
-            title[1..-1].each { |line| output << "<br>#{line}" }
+          names = item.name.split('<br>')
+          "#{item.quantity}x #{names.first} for #{price_to_currency(item.price)}".tap do |output|
+            names[1..-1].each { |line| output << "<br>#{line}" }
           end.html_safe
         end
       end.join.html_safe

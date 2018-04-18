@@ -32,7 +32,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.string    :purchasable_type
       t.integer   :purchasable_id
 
-      t.string    :title
+      t.string    :name
       t.integer   :quantity
       t.integer   :price, :default => 0
       t.boolean   :tax_exempt
@@ -106,7 +106,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
     create_table <%= @products_table_name %> do |t|
       t.integer   :purchased_order_id
 
-      t.string    :title
+      t.string    :name
       t.integer   :price
       t.boolean   :tax_exempt, :default => false
 

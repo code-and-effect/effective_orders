@@ -188,7 +188,7 @@ module Admin
         :payment_provider, :payment_card, :payment, :send_mark_as_paid_email_to_buyer,
         order_items_attributes: [
           :quantity, :_destroy, purchasable_attributes: [
-            :title, :price, :tax_exempt
+            :name, :price, :tax_exempt
           ]
         ]
       )

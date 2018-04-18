@@ -68,10 +68,10 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   # so that this mailer will not have to guess at your app's acts_as_purchasable objects
   def preview_order_items
     [
-      { title: 'Item One', quantity: 2, price: 999, tax_exempt: false },
-      { title: 'Item Two', quantity: 1, price: 25000, tax_exempt: false },
-      { title: 'Item Three', quantity: 1, price: 8999, tax_exempt: false },
-      { title: 'Item Four', quantity: 1, price: 100000, tax_exempt: false }
+      { name: 'Item One', quantity: 2, price: 999, tax_exempt: false },
+      { name: 'Item Two', quantity: 1, price: 25000, tax_exempt: false },
+      { name: 'Item Three', quantity: 1, price: 8999, tax_exempt: false },
+      { name: 'Item Four', quantity: 1, price: 100000, tax_exempt: false }
     ]
   end
 

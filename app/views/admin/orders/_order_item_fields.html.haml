@@ -2,7 +2,7 @@
   .row.align-items-center
     = f.fields_for :purchasable, (f.object.purchasable || Effective::Product.new) do |pf|
       .col-md-1= f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
-      .col-md-4= pf.text_field :title, maxlength: 255
+      .col-md-4= pf.text_field :name, maxlength: 255
       .col-md-2= pf.price_field :price
 
       - if defined?(EffectiveQbSync)
