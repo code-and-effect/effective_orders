@@ -10,6 +10,12 @@ module EffectiveOrders
 
   STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, PURCHASED => PURCHASED, DECLINED => DECLINED }
 
+  # Subscription statuses (as per stripe)
+  ACTIVE = 'active'.freeze
+  PAST_DUE = 'past_due'.freeze
+
+  STATUSES = { ACTIVE => ACTIVE, PAST_DUE => PAST_DUE }
+
   # The following are all valid config keys
   mattr_accessor :orders_table_name
   mattr_accessor :order_items_table_name
@@ -57,6 +63,7 @@ module EffectiveOrders
   mattr_accessor :paypal
   mattr_accessor :stripe
   mattr_accessor :subscriptions  # Stripe subscriptions
+  mattr_accessor :trial          # Trial mode
 
   def self.setup
     yield self
@@ -125,6 +132,10 @@ module EffectiveOrders
     subscriptions.kind_of?(Hash)
   end
 
+  def self.trial?
+    trial.kind_of?(Hash)
+  end
+
   def self.single_payment_processor?
     [cheque?, moneris?, paypal?, stripe?].select { |enabled| enabled }.length == 1
   end
@@ -189,12 +200,9 @@ module EffectiveOrders
         }; h
       end
 
-      plans['trial'] = {
-        id: 'trial',
-        amount: 0,
-        name: subscriptions.fetch(:trial_name, 'Free Trial'),
-        description: subscriptions.fetch(:trial_description, 'Free Trial')
-      }
+      if trial?
+        plans['trial'] = { id: 'trial', amount: 0, name: trial.fetch(:name), description: trial.fetch(:description) }
+      end
 
       plans
     )

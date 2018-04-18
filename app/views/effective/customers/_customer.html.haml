@@ -76,7 +76,7 @@
       - if customer.stripe_subscription.items.present?
         %tr
           %th Plans
-          %td= tableize_hash(customer.stripe_subscription.items.inject({}) { |h, item| h[item.plan.name] = item.quantity; h }, th: false)
+          %td= tableize_hash(customer.stripe_subscription.items.inject({}) { |h, item| h[item.plan.nickname] = item.quantity; h }, th: false)
 
   - if customer.subscriptions.present?
     %table.table
@@ -118,7 +118,7 @@
             = Time.zone.at(invoice.lines.first.period.end).strftime('%F')
           %td
             - invoice.lines.each do |line|
-              %p #{line.quantity}x #{line.plan.try(:name)} #{line.description}
+              %p= line.description
 
           %td= price_to_currency(invoice.total)
 
@@ -131,19 +131,12 @@
         %th Date
         %td= Time.zone.at(customer.upcoming_invoice.date).strftime('%F')
       %tr
-        %th Period
-        %td
-          = Time.zone.at(customer.upcoming_invoice.period_start).strftime('%F')
-          to
-          = Time.zone.at(customer.upcoming_invoice.period_end).strftime('%F')
-      %tr
         %th Items
         %td
           %table.table
             %tbody
               - customer.upcoming_invoice.lines.each do |line|
                 %tr
-                  %td #{line.quantity}x #{line.plan.name}
                   %td #{Time.zone.at(line.period.start).strftime('%F')} to #{Time.zone.at(line.period.end).strftime('%F')}
                   %td= line.description
                   %td= price_to_currency(line.amount)

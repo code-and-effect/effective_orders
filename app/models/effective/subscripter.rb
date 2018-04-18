@@ -184,10 +184,10 @@ module Effective
       end
 
       # When upgrading a plan, invoice immediately.
-      if current_plan && current_plan[:id] != 'trial' && plan[:amount] > current_plan[:amount]
-        Rails.logger.info " -> INVOICE GENERATED"
-        Stripe::Invoice.create(customer: customer.stripe_customer_id).pay rescue false
-      end
+      # if current_plan && current_plan[:id] != 'trial' && plan[:amount] > current_plan[:amount]
+      #   Rails.logger.info " -> INVOICE GENERATED"
+      #   Stripe::Invoice.create(customer: customer.stripe_customer_id).pay rescue false
+      # end
 
       # Sync status
       customer.status = customer.stripe_subscription.status

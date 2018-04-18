@@ -221,21 +221,41 @@ EffectiveOrders.setup do |config|
   # end
 
   # Stripe
-  config.stripe = {
-    secret_key: 'sk_test_jyq7teaDe9aY3nnUMNu621Z0',
-    publishable_key: 'pk_test_iUe3br9h4voQ2AgL3ewAWYLF',
-    currency: 'usd',
-    site_title: 'Get Effective (TEST)',
-    site_image: 'logo-admin.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
-  }
+  config.stripe = false
+
+  # if Rails.env.production?
+  #   config.stripe = {
+  #     secret_key: 'sk_xxx',
+  #     publishable_key: 'pk_xxx',
+  #     currency: 'usd',
+  #     site_title: 'My Site',
+  #     site_image: 'logo.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+  #   }
+  # else
+  #   config.stripe = {
+  #     secret_key: 'sk_test_xxx',
+  #     publishable_key: 'pk_test_xxx',
+  #     currency: 'usd',
+  #     site_title: 'My Site',
+  #     site_image: 'logo.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+  #   }
+  # end
 
   # Subscriptions (https://stripe.com/docs/subscriptions)
-  config.subscriptions = {
-    trial_name: 'Free Trial',
-    trial_description: '45-Day Free Trial',
-    trial_period: 45.days,
-    trial_remind_at: [1.day, 3.days, 7.days],  # Send email notification to trialing users 1, 3 and 7 days before expiring. false to disable.
-    webhook_secret: 'whsec_2ZlO7LSnH0ZDSlCxUtRhTgVuSOI1bk4A'
-  }
+  config.subscriptions = false
+
+  # config.subscriptions = {
+  #   webhook_secret: 'whsec_xxx'
+  # }
+
+  # Trial
+  config.trial = false
+
+  # config.trial = {
+  #   name: 'Free Trial',
+  #   description: '45-Day Free Trial',
+  #   length: 45.days,
+  #   remind_at: [1.day, 3.days, 7.days],  # Send email notification to trialing users 1, 3 and 7 days before expiring. false to disable.
+  # }
 
 end

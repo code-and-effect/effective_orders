@@ -91,10 +91,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.string    :subscribable_type
 
       t.string    :stripe_plan_id
-      t.string    :status
-
       t.string    :name
-      t.integer   :price, :default => 0
 
       t.timestamps
     end

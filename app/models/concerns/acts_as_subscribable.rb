@@ -7,9 +7,10 @@ module ActsAsSubscribable
     def acts_as_subscribable(*options)
       @acts_as_subscribable = options || []
 
-      # instance = new()
-      # raise 'must respond_to subscribed_plan' unless instance.respond_to?(:subscribed_plan)
-      # raise 'must respond_to subscribed_until' unless instance.respond_to?(:subscribed_until)
+      instance = new()
+
+      raise 'must respond to trialing_until' unless instance.respond_to?(:trialing_until)
+      raise 'must respond to subscription_status' unless instance.respond_to?(:subscription_status)
 
       include ::ActsAsSubscribable
       (ActsAsSubscribable.descendants ||= []) << self
@@ -20,10 +21,22 @@ module ActsAsSubscribable
     has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription'
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
 
+    before_validate(if: -> { trialing_until.blank? && EffectiveOrders.trial? }) do
+      self.trialing_until = (Time.zone.now + EffectiveOrders.trial.fetch(:length)).end_of_day
+    end
+
+    validates :trialing_until, presence: true, if: -> { EffectiveOrders.trial? }
+    validates :subscription_status, inclusion: { allow_nil: true, in: EffectiveOrders::STATUSES.keys }
+
     validates :subscripter, associated: true
 
-    scope :subscribed, -> { where(id: joins(:subscription)) }  # All resources with a subscription
-    scope :trialing, -> { where.not(id: joins(:subscription)) } # All resources without a subscription
+    scope :trialing, -> { where(subscription_status: nil).where('trialing_until > ?', Time.zone.now) }
+    scope :trial_past_due, -> { where(subscription_status: nil).where('trialing_until < ?', Time.zone.now) }
+    scope :not_trialing, -> { where.not(subscription_status: nil) }
+
+    scope :subscribed, -> { where(subscription_status: EffectiveOrders::ACTIVE) }
+    scope :subscription_past_due, -> { where(subscription_status: EffectiveOrders::PAST_DUE) }
+    scope :not_subscribed, -> { where(subscription_status: nil) }
   end
 
   module ClassMethods
@@ -37,32 +50,28 @@ module ActsAsSubscribable
     subscripter.assign_attributes(atts)
   end
 
-  def subscribed?(stripe_plan_id = nil)
-    case stripe_plan_id
-    when nil
-      subscription.present?  # Subscribed to any subscription?
-    when (EffectiveOrders.stripe_plans['trial'] || {})[:id]
-      subscription.blank? || subscription.new_record? || subscription.stripe_plan_id == stripe_plan_id
-    else
-      subscription && subscription.persisted? && subscription.errors.blank? && subscription.stripe_plan_id == stripe_plan_id
-    end
+  def subscribed?
+    subscription_status.present?
   end
 
   def subscription_active?
-    (trialing? && !trial_expired?) || (subscribed? && subscription.active?)
+    subscribed? && subscription_status == EffectiveOrders::ACTIVE
+  end
+
+  def subscription_past_due?
+    subscribed? && subscription_status == EffectiveOrders::PAST_DUE
   end
 
   def trialing?
-    !subscribed?
+    subscription_status.blank?
   end
 
-  def trial_expired?
-    trialing? && Time.zone.now > trial_expires_at
+  def trial_active?
+    trialing? && trialing_until < Time.zone.now
   end
 
-  def trial_expires_at
-    # The rake task send_trial_expiring_emails depends on this beginning_of_day
-    ((created_at || Time.zone.now) + EffectiveOrders.subscriptions[:trial_period]).beginning_of_day
+  def trial_past_due?
+    trialing? && trialing_until > Time.zone.now
   end
 
   def buyer

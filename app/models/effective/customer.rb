@@ -5,10 +5,12 @@ module Effective
     attr_accessor :stripe_customer, :stripe_subscription
 
     belongs_to :user
+    has_many :subscribables, as: :subscribable
+
     has_many :subscriptions, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
     has_many :subscribables, through: :subscriptions, source: :subscribable
 
-    accepts_nested_attributes_for :subscriptions
+    #accepts_nested_attributes_for :subscriptions
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
@@ -27,7 +29,7 @@ module Effective
 
     validates :user, presence: true
     validates :stripe_customer_id, presence: true
-    validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: %w(active past_due) }
+    validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: EffectiveOrders::STATUSES.keys }
 
     def self.for_user(user)
       Effective::Customer.where(user: user).first_or_initialize
