@@ -27,8 +27,6 @@ module ActsAsSubscribable
     validates :trialing_until, presence: true, if: -> { EffectiveOrders.trial? }
     validates :subscription_status, inclusion: { allow_nil: true, in: EffectiveOrders::STATUSES.keys }
 
-    validates :subscripter, associated: true
-
     scope :trialing, -> { where(subscription_status: nil).where('trialing_until > ?', Time.zone.now) }
     scope :trial_past_due, -> { where(subscription_status: nil).where('trialing_until < ?', Time.zone.now) }
     scope :not_trialing, -> { where.not(subscription_status: nil) }
@@ -42,11 +40,7 @@ module ActsAsSubscribable
   end
 
   def subscripter
-    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self, user: subscribable_buyer)
-  end
-
-  def subscripter=(atts)
-    subscripter.assign_attributes(atts)
+    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self)
   end
 
   def subscribed?(stripe_plan_id = nil)
@@ -74,9 +68,9 @@ module ActsAsSubscribable
     trialing? && trialing_until < Time.zone.now
   end
 
-  def subscribable_buyer
-    raise 'acts_as_subscribable object requires the subscribable_buyer method be defined to return the User buying this item.'
-  end
+  # def subscribable_buyer
+  #   raise 'acts_as_subscribable object requires the subscribable_buyer method be defined to return the User buying this item.'
+  # end
 
 end
 

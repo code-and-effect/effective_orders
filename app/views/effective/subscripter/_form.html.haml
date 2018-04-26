@@ -1,0 +1,10 @@
+= javascript_include_tag 'https://checkout.stripe.com/checkout.js'
+
+= effective_form_with(model: subscripter, url: effective_orders.subscripter_path, remote: true) do |f|
+  = f.hidden_field :subscribable_global_id
+  = f.text_field :stripe_token
+
+  = f.radios :stripe_plan_id, stripe_plans_collection(f), cards: true, label: false,
+    wrapper: { class: 'effective-orders-stripe-plans', data: { stripe: subscripter_stripe_data(f.object) } }
+
+  = f.submit 'Choose this Plan', center: true

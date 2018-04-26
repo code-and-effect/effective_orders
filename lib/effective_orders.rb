@@ -83,7 +83,7 @@ module EffectiveOrders
   end
 
   def self.authorize!(controller, action, resource)
-    raise Effective::AccessDenied unless authorized?(controller, action, resource)
+    raise Effective::AccessDenied.new('Access Denied', action, resource) unless authorized?(controller, action, resource)
   end
 
   def self.permitted_params

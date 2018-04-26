@@ -1,7 +1,7 @@
 stripeSubscriptionHandler = (key, form) ->
   StripeCheckout.configure
     key: key
-    closed: -> EffectiveBootstrap.enable(form) unless form.hasClass('stripe-success')
+    closed: -> EffectiveForm.reset(form) unless form.hasClass('stripe-success')
     token: (token, args) ->
       if token.error
         message = "An error ocurred when contacting Stripe. Your card has not been charged. Your subscription has not changed. Please refresh the page and try again. #{token.error.message}"
@@ -10,7 +10,7 @@ stripeSubscriptionHandler = (key, form) ->
         form.find('.effective-orders-stripe-plans').find('.invalid-feedback').html(message).show()
         alert(message)
       else
-        form.find("input[name$='[stripe_token]']").val('' + token['id'])
+        form.find("input[name='effective_subscripter[stripe_token]']").val('' + token['id'])
         form.addClass('stripe-success').submit()
 
 # When I submit a for that needs a subscripter token, do the stripe thing.
@@ -20,10 +20,10 @@ $(document).on 'click', ".effective-orders-subscripter-token-required[type='subm
 
   # Get the stripe data
   $plans = $form.find('.effective-orders-stripe-plans').first()
-  selected_plan_id = $plans.find("input[name$='[subscripter][stripe_plan_id]']:checked").val()
+  selected_plan_id = $plans.find("input[name='effective_subscripter[stripe_plan_id]']:checked").val()
   return unless $plans.length > 0 && selected_plan_id.length > 0
 
-  EffectiveBootstrap.submitting($form)
+  EffectiveForm.submitting($form)
 
   stripe = $plans.data('stripe')
   plan = stripe.plans.find (plan, _) => plan.id == selected_plan_id
@@ -37,7 +37,7 @@ $(document).on 'click', ".effective-orders-subscripter-token-required[type='subm
     panelLabel: "{{amount}}#{plan.occurrence} Go!"
 
 # When I click on a stripe plan ID radio button, add .effective-orders-subscripter-token-required to the form if required
-$(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event) ->
+$(document).on 'change', "input[name='effective_subscripter[stripe_plan_id]']", (event) ->
   $plan = $(event.currentTarget)
   return unless $plan.is(':checked')
 
@@ -49,8 +49,10 @@ $(document).on 'change', "input[name$='[subscripter][stripe_plan_id]']", (event)
   token_required = $plans.data('stripe').token_required
 
   if (plan.amount || 0) > 0 && token_required
+    console.log 'token required'
     $plans.closest('form').find("input[type='submit'],button[type='submit']").addClass('effective-orders-subscripter-token-required')
   else
+    console.log 'token not required'
     $plans.closest('form').find("input[type='submit'],button[type='submit']").removeClass('effective-orders-subscripter-token-required')
 
   true

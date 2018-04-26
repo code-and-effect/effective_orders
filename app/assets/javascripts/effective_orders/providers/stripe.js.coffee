@@ -1,7 +1,7 @@
 stripeCheckoutHandler = (key, form) ->
   StripeCheckout.configure
     key: key
-    closed: -> EffectiveBootstrap.enable(form) unless form.hasClass('stripe-success')
+    closed: -> EffectiveBootstrap.reset(form) unless form.hasClass('stripe-success')
     token: (token, args) ->
       if token.error
         alert("An error ocurred when contacting Stripe. Your card has not been charged. Please refresh the page and try again. #{token.error.message}")

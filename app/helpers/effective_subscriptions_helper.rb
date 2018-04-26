@@ -21,7 +21,7 @@ module EffectiveSubscriptionsHelper
 
   def stripe_plans_collection(form, include_trial: nil)
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
-    raise 'form object must be an acts_as_subscribable object' unless form.object.subscribable.subscripter.present?
+    raise 'form object must be a subscripter object' unless form.object.class.name == 'Effective::Subscripter'
 
     include_trial = form.object.subscribable.trialing? if include_trial.nil?
 
@@ -49,27 +49,26 @@ module EffectiveSubscriptionsHelper
     end
   end
 
-  def effective_subscription_fields(form, label: false, required: true, include_trial: nil)
-    raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
-    raise 'form object must be an acts_as_subscribable object' unless form.object.subscripter.present?
+  def subscribable_form_with(subscribable, include_trial: nil)
+    raise 'form object must be an acts_as_subscribable object' unless subscribable.respond_to?(:subscripter)
 
-    render(
-      partial: 'effective/subscriptions/fields',
-      locals: {
-        form: form,
-        label: label,
-        required: required,
-        include_trial: include_trial,
-        stripe: {
-          email: form.object.subscribable_buyer.email,
-          image: stripe_site_image_url,
-          key: EffectiveOrders.stripe[:publishable_key],
-          name: EffectiveOrders.stripe[:site_title],
-          plans: EffectiveOrders.stripe_plans.values,
-          token_required: form.object.subscripter.token_required?
-        },
-      }
-    )
+    subscripter = subscribable.subscripter
+    raise 'subscribable.subscribable_buyer must match current_user' unless subscribable.subscribable_buyer == current_user
+
+    subscripter.include_trial = include_trial
+
+    render('effective/subscripter/form', subscripter: subscripter)
+  end
+
+  def subscripter_stripe_data(subscripter)
+    {
+      email: subscripter.email,
+      image: stripe_site_image_url,
+      key: EffectiveOrders.stripe[:publishable_key],
+      name: EffectiveOrders.stripe[:site_title],
+      plans: EffectiveOrders.stripe_plans.values,
+      token_required: subscripter.token_required?
+    }
   end
 
 end

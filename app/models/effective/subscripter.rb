@@ -5,10 +5,13 @@ module Effective
     include ActiveModel::Model
 
     attr_accessor :user, :subscribable, :customer
-    attr_accessor :stripe_plan_id, :stripe_token
+
+    attr_accessor :subscribable_global_id, :stripe_token, :stripe_plan_id, :include_trial
 
     validates :user, presence: true
     validates :subscribable, presence: true, if: -> { stripe_plan_id }
+    validates :customer, presence: true, if: -> { stripe_plan_id }
+
     validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
@@ -18,12 +21,28 @@ module Effective
       end
     end
 
-    validate(if: -> { subscribable }) do
-      subscribable.errors.add(:subscripter, errors.messages.values.flatten.to_sentence) if self.errors.present?
+    validate do
+      self.errors.add(:stripe_token, 'no you dont')
     end
+
+    # validate(if: -> { subscribable }) do
+    #   subscribable.errors.add(:subscripter, errors.messages.values.flatten.to_sentence) if self.errors.present?
+    # end
 
     def customer
       @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
+    end
+
+    def stripe_plan_id
+      @stripe_plan_id || current_plan[:id] # not ||=
+    end
+
+    def subscribable_global_id
+      subscribable&.to_global_id
+    end
+
+    def subscribable_global_id=(global_id)
+      @subscribable = GlobalID::Locator.locate(global_id)
     end
 
     def current_plan
@@ -33,6 +52,10 @@ module Effective
 
     def plan
       EffectiveOrders.stripe_plans[stripe_plan_id]
+    end
+
+    def email
+      user&.email
     end
 
     def token_required?
