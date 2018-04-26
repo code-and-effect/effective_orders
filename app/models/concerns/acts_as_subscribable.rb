@@ -40,7 +40,7 @@ module ActsAsSubscribable
   end
 
   def subscripter
-    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self)
+    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self, user: subscribable_buyer)
   end
 
   def subscribed?(stripe_plan_id = nil)
@@ -67,6 +67,11 @@ module ActsAsSubscribable
   def trial_past_due?
     trialing? && trialing_until < Time.zone.now
   end
+
+  def subscribable_buyer
+    raise 'acts_as_subscribable object requires the subscribable_buyer method be defined to return the User buying this item.'
+  end
+
 
 end
 

@@ -20,7 +20,7 @@ module Effective
 
     scope :deep, -> { includes(subscriptions: :subscribable) }
 
-    after_commit(if: -> { previous_changes['status'].present? }) do
+    after_commit(if: -> { stripe_subscription_id.present? }) do
       subscriptions.each { |subscription| subscription.subscribable.update_column(:subscription_status, status) }
     end
 

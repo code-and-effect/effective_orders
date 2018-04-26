@@ -53,7 +53,7 @@ module EffectiveSubscriptionsHelper
     raise 'form object must be an acts_as_subscribable object' unless subscribable.respond_to?(:subscripter)
 
     subscripter = subscribable.subscripter
-    raise 'subscribable.subscribable_buyer must match current_user' unless subscribable.subscribable_buyer == current_user
+    raise 'subscribable.subscribable_buyer must match current_user' unless subscripter.user == current_user
 
     render('effective/subscripter/form', subscripter: subscripter)
   end
