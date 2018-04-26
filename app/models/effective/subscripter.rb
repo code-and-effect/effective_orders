@@ -13,19 +13,9 @@ module Effective
 
     validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
-    validate(if: -> { stripe_plan_id && plan && subscribable }) do
-      if plan[:amount] > 0 && stripe_token.blank? && token_required?
-        self.errors.add(:stripe_token, 'updated payment card required')
-      end
+    validate(if: -> { stripe_plan_id && plan && plan[:amount] > 0 }) do
+      self.errors.add(:stripe_token, 'updated payment card required') if stripe_token.blank? && token_required?
     end
-
-    # validate do
-    #   self.errors.add(:stripe_token, 'no you dont')
-    # end
-
-    # validate(if: -> { subscribable }) do
-    #   subscribable.errors.add(:subscripter, errors.messages.values.flatten.to_sentence) if self.errors.present?
-    # end
 
     def customer
       @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
@@ -51,6 +41,10 @@ module Effective
       EffectiveOrders.stripe_plans[stripe_plan_id]
     end
 
+    def stripe_plan_id
+      @stripe_plan_id || (current_plan[:id] if current_plan)
+    end
+
     def token_required?
       customer.token_required?
     end
@@ -62,13 +56,14 @@ module Effective
 
       create_customer!
 
-      begin
-        build! && sync! && customer.save!
-      rescue => e
-        reload!
-
-        self.errors.add(:base, e.message)
-        raise e
+      Effective::Customer.transaction do
+        begin
+          build! && sync! && customer.save!
+        rescue => e
+          reload!
+          self.errors.add(:base, e.message)
+          raise ActiveRecord::Rollback
+        end
       end
     end
 
