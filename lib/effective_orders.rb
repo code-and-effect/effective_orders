@@ -200,10 +200,6 @@ module EffectiveOrders
         }; h
       end
 
-      if trial?
-        plans['trial'] = { id: 'trial', amount: 0, name: trial.fetch(:name), description: trial.fetch(:description) }
-      end
-
       plans
     )
   end

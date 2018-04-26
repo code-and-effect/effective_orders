@@ -20,7 +20,7 @@ module Effective
     validates :customer, presence: true
     validates :subscribable, presence: true
 
-    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.except('trial').keys }
+    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.keys }
     validates :name, presence: true
 
     def to_s

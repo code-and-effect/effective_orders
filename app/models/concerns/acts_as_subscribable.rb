@@ -68,9 +68,5 @@ module ActsAsSubscribable
     trialing? && trialing_until < Time.zone.now
   end
 
-  # def subscribable_buyer
-  #   raise 'acts_as_subscribable object requires the subscribable_buyer method be defined to return the User buying this item.'
-  # end
-
 end
 

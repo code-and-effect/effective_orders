@@ -5,10 +5,7 @@ module Effective
     attr_accessor :stripe_customer, :stripe_subscription
 
     belongs_to :user
-    has_many :subscribables, as: :subscribable
-
-    has_many :subscriptions, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
-    has_many :subscribables, through: :subscriptions, source: :subscribable
+    has_many :subscriptions, -> { includes(:subscribable) }, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
 
     #accepts_nested_attributes_for :subscriptions
 
@@ -23,8 +20,8 @@ module Effective
 
     scope :deep, -> { includes(subscriptions: :subscribable) }
 
-    before_validation do
-      subscriptions.each { |subscription| subscription.status = status }
+    after_commit(if: -> { previous_changes['status'].present? }) do
+      subscriptions.each { |subscription| subscription.subscribable.update_column(:subscription_status, status) }
     end
 
     validates :user, presence: true

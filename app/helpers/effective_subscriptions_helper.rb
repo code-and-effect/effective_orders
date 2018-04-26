@@ -23,8 +23,10 @@ module EffectiveSubscriptionsHelper
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be a subscripter object' unless form.object.class.name == 'Effective::Subscripter'
 
-    plans = EffectiveOrders.stripe_plans.except('trial')
-    plans = plans.values.sort { |x, y| (amount = x[:amount] <=> y[:amount]) != 0 ? amount : x[:name] <=> y[:name] }
+    plans = EffectiveOrders.stripe_plans.values.sort do |x, y|
+      amount = (x[:amount] <=> y[:amount])
+      (amount != 0) ? amount : x[:name] <=> y[:name]
+    end
 
     plans.map do |plan|
       partial = (

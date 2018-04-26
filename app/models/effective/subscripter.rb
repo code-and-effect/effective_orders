@@ -16,7 +16,6 @@ module Effective
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
       if plan[:amount] > 0 && stripe_token.blank? && token_required?
         self.errors.add(:stripe_token, 'updated payment card required')
-        #customer.errors.add(:stripe_token, 'updated payment card required')
       end
     end
 
@@ -45,7 +44,7 @@ module Effective
     end
 
     def current_plan
-      subscribable&.subscription.blank? ? EffectiveOrders.stripe_plans['trial'] : subscribable.subscription.plan
+      subscribable.subscription&.plan
     end
 
     def plan
@@ -54,13 +53,14 @@ module Effective
 
     def token_required?
       customer.token_required?
-      false
     end
 
     def save!
       return true if (plan == current_plan) && stripe_token.blank?  # No work to do
 
       raise 'is invalid' unless valid?
+
+      create_customer!
 
       begin
         build! && sync! && customer.save!
@@ -69,6 +69,16 @@ module Effective
 
         self.errors.add(:base, e.message)
         raise e
+      end
+    end
+
+    # This should work even if the rest of the form doesn't. Careful with our transactions...
+    def create_customer!
+      if customer.stripe_customer.blank?
+        Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email}"
+        customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
+        customer.stripe_customer_id = customer.stripe_customer.id
+        customer.save!
       end
     end
 
@@ -106,26 +116,6 @@ module Effective
     end
 
     def build!
-      # Check for an existing customer created within the last hour with this email
-      # This catches an edge case in which a stripe customer is created twice when a first time customer is using a declined card
-      if customer.stripe_customer.blank?
-        Rails.logger.info "STRIPE CUSTOMER CHECK FOR EXISTING: #{user.email}"
-
-        customers = Stripe::Customer.list(created: { gt: (user.created_at - 1.hour).to_i } ).data
-
-        if (existing = customers.find { |cus| cus.email == user.email && (cus.metadata || {})[:user_id] == user.id.to_s })
-          customer.stripe_customer = existing
-          customer.stripe_customer_id = existing.id
-        end
-      end
-
-      # Create customer
-      if customer.stripe_customer.blank?
-        Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email}"
-        customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
-        customer.stripe_customer_id = customer.stripe_customer.id
-      end
-
       # Update stripe customer card
       if stripe_token.present?
         Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{stripe_token}"
@@ -139,7 +129,7 @@ module Effective
       end
 
       # Assign stripe plan
-      if plan
+      if plan.present?
         subscription.stripe_plan_id = plan[:id]
 
         # Ensure stripe subscription exists
