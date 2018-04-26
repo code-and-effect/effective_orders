@@ -5,25 +5,24 @@ module Effective
     include ActiveModel::Model
 
     attr_accessor :user, :subscribable, :customer
-
     attr_accessor :subscribable_global_id, :stripe_token, :stripe_plan_id, :include_trial
 
     validates :user, presence: true
-    validates :subscribable, presence: true, if: -> { stripe_plan_id }
-    validates :customer, presence: true, if: -> { stripe_plan_id }
+    validates :subscribable, presence: true
+    validates :customer, presence: true
 
-    validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
+    validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
     validate(if: -> { stripe_plan_id && plan && subscribable }) do
       if plan[:amount] > 0 && stripe_token.blank? && token_required?
         self.errors.add(:stripe_token, 'updated payment card required')
-        customer.errors.add(:stripe_token, 'updated payment card required')
+        #customer.errors.add(:stripe_token, 'updated payment card required')
       end
     end
 
-    validate do
-      self.errors.add(:stripe_token, 'no you dont')
-    end
+    # validate do
+    #   self.errors.add(:stripe_token, 'no you dont')
+    # end
 
     # validate(if: -> { subscribable }) do
     #   subscribable.errors.add(:subscripter, errors.messages.values.flatten.to_sentence) if self.errors.present?
@@ -31,10 +30,6 @@ module Effective
 
     def customer
       @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
-    end
-
-    def stripe_plan_id
-      @stripe_plan_id || current_plan[:id] # not ||=
     end
 
     def subscribable_global_id
@@ -45,21 +40,21 @@ module Effective
       @subscribable = GlobalID::Locator.locate(global_id)
     end
 
+    def user_id=(id)
+      @user = User.find(id)
+    end
+
     def current_plan
-      return nil unless subscribable
-      subscribable.subscription.blank? ? EffectiveOrders.stripe_plans['trial'] : subscribable.subscription.plan
+      subscribable&.subscription.blank? ? EffectiveOrders.stripe_plans['trial'] : subscribable.subscription.plan
     end
 
     def plan
       EffectiveOrders.stripe_plans[stripe_plan_id]
     end
 
-    def email
-      user&.email
-    end
-
     def token_required?
       customer.token_required?
+      false
     end
 
     def save!

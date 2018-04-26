@@ -19,13 +19,11 @@ module EffectiveSubscriptionsHelper
     )
   end
 
-  def stripe_plans_collection(form, include_trial: nil)
+  def stripe_plans_collection(form)
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be a subscripter object' unless form.object.class.name == 'Effective::Subscripter'
 
-    include_trial = form.object.subscribable.trialing? if include_trial.nil?
-
-    plans = include_trial ? EffectiveOrders.stripe_plans : EffectiveOrders.stripe_plans.except('trial')
+    plans = EffectiveOrders.stripe_plans.except('trial')
     plans = plans.values.sort { |x, y| (amount = x[:amount] <=> y[:amount]) != 0 ? amount : x[:name] <=> y[:name] }
 
     plans.map do |plan|
@@ -49,25 +47,22 @@ module EffectiveSubscriptionsHelper
     end
   end
 
-  def subscribable_form_with(subscribable, include_trial: nil)
+  def subscribable_form_with(subscribable)
     raise 'form object must be an acts_as_subscribable object' unless subscribable.respond_to?(:subscripter)
 
     subscripter = subscribable.subscripter
     raise 'subscribable.subscribable_buyer must match current_user' unless subscribable.subscribable_buyer == current_user
-
-    subscripter.include_trial = include_trial
 
     render('effective/subscripter/form', subscripter: subscripter)
   end
 
   def subscripter_stripe_data(subscripter)
     {
-      email: subscripter.email,
+      email: current_user.email,
       image: stripe_site_image_url,
       key: EffectiveOrders.stripe[:publishable_key],
       name: EffectiveOrders.stripe[:site_title],
-      plans: EffectiveOrders.stripe_plans.values,
-      token_required: subscripter.token_required?
+      plans: EffectiveOrders.stripe_plans.values
     }
   end
 
