@@ -4,6 +4,8 @@ module Effective
 
     include Effective::CrudController
 
+    submit :save, 'Save', redirect: :back, success: -> { 'Successfully updated plan.' }
+
     def resource
       @subscripter ||= Effective::Subscripter.new(user: current_user)
     end

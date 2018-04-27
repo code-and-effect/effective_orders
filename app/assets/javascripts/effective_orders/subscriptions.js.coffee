@@ -17,12 +17,15 @@ stripeSubscriptionHandler = (key, form) ->
 $(document).on 'click', ".effective-orders-stripe-token-required[type='submit']", (event) ->
   $form = $(event.currentTarget).closest('form')
 
-  # Make sure there is a plan selected
-  $plans = $form.find('.effective-orders-stripe-plans').first()
-  selected_plan_id = $plans.find("input[name$='[stripe_plan_id]']:checked").val() || ''
-  return unless $plans.length > 0 && selected_plan_id.length > 0
+  # Get stripe data payload
+  stripe = $form.data('stripe')
+  return unless stripe?
 
-  stripe = $plans.data('stripe')
+  # Make sure there is a plan selected
+  selected_plan_id = $form.find("input[name$='[stripe_plan_id]']:checked").val() || ''
+  return unless selected_plan_id.length > 0
+
+  # Match plan
   plan = stripe.plans.find (plan, _) => plan.id == selected_plan_id
   return unless plan?
 
