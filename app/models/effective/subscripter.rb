@@ -56,6 +56,7 @@ module Effective
 
       create_customer!
       create_stripe_token!
+      build_subscription!
       sync_subscription!
       true
     end
@@ -87,28 +88,32 @@ module Effective
       end
     end
 
+    def build_subscription!
+      return unless plan.present?
+      subscription.stripe_plan_id = plan[:id]
+    end
+
     def sync_subscription!
-      return true unless plan.present?
+      return unless plan.present?
       customer.stripe_subscription.blank? ? create_subscription! : update_subscription!
+
+      customer.save!
     end
 
     def create_subscription!
-      return true unless plan.present?
-      return true if customer.stripe_subscription.present?
-
-      subscription.stripe_plan_id = plan[:id]
+      return unless plan.present?
+      return if customer.stripe_subscription.present?
 
       Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{items(metadata: false)}"
       customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
       customer.stripe_subscription_id = customer.stripe_subscription.id
 
       customer.status = customer.stripe_subscription.status
-      customer.save!
     end
 
     def update_subscription!
-      return true unless plan.present?
-      return true if customer.stripe_subscription.blank?
+      return unless plan.present?
+      return if customer.stripe_subscription.blank?
 
       Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
 
@@ -116,7 +121,7 @@ module Effective
         customer.stripe_subscription.delete
         customer.stripe_subscription_id = nil
         customer.status = EffectiveOrders::CANCELED
-        return customer.save!
+        return
       end
 
       # Update stripe subscription items
@@ -162,7 +167,6 @@ module Effective
       # end
 
       customer.status = customer.stripe_subscription.status
-      customer.save!
     end
 
     def subscribe!(stripe_plan_id)
@@ -185,11 +189,7 @@ module Effective
 
     def subscription
       return nil unless subscribable
-
-      @subscription ||= (
-        customer.subscriptions.find { |sub| sub.subscribable == subscribable } ||
-        customer.subscriptions.build(subscribable: subscribable, customer: customer)
-      )
+      customer.subscriptions.find { |sub| sub.subscribable == subscribable } || customer.subscriptions.build(subscribable: subscribable, customer: customer)
     end
 
     def items(metadata: true)
