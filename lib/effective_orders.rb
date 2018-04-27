@@ -176,26 +176,13 @@ module EffectiveOrders
       #{ }"tiers":null,"tiers_mode":null,"transform_usage":null,"trial_period_days":null,"usage_type":"licensed"},
 
       plans = Stripe::Plan.all.inject({}) do |h, plan|
-        occurrence = case plan.interval
-          when 'daily'    ; '/day'
-          when 'weekly'   ; '/week'
-          when 'monthly'  ; '/month'
-          when 'yearly'   ; '/year'
-          when 'day'      ; plan.interval_count == 1 ? '/day' : " every #{plan.interval_count} days"
-          when 'week'     ; plan.interval_count == 1 ? '/week' : " every #{plan.interval_count} weeks"
-          when 'month'    ; plan.interval_count == 1 ? '/month' : " every #{plan.interval_count} months"
-          when 'year'     ; plan.interval_count == 1 ? '/year' : " every #{plan.interval_count} years"
-          else            ; plan.interval
-        end
-
         h[plan.id] = {
           id: plan.id,
           product_id: plan.product,
           name: plan.nickname,
           amount: plan.amount,
           currency: plan.currency,
-          description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}#{occurrence}",
-          occurrence: "#{occurrence}",
+          description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}/#{plan.interval}",
           interval: plan.interval,
           interval_count: plan.interval_count
         }; h

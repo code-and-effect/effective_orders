@@ -2,11 +2,17 @@ module EffectiveSubscriptionsHelper
 
   def stripe_plans_collection(form)
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
-    raise 'form object must be a subscripter object' unless form.object.class.name == 'Effective::Subscripter'
+
+    subscripter = form.object
+    raise 'form object must be a subscripter object' unless subscripter.class.name == 'Effective::Subscripter'
 
     plans = EffectiveOrders.stripe_plans.values.sort do |x, y|
       amount = (x[:amount] <=> y[:amount])
       (amount != 0) ? amount : x[:name] <=> y[:name]
+    end
+
+    if (existing = subscripter.customer.stripe_subscription_interval).present?
+      plans.select! { |plan| plan[:interval] == existing }
     end
 
     plans.map do |plan|

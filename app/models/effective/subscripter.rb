@@ -109,6 +109,7 @@ module Effective
       customer.stripe_subscription_id = customer.stripe_subscription.id
 
       customer.status = customer.stripe_subscription.status
+      customer.stripe_subscription_interval = customer.stripe_subscription.plan.interval
     end
 
     def update_subscription!

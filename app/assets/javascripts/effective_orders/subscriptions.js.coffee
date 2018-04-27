@@ -39,4 +39,4 @@ $(document).on 'click', ".effective-orders-stripe-token-required[type='submit']"
     email: stripe.email
     description: plan.name
     amount: plan.amount
-    panelLabel: "{{amount}}#{plan.occurrence} Go!"
+    panelLabel: "{{amount}}/#{plan.interval} Go!"

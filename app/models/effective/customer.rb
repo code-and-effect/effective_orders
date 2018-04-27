@@ -13,6 +13,7 @@ module Effective
     # active_card                   :string  # **** **** **** 4242 Visa 05/12
 
     # stripe_subscription_id        :string  # Each user gets one stripe subscription object, which can contain many items
+    # stripe_subscription_interval  :string
     # status                        :string
 
     # timestamps
