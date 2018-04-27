@@ -6,8 +6,7 @@ module Effective
 
     belongs_to :user
     has_many :subscriptions, -> { includes(:subscribable) }, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
-
-    #accepts_nested_attributes_for :subscriptions
+    accepts_nested_attributes_for :subscriptions
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
@@ -64,14 +63,13 @@ module Effective
     def payment_status
       if status == 'past_due'
         'We ran into an error processing your last payment. Please update or confirm your card details to continue.'
-      elsif active_card.present? && token_required?
-        'Please update or confirm your card details to continue.'
-      elsif active_card.present?
-        'Thanks for your support! The card we have on file is'
-      else
+      elsif status == 'active'
+        "Your payment is in good standing. Thanks so much for your support!"
+      elsif active_card.blank?
         'No credit card on file. Please add a card.'
+      else
+        'Please update or confirm your card details to continue.'
       end.html_safe
     end
-
   end
 end

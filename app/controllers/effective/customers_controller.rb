@@ -2,42 +2,24 @@ module Effective
   class CustomersController < ApplicationController
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:customers] : EffectiveOrders.layout)
 
-    before_action :authenticate_user!
+    include Effective::CrudController
 
-    # Get here by visiting /customer/settings
-    def edit
-      @customer = Effective::Customer.where(user: current_user).first!
-      EffectiveOrders.authorize!(self, :edit, @customer)
+    submit :save, 'Save', redirect: :back, success: -> { 'Successfully updated card.' }
+    page_title 'Customer Settings'
 
-      @subscripter = Effective::Subscripter.new(customer: @customer, user: @customer.user)
-
-      @page_title ||= "Customer #{current_user.to_s}"
+    def resource
+      @customer ||= Effective::Customer.where(user: current_user).first!
+      @subscripter ||= Effective::Subscripter.new(customer: @customer, user: @customer.user)
     end
 
-    def update
-      @customer = Effective::Customer.where(user: current_user).first!
-      EffectiveOrders.authorize!(self, :update, @customer)
-
-      @subscripter = Effective::Subscripter.new(customer: @customer, user: @customer.user)
-      @subscripter.assign_attributes(subscripter_params)
-
-      @page_title ||= "Customer #{current_user.to_s}"
-
-      if (@subscripter.save! rescue false)
-        flash[:success] = "Successfully updated customer settings"
-        redirect_to(effective_orders.customer_settings_path)
-      else
-        flash.now[:danger] = "Unable to update customer settings: #{@subscripter.errors.full_messages.to_sentence}"
-        render :edit
-      end
+    # I don't want save_resource to wrap my save in a transaction
+    def save_resource(resource, action)
+      resource.save!
     end
-
-    private
 
     # StrongParameters
-    def subscripter_params
+    def customer_params
       params.require(:effective_subscripter).permit(:stripe_token)
     end
-
   end
 end

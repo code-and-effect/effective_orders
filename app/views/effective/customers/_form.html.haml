@@ -1,12 +1,21 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
-= effective_form_with(model: subscripter, url: effective_orders.customer_settings_path, method: :put) do |f|
-  = f.hidden_field :stripe_token, value: nil
+.card
+  .card-header Customer Summary
+  .card-body
+    = effective_form_with(model: subscripter, url: effective_orders.customer_settings_path, remote: true, data: { stripe: subscripter_stripe_data(subscripter) }) do |f|
+      = f.hidden_field :stripe_token, value: nil
+      = f.error :stripe_token
 
-  = render(f.object.customer) do
-    %h3.effective-heading Card
-    = effective_customer_fields(f)
+      %p
+        All subscription and billing notifications are sent to:
+        %strong= f.object.user.email
 
-  = f.submit
+      - if f.object.customer.active_card.present?
+        %p
+          All charges are made to
+          %strong= f.object.customer.active_card
 
+      %p= f.object.customer.payment_status
 
+      = f.submit 'Update Card', border: false, left: true, class: 'effective-orders-stripe-update-card'

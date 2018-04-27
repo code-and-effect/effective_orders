@@ -1,9 +1,0 @@
-.effective-orders-customer{ data: { stripe: stripe.to_json, submit: submit.to_json } }
-  .card
-    .card-header Credit Card
-    .card-body
-      = f.static_field :stripe_token, label: false, class: 'payment-status', value: f.object.customer.payment_status
-
-      %p= link_to 'Update Card Details', '#', class: 'btn btn-primary btn-change-card'
-
-  %p.invalid-feedback

@@ -4,10 +4,10 @@ stripeSubscriptionHandler = (key, form) ->
     closed: -> EffectiveForm.reset(form) unless form.hasClass('stripe-success')
     token: (token, args) ->
       if token.error
-        message = "An error ocurred when contacting Stripe. Your card has not been charged. Your subscription has not changed. Please refresh the page and try again. #{token.error.message}"
+        message = "An error ocurred when contacting Stripe. Your card has not been charged. Your plan has not changed. Please refresh the page and try again. #{token.error.message}"
 
         form.removeClass('stripe-success')
-        form.find('.effective-orders-stripe-plans').find('.invalid-feedback').html(message).show()
+        form.find('.invalid-feedback').html(message).show()
         alert(message)
       else
         form.find("input[name$='[stripe_token]']").val('' + token['id'])

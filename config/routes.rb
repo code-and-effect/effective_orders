@@ -26,8 +26,9 @@ EffectiveOrders::Engine.routes.draw do
 
     if EffectiveOrders.subscriptions?
       match 'subscribe', to: 'subscripter#update', via: :post, as: :subscripter
+
       match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
-      match 'customer/settings', to: 'customers#update', via: [:patch, :put]
+      match 'customer/settings', to: 'customers#update', via: [:patch, :put, :post]
       match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]
     end
 

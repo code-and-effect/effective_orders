@@ -1,24 +1,5 @@
 module EffectiveSubscriptionsHelper
 
-  def effective_customer_fields(form, submit: true)
-    raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
-    raise 'form object must be an Effective::Subscripter object' unless form.object.class.name == 'Effective::Subscripter'
-
-    render(
-      partial: 'effective/customers/fields',
-      locals: {
-        f: form,
-        submit: submit,
-        stripe: {
-          email: form.object.customer.user.email,
-          image: stripe_site_image_url,
-          key: EffectiveOrders.stripe[:publishable_key],
-          name: EffectiveOrders.stripe[:site_title],
-        }
-      }
-    )
-  end
-
   def stripe_plans_collection(form)
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
     raise 'form object must be a subscripter object' unless form.object.class.name == 'Effective::Subscripter'
@@ -58,6 +39,15 @@ module EffectiveSubscriptionsHelper
     render('effective/subscripter/form', subscripter: subscripter)
   end
 
+  def customer_form_with(customer)
+    raise 'form object must be an Effective::Customer object' unless customer.kind_of?(Effective::Customer)
+    raise 'expected customer user to match current user' if customer.user != current_user
+
+    subscripter = Effective::Subscripter.new(customer: customer, user: customer.user)
+
+    render('effective/customers/form', subscripter: subscripter)
+  end
+
   def subscripter_stripe_data(subscripter)
     {
       email: current_user.email,
@@ -67,5 +57,7 @@ module EffectiveSubscriptionsHelper
       plans: EffectiveOrders.stripe_plans.values
     }
   end
+
+
 
 end

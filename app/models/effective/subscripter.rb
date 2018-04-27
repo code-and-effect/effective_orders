@@ -8,10 +8,10 @@ module Effective
     attr_accessor :subscribable_global_id, :stripe_token, :stripe_plan_id, :include_trial
 
     validates :user, presence: true
-    validates :subscribable, presence: true
+    validates :subscribable, presence: true, if: -> { stripe_plan_id.present? }
     validates :customer, presence: true
 
-    validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
+    validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
 
     validate(if: -> { stripe_plan_id && plan && plan[:amount] > 0 }) do
       self.errors.add(:stripe_token, 'updated payment card required') if stripe_token.blank? && token_required?
@@ -34,7 +34,7 @@ module Effective
     end
 
     def current_plan
-      subscribable.subscription&.plan
+      subscribable&.subscription&.plan
     end
 
     def plan
@@ -55,17 +55,12 @@ module Effective
       raise 'is invalid' unless valid?
 
       create_customer!
-
-      Effective::Customer.transaction do
-        begin
-          build! && sync! && customer.save!
-        rescue => e
-          reload!
-          self.errors.add(:base, e.message)
-          raise ActiveRecord::Rollback
-        end
-      end
+      create_stripe_token!
+      sync_subscription!
+      true
     end
+
+    protected
 
     # This should work even if the rest of the form doesn't. Careful with our transactions...
     def create_customer!
@@ -77,41 +72,8 @@ module Effective
       end
     end
 
-    def subscribe!(stripe_plan_id)
-      self.stripe_plan_id = stripe_plan_id
-      save!
-    end
-
-    def destroy!
-      return true unless subscription && subscription.persisted? && customer.stripe_subscription.present?
-
-      raise 'is invalid' unless valid?
-
-      subscription.destroy!
-      customer.subscriptions.reload
-
-      sync! && customer.save!
-    end
-
-    def reload!
-      @stripe_token = nil
-      @stripe_plan_id = nil
-      @customer = nil
-      @subscription = nil
-    end
-
-    private
-
-    def subscription
-      return nil unless subscribable
-      @subscription ||= (
-        customer.subscriptions.find { |sub| sub.subscribable == subscribable } ||
-        customer.subscriptions.build(subscribable: subscribable, customer: customer)
-      )
-    end
-
-    def build!
-      # Update stripe customer card
+    # Update stripe customer card
+    def create_stripe_token!
       if stripe_token.present?
         Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{stripe_token}"
         customer.stripe_customer.source = stripe_token
@@ -120,34 +82,41 @@ module Effective
         if customer.stripe_customer.default_source.present?
           card = customer.stripe_customer.sources.retrieve(customer.stripe_customer.default_source)
           customer.active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
+          customer.save!
         end
       end
-
-      # Assign stripe plan
-      if plan.present?
-        subscription.stripe_plan_id = plan[:id]
-
-        # Ensure stripe subscription exists
-        if customer.stripe_subscription.blank?
-          Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{items(metadata: false)}"
-          customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
-          customer.stripe_subscription_id = customer.stripe_subscription.id
-        end
-      end
-
-      true
     end
 
-    def sync!
-      return true unless plan && customer.stripe_subscription
+    def sync_subscription!
+      return true unless plan.present?
+      customer.stripe_subscription.blank? ? create_subscription! : update_subscription!
+    end
+
+    def create_subscription!
+      return true unless plan.present?
+      return true if customer.stripe_subscription.present?
+
+      subscription.stripe_plan_id = plan[:id]
+
+      Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{items(metadata: false)}"
+      customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
+      customer.stripe_subscription_id = customer.stripe_subscription.id
+
+      customer.status = customer.stripe_subscription.status
+      customer.save!
+    end
+
+    def update_subscription!
+      return true unless plan.present?
+      return true if customer.stripe_subscription.blank?
 
       Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
 
       if items.length == 0
         customer.stripe_subscription.delete
         customer.stripe_subscription_id = nil
-        customer.status = nil
-        return true
+        customer.status = EffectiveOrders::CANCELED
+        return customer.save!
       end
 
       # Update stripe subscription items
@@ -192,13 +161,36 @@ module Effective
       #   Stripe::Invoice.create(customer: customer.stripe_customer_id).pay rescue false
       # end
 
-      # Sync status
       customer.status = customer.stripe_subscription.status
-
-      true
+      customer.save!
     end
 
+    def subscribe!(stripe_plan_id)
+      self.stripe_plan_id = stripe_plan_id
+      save!
+    end
+
+    # def destroy!
+    #   return true unless subscription && subscription.persisted? && customer.stripe_subscription.present?
+
+    #   raise 'is invalid' unless valid?
+
+    #   subscription.destroy!
+    #   customer.subscriptions.reload
+
+    #   sync! && customer.save!
+    # end
+
     private
+
+    def subscription
+      return nil unless subscribable
+
+      @subscription ||= (
+        customer.subscriptions.find { |sub| sub.subscribable == subscribable } ||
+        customer.subscriptions.build(subscribable: subscribable, customer: customer)
+      )
+    end
 
     def items(metadata: true)
       customer.subscriptions.group_by { |sub| sub.stripe_plan_id }.map do |plan, subscriptions|
