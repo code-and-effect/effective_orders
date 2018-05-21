@@ -61,6 +61,15 @@ module Effective
       true
     end
 
+    def destroy!
+      return true unless plan
+
+      subscribable.subscription.destroy!
+      subscribable.update_column(:subscription_status, nil)
+      sync_subscription!
+      true
+    end
+
     protected
 
     # This should work even if the rest of the form doesn't. Careful with our transactions...
@@ -174,17 +183,6 @@ module Effective
       self.stripe_plan_id = stripe_plan_id
       save!
     end
-
-    # def destroy!
-    #   return true unless subscription && subscription.persisted? && customer.stripe_subscription.present?
-
-    #   raise 'is invalid' unless valid?
-
-    #   subscription.destroy!
-    #   customer.subscriptions.reload
-
-    #   sync! && customer.save!
-    # end
 
     private
 

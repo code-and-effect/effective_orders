@@ -24,6 +24,10 @@ module ActsAsSubscribable
       self.trialing_until = (Time.zone.now + EffectiveOrders.trial.fetch(:length)).end_of_day
     end
 
+    before_destroy(if: -> { subscribed? }) do
+      raise :abort unless (subscripter.destroy! rescue false)
+    end
+
     validates :trialing_until, presence: true, if: -> { EffectiveOrders.trial? }
     validates :subscription_status, inclusion: { allow_nil: true, in: EffectiveOrders::STATUSES.keys }
 

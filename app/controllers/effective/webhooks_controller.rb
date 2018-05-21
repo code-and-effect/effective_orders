@@ -36,7 +36,6 @@ module Effective
           send_email(:subscription_payment_failed, customer)
         when 'customer.subscription.deleted'
           customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
-          Effective::Subscription.where(customer: customer).destroy_all
           customer.update_attributes!(stripe_subscription_id: nil, status: nil, active_card: nil)
           customer.subscriptions.delete_all
 
