@@ -28,9 +28,11 @@ namespace :effective_orders do
     end
   end
 
+
+# rake effective_orders:send_trial_expiring_emails
   desc 'Sends trial expiring and expired emails to each subscribable. Schedule me to run once per day.'
   task send_trial_expiring_emails: :environment do
-    trial_remind_at = Array(EffectiveOrders.subscription[:trial_remind_at]).compact
+    trial_remind_at = Array(EffectiveOrders.trial[:remind_at]).compact
     exit unless trial_remind_at.present? && trial_remind_at.all? { |x| x.present? }
 
     Rails.application.eager_load!

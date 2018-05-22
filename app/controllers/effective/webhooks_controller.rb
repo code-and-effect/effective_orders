@@ -7,7 +7,7 @@ module Effective
       @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscription[:webhook_secret]) rescue nil)
       (head(:bad_request) and return) unless @event
 
-      unless EffectiveOrders.subscription[:ignore_livemode]
+      unless EffectiveOrders.subscriptions[:ignore_livemode]
         (head(:bad_request) and return) if (params[:livemode] == false && Rails.env.production?)
       end
 
