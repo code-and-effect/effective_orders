@@ -245,7 +245,8 @@ EffectiveOrders.setup do |config|
   config.subscriptions = false
 
   # config.subscriptions = {
-  #   webhook_secret: 'whsec_xxx'
+  #   webhook_secret: 'whsec_xxx',
+  #   ignore_livemode: false        # Use this to run test mode in production. careful.
   # }
 
   # Trial

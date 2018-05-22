@@ -5,7 +5,11 @@ module Effective
 
     def stripe
       @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscription[:webhook_secret]) rescue nil)
-      (head(:bad_request) and return) if !@event || (params[:livemode] == false && Rails.env.production?)
+      (head(:bad_request) and return) unless @event
+
+      unless EffectiveOrders.subscription[:ignore_livemode]
+        (head(:bad_request) and return) if (params[:livemode] == false && Rails.env.production?)
+      end
 
       Rails.logger.info "STRIPE WEBHOOK: #{@event.type}"
 
@@ -51,15 +55,7 @@ module Effective
     private
 
     def send_email(email, *mailer_args)
-      if EffectiveOrders.mailer[:delayed_job_deliver] && EffectiveOrders.mailer[:deliver_method] == :deliver_later
-        Effective::OrdersMailer.delay.public_send(email, *mailer_args)
-      elsif EffectiveOrders.mailer[:deliver_method].present?
-        Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
-      else
-        Effective::OrdersMailer.public_send(email, *mailer_args).deliver_now
-      end
-
-      true
+      Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
     end
 
   end
