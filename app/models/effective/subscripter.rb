@@ -134,11 +134,15 @@ module Effective
         return
       end
 
-      # Update stripe subscription items
+      # Update stripe subscription items. Keep track if quantity changed here or not
+      quantity_increased = false
+
       customer.stripe_subscription.items.each do |stripe_item|
         item = items.find { |item| item[:plan] == stripe_item['plan']['id'] }
 
         next if item.blank? || item[:quantity] == stripe_item['quantity']
+
+        quantity_increased ||= (item[:quantity] > stripe_item['quantity']) # Any quantity increased
 
         stripe_item.quantity = item[:quantity]
         stripe_item.metadata = item[:metadata]
@@ -171,10 +175,10 @@ module Effective
       end
 
       # When upgrading a plan, invoice immediately.
-      # if current_plan && current_plan[:id] != 'trial' && plan[:amount] > current_plan[:amount]
-      #   Rails.logger.info " -> INVOICE GENERATED"
-      #   Stripe::Invoice.create(customer: customer.stripe_customer_id).pay rescue false
-      # end
+      if quantity_increased
+        Rails.logger.info " -> QUANTITY INCREASED SO INVOICE GENERATED"
+        Stripe::Invoice.create(customer: customer.stripe_customer_id).pay
+      end
 
       customer.status = customer.stripe_subscription.status
     end

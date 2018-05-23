@@ -1,6 +1,6 @@
 %p.effective-orders-receipt-info Trial expiring
 
-%p Your trial for #{@subscribable} expires on #{@subscribable.trial_expires_at.strftime('%F')}.
+%p Your trial for #{@subscribable} expires on #{@subscribable.trialing_until.strftime('%F')}.
 
 %p Please upgrade to a paid plan before your trial expires.
 

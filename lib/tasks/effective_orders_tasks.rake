@@ -43,17 +43,19 @@ namespace :effective_orders do
     begin
       ActsAsSubscribable.descendants.each do |klass|
         klass.trialing.find_each do |subscribable|
-          if subscribable.trial_expires_at == today
+          if subscribable.trialing_until == today
             puts "sending trial expired to #{subscribable}"
             Effective::OrdersMailer.subscription_trial_expired(subscribable).deliver_now
           end
 
-          next if subscribable.trial_expired? # We already notified them
+          next if subscribable.trial_past_due? # We already notified them
 
           reminders.each do |remind_at|
-            next unless subscribable.trial_expires_at == (today + remind_at)
+            date = (subscribable.trialing_until - EffectiveOrders.trial.fetch(:length)) # Should be same as created_at.beginning_of_day
 
-            puts "sending trial expiring to #{subscribable}. expires in #{(subscribable.trial_expires_at - today) / 1.day.to_i} days."
+            next unless date == (today + remind_at)
+
+            puts "sending trial expiring to #{subscribable}. expires in #{(subscribable.trialing_until - today) / 1.day.to_i} days."
             Effective::OrdersMailer.subscription_trial_expiring(subscribable).deliver_now
           end
         end

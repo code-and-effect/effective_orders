@@ -1,10 +1,20 @@
+# New workflow is:
+# customer.updated
+# customer.created
+# customer.subscription.created
+# customer.updated
+# customer.source.created
+# charge.succeeded
+# invoice.created
+# invoice.payment_succeeded
+
 module Effective
   class WebhooksController < ApplicationController
     protect_from_forgery except: [:stripe]
     skip_authorization_check if defined?(CanCan)
 
     def stripe
-      @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscription[:webhook_secret]) rescue nil)
+      @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscriptions[:webhook_secret]) rescue nil)
       (head(:bad_request) and return) unless @event
 
       unless EffectiveOrders.subscriptions[:ignore_livemode]

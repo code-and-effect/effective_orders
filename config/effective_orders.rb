@@ -256,7 +256,7 @@ EffectiveOrders.setup do |config|
   #   name: 'Free Trial',
   #   description: '45-Day Free Trial',
   #   length: 45.days,
-  #   remind_at: [1.day, 3.days, 7.days],  # Send email notification to trialing users 1, 3 and 7 days before expiring. false to disable.
+  #   remind_at: [1.day, 3.days, 7.days, 40.days, 44.days],  # Send email notification to trialing owners on day 1, 3, 7 40 and 44. false to disable
   # }
 
 end

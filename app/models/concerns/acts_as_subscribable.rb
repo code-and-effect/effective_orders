@@ -21,7 +21,7 @@ module ActsAsSubscribable
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
 
     before_validation(if: -> { trialing_until.blank? && EffectiveOrders.trial? }) do
-      self.trialing_until = (Time.zone.now + EffectiveOrders.trial.fetch(:length)).end_of_day
+      self.trialing_until = (Time.zone.now + EffectiveOrders.trial.fetch(:length)).beginning_of_day
     end
 
     before_destroy(if: -> { subscribed? }) do
