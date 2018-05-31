@@ -309,7 +309,7 @@ module Effective
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: 'none', provider: 'none', card: 'none', note: nil, email: true, skip_buyer_validations: false)
+    def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false)
       return false if purchased?
       error = nil
 
@@ -398,6 +398,10 @@ module Effective
 
     def send_pending_order_invoice_to_buyer!
       send_email(:pending_order_invoice_to_buyer, to_param) unless purchased?
+    end
+
+    def skip_qb_sync!
+      defined?(EffectiveQbSync) ? EffectiveQbSync.skip_order!(self) : true
     end
 
     protected
