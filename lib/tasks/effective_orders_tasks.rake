@@ -28,10 +28,9 @@ namespace :effective_orders do
     end
   end
 
-
-# rake effective_orders:send_trial_expiring_emails
-  desc 'Sends trial expiring and expired emails to each subscribable. Schedule me to run once per day.'
-  task send_trial_expiring_emails: :environment do
+  # rake effective_orders:send_trial_emails
+  desc 'Sends subscription_trialing and subscription_trial_expired emails to each subscribable. Schedule me to run once per day.'
+  task send_trial_emails: :environment do
     trial_remind_at = Array(EffectiveOrders.trial[:remind_at]).compact
     exit unless trial_remind_at.present? && trial_remind_at.all? { |x| x.present? }
 
@@ -43,6 +42,7 @@ namespace :effective_orders do
     begin
       ActsAsSubscribable.descendants.each do |klass|
         klass.trialing.find_each do |subscribable|
+
           if subscribable.trialing_until == today
             puts "sending trial expired to #{subscribable}"
             Effective::OrdersMailer.subscription_trial_expired(subscribable).deliver_now
@@ -50,25 +50,21 @@ namespace :effective_orders do
 
           next if subscribable.trial_past_due? # We already notified them
 
+          date = (subscribable.trialing_until - EffectiveOrders.trial.fetch(:length)) # Should be same as created_at.beginning_of_day
+
           reminders.each do |remind_at|
-            date = (subscribable.trialing_until - EffectiveOrders.trial.fetch(:length)) # Should be same as created_at.beginning_of_day
-
             next unless date == (today + remind_at)
-
-            puts "sending trial expiring to #{subscribable}. expires in #{(subscribable.trialing_until - today) / 1.day.to_i} days."
-            Effective::OrdersMailer.subscription_trial_expiring(subscribable).deliver_now
+            Effective::OrdersMailer.subscription_trialing(subscribable).deliver_now
           end
         end
       end
 
-      puts 'send_trial_expiring_emails completed'
-      EffectiveLogger.success('scheduled task send_trial_expiring_emails completed') if defined?(EffectiveLogger)
+      puts 'send_trial_emails completed'
+      EffectiveLogger.success('scheduled task send_trial_emails completed') if defined?(EffectiveLogger)
     rescue => e
       ExceptionNotifier.notify_exception(e) if defined?(ExceptionNotifier)
       raise e
     end
-
-    true
   end
 
 end

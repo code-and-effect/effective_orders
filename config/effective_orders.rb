@@ -112,21 +112,19 @@ EffectiveOrders.setup do |config|
   config.pretend_message = '* payment information is not required to process this order at this time.'
 
   # Mailer Settings
-  # effective_orders will send out receipts to the buyer, seller and admins.
+  # effective_orders sends out receipts to buyers and admins as well as trial and subscription related emails.
   # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
   #
-  # The subject_for_admin_receipt, subject_for_buyer_receipt, subject_for_payment_request and
-  # subject_for_seller_receipt can be one of:
+  # All the subject_* keys below can one of:
   # - nil / empty string to use the built in defaults
   # - A string with the full subject line for this email
   # - A Proc to create the subject line based on the email
-  # In all three of these cases, the subject_prefix will still be used.
+  # The subject_prefix will then be applied ontop of these.
+  #
+  # send_order_receipt_to_buyer: Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # subject_for_subscription_payment_succeeded: Proc.new { |order| "Order #{order.to_param} has been purchased"}
 
-  # The Procs are the same for admin & buyer receipt, the seller Proc is different
-  # subject_for_order_receipt_to_admin: Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # subject_for_order_receipt_to_buyer: Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # subject_for_payment_request_to_buyer: Proc.new { |order| "Pending Order #{order.to_param}"}
-  # subject_for_order_receipt_to_seller: Proc.new { |order, order_items, seller| "Order #{order.to_param} has been purchased"}
+  # subject_for_subscription_trialing: Proc.new { |subscribable| "Pending Order #{order.to_param}"}
 
   config.mailer = {
     send_order_receipt_to_admin: true,
@@ -138,20 +136,25 @@ EffectiveOrders.setup do |config|
     send_subscription_payment_succeeded: true,
     send_subscription_payment_failed: true,
     send_subscription_canceled: true,
-    send_subscription_trial_expiring: true,   # Only if you schedule the rake task to run
+
+    send_subscription_trialing: true,   # Only if you schedule the rake task to run
     send_subscription_trial_expired: true,    # Only if you schedule the rake task to run
 
     subject_prefix: '[example]',
 
+    # Procs yield an Effective::Order object
     subject_for_order_receipt_to_admin: '',
     subject_for_order_receipt_to_buyer: '',
     subject_for_payment_request_to_buyer: '',
     subject_for_pending_order_invoice_to_buyer: '',
 
+    # Procs yield an Effective::Customer object
     subject_for_subscription_payment_succeeded: '',
     subject_for_subscription_payment_failed: '',
     subject_for_subscription_canceled: '',
-    subject_for_subscription_trial_expiring: '',
+
+    # Procs yield the acts_as_subscribable object
+    subject_for_subscription_trialing: '',
     subject_for_subscription_trial_expired: '',
 
     layout: 'effective_orders_mailer_layout',

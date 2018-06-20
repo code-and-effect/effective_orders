@@ -11,11 +11,6 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
   end
 
-  def order_receipt_to_seller
-    order = build_preview_order
-    Effective::OrdersMailer.order_receipt_to_seller(order, preview_customer, order.order_items)
-  end
-
   def payment_request_to_buyer
     Effective::OrdersMailer.payment_request_to_buyer(build_preview_order)
   end
@@ -36,8 +31,8 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.subscription_canceled(preview_customer)
   end
 
-  def subscription_trial_expiring
-    Effective::OrdersMailer.subscription_trial_expiring(preview_subscribable)
+  def subscription_trialing
+    Effective::OrdersMailer.subscription_trialing(preview_subscribable)
   end
 
   def subscription_trial_expired
@@ -51,7 +46,7 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   protected
 
   def build_preview_order
-    order = Effective::Order.new
+    order = Effective::Order.new(id: 1)
     order.user = preview_user
     preview_order_items.each { |atts| order.order_items.build(atts) }
     order.valid?
@@ -96,16 +91,17 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   def preview_subscribable
     Class.new do
       include ActiveModel::Model
-      attr_accessor :buyer
+      attr_accessor :subscribable_buyer
 
       def to_s
         'My cool service'
       end
 
-      def trial_expires_at
-        Time.zone.now + 1.day
-      end
-    end.new(buyer: preview_user)
+      def trialing?; true; end
+      def trial_active?; true; end
+      def trialing_until; Time.zone.now + 1.day; end
+
+    end.new(subscribable_buyer: preview_user)
   end
 
 end
