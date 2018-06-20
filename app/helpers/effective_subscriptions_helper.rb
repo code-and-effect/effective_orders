@@ -64,6 +64,4 @@ module EffectiveSubscriptionsHelper
     }
   end
 
-
-
 end

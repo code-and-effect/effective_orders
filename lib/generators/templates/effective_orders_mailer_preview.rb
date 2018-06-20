@@ -27,6 +27,14 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.subscription_payment_failed(preview_customer)
   end
 
+  def subscription_created
+    Effective::OrdersMailer.subscription_created(preview_customer)
+  end
+
+  def subscription_updated
+    Effective::OrdersMailer.subscription_updated(preview_customer)
+  end
+
   def subscription_canceled
     Effective::OrdersMailer.subscription_canceled(preview_customer)
   end

@@ -133,9 +133,11 @@ EffectiveOrders.setup do |config|
     send_pending_order_invoice_to_buyer: true,
     send_order_receipts_when_mark_as_paid: false,
 
+    send_subscription_created: true,
+    send_subscription_updated: true,
+    send_subscription_canceled: true,
     send_subscription_payment_succeeded: true,
     send_subscription_payment_failed: true,
-    send_subscription_canceled: true,
 
     send_subscription_trialing: true,   # Only if you schedule the rake task to run
     send_subscription_trial_expired: true,    # Only if you schedule the rake task to run
@@ -149,9 +151,11 @@ EffectiveOrders.setup do |config|
     subject_for_pending_order_invoice_to_buyer: '',
 
     # Procs yield an Effective::Customer object
+    subject_for_subscription_created: '',
+    subject_for_subscription_updated: '',
+    subject_for_subscription_canceled: '',
     subject_for_subscription_payment_succeeded: '',
     subject_for_subscription_payment_failed: '',
-    subject_for_subscription_canceled: '',
 
     # Procs yield the acts_as_subscribable object
     subject_for_subscription_trialing: '',

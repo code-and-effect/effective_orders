@@ -78,6 +78,32 @@ module Effective
       mail(to: @customer.user.email, subject: @subject)
     end
 
+    # Sent by the customer.subscription.created webhook event
+    def subscription_created(customer_param)
+      return true unless EffectiveOrders.mailer[:send_subscription_created]
+
+      @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
+      @subscriptions = @customer.subscriptions
+      @user = @customer.user
+
+      @subject = subject_for(@customer, :subscription_created, 'New Subscription')
+
+      mail(to: @customer.user.email, subject: @subject)
+    end
+
+    # Sent by the customer.subscription.updated webhook event
+    def subscription_updated(customer_param)
+      return true unless EffectiveOrders.mailer[:send_subscription_updated]
+
+      @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
+      @subscriptions = @customer.subscriptions
+      @user = @customer.user
+
+      @subject = subject_for(@customer, :subscription_updated, 'Subscription Changed')
+
+      mail(to: @customer.user.email, subject: @subject)
+    end
+
     # Sent by the invoice.payment_failed webhook event
     def subscription_canceled(customer_param)
       return true unless EffectiveOrders.mailer[:send_subscription_canceled]

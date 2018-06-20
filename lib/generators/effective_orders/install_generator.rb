@@ -23,6 +23,11 @@ module EffectiveOrders
         template ('../' * 3) + 'config/effective_orders.rb', 'config/initializers/effective_orders.rb'
       end
 
+      def copy_mailer_layout
+        layout = 'app/views/layouts/effective_orders_mailer_layout.html.haml'
+        template ('../' * 3) + layout, layout
+      end
+
       def copy_mailer_templates
         path = 'app/views/effective/orders_mailer/'
 

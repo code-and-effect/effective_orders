@@ -39,21 +39,22 @@ module Effective
         # when 'charge.failed' # Card declined. 4000 0000 0000 0341
 
         when 'invoice.payment_succeeded'
-          customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
           customer.update_attributes!(status: EffectiveOrders::ACTIVE)
 
           send_email(:subscription_payment_succeeded, customer)
         when 'invoice.payment_failed'
-          customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
           customer.update_attributes!(status: EffectiveOrders::PAST_DUE)
 
           send_email(:subscription_payment_failed, customer)
         when 'customer.subscription.deleted'
-          customer = Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
           customer.update_attributes!(stripe_subscription_id: nil, status: nil, active_card: nil)
           customer.subscriptions.delete_all
 
           send_email(:subscription_canceled, customer)
+        when 'customer.subscription.created'
+          send_email(:subscription_created, customer)
+        when 'customer.subscription.updated'
+          send_email(:subscription_updated, customer)
         else
           Rails.logger.info "[STRIPE WEBHOOK] Unhandled event type #{@event.type}"
         end
@@ -63,6 +64,10 @@ module Effective
     end
 
     private
+
+    def customer
+      @customer ||= Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
+    end
 
     def send_email(email, *mailer_args)
       Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
