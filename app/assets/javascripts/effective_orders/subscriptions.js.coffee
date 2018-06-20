@@ -40,3 +40,6 @@ $(document).on 'click', ".effective-orders-stripe-token-required[type='submit']"
     description: plan.name
     amount: plan.amount
     panelLabel: "{{amount}}/#{plan.interval} Go!"
+
+$(document).on 'change', "input[name='effective_subscripter[stripe_plan_id]']", (event) ->
+  $(event.currentTarget).closest('form').find(".effective-orders-stripe-token-required[type='submit']").click()
