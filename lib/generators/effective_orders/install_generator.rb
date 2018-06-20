@@ -23,6 +23,14 @@ module EffectiveOrders
         template ('../' * 3) + 'config/effective_orders.rb', 'config/initializers/effective_orders.rb'
       end
 
+      def copy_mailer_templates
+        path = 'app/views/effective/orders_mailer/'
+
+        Dir["#{source_paths.first}/../../../#{path}**"].map { |file| file.split('/').last }.each do |name|
+          template (('../' * 3) + path + name), (path + name)
+        end
+      end
+
       def copy_mailer_preview
         mailer_preview_path = (Rails.application.config.action_mailer.preview_path rescue nil)
 
