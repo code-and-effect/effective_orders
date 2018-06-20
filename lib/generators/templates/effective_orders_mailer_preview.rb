@@ -93,23 +93,24 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
   end
 
   def preview_customer
-    Effective::Customer.new(user: preview_user, active_card: '**** **** **** 1234 Visa 04/20')
+    customer = Effective::Customer.new(user: preview_user, active_card: '**** **** **** 1234 Visa 04/20')
+
+    if preview_subscribable.present?
+      customer.subscriptions.build(subscribable: preview_subscribable, name: 'Bronze Plan')
+      customer.subscriptions.build(subscribable: preview_subscribable, name: 'Silver Plan')
+    end
+
+    customer
   end
 
   def preview_subscribable
-    Class.new do
-      include ActiveModel::Model
-      attr_accessor :subscribable_buyer
+    Rails.application.eager_load!
 
-      def to_s
-        'My cool service'
-      end
+    klasses = Array(ActsAsSubscribable.descendants).compact
+    return unless klasses.present?
 
-      def trialing?; true; end
-      def trial_active?; true; end
-      def trialing_until; Time.zone.now + 1.day; end
-
-    end.new(subscribable_buyer: preview_user)
+    klasses.map { |klass| klass.all.order(Arel.sql('random()')).first }.compact.first ||
+    klasses.first.new(subscribable_buyer: preview_user)
   end
 
 end
