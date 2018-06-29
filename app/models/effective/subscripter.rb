@@ -75,7 +75,7 @@ module Effective
     # This should work even if the rest of the form doesn't. Careful with our transactions...
     def create_customer!
       if customer.stripe_customer.blank?
-        Rails.logger.info "STRIPE CUSTOMER CREATE: #{user.email}"
+        Rails.logger.info "[STRIPE] create customer: #{user.email}"
         customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
         customer.stripe_customer_id = customer.stripe_customer.id
         customer.save!
@@ -85,7 +85,7 @@ module Effective
     # Update stripe customer card
     def create_stripe_token!
       if stripe_token.present?
-        Rails.logger.info "STRIPE CUSTOMER SOURCE UPDATE #{stripe_token}"
+        Rails.logger.info "[STRIPE] update source: #{stripe_token}"
         customer.stripe_customer.source = stripe_token
         customer.stripe_customer.save
 
@@ -113,7 +113,7 @@ module Effective
       return unless plan.present?
       return if customer.stripe_subscription.present?
 
-      Rails.logger.info "STRIPE SUBSCRIPTION CREATE: #{items(metadata: false)}"
+      Rails.logger.info "[STRIPE] create subscription: #{items(metadata: false)}"
       customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
       customer.stripe_subscription_id = customer.stripe_subscription.id
 
@@ -125,7 +125,7 @@ module Effective
       return unless plan.present?
       return if customer.stripe_subscription.blank?
 
-      Rails.logger.info "STRIPE SUBSCRIPTION SYNC: #{customer.stripe_subscription_id} #{items}"
+      Rails.logger.info "[STRIPE] update subscription: #{customer.stripe_subscription_id} #{items}"
 
       if items.length == 0
         customer.stripe_subscription.delete
@@ -147,7 +147,7 @@ module Effective
         stripe_item.quantity = item[:quantity]
         stripe_item.metadata = item[:metadata]
 
-        Rails.logger.info " -> UPDATE: #{item[:plan]}"
+        Rails.logger.info " -> [STRIPE] update plan: #{item[:plan]}"
         stripe_item.save
       end
 
@@ -155,7 +155,7 @@ module Effective
       items.each do |item|
         next if customer.stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
 
-        Rails.logger.info " -> CREATE: #{item[:plan]}"
+        Rails.logger.info " -> [STRIPE] create plan: #{item[:plan]}"
         customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
       end
 
@@ -163,20 +163,20 @@ module Effective
       customer.stripe_subscription.items.each do |stripe_item|
         next if items.find { |item| item[:plan] == stripe_item['plan']['id'] }
 
-        Rails.logger.info " -> DELETE: #{stripe_item['plan']['id']}"
+        Rails.logger.info " -> [STRIPE] delete plan: #{stripe_item['plan']['id']}"
         stripe_item.delete
       end
 
       # Update metadata
       if customer.stripe_subscription.metadata.to_h != metadata
-        Rails.logger.info " -> METATADA: #{metadata}"
+        Rails.logger.info " -> [STRIPE] update metadata: #{metadata}"
         customer.stripe_subscription.metadata = metadata
         customer.stripe_subscription.save
       end
 
       # When upgrading a plan, invoice immediately.
       if quantity_increased
-        Rails.logger.info " -> QUANTITY INCREASED SO INVOICE GENERATED"
+        Rails.logger.info " -> [STRIPE] generate invoice"
         Stripe::Invoice.create(customer: customer.stripe_customer_id).pay
       end
 

@@ -21,7 +21,7 @@ module Effective
         (head(:bad_request) and return) if (params[:livemode] == false && Rails.env.production?)
       end
 
-      Rails.logger.info "STRIPE WEBHOOK: #{@event.type}"
+      Rails.logger.info "[STRIPE] webhook received: #{@event.type}"
 
       Effective::Customer.transaction do
         case @event.type
@@ -56,7 +56,7 @@ module Effective
         when 'customer.subscription.updated'
           send_email(:subscription_updated, customer)
         else
-          Rails.logger.info "[STRIPE WEBHOOK] Unhandled event type #{@event.type}"
+          Rails.logger.info "[STRIPE] webhook unhandled event type: #{@event.type}"
         end
       end
 

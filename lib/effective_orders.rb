@@ -169,11 +169,7 @@ module EffectiveOrders
     return {} unless (stripe? && subscriptions?)
 
     @stripe_plans ||= (
-      Rails.logger.info "STRIPE PLAN LIST"
-
-      # {"id":"plan_ChLx90ggbWvB8i","object":"plan","amount":100000,"billing_scheme":"per_unit","created":1523984756,"currency":"usd",
-      #{ }"interval":"year","interval_count":1,"livemode":false,"metadata":{},"nickname":"Yearly","product":"prod_ChLwW0XqdykIki",
-      #{ }"tiers":null,"tiers_mode":null,"transform_usage":null,"trial_period_days":null,"usage_type":"licensed"},
+      Rails.logger.info '[STRIPE] index plans'
 
       plans = Stripe::Plan.all.inject({}) do |h, plan|
         h[plan.id] = {

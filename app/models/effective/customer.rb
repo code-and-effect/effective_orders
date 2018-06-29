@@ -38,21 +38,21 @@ module Effective
 
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
-        Rails.logger.info "STRIPE CUSTOMER RETRIEVE: #{stripe_customer_id}"
+        Rails.logger.info "[STRIPE] get customer: #{stripe_customer_id}"
         ::Stripe::Customer.retrieve(stripe_customer_id)
       end
     end
 
     def stripe_subscription
       @stripe_subscription ||= if stripe_subscription_id.present?
-        Rails.logger.info "STRIPE SUBSCRIPTION RETRIEVE: #{stripe_subscription_id}"
+        Rails.logger.info "[STRIPE] get subscription: #{stripe_subscription_id}"
         ::Stripe::Subscription.retrieve(stripe_subscription_id)
       end
     end
 
     def upcoming_invoice
       @upcoming_invoice ||= if stripe_customer_id.present? && stripe_subscription_id.present?
-        Rails.logger.info "STRIPE UPCOMING INVOICE RETRIEVE: #{stripe_customer_id}"
+        Rails.logger.info "[STRIPE] get upcoming invoice: #{stripe_customer_id}"
         ::Stripe::Invoice.upcoming(customer: stripe_customer_id) rescue nil
       end
     end
