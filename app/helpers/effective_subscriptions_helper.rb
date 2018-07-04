@@ -19,6 +19,8 @@ module EffectiveSubscriptionsHelper
       partial = (
         if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
           "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
+        elsif lookup_context.template_exists?("effective/subscriptions/#{plan[:name].downcase}", [], true)
+          "effective/subscriptions/#{plan[:name].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
         else
           'effective/subscriptions/plan' # Render effective_orders default plan panel
         end
