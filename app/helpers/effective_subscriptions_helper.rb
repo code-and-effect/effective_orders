@@ -1,5 +1,19 @@
 module EffectiveSubscriptionsHelper
 
+  def render_plan(plan, subscribed: true)
+    render(render_plan_partial(plan), plan: plan, subscribed: subscribed)
+  end
+
+  def render_plan_partial(plan)
+    if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
+      "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
+    elsif lookup_context.template_exists?("effective/subscriptions/#{plan[:name].downcase}", [], true)
+      "effective/subscriptions/#{plan[:name].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
+    else
+      'effective/subscriptions/plan' # Render effective_orders default plan panel
+    end
+  end
+
   def stripe_plans_collection(form)
     raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
 
@@ -16,17 +30,7 @@ module EffectiveSubscriptionsHelper
     end
 
     plans.map do |plan|
-      partial = (
-        if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
-          "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
-        elsif lookup_context.template_exists?("effective/subscriptions/#{plan[:name].downcase}", [], true)
-          "effective/subscriptions/#{plan[:name].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
-        else
-          'effective/subscriptions/plan' # Render effective_orders default plan panel
-        end
-      )
-
-      content = render(partial: partial, locals: {
+      content = render(partial: render_plan_partial(plan), locals: {
         f: form,
         plan: plan,
         selected: Array(form.object.stripe_plan_id).include?(plan[:id]),
