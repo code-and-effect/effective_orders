@@ -13,6 +13,8 @@ module Effective
     protect_from_forgery except: [:stripe]
     skip_authorization_check if defined?(CanCan)
 
+    after_action :run_subscribable_buyer_callbacks!
+
     def stripe
       @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscriptions[:webhook_secret]) rescue nil)
       (head(:bad_request) and return) unless @event
@@ -21,7 +23,7 @@ module Effective
         (head(:bad_request) and return) if (params[:livemode] == false && Rails.env.production?)
       end
 
-      Rails.logger.info "[STRIPE] webhook received: #{@event.type}"
+      Rails.logger.info "[STRIPE] webhook received: #{@event.type} for #{customer || 'unknown customer'}" # Customer must be called here
 
       Effective::Customer.transaction do
         case @event.type
@@ -66,11 +68,29 @@ module Effective
     private
 
     def customer
-      @customer ||= Effective::Customer.where(stripe_customer_id: @event.data.object.customer).first!
+      return unless @event.respond_to?(:data)
+
+      @customer ||= (
+        stripe_customer_id = @event.data.object.customer if @event.data.object.respond_to?(:customer)
+        stripe_customer_id = @event.data.object.id if @event.data.object.object == 'customer'
+
+        Effective::Customer.where(stripe_customer_id: stripe_customer_id || 'unknown').first!
+      )
     end
 
     def send_email(email, *mailer_args)
       Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
+    end
+
+    def run_subscribable_buyer_callbacks!
+      return if @event.blank? || @customer.blank?
+
+      name = ('after_' + @event.type.to_s.gsub('.', '_')).to_sym
+      buyer = @customer.user
+
+      buyer.public_send(name, @event) if buyer.respond_to?(name)
+
+      true
     end
 
   end

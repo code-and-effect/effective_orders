@@ -588,6 +588,31 @@ Create a Product with the name you want customers to see on their receipts
 Yearly and a Monthly per team
 
 
+#### Callbacks
+
+The event is the Stripe event JSON.
+
+```ruby
+after_invoice_payment_succeeded do |event|
+end
+
+after_invoice_payment_failed do |event|
+end
+
+after_customer_subscription_created do |event|
+end
+
+after_customer_subscription_updated do |event|
+end
+
+after_customer_subscription_deleted do |event|
+end
+
+after_customer_updated do |event|
+end
+```
+
+
 ### Admin Screen
 
 To use the Admin screen, please also install the effective_datatables gem:
