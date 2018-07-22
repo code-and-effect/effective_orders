@@ -6,6 +6,6 @@
   = f.hidden_field :stripe_token, value: nil
   = f.error :stripe_token
 
-  = f.radios :stripe_plan_id, stripe_plans_collection(f), cards: true, label: false, required: true
+  = f.radios :stripe_plan_id, stripe_plans_collection(f), inline: false, cards: false, label: false, required: true
 
-  = f.submit 'Choose this Plan', center: true, class: ('effective-orders-stripe-token-required' if f.object.token_required?)
+  = f.submit 'Choose Plan', center: true, border: false, class: ('effective-orders-stripe-token-required' if f.object.token_required?)
