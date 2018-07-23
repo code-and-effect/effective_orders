@@ -14,15 +14,21 @@ stripeSubscriptionHandler = (key, form) ->
         form.addClass('stripe-success').submit() # Submits the form. As this is a remote form, submits via JS
 
 # Hijack submit and get a stripe token
-$(document).on 'click', ".effective-orders-stripe-token-required[type='submit']", (event) ->
-  $form = $(event.currentTarget).closest('form')
+$(document).on 'click', ".effective-orders-stripe-token-required[type='submit'],[data-choose-stripe-plan-id]", (event) ->
+  $obj = $(event.currentTarget)
+  $form = $obj.closest('form')
 
   # Get stripe data payload
   stripe = $form.data('stripe')
   return unless stripe?
 
+  # If we're doing choose button mode
+  if $obj.data('choose-stripe-plan-id')
+    $form.find("input[name$='[stripe_plan_id]']").val($obj.data('choose-stripe-plan-id'))
+    return true unless $obj.hasClass('effective-orders-stripe-token-required')
+
   # Make sure there is a plan selected
-  selected_plan_id = $form.find("input[name$='[stripe_plan_id]']:checked").val() || ''
+  selected_plan_id = $form.find("input[name$='[stripe_plan_id]']:checked").val() || $form.find("input[name$='[stripe_plan_id]']").val() || ''
   return unless selected_plan_id.length > 0
 
   # Match plan
