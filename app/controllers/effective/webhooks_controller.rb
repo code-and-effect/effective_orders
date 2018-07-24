@@ -80,7 +80,7 @@ module Effective
 
     def send_email(email, *mailer_args)
       Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
-      Effective::OrdersMailer.public_send(:subscription_event_to_admin, email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
+      Effective::OrdersMailer.public_send(:subscription_event_to_admin, email.to_s, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
     end
 
     def run_subscribable_buyer_callbacks!
