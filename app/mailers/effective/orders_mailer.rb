@@ -141,6 +141,19 @@ module Effective
       mail(to: @subscribable.subscribable_buyer.email, subject: @subject)
     end
 
+    def subscription_event_to_admin(event, customer_param)
+      return true unless EffectiveOrders.mailer[:send_subscription_event_to_admin]
+
+      @customer = (customer_param.kind_of?(Effective::Customer) ? customer_param : Effective::Customer.find(customer_param))
+      @subscriptions = @customer.subscriptions
+      @user = @customer.user
+      @event = event.to_s
+
+      @subject = subject_for(@customer, :subscription_event_to_admin, "Subscription event - @event").gsub('@event', @event)
+
+      mail(to: EffectiveOrders.mailer[:admin_email], subject: @subject)
+    end
+
     def order_error(order: nil, error: nil, to: nil, from: nil, subject: nil, template: 'order_error')
       @order = (order.kind_of?(Effective::Order) ? order : Effective::Order.find(order))
       @error = error.to_s

@@ -36,6 +36,10 @@ module Effective
       user.to_s.presence || 'New Customer'
     end
 
+    def email
+      user.email if user
+    end
+
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
         Rails.logger.info "[STRIPE] get customer: #{stripe_customer_id}"

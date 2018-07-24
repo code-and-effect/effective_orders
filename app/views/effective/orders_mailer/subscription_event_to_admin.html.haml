@@ -1,0 +1,13 @@
+%p Hi admin,
+
+%p A <strong>#{@event}</strong> event has occurred.
+
+%p Customer: #{@customer}, #{@customer.email}, #{@customer.stripe_customer_id}
+
+- if @subscriptions.present?
+  %p Current subscriptions:
+  %ul
+    - @subscriptions.each do |subscription|
+      %li #{subscription.subscribable.to_s} - #{subscription}
+- else
+  %p This customer has no current subscriptions.

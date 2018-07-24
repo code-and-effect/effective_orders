@@ -47,6 +47,10 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     Effective::OrdersMailer.subscription_trial_expired(preview_subscribable)
   end
 
+  def subscription_event_to_admin
+    Effective::OrdersMailer.subscription_event_to_admin(:subscription_updated, preview_customer)
+  end
+
   def order_error
     Effective::OrdersMailer.order_error(order: build_preview_order, error: 'Something did not work out')
   end
