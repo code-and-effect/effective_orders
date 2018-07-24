@@ -149,7 +149,7 @@ module Effective
       @user = @customer.user
       @event = event.to_s
 
-      @subject = subject_for(@customer, :subscription_event_to_admin, "Subscription event - @event").gsub('@event', @event)
+      @subject = subject_for(@customer, :subscription_event_to_admin, "Subscription event - @event - @customer").gsub('@event', @event.to_s).gsub('@customer', @customer.to_s)
 
       mail(to: EffectiveOrders.mailer[:admin_email], subject: @subject)
     end
