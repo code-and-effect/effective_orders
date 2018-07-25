@@ -2,7 +2,8 @@ class EffectiveCustomersDatatable < Effective::Datatable
    datatable do
 
     col :id, visible: false
-    #col 'user.email'
+    col :user
+    col 'user.email'
 
     if EffectiveOrders.stripe?
       col :stripe_customer_id
@@ -18,9 +19,4 @@ class EffectiveCustomersDatatable < Effective::Datatable
   collection do
     Effective::Customer.joins(:user).all
   end
-
-  # def search_column(collection, table_column, search_term)
-  #   return collection.where('subscriptions.stripe_plan_id ILIKE ?', "%#{search_term}%") if table_column[:name] == 'subscription_types'
-  #   super
-  # end
 end
