@@ -29,7 +29,7 @@ EffectiveOrders::Engine.routes.draw do
 
       match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
       match 'customer/settings', to: 'customers#update', via: [:patch, :put, :post]
-      match 'webhooks/stripe', to: 'webhooks#stripe', via: [:post, :put]
+      match 'webhooks/stripe', to: 'webhooks#stripe', via: [:get, :post, :put]
     end
 
     match 'cart', to: 'carts#show', as: 'cart', via: :get

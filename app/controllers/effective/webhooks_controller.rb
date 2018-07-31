@@ -17,13 +17,14 @@ module Effective
 
     def stripe
       @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscriptions[:webhook_secret]) rescue nil)
+      (head(:ok) and return) if request.get? && @event.blank?
       (head(:bad_request) and return) unless @event
 
       unless EffectiveOrders.subscriptions[:ignore_livemode]
         (head(:bad_request) and return) if (params[:livemode] == false && Rails.env.production?)
       end
 
-      Rails.logger.info "[STRIPE] webhook received: #{@event.type} for #{customer || 'unknown customer'}" # Customer must be called here
+      Rails.logger.info "[STRIPE] webhook received: #{@event.type} for #{customer || 'no customer'}"
 
       Effective::Customer.transaction do
         case @event.type
@@ -58,7 +59,7 @@ module Effective
         when 'customer.subscription.updated'
           send_email(:subscription_updated, customer)
         else
-          Rails.logger.info "[STRIPE] webhook unhandled event type: #{@event.type}"
+          Rails.logger.info "[STRIPE] successful event: #{@event.type}. Nothing to do."
         end
       end
 
@@ -74,7 +75,7 @@ module Effective
         stripe_customer_id = @event.data.object.customer if @event.data.object.respond_to?(:customer)
         stripe_customer_id = @event.data.object.id if @event.data.object.object == 'customer'
 
-        Effective::Customer.where(stripe_customer_id: stripe_customer_id || 'unknown').first!
+        Effective::Customer.where(stripe_customer_id: stripe_customer_id || 'none').first
       )
     end
 
@@ -84,7 +85,7 @@ module Effective
     end
 
     def run_subscribable_buyer_callbacks!
-      return if @event.blank? || @customer.blank?
+      return true if (@event.blank? || @customer.blank?)
 
       name = ('after_' + @event.type.to_s.gsub('.', '_')).to_sym
       buyer = @customer.user
