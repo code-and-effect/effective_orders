@@ -171,7 +171,16 @@ module EffectiveOrders
     @stripe_plans ||= (
       Rails.logger.info '[STRIPE] index plans'
 
-      plans = Stripe::Plan.all.inject({}) do |h, plan|
+      plans = begin
+        Stripe::Plan.all
+      rescue => e
+        raise e if Rails.env.production?
+        Rails.logger.info "[STRIPE ERROR]: #{e.message}"
+        Rails.logger.info "[STRIPE ERROR]: effective_orders continuing with empty stripe plans. This would fail loudly in Rails.env.production."
+        {}
+      end
+
+      plans.inject({}) do |h, plan|
         h[plan.id] = {
           id: plan.id,
           product_id: plan.product,
@@ -183,8 +192,6 @@ module EffectiveOrders
           interval_count: plan.interval_count
         }; h
       end
-
-      plans
     )
   end
 
