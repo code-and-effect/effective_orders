@@ -20,7 +20,7 @@ Please check out [Effective Orders 3.x](https://github.com/code-and-effect/effec
 
 ## Getting Started
 
-Please first install the [effective_addresses](https://github.com/code-and-effect/effective_addresses), [effective_datatables](https://github.com/code-and-effect/effective_datatables) and [effective_form_inputs](https://github.com/code-and-effect/effective_form_inputs) gems.
+Please first install the [effective_addresses](https://github.com/code-and-effect/effective_addresses), [effective_datatables](https://github.com/code-and-effect/effective_datatables) and [effective_bootstrap](https://github.com/code-and-effect/effective_bootstrap) gems.
 
 Add to your Gemfile:
 
