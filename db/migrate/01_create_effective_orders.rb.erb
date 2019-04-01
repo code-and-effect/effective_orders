@@ -73,9 +73,6 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
       t.string    :stripe_customer_id
       t.string    :active_card
-
-      t.string    :stripe_subscription_id
-      t.string    :stripe_subscription_interval
       t.string    :status
 
       t.integer   :subscriptions_count, :default => 0
@@ -92,7 +89,11 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.string    :subscribable_type
 
       t.string    :stripe_plan_id
+      t.string    :stripe_subscription_id
+
       t.string    :name
+      t.string    :interval
+      t.integer   :quantity
 
       t.timestamps
     end

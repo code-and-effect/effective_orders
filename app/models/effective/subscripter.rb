@@ -4,8 +4,8 @@ module Effective
   class Subscripter
     include ActiveModel::Model
 
-    attr_accessor :user, :subscribable, :customer
-    attr_accessor :subscribable_global_id, :stripe_token, :stripe_plan_id, :include_trial
+    attr_accessor :current_user, :user, :subscribable, :customer
+    attr_accessor :subscribable_global_id, :stripe_token, :stripe_plan_id, :quantity
 
     validates :user, presence: true
     validates :subscribable, presence: true, if: -> { stripe_plan_id.present? }
@@ -17,8 +17,21 @@ module Effective
       self.errors.add(:stripe_token, 'updated payment card required') if stripe_token.blank? && token_required?
     end
 
+    validate(if: -> { stripe_plan_id && subscribable }) do
+      quantity_used = [subscribable.subscribable_quantity_used, 0].max
+      self.errors.add(:quantity, "must be greater than #{quantity_used}") unless quantity > quantity_used
+    end
+
+    def to_s
+      'Your Plan'
+    end
+
     def customer
       @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
+    end
+
+    def current_user=(user)
+      @user = user
     end
 
     def subscribable_global_id
@@ -29,20 +42,12 @@ module Effective
       @subscribable = GlobalID::Locator.locate(global_id)
     end
 
-    def user_id=(id)
-      @user = User.find(id)
-    end
-
-    def current_plan
-      subscribable&.subscription&.plan
-    end
-
     def plan
       EffectiveOrders.stripe_plans[stripe_plan_id]
     end
 
-    def stripe_plan_id
-      @stripe_plan_id || (current_plan[:id] if current_plan)
+    def quantity
+      (@quantity.to_i if @quantity.present?)
     end
 
     def token_required?
@@ -50,14 +55,11 @@ module Effective
     end
 
     def save!
-      return true if (plan == current_plan) && stripe_token.blank?  # No work to do
-
       raise 'is invalid' unless valid?
 
       create_customer!
       create_stripe_token!
-      build_subscription!
-      sync_subscription!
+      save_subscription!
       true
     end
 
@@ -72,120 +74,91 @@ module Effective
 
     protected
 
-    # This should work even if the rest of the form doesn't. Careful with our transactions...
     def create_customer!
-      if customer.stripe_customer.blank?
-        Rails.logger.info "[STRIPE] create customer: #{user.email}"
-        customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
-        customer.stripe_customer_id = customer.stripe_customer.id
-        customer.save!
-      end
+      return if customer.stripe_customer.present?
+
+      Rails.logger.info "[STRIPE] create customer: #{user.email}"
+      customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
+      customer.stripe_customer_id = customer.stripe_customer.id
+      customer.save!
     end
 
     # Update stripe customer card
     def create_stripe_token!
-      if stripe_token.present?
-        Rails.logger.info "[STRIPE] update source: #{stripe_token}"
-        customer.stripe_customer.source = stripe_token
-        customer.stripe_customer.save
+      return if stripe_token.blank?
 
-        if customer.stripe_customer.default_source.present?
-          card = customer.stripe_customer.sources.retrieve(customer.stripe_customer.default_source)
-          customer.active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
-          customer.save!
-        end
-      end
-    end
+      Rails.logger.info "[STRIPE] update source: #{stripe_token}"
+      customer.stripe_customer.source = stripe_token
+      customer.stripe_customer.save
 
-    def build_subscription!
-      return unless plan.present?
-      subscription.stripe_plan_id = plan[:id]
-    end
+      return if customer.stripe_customer.default_source.blank?
 
-    def sync_subscription!
-      return unless plan.present?
-      customer.stripe_subscription.blank? ? create_subscription! : update_subscription!
-
+      card = customer.stripe_customer.sources.retrieve(customer.stripe_customer.default_source)
+      customer.active_card = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
       customer.save!
     end
 
-    def create_subscription!
+    def save_subscription!
       return unless plan.present?
-      return if customer.stripe_subscription.present?
 
-      Rails.logger.info "[STRIPE] create subscription: #{items(metadata: false)}"
-      customer.stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items(metadata: false), metadata: metadata)
-      customer.stripe_subscription_id = customer.stripe_subscription.id
+      subscription.assign_attributes(stripe_plan_id: stripe_plan_id, quantity: quantity)
 
-      customer.status = customer.stripe_subscription.status
-      customer.stripe_subscription_interval = customer.stripe_subscription.plan.interval
+      cancel_subscription!
+      create_subscription! || update_subscription!
+      true
+    end
+
+    def cancel_subscription!
+      return false unless subscription.persisted? && subscription.stripe_plan_id_changed?
+
+      item = items.first
+      stripe_item = subscription.stripe_subscription.items.first
+
+      return false unless stripe_item.present? && item[:plan] != stripe_item['plan']['id']
+
+      Rails.logger.info " -> [STRIPE] cancel plan: #{stripe_item['plan']['id']}"
+      subscription.stripe_subscription.delete
+      subscription.assign_attributes(stripe_subscription: nil, stripe_subscription_id: nil)
+
+      true
+    end
+
+    def create_subscription!
+      return false unless subscription.stripe_subscription.blank?
+
+      Rails.logger.info "[STRIPE] create subscription: #{items}"
+      stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items, metadata: metadata)
+
+      subscription.update!(
+        stripe_subscription: stripe_subscription,
+        stripe_subscription_id: stripe_subscription.id,
+        status: stripe_subscription.status,
+        name: stripe_subscription.plan.nickname,
+        interval: stripe_subscription.plan.interval,
+        quantity: quantity
+      )
     end
 
     def update_subscription!
-      return unless plan.present?
-      return if customer.stripe_subscription.blank?
+      return false unless subscription.stripe_subscription.present?
 
-      Rails.logger.info "[STRIPE] update subscription: #{customer.stripe_subscription_id} #{items}"
+      stripe_item = subscription.stripe_subscription.items.first
+      item = items.first
 
-      if items.length == 0
-        customer.stripe_subscription.delete
-        customer.stripe_subscription_id = nil
-        customer.status = EffectiveOrders::CANCELED
-        return
-      end
+      return false unless stripe_item.present? && item[:plan] == stripe_item['plan']['id']
+      return false unless item[:quantity] != subscription.stripe_subscription.quantity
 
-      # Update stripe subscription items. Keep track if quantity changed here or not
-      quantity_increased = false
+      Rails.logger.info " -> [STRIPE] update plan: #{item[:plan]}"
+      stripe_item.quantity = item[:quantity]
+      stripe_item.save
 
-      customer.stripe_subscription.items.each do |stripe_item|
-        item = items.find { |item| item[:plan] == stripe_item['plan']['id'] }
+      subscription.update!(status: subscription.stripe_subscription.status)
 
-        next if item.blank? || item[:quantity] == stripe_item['quantity']
+      # Invoice immediately
+      Rails.logger.info " -> [STRIPE] generate invoice"
+      Stripe::Invoice.create(customer: customer.stripe_customer_id).pay
 
-        quantity_increased ||= (item[:quantity] > stripe_item['quantity']) # Any quantity increased
-
-        stripe_item.quantity = item[:quantity]
-        stripe_item.metadata = item[:metadata]
-
-        Rails.logger.info " -> [STRIPE] update plan: #{item[:plan]}"
-        stripe_item.save
-      end
-
-      # Create stripe subscription items
-      items.each do |item|
-        next if customer.stripe_subscription.items.find { |stripe_item| item[:plan] == stripe_item['plan']['id'] }
-
-        Rails.logger.info " -> [STRIPE] create plan: #{item[:plan]}"
-        customer.stripe_subscription.items.create(plan: item[:plan], quantity: item[:quantity], metadata: item[:metadata])
-      end
-
-      # Delete stripe subscription items
-      customer.stripe_subscription.items.each do |stripe_item|
-        next if items.find { |item| item[:plan] == stripe_item['plan']['id'] }
-
-        Rails.logger.info " -> [STRIPE] delete plan: #{stripe_item['plan']['id']}"
-        stripe_item.delete
-      end
-
-      # Update metadata
-      if customer.stripe_subscription.metadata.to_h != metadata
-        Rails.logger.info " -> [STRIPE] update metadata: #{metadata}"
-        customer.stripe_subscription.metadata = metadata
-        customer.stripe_subscription.save
-      end
-
-      # When upgrading a plan, invoice immediately.
-      if quantity_increased
-        Rails.logger.info " -> [STRIPE] generate invoice"
-        Stripe::Invoice.create(customer: customer.stripe_customer_id).pay
-      end
-
-      customer.status = customer.stripe_subscription.status
-    end
-
-    def subscribe!(stripe_plan_id)
-      self.stripe_plan_id = stripe_plan_id
-      save!
+      true
     end
 
     private
@@ -195,33 +168,18 @@ module Effective
       customer.subscriptions.find { |sub| sub.subscribable == subscribable } || customer.subscriptions.build(subscribable: subscribable, customer: customer)
     end
 
-    def items(metadata: true)
-      customer.subscriptions.group_by { |sub| sub.stripe_plan_id }.map do |plan, subscriptions|
-        if metadata
-          { plan: plan, quantity: subscriptions.length, metadata: metadata(subscriptions: subscriptions) }
-        else
-          { plan: plan, quantity: subscriptions.length }
-        end
-      end
+    def items
+      [{ plan: subscription.stripe_plan_id, quantity: subscription.quantity }]
     end
 
     # The stripe metadata limit is 500 characters
-    def metadata(subscriptions: nil)
-      retval = { user_id: user.id.to_s, user: user.to_s.truncate(500) }
-
-      (subscriptions || customer.subscriptions).group_by { |sub| sub.subscribable_type }.each do |subscribable_type, subs|
-        subs = subs.sort
-
-        if subs.length == 1
-          retval[subscribable_type.downcase + '_id'] = subs.map { |sub| sub.subscribable.id }.join(',')
-          retval[subscribable_type.downcase] = subs.map { |sub| sub.subscribable.to_s }.join(',').truncate(500)
-        else
-          retval[subscribable_type.downcase + '_ids'] = subs.map { |sub| sub.subscribable.id }.join(',')
-          retval[subscribable_type.downcase.pluralize] = subs.map { |sub| sub.subscribable.to_s }.join(',').truncate(500)
-        end
-      end
-
-      retval
+    def metadata
+      {
+        :user_id => user.id.to_s,
+        :user => user.to_s.truncate(500),
+        (subscription.subscribable_type.downcase + '_id').to_sym => subscription.subscribable.id.to_s,
+        subscription.subscribable_type.downcase.to_sym => subscription.subscribable.to_s
+      }
     end
 
   end

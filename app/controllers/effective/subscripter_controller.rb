@@ -7,12 +7,7 @@ module Effective
     submit :save, 'Save', redirect: :back, success: -> { 'Successfully updated plan.' }
 
     def resource
-      @subscripter ||= Effective::Subscripter.new(user: current_user)
-    end
-
-    # I don't want save_resource to wrap my save in a transaction
-    def save_resource(resource, action = :save, &block)
-      resource.save!
+      @subscripter ||= Effective::Subscripter.new(current_user: current_user)
     end
 
     # StrongParameters

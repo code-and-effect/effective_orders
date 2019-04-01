@@ -1,85 +1,21 @@
-- if customer.stripe_subscription.present?
-  .card.my-4
-    .card-header Subscription
-    .card-body
-      %table.table
-        %tbody
-          %tr
-            %th Status
-            %td= customer.stripe_subscription.status.presence || 'unknown'
-
-          %tr
-            %th Email
-            %td= customer.stripe_customer.email
-
-          %tr
-            %th Card
-            %td
-              - if customer.stripe_customer.default_source.present?
-                - card = customer.stripe_customer.sources.retrieve(customer.stripe_customer.default_source)
-                = "**** **** **** #{card.last4} #{card.brand} #{card.exp_month}/#{card.exp_year}"
-              - else
-                None
-
-          %tr
-            %th Currency
-            %td= customer.stripe_customer.currency.to_s.upcase
-
-          - if customer.stripe_subscription.discount.present?
-            %tr
-              %th Coupon
-              %td= stripe_coupon_description(customer.stripe_subscription.discount.coupon)
-
-          - if customer.stripe_subscription.start.present?
-            %tr
-              %th Started
-              %td= Time.zone.at(customer.stripe_subscription.start).strftime('%F')
-
-          - if customer.stripe_subscription.ended_at.present?
-            %tr
-              %th Ended
-              %td= Time.zone.at(customer.stripe_subscription.ended_at).strftime('%F')
-
-          - if customer.stripe_subscription.canceled_at.present?
-            %tr
-              %th Cancelled
-              %td= Time.zone.at(customer.stripe_subscription.canceled_at).strftime('%F')
-
-          - if customer.stripe_subscription.current_period_start.present?
-            %tr
-              %th Current Period Start
-              %td= Time.zone.at(customer.stripe_subscription.current_period_start).strftime('%F')
-
-          - if customer.stripe_subscription.current_period_end.present?
-            %tr
-              %th Current Period End
-              %td= Time.zone.at(customer.stripe_subscription.current_period_end).strftime('%F')
-
-          - if customer.stripe_subscription.metadata.present? && false
-            %tr
-              %th Metadata
-              %td= tableize_hash(customer.stripe_subscription.metadata.to_h, th: false)
-
-          - if customer.stripe_subscription.items.present?
-            %tr
-              %th Plans
-              %td= tableize_hash(customer.stripe_subscription.items.inject({}) { |h, item| h[item.plan.nickname] = item.quantity; h }, th: false)
-
 - if customer.subscriptions.present?
   .card.my-4
-    .card-header Subscribed
+    .card-header Subscriptions
     .card-body
       %table.table
         %thead
           %tr
-            %th Name
+            %th Subscribed
             %th Plan
-            %th
+            %th Quantity
+            %th Interval
         %tbody
           - customer.subscriptions.each do |sub|
             %tr
               %td= sub.subscribable
               %td= sub
+              %td= sub.quantity
+              %td= sub.interval
 
 - if customer.stripe_customer.invoices.present?
   .card.my-4
@@ -94,10 +30,10 @@
         %tbody
           - customer.stripe_customer.invoices.each do |invoice|
             %tr
-              %td= Time.zone.at(invoice.date).strftime('%F')
+              %td= link_to Time.zone.at(invoice.date).strftime('%F'), invoice.invoice_pdf
               %td
                 %p
-                  = invoice.id
+                  = invoice.number
                   %br
                   = Time.zone.at(invoice.lines.first.period.start).strftime('%F')
                   to

@@ -4,18 +4,12 @@ module Effective
 
     include Effective::CrudController
 
-    submit :save, 'Save', redirect: :back, success: -> { 'Successfully updated card.' }
+    submit :save, 'Save', success: -> { 'Successfully updated card.' }
     page_title 'Customer Settings'
 
     def resource
-      @customer ||= Effective::Customer.where(user: current_user).first!
-      @subscripter ||= Effective::Subscripter.new(customer: @customer, user: @customer.user)
-    end
-
-    # I don't want save_resource to wrap my save in a transaction
-    def save_resource(resource, action, to_assign)
-      resource.assign_attributes(to_assign)
-      resource.save!
+      @customer = Effective::Customer.where(user: current_user).first!
+      @subscripter ||= Effective::Subscripter.new(customer: @customer, current_user: current_user)
     end
 
     # StrongParameters

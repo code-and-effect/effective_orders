@@ -13,6 +13,30 @@ stripeSubscriptionHandler = (key, form) ->
         form.find("input[name$='[stripe_token]']").val('' + token['id'])
         form.addClass('stripe-success').submit() # Submits the form. As this is a remote form, submits via JS
 
+# This updates the form whenever a quantity change is made
+$(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (event) ->
+  $obj = $(event.currentTarget)
+  $plan = $obj.closest('.effective-orders-stripe-plan')
+  return unless $plan.length == 1
+
+  # Assign the quantity to each quantity field
+  $plan.closest('form').find(".effective-orders-stripe-plan:not([data-plan-id='#{$plan.data('id')}'])").find("input[name$='[quantity]']").val($obj.val())
+
+  quantity = $obj.val() || 0
+
+  # Assign all totals
+  $plan.closest('form').find(".effective-orders-stripe-plan").each ->
+    plan = $(this)
+    amount = parseInt(plan.data('amount'))
+    interval = plan.data('plan-interval')
+
+    total = (quantity * amount)
+    total = (total / 12) if interval == 'year'
+
+    total = '$' + (total / 100.0).toFixed(2)
+
+    plan.find('#effective_subscripter_total_amount').text(total)
+
 # Hijack submit and get a stripe token
 $(document).on 'click', ".effective-orders-stripe-token-required[type='submit'],[data-choose-stripe-plan-id]", (event) ->
   $obj = $(event.currentTarget)
@@ -44,8 +68,4 @@ $(document).on 'click', ".effective-orders-stripe-token-required[type='submit'],
     name: stripe.name
     email: stripe.email
     description: plan.name
-    amount: plan.amount
-    panelLabel: "{{amount}}/#{plan.interval} Go!"
-
-$(document).on 'change', "input[name='effective_subscripter[stripe_plan_id]']", (event) ->
-  $(event.currentTarget).closest('form').find(".effective-orders-stripe-token-required[type='submit']").click()
+    panelLabel: 'Update Plan'

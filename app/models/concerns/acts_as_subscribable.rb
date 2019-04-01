@@ -44,7 +44,9 @@ module ActsAsSubscribable
   end
 
   def subscripter
-    @_effective_subscripter ||= Effective::Subscripter.new(subscribable: self, user: subscribable_buyer)
+    @_effective_subscripter ||= begin
+      Effective::Subscripter.new(subscribable: self, user: subscribable_buyer, quantity: (subscription&.quantity || 0), stripe_plan_id: subscription&.stripe_plan_id)
+    end
   end
 
   def subscribed?(stripe_plan_id = nil)
@@ -76,5 +78,8 @@ module ActsAsSubscribable
     raise 'acts_as_subscribable object requires the subscribable_buyer method be defined to return the User buying this item.'
   end
 
-end
+  def subscribable_quantity_used
+    raise 'acts_as_subscribable object requires the subscribable_quantity_used method be defined to determine how many are in use.'
+  end
 
+end

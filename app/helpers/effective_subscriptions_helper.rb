@@ -1,44 +1,9 @@
 module EffectiveSubscriptionsHelper
 
-  def render_plan(plan, subscribed: true)
-    render(render_plan_partial(plan), plan: plan, subscribed: subscribed)
-  end
-
-  def render_plan_partial(plan)
-    if lookup_context.template_exists?("effective/subscriptions/#{plan[:id].downcase}", [], true)
-      "effective/subscriptions/#{plan[:id].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
-    elsif lookup_context.template_exists?("effective/subscriptions/#{plan[:name].downcase}", [], true)
-      "effective/subscriptions/#{plan[:name].downcase}" # Render the app's views/effective/subscriptions/_gold.html.haml
-    else
-      'effective/subscriptions/plan' # Render effective_orders default plan panel
-    end
-  end
-
-  def stripe_plans_collection(form)
-    raise 'expected an Effective::FormBuilder object' unless form.class.name == 'Effective::FormBuilder'
-
-    subscripter = form.object
-    raise 'form object must be a subscripter object' unless subscripter.class.name == 'Effective::Subscripter'
-
-    plans = EffectiveOrders.stripe_plans.values.sort do |x, y|
+  def stripe_plans_collection(subscripter = nil)
+    EffectiveOrders.stripe_plans.values.sort do |x, y|
       amount = (x[:amount] <=> y[:amount])
       (amount != 0) ? amount : x[:name] <=> y[:name]
-    end
-
-    if (existing = subscripter.customer.stripe_subscription_interval).present?
-      plans.select! { |plan| plan[:interval] == existing }
-    end
-
-    plans.map do |plan|
-      content = render(partial: render_plan_partial(plan), locals: {
-        f: form,
-        plan: plan,
-        selected: Array(form.object.stripe_plan_id).include?(plan[:id]),
-        subscribable: form.object.subscribable,
-        subscribed: form.object.subscribable.subscribed?(plan[:id])
-      })
-
-      [content, plan[:id]]
     end
   end
 

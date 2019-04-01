@@ -29,7 +29,10 @@ module ActsAsPurchasable
       through: :order_items, class_name: 'Effective::Order', source: :order
 
     # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
-    validates :price, presence: true, numericality: { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
+    validates :price, presence: true
+    validates :price, numericality: { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
+    validates :price, numericality: { greater_than_or_equal_to: -2000000000, message: 'minimum price is -$20,000,000' }
+
     validates :tax_exempt, inclusion: { in: [true, false] }
 
     with_options(if: -> { quantity_enabled? }) do

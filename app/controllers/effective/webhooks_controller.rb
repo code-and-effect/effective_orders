@@ -42,17 +42,13 @@ module Effective
         # when 'charge.failed' # Card declined. 4000 0000 0000 0341
 
         when 'invoice.payment_succeeded'
-          customer.update_attributes!(status: EffectiveOrders::ACTIVE)
-
+          subscriptions.each { |subscription| subscription.update!(status: EffectiveOrders::ACTIVE) }
           send_email(:subscription_payment_succeeded, customer)
         when 'invoice.payment_failed'
-          customer.update_attributes!(status: EffectiveOrders::PAST_DUE)
-
+          subscriptions.each { |subscription| subscription.update!(status: EffectiveOrders::PAST_DUE) }
           send_email(:subscription_payment_failed, customer)
         when 'customer.subscription.deleted'
-          customer.update_attributes!(stripe_subscription_id: nil, status: nil, active_card: nil)
-          customer.subscriptions.delete_all
-
+          subscriptions.each { |subscription| subscription.destroy! }
           send_email(:subscription_canceled, customer)
         when 'customer.subscription.created'
           send_email(:subscription_created, customer)
@@ -77,6 +73,15 @@ module Effective
 
         Effective::Customer.where(stripe_customer_id: stripe_customer_id || 'none').first
       )
+    end
+
+    def subscriptions
+      customer.subscriptions.select { |subscription| stripe_plan_ids.include?(subscription.stripe_plan_id) }
+    end
+
+    def stripe_plan_ids
+      return unless @event.respond_to?(:data)
+      @stripe_plan_ids ||= @event.data.object.lines.map { |line| line.plan.id }
     end
 
     def send_email(email, *mailer_args)
