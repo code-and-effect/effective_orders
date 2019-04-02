@@ -9,14 +9,24 @@
 
   - stripe_plans = stripe_plans_collection(f.object)
   - stripe_plans = stripe_plans.select { |plan| plan[:name].include?('per User') }
-  - quantity_used = f.object.subscribable.subscribable_quantity_used.to_i
 
   - f.object.stripe_plan_id ||= stripe_plans.first[:id]
 
   - if f.object.subscribable.subscribed?
+    - quantity_used = f.object.subscribable.subscribable_quantity_used.to_i
+    - quantity_purchased = f.object.subscribable.subscription.quantity
+
     .text-center
-      %p You currently have <strong>#{quantity_used} people</strong> in your account. You can update your account below.
-      %p To pay for less than <strong>#{quantity_used} people</strong> you'll have to archive some first
+      %p 
+        You currently have <strong>#{pluralize(quantity_used, 'member')}</strong> in your team
+        and have space for <strong>#{pluralize(quantity_purchased, 'member')}</strong>.
+
+      - if quantity_purchased > quantity_used
+        %p You can add #{pluralize(quantity_purchased - quantity_used, 'more member')} without updating your plan.
+      - else
+        %p To add more members you will need to update your plan.
+
+      %p To pay for less than #{pluralize(quantity_used, 'member')} you'll have to remove some first.
 
   .card.mb-4
     .card-body.text-center

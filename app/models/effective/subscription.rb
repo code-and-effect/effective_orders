@@ -11,6 +11,7 @@ module Effective
     # stripe_plan_id            :string
     # stripe_subscription_id    :string
     # name                      :string
+    # description               :string
     # interval                  :string
     # quantity                  :integer
     #
@@ -19,14 +20,25 @@ module Effective
     # timestamps
 
     before_validation(if: -> { plan && (stripe_plan_id_changed? || new_record?) }) do
-      self.name = "#{plan[:name]} #{plan[:description]}"
+      self.name = plan[:name]
+      self.description = plan[:description]
     end
 
-    after_commit do
-      subscribable.subscription_name = name if subscribable.respond_to?(:subscription_name)
-      subscribable.subscription_interval = interval if subscribable.respond_to?(:subscription_interval)
-      subscribable.subscription_quantity = quantity if subscribable.respond_to?(:subscription_quantity)
-      subscribable.subscription_status = status if subscribable.respond_to?(:subscription_status)
+    after_save(on: [:create, :update]) do
+      subscribable.subscription_name = name if subscribable.respond_to?(:subscription_name=)
+      subscribable.subscription_description = description if subscribable.respond_to?(:subscription_description=)
+      subscribable.subscription_interval = interval if subscribable.respond_to?(:subscription_interval=)
+      subscribable.subscription_quantity = quantity if subscribable.respond_to?(:subscription_quantity=)
+      subscribable.subscription_status = status if subscribable.respond_to?(:subscription_status=)
+      subscribable.save!(validate: false)
+    end
+
+    after_destroy do
+      subscribable.subscription_name = nil if subscribable.respond_to?(:subscription_name=)
+      subscribable.subscription_description = nil if subscribable.respond_to?(:subscription_description=)
+      subscribable.subscription_interval = nil if subscribable.respond_to?(:subscription_interval=)
+      subscribable.subscription_quantity = nil if subscribable.respond_to?(:subscription_quantity=)
+      subscribable.subscription_status = nil if subscribable.respond_to?(:subscription_status=)
       subscribable.save!(validate: false)
     end
 

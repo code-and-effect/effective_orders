@@ -19,7 +19,7 @@ module Effective
 
     validate(if: -> { stripe_plan_id && subscribable }) do
       quantity_used = [subscribable.subscribable_quantity_used, 0].max
-      self.errors.add(:quantity, "must be greater than #{quantity_used}") unless quantity > quantity_used
+      self.errors.add(:quantity, "must be #{quantity_used} or greater") unless quantity >= quantity_used
     end
 
     def to_s
@@ -66,9 +66,12 @@ module Effective
     def destroy!
       return true unless plan
 
-      subscribable.subscription.destroy!
-      subscribable.update_column(:subscription_status, nil)
-      sync_subscription!
+      subscription = subscribable.subscription
+
+      Rails.logger.info " -> [STRIPE] delete subscription"
+      subscription.stripe_subscription.delete
+      subscription.destroy!
+      
       true
     end
 

@@ -46,7 +46,7 @@ module Effective
     end
 
     def token_required?
-      active_card.blank? || (active_card.present? && subscriptions.any? { |sub| sub.past_due? })
+      active_card.blank? || past_due?
     end
 
     def past_due?
