@@ -64,15 +64,12 @@ module Effective
     end
 
     def destroy!
-      return true unless plan
-
       subscription = subscribable.subscription
+      return true if subscription.blank?
 
       Rails.logger.info " -> [STRIPE] delete subscription"
       subscription.stripe_subscription.delete
       subscription.destroy!
-      
-      true
     end
 
     protected

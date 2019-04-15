@@ -17,7 +17,7 @@ module ActsAsSubscribable
   end
 
   included do
-    has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription'
+    has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription', inverse_of: :subscribable
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
 
     before_validation(if: -> { trialing_until.blank? && EffectiveOrders.trial? }) do
