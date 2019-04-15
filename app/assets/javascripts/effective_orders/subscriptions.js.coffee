@@ -24,8 +24,8 @@ $(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (e
 
   quantity = $obj.val() || 0
 
-  # Assign all totals
   $plan.closest('form').find(".effective-orders-stripe-plan").each ->
+    # Assign all totals
     plan = $(this)
     amount = parseInt(plan.data('amount'))
     interval = plan.data('plan-interval')
@@ -36,6 +36,13 @@ $(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (e
     total = '$' + (total / 100.0).toFixed(2)
 
     plan.find('#effective_subscripter_total_amount').text(total)
+
+    # Assign savings if present
+    savings = parseInt(plan.data('savings'))
+
+    if savings > 0
+      total_savings = '$' + ((quantity * savings) / 100.0).toFixed(2)
+      plan.find('.subscripter-total-savings').find('span').text(total_savings)
 
 # Hijack submit and get a stripe token
 $(document).on 'click', ".effective-orders-stripe-token-required[type='submit'],[data-choose-stripe-plan-id]", (event) ->

@@ -45,7 +45,7 @@ module ActsAsSubscribable
 
   def subscripter
     @_effective_subscripter ||= begin
-      Effective::Subscripter.new(subscribable: self, user: subscribable_buyer, quantity: (subscription&.quantity || 0), stripe_plan_id: subscription&.stripe_plan_id)
+      Effective::Subscripter.new(subscribable: self, user: subscribable_buyer, quantity: subscription&.quantity, stripe_plan_id: subscription&.stripe_plan_id)
     end
   end
 

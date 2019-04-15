@@ -46,8 +46,8 @@ module Effective
       EffectiveOrders.stripe_plans[stripe_plan_id]
     end
 
-    def quantity
-      (@quantity.to_i if @quantity.present?)
+    def quantity=(value)
+      @quantity = (value.to_i if value)
     end
 
     def token_required?
