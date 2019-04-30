@@ -10,7 +10,7 @@
   - stripe_plans = stripe_plans_collection(f.object)
   - stripe_plans = stripe_plans.select { |plan| plan[:name].include?('per User') }
 
-  - f.object.stripe_plan_id ||= stripe_plans.first[:id]
+  - f.object.stripe_plan_id ||= (stripe_plans.first || {})[:id]
 
   - if f.object.subscribable.subscribed?
     - quantity_used = f.object.subscribable.subscribable_quantity_used.to_i

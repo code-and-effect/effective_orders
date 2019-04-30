@@ -29,8 +29,9 @@
             %th Total
         %tbody
           - customer.stripe_customer.invoices.each do |invoice|
+            - date_method = [(:date if invoice.respond_to?(:date)), (:period_start if invoice.respond_to?(:period_start)), :created].compact.first
             %tr
-              %td= link_to Time.zone.at(invoice.date).strftime('%F'), invoice.invoice_pdf
+              %td= link_to Time.zone.at(invoice.public_send(date_method)).strftime('%F'), invoice.invoice_pdf
               %td
                 %p
                   = invoice.number
@@ -47,6 +48,9 @@
               %td= price_to_currency(invoice.total)
 
 - if customer.upcoming_invoice.present?
+  - invoice = customer.upcoming_invoice
+  - date_method = [(:date if invoice.respond_to?(:date)), (:period_start if invoice.respond_to?(:period_start)), :created].compact.first
+
   .card.my-4
     .card-header Upcoming Invoice
     .card-body
@@ -54,13 +58,13 @@
         %tbody
           %tr
             %th Date
-            %td= Time.zone.at(customer.upcoming_invoice.date).strftime('%F')
+            %td= Time.zone.at(invoice.public_send(date_method)).strftime('%F')
           %tr
             %th Items
             %td
               %table.table
                 %tbody
-                  - customer.upcoming_invoice.lines.each do |line|
+                  - invoice.lines.each do |line|
                     %tr
                       %td #{Time.zone.at(line.period.start).strftime('%F')} to #{Time.zone.at(line.period.end).strftime('%F')}
                       %td= line.description
