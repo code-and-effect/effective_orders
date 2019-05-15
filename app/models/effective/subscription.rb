@@ -24,7 +24,7 @@ module Effective
       self.description = plan[:description]
     end
 
-    after_save(on: [:create, :update]) do
+    after_save do
       subscribable.subscription_name = name if subscribable.respond_to?(:subscription_name=)
       subscribable.subscription_description = description if subscribable.respond_to?(:subscription_description=)
       subscribable.subscription_interval = interval if subscribable.respond_to?(:subscription_interval=)
