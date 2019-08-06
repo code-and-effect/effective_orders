@@ -22,7 +22,14 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
     col :purchased_at
 
-    col :id
+    if EffectiveOrders.obfuscate_order_ids
+      col(:id, as: :obfuscated_id) do |order|
+        obfuscated_id = order.to_param
+        link_to(obfuscated_id, (admin_namespace? ? effective_orders.admin_order_path(obfuscated_id) : effective_orders.order_path(obfuscated_id)))
+      end
+    else
+      col :id
+    end
 
     if attributes[:user_id].blank?
       col :user, label: 'Buyer', search: :string, sort: :email do |order|
@@ -48,14 +55,14 @@ class EffectiveOrdersDatatable < Effective::Datatable
       col :shipping_address
     end
 
-    col :purchase_state, label: 'State', search: { collection: EffectiveOrders::PURCHASE_STATES.invert } do |order|
+    col :purchase_state, label: 'State', search: { collection: EffectiveOrders::PURCHASE_STATES.invert, value: 'purchased' } do |order|
       EffectiveOrders::PURCHASE_STATES[order.purchase_state]
     end
 
     col :order_items, search: { as: :string }
 
-    col :subtotal, as: :price
-    col :tax, as: :price
+    col :subtotal, as: :price, visible: false
+    col :tax, as: :price, visible: false
 
     col :tax_rate, visible: false do |order|
       tax_rate_to_percentage(order.tax_rate)

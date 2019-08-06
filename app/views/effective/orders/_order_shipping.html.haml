@@ -10,7 +10,8 @@
       %tr
         %td
           - if order.billing_address.present?
-            = render :partial => 'effective/addresses/address', :locals => {:address => order.billing_address}
+            = render :partial => 'effective/addresses/address',
+              locals: {address: order.billing_address, email: order.user.email }
           - else
             = order.billing_name
             %br
