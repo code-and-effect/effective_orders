@@ -1,5 +1,8 @@
 .effective-order
   = simple_form_for(order, (EffectiveOrders.simple_form_options || {}).merge(url: checkout_step1_form_url(order, namespace))) do |f|
+    = hidden_field_tag(:purchased_url, purchased_url) if defined?(:purchased_url)
+    = hidden_field_tag(:declined_url, declined_url) if defined?(:declined_url)
+
     = render partial: 'effective/orders/order_items', locals: { order: order, form: f }
 
     - unless f.object.pending? || (current_cart && current_cart.blank?)

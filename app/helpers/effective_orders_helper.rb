@@ -101,6 +101,9 @@ module EffectiveOrdersHelper
   def render_checkout_step2(order, namespace: nil, purchased_url: nil, declined_url: nil)
     raise 'unable to checkout an order without a user' unless order && order.user
 
+    purchased_url ||= session["effective_orders_#{order.id}_purchased_url"]
+    declined_url ||= session["effective_orders_#{order.id}_declined_url"]
+
     locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
 
     if order.new_record? || !order.valid?

@@ -56,6 +56,7 @@ module Effective
       Effective::Order.transaction do
         begin
           @order.save!
+          set_redirect_cookie!
           redirect_to(effective_orders.order_path(@order)) and return
         rescue => e
           raise ActiveRecord::Rollback
@@ -80,6 +81,8 @@ module Effective
       Effective::Order.transaction do
         begin
           @order.save!
+          set_redirect_cookie!
+
           redirect_to(effective_orders.order_path(@order)) and return
         rescue => e
           raise ActiveRecord::Rollback
@@ -125,6 +128,8 @@ module Effective
         Effective::Order.purchased_by(current_user).first
       end
 
+      clear_redirect_cookie!
+
       if @order.blank?
         redirect_to(effective_orders.my_purchases_orders_path) and return
       end
@@ -137,6 +142,8 @@ module Effective
     def declined
       @order = Effective::Order.find(params[:id])
       EffectiveOrders.authorize!(self, :show, @order)
+
+      clear_redirect_cookie!
 
       redirect_to(effective_orders.order_path(@order)) unless @order.declined?
     end
@@ -179,6 +186,25 @@ module Effective
     end
 
     private
+
+    def set_redirect_cookie!
+      return unless @order.present?
+
+      if params[:purchased_url]
+        session["effective_orders_#{@order.id}_purchased_url"] = params[:purchased_url]
+      end
+
+      if params[:declined_url]
+        session["effective_orders_#{@order.id}_declined_url"] = params[:declined_url]
+      end
+    end
+
+    def clear_redirect_cookie!
+      return unless @order.present?
+
+      session["effective_orders_#{@order.id}_purchased_url"] = nil
+      session["effective_orders_#{@order.id}_declined_url"] = nil
+    end
 
     # StrongParameters
     def checkout_params
