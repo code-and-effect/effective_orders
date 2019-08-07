@@ -9,14 +9,14 @@
     %tbody
       %tr
         %td
-          - if order.billing_address.present?
-            = render(partial: 'effective/addresses/address', locals: { address: order.billing_address })
-          - else
+          - unless EffectiveOrders.use_address_full_name
             = order.billing_name
             %br
-            = mail_to(order.user.email)
-            %br
+
+          - if order.billing_address.present?
+            = render :partial => 'effective/addresses/address',
+              locals: { address: order.billing_address, email: order.user.email }
 
         - if order.shipping_address.present?
           %td
-            = render(partial: 'effective/addresses/address', locals: { address: order.shipping_address })
+            = render :partial => 'effective/addresses/address', locals: { address: order.shipping_address }
