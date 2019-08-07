@@ -114,24 +114,40 @@ module Effective
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
-    # Effective::Order.new(Product.all)
-    # Effective::Order.new(Product.first, user: User.first)
-    # Effective::Order.new(Product.first, Product.second, user: User.first)
-    # Effective::Order.new(user: User.first)
     # Effective::Order.new(current_cart)
+    # Effective::Order.new(Effective::Order.last)
 
-    # items can be an Effective::Cart, a single acts_as_purchasable, or an array of acts_as_purchasables
-    def initialize(*items, user: nil, billing_address: nil, shipping_address: nil)
-      super() # Call super with no arguments
+    # Effective::Order.new(items: Product.first)
+    # Effective::Order.new(items: [Product.first, Product.second], user: User.first)
+    # Effective::Order.new(items: Product.first, user: User.first, billing_address: Effective::Address.new, shipping_address: Effective::Address.new)
 
-      # Assign user
-      self.user = user || (items.first.user if items.first.kind_of?(Effective::Cart))
+    def initialize(atts = nil, &block)
+      super(purchase_state: EffectiveOrders::PENDING) # Initialize with state: PENDING
 
-      # Assign addresses
-      self.billing_address = billing_address if billing_address
-      self.shipping_address = shipping_address if shipping_address
+      return unless atts.present?
 
-      add(items) if items.present?
+      if atts.kind_of?(Hash)
+        items = Array(atts.delete(:item)) + Array(atts.delete(:items))
+
+        self.user = atts.delete(:user) || (items.first.user if items.first.respond_to?(:user))
+
+        if (address = atts.delete(:billing_address)).present?
+          self.billing_address = address
+          self.billing_address.full_name ||= user.to_s.presence
+        end
+
+        if (address = atts.delete(:shipping_address)).present?
+          self.shipping_address = address
+          self.shipping_address.full_name ||= user.to_s.presence
+        end
+
+        atts.each { |key, value| self.send("#{key}=", value) }
+
+        add(items) if items.present?
+      else # Attributes are not a Hash
+        self.user = atts.user if atts.respond_to?(:user)
+        add(atts)
+      end
     end
 
     # add(Product.first) => returns an Effective::OrderItem
@@ -169,8 +185,7 @@ module Effective
           title: item.title,
           quantity: item.quantity,
           price: item.price,
-          tax_exempt: item.tax_exempt || false,
-          seller_id: (item.purchasable.try(:seller).try(:id) rescue nil)
+          tax_exempt: (item.tax_exempt || false),
         ).tap { |order_item| order_item.purchasable = item.purchasable }
       end
 
