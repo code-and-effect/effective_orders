@@ -1,36 +1,37 @@
 = render partial: 'effective/orders/order', locals: { order: order }
+- form_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }
 
 .effective-order.effective-order-purchase-actions
   - if EffectiveOrders.allow_free_orders && order.free?
-    = render partial: '/effective/orders/free/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+    = render partial: '/effective/orders/free/form', locals: form_locals
 
   - elsif EffectiveOrders.allow_refunds && order.refund?
     -# Nothing
 
   - else
     - if EffectiveOrders.allow_pretend_purchase_in_development && !Rails.env.production?
-      = render partial: '/effective/orders/pretend/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/pretend/form', locals: form_locals
 
     - if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production?
-      = render partial: '/effective/orders/pretend/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/pretend/form', locals: form_locals
 
     - if EffectiveOrders.moneris_enabled
-      = render partial: '/effective/orders/moneris/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/moneris/form', locals: form_locals
 
     - if EffectiveOrders.paypal_enabled
-      = render partial: '/effective/orders/paypal/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/paypal/form', locals: form_locals
 
     - if EffectiveOrders.stripe_enabled
-      = render partial: '/effective/orders/stripe/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/stripe/form', locals: form_locals
 
     - if EffectiveOrders.ccbill_enabled
-      = render partial: '/effective/orders/ccbill/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/ccbill/form', locals: form_locals
 
     - if EffectiveOrders.app_checkout_enabled && EffectiveOrders.authorized?(controller, :app_checkout, order)
-      = render partial: '/effective/orders/app_checkout/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/app_checkout/form', locals: form_locals
 
     - if EffectiveOrders.cheque_enabled && order.user == current_user
-      = render partial: '/effective/orders/cheque/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/cheque/form', locals: form_locals
 
   - if EffectiveOrders.allow_pretend_purchase_in_production && Rails.env.production? && EffectiveOrders.allow_pretend_purchase_in_production_message.present?
     %br
@@ -39,8 +40,8 @@
 - if EffectiveOrders.authorized?(controller, :admin, :effective_orders) && order.user != current_user
   - if EffectiveOrders.allow_refunds && order.refund?
     .effective-order.effective-order-admin-purchase-actions
-      = render partial: '/effective/orders/refund/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/refund/form', locals: form_locals
   - elsif EffectiveOrders.mark_as_paid_enabled
     .effective-order.effective-order-admin-purchase-actions
-      = render partial: '/effective/orders/mark_as_paid/form', locals: { order: order, purchased_url: purchased_url, declined_url: declined_url }
+      = render partial: '/effective/orders/mark_as_paid/form', locals: form_locals
 

@@ -1,47 +1,8 @@
 = form_tag(EffectiveOrders.moneris[:hpp_url], method: :post) do
-  = hidden_field_tag(:ps_store_id, EffectiveOrders.moneris[:ps_store_id])
-  = hidden_field_tag(:hpp_key, EffectiveOrders.moneris[:hpp_key])
-  = hidden_field_tag(:lang, 'en-ca')
-  = hidden_field_tag(:rvar_authenticity_token, form_authenticity_token)
+  - moneris = Effective::Providers::MonerisCharge.new(order: order, purchased_url: purchased_url, declined_url: declined_url)
 
-  - if purchased_url.present?
-    = hidden_field_tag(:rvar_purchased_url, purchased_url)
-
-  - if declined_url.present?
-    = hidden_field_tag(:rvar_declined_url, declined_url)
-
-  = hidden_field_tag(:email, order.user.try(:email))
-  = hidden_field_tag(:cust_id, order.user.to_param)
-
-  = hidden_field_tag(:order_id, [order.to_param, order.billing_name.try(:parameterize).presence, Time.zone.now.to_i].compact.join('-'))
-  = hidden_field_tag(:gst, '%.2f' % (order.tax / 100.0))
-  = hidden_field_tag(:charge_total, '%.2f' % (order.total / 100.0))
-
-  - order.order_items.each_with_index do |item, x|
-    = hidden_field_tag("id#{x}", x)
-    = hidden_field_tag("description#{x}", item.title)
-    = hidden_field_tag("quantity#{x}", item.quantity)
-    = hidden_field_tag("price#{x}", '%.2f' % (item.price / 100.0))
-    = hidden_field_tag("subtotal#{x}", '%.2f' % (item.subtotal / 100.0))
-
-  - if order.billing_address.present?
-    - address = order.billing_address
-    = hidden_field_tag(:bill_first_name, address.first_name || order.try(:user).try(:first_name))
-    = hidden_field_tag(:bill_last_name, address.last_name || order.try(:user).try(:last_name))
-    = hidden_field_tag(:bill_address_one, address.address1)
-    = hidden_field_tag(:bill_city, address.city)
-    = hidden_field_tag(:bill_state_or_province, address.state)
-    = hidden_field_tag(:bill_postal_code, address.postal_code)
-    = hidden_field_tag(:bill_country, address.country)
-
-  - if order.shipping_address.present?
-    - address = order.shipping_address
-    = hidden_field_tag(:ship_first_name, address.first_name || order.try(:user).try(:first_name))
-    = hidden_field_tag(:ship_last_name, address.last_name || order.try(:user).try(:last_name))
-    = hidden_field_tag(:ship_address_one, address.address1)
-    = hidden_field_tag(:ship_city, address.city)
-    = hidden_field_tag(:ship_state_or_province, address.state)
-    = hidden_field_tag(:ship_postal_code, address.postal_code)
-    = hidden_field_tag(:ship_country, address.country)
+  = hidden_field_tag :hpp_preload, ''
+  = hidden_field_tag :hpp_id, moneris.hpp_id
+  = hidden_field_tag :ticket, moneris.ticket
 
   = submit_tag order_checkout_label(:moneris), class: 'btn btn-primary', data: { disable_with: 'Continuing...' }

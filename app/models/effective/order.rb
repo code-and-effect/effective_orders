@@ -310,7 +310,16 @@ module Effective
           self.purchase_state = EffectiveOrders::PURCHASED
           self.purchased_at ||= Time.zone.now
 
-          self.payment = details.kind_of?(Hash) ? details : { details: details.to_s }
+          self.payment = (
+            if details.kind_of?(Hash)
+              details
+            elsif details.respond_to?(:to_unsafe_h)
+              details.to_unsafe_h
+            else
+              { details: details.to_s }
+            end
+          )
+
           self.payment_provider = provider.to_s
           self.payment_card = card.to_s.presence || 'none'
 
