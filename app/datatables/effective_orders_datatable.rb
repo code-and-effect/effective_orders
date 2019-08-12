@@ -23,9 +23,11 @@ class EffectiveOrdersDatatable < Effective::Datatable
     col :purchased_at
 
     if EffectiveOrders.obfuscate_order_ids
-      col(:id, as: :obfuscated_id) do |order|
+      col(:id, sort: false) do |order|
         obfuscated_id = order.to_param
         link_to(obfuscated_id, (admin_namespace? ? effective_orders.admin_order_path(obfuscated_id) : effective_orders.order_path(obfuscated_id)))
+      end.search do |collection, term|
+        collection.where(id: Effective::Order.deobfuscate(term))
       end
     else
       col :id
