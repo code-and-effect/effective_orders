@@ -1,10 +1,16 @@
 module EffectiveSubscriptionsHelper
 
-  def stripe_plans_collection(subscripter = nil)
-    EffectiveOrders.stripe_plans.values.sort do |x, y|
-      amount = (x[:amount] <=> y[:amount])
-      (amount != 0) ? amount : x[:name] <=> y[:name]
-    end
+  def subscripter_stripe_data(subscripter)
+    {
+      email: current_user.email,
+      image: stripe_site_image_url,
+      key: EffectiveOrders.stripe[:publishable_key],
+      name: EffectiveOrders.stripe[:site_title],
+    }
+  end
+
+  def subscripter_stripe_plans(subscripter)
+    EffectiveOrders.stripe_plans
   end
 
   def subscribable_form_with(subscribable)
@@ -25,14 +31,6 @@ module EffectiveSubscriptionsHelper
     render('effective/customers/form', subscripter: subscripter)
   end
 
-  def subscripter_stripe_data(subscripter)
-    {
-      email: current_user.email,
-      image: stripe_site_image_url,
-      key: EffectiveOrders.stripe[:publishable_key],
-      name: EffectiveOrders.stripe[:site_title],
-      plans: EffectiveOrders.stripe_plans.values
-    }
-  end
+
 
 end

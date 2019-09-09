@@ -45,7 +45,9 @@ module Effective
     validates :customer, presence: true
     validates :subscribable, presence: true
 
-    validates :stripe_plan_id, presence: true, inclusion: { in: EffectiveOrders.stripe_plans.keys }
+    validates :stripe_plan_id, presence: true
+    validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.map { |plan| plan[:id] } }
+
     validates :stripe_subscription_id, presence: true
 
     validates :name, presence: true
@@ -59,7 +61,7 @@ module Effective
     end
 
     def plan
-      EffectiveOrders.stripe_plans[stripe_plan_id]
+      EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }
     end
 
     def stripe_subscription

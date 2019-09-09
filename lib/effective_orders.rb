@@ -166,7 +166,7 @@ module EffectiveOrders
   end
 
   def self.stripe_plans
-    return {} unless (stripe? && subscriptions?)
+    return [] unless (stripe? && subscriptions?)
 
     @stripe_plans ||= (
       Rails.logger.info '[STRIPE] index plans'
@@ -180,17 +180,20 @@ module EffectiveOrders
         {}
       end
 
-      plans.inject({}) do |h, plan|
-        h[plan.id] = {
+      plans.map do |plan|
+        {
           id: plan.id,
           product_id: plan.product,
           name: plan.nickname,
           amount: plan.amount,
           currency: plan.currency,
-          description: "$#{'%0.2f' % (plan.amount / 100.0)} #{plan.currency.upcase}/#{plan.interval}",
+          description: ("$#{'%0.2f' % (plan.amount / 100.0)}" + ' ' + plan.currency.upcase + '/' +  plan.interval.to_s),
           interval: plan.interval,
           interval_count: plan.interval_count
-        }; h
+        }
+      end.sort do |x, y|
+        amount = (x[:amount] <=> y[:amount])
+        (amount != 0) ? amount : x[:name] <=> y[:name]
       end
     )
   end

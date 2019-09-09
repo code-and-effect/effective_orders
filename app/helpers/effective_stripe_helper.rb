@@ -4,7 +4,7 @@ module EffectiveStripeHelper
     plan = (
       case obj
       when Hash            ; obj
-      when ::Stripe::Plan  ; EffectiveOrders.stripe_plans.find { |plan| plan.id == obj.id }
+      when ::Stripe::Plan  ; EffectiveOrders.stripe_plans.find { |plan| plan[:id] == obj.id }
       else                 ; raise 'unexpected object'
       end
     )
