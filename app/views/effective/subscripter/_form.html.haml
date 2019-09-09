@@ -29,36 +29,16 @@
       %p To pay for less than #{pluralize(quantity_used, 'member')} you'll have to remove some first.
 
   .card.mb-4
-    .card-body.text-center
-      %h5.card-title Billing Cycle
+    .card-body.card-subscripter
+      %h5.card-title.subscripter-title Billing Cycle
 
       = f.radios :stripe_plan_id, plans.map { |plan| [plan[:name], plan[:id]] }, label: false, buttons: true
 
-      %hr
+      %hr.mt-4.mb-4
 
-      - plans.select { |plan| plan[:interval] == 'month' }.each do |plan|
+      - plans.each do |plan|
         = f.show_if(:stripe_plan_id, plan[:id]) do
-          .effective-orders-stripe-plan{'data-id': plan[:id], 'data-amount': plan[:amount], 'data-interval': plan[:interval]}
-            .d-flex.justify-content-around.align-items-center
-              = f.number_field :quantity, class: 'effective-orders-subscripter-plan-quantity form-control-lg', autocomplete: 'off', required: true
-              %div= 'x'
-              = f.static_field :price_per_person do
-                = price_to_currency(plan[:amount])
-              %div= '='
-              = f.static_field :total_amount do
-                = price_to_currency(plan[:amount] * f.object.quantity.to_i)
-
-      - plans.select { |plan| plan[:interval] == 'year' }.each do |plan|
-        = f.show_if(:stripe_plan_id, plan[:id]) do
-          .effective-orders-stripe-plan{'data-id': plan[:id], 'data-amount': plan[:amount], 'data-interval': plan[:interval]}
-            .d-flex.justify-content-around.align-items-center
-              = f.number_field :quantity, class: 'effective-orders-subscripter-plan-quantity form-control-lg', autocomplete: 'off', required: true
-              %div= 'x'
-              = f.static_field :price_per_person do
-                = price_to_currency(plan[:amount] / 12)
-              %div= '='
-              = f.static_field :total_amount do
-                = price_to_currency(plan[:amount] * f.object.quantity.to_i)
+          = render 'effective/subscripter/plan', plan: plan, f: f
 
   = f.submit(border: false, center: true) do
     = f.save('Update Plan', class: ('effective-orders-stripe-token-required' if f.object.token_required?))

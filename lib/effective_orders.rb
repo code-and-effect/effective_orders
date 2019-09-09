@@ -177,10 +177,10 @@ module EffectiveOrders
         raise e if Rails.env.production?
         Rails.logger.info "[STRIPE ERROR]: #{e.message}"
         Rails.logger.info "[STRIPE ERROR]: effective_orders continuing with empty stripe plans. This would fail loudly in Rails.env.production."
-        {}
+        []
       end
 
-      plans.map do |plan|
+      plans = plans.map do |plan|
         {
           id: plan.id,
           product_id: plan.product,
@@ -192,9 +192,31 @@ module EffectiveOrders
           interval_count: plan.interval_count
         }
       end.sort do |x, y|
-        amount = (x[:amount] <=> y[:amount])
-        (amount != 0) ? amount : x[:name] <=> y[:name]
+        val ||= (x[:interval] <=> y[:interval])
+        val = nil if val == 0
+
+        val ||= (x[:amount] <=> y[:amount])
+        val = nil if val == 0
+
+        val ||= (x[:name] <=> y[:name])
+        val = nil if val == 0
+
+        val || (x[:id] <=> y[:id])
       end
+
+      # Calculate savings for any yearly per user plans, based on their matching monthly plans
+      plans.select { |plan| plan[:interval] == 'year' && plan[:name].downcase.include?('per') }.each do |yearly|
+        monthly_name = yearly[:name].downcase.gsub('year', 'month')
+        monthly = plans.find { |plan| plan[:interval] == 'month' && plan[:name].downcase == monthly_name }
+        next unless monthly
+
+        savings = (monthly[:amount].to_i * 12) - yearly[:amount].to_i
+        next unless savings > 0
+
+        yearly[:savings] = savings
+      end
+
+      plans
     )
   end
 
