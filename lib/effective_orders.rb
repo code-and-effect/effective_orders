@@ -205,7 +205,7 @@ module EffectiveOrders
       end
 
       # Calculate savings for any yearly per user plans, based on their matching monthly plans
-      plans.select { |plan| plan[:interval] == 'year' && plan[:name].downcase.include?('per') }.each do |yearly|
+      plans.select { |plan| plan[:interval] == 'year' }.each do |yearly|
         monthly_name = yearly[:name].downcase.gsub('year', 'month')
         monthly = plans.find { |plan| plan[:interval] == 'month' && plan[:name].downcase == monthly_name }
         next unless monthly
