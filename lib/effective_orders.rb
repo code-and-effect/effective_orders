@@ -220,6 +220,10 @@ module EffectiveOrders
     )
   end
 
+  def self.stripe_plans_collection
+    stripe_plans.map { |plan| [plan[:name], plan[:id]] }
+  end
+
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
 end

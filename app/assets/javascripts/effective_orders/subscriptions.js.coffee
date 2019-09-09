@@ -33,8 +33,6 @@ $(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (e
     interval = plan.data('interval')
 
     total = (quantity * amount)
-    total = (total / 12) if interval == 'year'
-
     total = '$' + (total / 100.0).toFixed(2)
 
     plan.find('#effective_subscripter_total_amount').text(total)

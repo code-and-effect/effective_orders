@@ -6,10 +6,7 @@
     .subscripter-math-symbol= 'x'
 
     = f.static_field :price_per_person, label: 'Price Per Person' do
-      - if plan[:interval] == 'year'
-        = price_to_currency(plan[:amount] / 12)
-      - else
-        = price_to_currency(plan[:amount])
+      = price_to_currency(plan[:amount])
 
       - if plan[:savings]
         .subscripter-savings.text-danger

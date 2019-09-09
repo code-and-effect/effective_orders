@@ -6,14 +6,12 @@
         %thead
           %tr
             %th Subscribed
-            %th Plan
             %th Quantity
             %th Interval
         %tbody
           - customer.subscriptions.each do |sub|
             %tr
               %td= sub.subscribable
-              %td= sub
               %td= sub.quantity
               %td= sub.interval
 
