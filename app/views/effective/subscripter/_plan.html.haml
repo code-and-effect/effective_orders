@@ -22,4 +22,5 @@
 
       - if plan[:savings]
         .subscripter-total-savings.text-danger
-          Save #{price_to_currency(f.object.quantity.to_i * plan[:savings])}
+          Save
+          %span #{price_to_currency(f.object.quantity.to_i * plan[:savings])}

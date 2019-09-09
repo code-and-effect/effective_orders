@@ -50,4 +50,4 @@
           = render 'effective/subscripter/plan', plan: plan, f: f
 
   = f.submit(border: false, center: true) do
-    = f.save('Update Plan', class: ('effective-orders-stripe-token-required' if f.object.token_required?))
+    = f.save('Continue to Billing', class: ('effective-orders-stripe-token-required' if f.object.token_required?))

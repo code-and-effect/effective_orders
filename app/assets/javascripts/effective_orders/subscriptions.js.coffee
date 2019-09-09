@@ -30,7 +30,7 @@ $(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (e
     # Assign all totals
     plan = $(this)
     amount = parseInt(plan.data('amount'))
-    interval = plan.data('plan-interval')
+    interval = plan.data('interval')
 
     total = (quantity * amount)
     total = (total / 12) if interval == 'year'
