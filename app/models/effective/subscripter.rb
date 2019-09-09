@@ -11,7 +11,11 @@ module Effective
     validates :subscribable, presence: true, if: -> { stripe_plan_id.present? }
     validates :customer, presence: true
 
-    validates :stripe_plan_id, inclusion: { allow_blank: true, in: EffectiveOrders.stripe_plans.keys, message: 'unknown plan' }
+    validates :stripe_plan_id, inclusion: {
+      allow_blank: true,
+      in: EffectiveOrders.stripe_plans.map { |plan| plan[:id] },
+      message: 'unknown plan'
+    }
 
     validate(if: -> { stripe_plan_id && plan && plan[:amount] > 0 }) do
       self.errors.add(:stripe_token, 'updated payment card required') if stripe_token.blank? && token_required?
@@ -43,7 +47,7 @@ module Effective
     end
 
     def plan
-      EffectiveOrders.stripe_plans[stripe_plan_id]
+      EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }
     end
 
     def quantity=(value)

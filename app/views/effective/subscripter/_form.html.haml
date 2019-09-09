@@ -1,23 +1,23 @@
 = javascript_include_tag 'https://checkout.stripe.com/checkout.js'
 
-= effective_form_with(model: subscripter, url: effective_orders.subscripter_path, remote: true, data: { stripe: subscripter_stripe_data(subscripter) }) do |f|
+- stripe = subscripter_stripe_data(subscripter)
+- plans = subscripter_stripe_plans(subscripter)
+
+- subscripter.quantity ||= subscripter.subscribable.subscribable_quantity_used
+- subscripter.stripe_plan_id ||= Hash(plans.first)[:id]
+
+= effective_form_with(model: subscripter, url: effective_orders.subscripter_path, remote: true, data: { stripe: stripe, plans: plans }) do |f|
   = f.hidden_field :subscribable_global_id
   = f.hidden_field :stripe_token, value: nil
-  = f.error :stripe_token
-
   = f.hidden_field :stripe_plan_id
-
-  - stripe_plans = stripe_plans_collection(f.object)
-  - stripe_plans = stripe_plans.select { |plan| plan[:name].include?('per User') }
-
-  - f.object.stripe_plan_id ||= (stripe_plans.first || {})[:id]
+  = f.error :stripe_token
 
   - if f.object.subscribable.subscribed?
     - quantity_used = f.object.subscribable.subscribable_quantity_used.to_i
     - quantity_purchased = f.object.subscribable.subscription.quantity
 
     .text-center
-      %p 
+      %p
         You currently have <strong>#{pluralize(quantity_used, 'member')}</strong> in your team
         and have space for <strong>#{pluralize(quantity_purchased, 'member')}</strong>.
 
@@ -26,39 +26,28 @@
       - else
         %p To add more members you will need to update your plan.
 
-      %p To pay for less than #{pluralize(quantity_used, 'member')} you'll have to remove some first.
+      %p To pay for less than #{pluralize(quantity_used, 'member')}, remove some team members first.
+
+  - else
+    .text-center
+      %p
+        You are not currently subscribed to any plan.
+        %br
+        For full access, upgrade to a paid plan below.
+        %br
+        To upgrade with fewer people, remove some team members first.
 
   .card.mb-4
-    .card-body.text-center
-      %h5.card-title Billing Cycle
+    .card-body.card-subscripter
+      %h5.card-title.subscripter-title Billing Cycle
 
-      = f.radios :stripe_plan_id, stripe_plans.map { |plan| [plan[:name], plan[:id]] }, label: false, buttons: true
+      = f.radios :stripe_plan_id, plans.map { |plan| [plan[:name], plan[:id]] }, label: false, buttons: true
 
-      %hr
+      %hr.mt-4.mb-4
 
-      - stripe_plans.select { |plan| plan[:interval] == 'month' }.each do |plan|
+      - plans.each do |plan|
         = f.show_if(:stripe_plan_id, plan[:id]) do
-          .effective-orders-stripe-plan{'data-id': plan[:id], 'data-amount': plan[:amount], 'data-interval': plan[:interval]}
-            .d-flex.justify-content-around.align-items-center
-              = f.number_field :quantity, class: 'effective-orders-subscripter-plan-quantity form-control-lg', autocomplete: 'off', required: true
-              %div= 'x'
-              = f.static_field :price_per_person do
-                = price_to_currency(plan[:amount])
-              %div= '='
-              = f.static_field :total_amount do
-                = price_to_currency(plan[:amount] * f.object.quantity.to_i)
-
-      - stripe_plans.select { |plan| plan[:interval] == 'year' }.each do |plan|
-        = f.show_if(:stripe_plan_id, plan[:id]) do
-          .effective-orders-stripe-plan{'data-id': plan[:id], 'data-amount': plan[:amount], 'data-interval': plan[:interval]}
-            .d-flex.justify-content-around.align-items-center
-              = f.number_field :quantity, class: 'effective-orders-subscripter-plan-quantity form-control-lg', autocomplete: 'off', required: true
-              %div= 'x'
-              = f.static_field :price_per_person do
-                = price_to_currency(plan[:amount] / 12)
-              %div= '='
-              = f.static_field :total_amount do
-                = price_to_currency(plan[:amount] * f.object.quantity.to_i)
+          = render 'effective/subscripter/plan', plan: plan, f: f
 
   = f.submit(border: false, center: true) do
-    = f.save('Update Plan', class: ('effective-orders-stripe-token-required' if f.object.token_required?))
+    = f.save('Continue to Billing', class: ('effective-orders-stripe-token-required' if f.object.token_required?))

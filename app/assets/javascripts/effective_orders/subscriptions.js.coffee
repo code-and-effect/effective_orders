@@ -20,7 +20,9 @@ $(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (e
   return unless $plan.length == 1
 
   # Assign the quantity to each quantity field
-  $plan.closest('form').find(".effective-orders-stripe-plan:not([data-plan-id='#{$plan.data('id')}'])").find("input[name$='[quantity]']").val($obj.val())
+  $plan.closest('form')
+    .find(".effective-orders-stripe-plan:not([data-plan-id='#{$plan.data('id')}'])")
+    .find("input[name$='[quantity]']").val($obj.val())
 
   quantity = $obj.val() || 0
 
@@ -28,11 +30,9 @@ $(document).on 'change keyup', '.effective-orders-subscripter-plan-quantity', (e
     # Assign all totals
     plan = $(this)
     amount = parseInt(plan.data('amount'))
-    interval = plan.data('plan-interval')
+    interval = plan.data('interval')
 
     total = (quantity * amount)
-    total = (total / 12) if interval == 'year'
-
     total = '$' + (total / 100.0).toFixed(2)
 
     plan.find('#effective_subscripter_total_amount').text(total)
@@ -53,6 +53,9 @@ $(document).on 'click', ".effective-orders-stripe-token-required[type='submit'],
   stripe = $form.data('stripe')
   return unless stripe?
 
+  plans = $form.data('plans')
+  return unless plans?
+
   # If we're doing choose button mode
   if $obj.data('choose-stripe-plan-id')
     $form.find("input[name$='[stripe_plan_id]']").val($obj.data('choose-stripe-plan-id'))
@@ -63,7 +66,7 @@ $(document).on 'click', ".effective-orders-stripe-token-required[type='submit'],
   return unless selected_plan_id.length > 0
 
   # Match plan
-  plan = stripe.plans.find (plan, _) => plan.id == selected_plan_id
+  plan = plans.find (plan, _) => plan.id == selected_plan_id
   return unless plan?
 
   # Okay, we're good to call stripe

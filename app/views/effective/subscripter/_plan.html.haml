@@ -1,0 +1,23 @@
+.effective-orders-stripe-plan{data: plan}
+  .d-flex.justify-content-around.align-top
+    = f.integer_field :quantity, autocomplete: 'off', required: true, label: 'Total People', maxlength: 3,
+      class: 'effective-orders-subscripter-plan-quantity form-control-lg'
+
+    .subscripter-math-symbol= 'x'
+
+    = f.static_field :price_per_person, label: 'Price Per Person' do
+      = price_to_currency(plan[:amount])
+
+      - if plan[:savings]
+        .subscripter-savings.text-danger
+          Save #{price_to_currency(plan[:savings])}/person
+
+    .subscripter-math-symbol= '='
+
+    = f.static_field :total_amount, label: 'Total Amount' do
+      = price_to_currency(plan[:amount] * f.object.quantity.to_i)
+
+      - if plan[:savings]
+        .subscripter-total-savings.text-danger
+          Save
+          %span #{price_to_currency(f.object.quantity.to_i * plan[:savings])}
