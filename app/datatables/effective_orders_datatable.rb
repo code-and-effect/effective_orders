@@ -15,6 +15,13 @@ class EffectiveOrdersDatatable < Effective::Datatable
     )
   end
 
+  filters do
+    if admin_namespace?
+      filter :start_date, nil, as: :effective_date_picker
+      filter :end_date, nil, as: :effective_date_picker
+    end
+  end
+
   datatable do
     order :created_at, :desc
 
@@ -92,6 +99,14 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
     if EffectiveOrders.orders_collection_scope.respond_to?(:call)
       scope = EffectiveOrders.orders_collection_scope.call(scope)
+    end
+
+    if filters[:start_date].present?
+      scope = scope.where('created_at > ?', Time.zone.parse(filters[:start_date]).beginning_of_day)
+    end
+
+    if filters[:end_date].present?
+      scope = scope.where('created_at < ?', Time.zone.parse(filters[:end_date]).end_of_day)
     end
 
     attributes[:user_id].present? ? scope.where(user_id: attributes[:user_id]) : scope
