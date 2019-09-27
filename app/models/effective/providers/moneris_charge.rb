@@ -104,7 +104,8 @@ module Effective
       def order_id
         [
           order.to_param,
-          (order.billing_name.to_s.parameterize.presence if EffectiveOrders.moneris[:include_billing_name_in_order_id])
+          (order.billing_name.to_s.parameterize.presence if EffectiveOrders.moneris[:include_billing_name_in_order_id]),
+          Time.zone.now.to_i
         ].compact.join('-')
       end
 
