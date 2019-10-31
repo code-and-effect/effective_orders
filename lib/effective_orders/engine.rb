@@ -2,8 +2,6 @@ module EffectiveOrders
   class Engine < ::Rails::Engine
     engine_name 'effective_orders'
 
-    config.autoload_paths += Dir["#{config.root}/app/models/**/"]
-
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_orders.active_record' do |app|
       ActiveSupport.on_load :active_record do
