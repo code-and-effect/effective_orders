@@ -81,7 +81,12 @@ module Effective
 
     def stripe_plan_ids
       return unless @event.respond_to?(:data)
-      @stripe_plan_ids ||= @event.data.object.lines.map { |line| line.plan.id }
+
+      @stripe_plan_ids ||= begin
+        object = @event.data.object
+        lines = object.respond_to?(:lines) ? object.lines : object.items
+        lines.map { |line| line.plan.id }
+      end
     end
 
     def send_email(email, *mailer_args)
