@@ -22,7 +22,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   datatable do
-    order :id
+    order :id, :desc
 
     bulk_actions_col
 
