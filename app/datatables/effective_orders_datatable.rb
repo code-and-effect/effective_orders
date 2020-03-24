@@ -28,7 +28,10 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
     col :created_at, visible: false
     col :updated_at, visible: false
-    col :id, visible: false
+
+    col :id, label: 'Number' do |order|
+      '#' + order.to_param
+    end
 
     col :purchased_at do |order|
       order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
