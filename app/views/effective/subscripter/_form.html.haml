@@ -6,6 +6,10 @@
 - subscripter.quantity ||= subscripter.subscribable.subscribable_quantity_used
 - subscripter.stripe_plan_id ||= Hash(plans.first)[:id]
 
+- if subscripter.stripe_plan_id.present? && plans.present? && plans.none? { |plan| plan[:id] == subscripter.stripe_plan_id }
+  - closest_plan = plans.find { |plan| plan[:interval] == subscripter.plan[:interval] }
+  - subscripter.stripe_plan_id = closest_plan[:id] if closest_plan.present?
+
 = effective_form_with(model: subscripter, url: effective_orders.subscripter_path, remote: true, data: { stripe: stripe, plans: plans }) do |f|
   = f.hidden_field :subscribable_global_id
   = f.hidden_field :stripe_token, value: nil
@@ -50,4 +54,7 @@
           = render 'effective/subscripter/plan', plan: plan, f: f
 
   = f.submit(border: false, center: true) do
-    = f.save('Continue to Billing', class: ('effective-orders-stripe-token-required' if f.object.token_required?))
+    - if f.object.token_required?
+      = f.save('Continue to Billing', class: 'effective-orders-stripe-token-required')
+    - else
+      = f.save('Upgrade Now')
