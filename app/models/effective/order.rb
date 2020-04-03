@@ -21,6 +21,7 @@ module Effective
     )
 
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
+    attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
 
     # Settings in the /admin action forms
     attr_accessor :send_payment_request_to_buyer # Set by Admin::Orders#new. Should the payment request email be sent after creating an order?
@@ -61,6 +62,10 @@ module Effective
     before_validation { assign_billing_name }
     before_validation { assign_last_address }
 
+    before_validation(if: -> { confirmed_checkout }) do
+      self.state = EffectiveOrders::CONFIRMED if pending?
+    end
+
     # Order validations
     validates :user_id, presence: true
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
@@ -75,41 +80,41 @@ module Effective
     end
 
     # User validations -- An admin skips these when working in the admin/ namespace
-    with_options unless: -> { pending? || skip_buyer_validations? } do |order|
-      order.validates :tax_rate, presence: { message: "can't be determined based on billing address" }
-      order.validates :tax, presence: true
+    with_options unless: -> { pending? || skip_buyer_validations? } do
+      validates :tax_rate, presence: { message: "can't be determined based on billing address" }
+      validates :tax, presence: true
 
       unless EffectiveOrders.skip_user_validation
-        order.validates :billing_name, presence: true
-        order.validates :user, associated: true
+        validates :billing_name, presence: true
+        validates :user, associated: true
       end
 
       if EffectiveOrders.billing_address
-        order.validates :billing_address, presence: true
+        validates :billing_address, presence: true
       end
 
       if EffectiveOrders.shipping_address
-        order.validates :shipping_address, presence: true
+        validates :shipping_address, presence: true
       end
 
       if EffectiveOrders.collect_note_required
-        order.validates :note, presence: true
+        validates :note, presence: true
       end
     end
 
-    with_options if: -> { confirmed? && !skip_buyer_validations? } do |order|
+    with_options if: -> { confirmed? && !skip_buyer_validations? } do
       if EffectiveOrders.terms_and_conditions
-        order.validates :terms_and_conditions, presence: true
+        validates :terms_and_conditions, presence: true
       end
     end
 
     # When Purchased
-    with_options if: -> { purchased? } do |order|
-      order.validates :purchased_at, presence: true
-      order.validates :payment, presence: true
+    with_options if: -> { purchased? } do
+      validates :purchased_at, presence: true
+      validates :payment, presence: true
 
-      order.validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers }
-      order.validates :payment_card, presence: true
+      validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers }
+      validates :payment_card, presence: true
     end
 
     scope :deep, -> { includes(:user, order_items: :purchasable) }

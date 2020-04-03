@@ -1,0 +1,34 @@
+- form ||= local_assigns[:form] || local_assigns[:f]
+
+= render 'effective/orders/order_notes', order: form.object
+= render 'effective/orders/order_items', order: form.object
+
+= form.hidden_field :confirmed_checkout, value: true
+
+- if current_cart.present?
+  .effective-order-change-items
+    = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-secondary'
+
+- if EffectiveOrders.collect_user_fields.present? && form.object.user.present?
+  = render 'effective/orders/order_user_fields', form: form, user: form.object.user
+
+- num_addresses = [EffectiveOrders.billing_address, EffectiveOrders.shipping_address].count(true)
+
+- if num_addresses > 0
+  .effective-order-addresses
+    .row
+      - if EffectiveOrders.billing_address
+        %div{class: "col-md-#{12 / num_addresses}"}
+          %h2 Billing Address
+          = effective_address_fields(form, :billing_address)
+
+      - if EffectiveOrders.shipping_address
+        %div{class: "col-md-#{12 / num_addresses}"}
+          %h2 Shipping Address
+          = effective_address_fields(form, :shipping_address)
+
+- if EffectiveOrders.collect_note
+  = render 'effective/orders/order_note_fields', form: form
+
+- if EffectiveOrders.terms_and_conditions
+  = render 'effective/orders/order_terms_and_conditions_fields', form: form

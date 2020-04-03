@@ -16,7 +16,7 @@ $(document).on 'click', "#effective-orders-new-charge-form form [type='submit']"
   $form = obj.find('form').first()
   stripe = obj.data('stripe')
 
-  EffectiveBootstrap.submitting($form)
+  EffectiveForm.submitting($form)
 
   stripeCheckoutHandler(stripe.key, $form).open
     image: stripe.image
