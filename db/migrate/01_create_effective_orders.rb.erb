@@ -72,6 +72,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.integer   :user_id
 
       t.string    :stripe_customer_id
+      t.string    :payment_method_id
       t.string    :active_card
       t.string    :status
 
