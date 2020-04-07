@@ -79,12 +79,7 @@ module Effective
     protected
 
     def create_customer!
-      return if customer.stripe_customer.present?
-
-      Rails.logger.info "[STRIPE] create customer: #{user.email}"
-      customer.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
-      customer.stripe_customer_id = customer.stripe_customer.id
-      customer.save!
+      customer.create_stripe_customer!
     end
 
     # Update stripe customer card

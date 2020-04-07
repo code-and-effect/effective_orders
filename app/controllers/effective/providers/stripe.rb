@@ -5,6 +5,7 @@ module Effective
 
       def stripe
         @order = Order.find(params[:id])
+        @customer = Effective::Customer.for_user(@order.user)
 
         EffectiveOrders.authorize!(self, :update, @order)
 
@@ -12,6 +13,11 @@ module Effective
 
         if payment.blank? || !payment.kind_of?(Hash)
           return order_declined(payment: payment, provider: 'stripe', declined_url: stripe_params[:declined_url])
+        end
+
+        # Update the customer payment fields
+        if payment[:payment_method_id].present?
+          @customer.update!(payment.slice(:payment_method_id, :active_card))
         end
 
         order_purchased(
@@ -39,24 +45,23 @@ module Effective
           raise('charge not succeeded') unless charge.status == 'succeeded'
 
           card = charge.payment_method_details.try(:card) || {}
+          active_card = "**** **** **** #{card['last4']} #{card['brand']} #{card['exp_month']}/#{card['exp_year']}" if card.present?
 
           {
-            payment_intent_id: intent.id,
-            payment_method: intent.payment_method,
-
             charge_id: charge.id,
+            payment_method_id: charge.payment_method,
+            payment_intent_id: intent.id,
+
+            active_card: active_card,
+            card: card['brand'],
+
             amount: charge.amount,
             created: charge.created,
             currency: charge.currency,
             customer: charge.customer,
-            description: charge.customer,
-            status: charge.status,
+            status: charge.status
+          }.compact
 
-            card: card['brand'],
-            exp_month: card['exp_month'],
-            exp_year: card['exp_year'],
-            last4: card['last4']
-          }
         rescue => e
           e.message
         end

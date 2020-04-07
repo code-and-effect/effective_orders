@@ -27,27 +27,51 @@ class StripeForm {
     this.$form.on('click', '[type=submit]', (event) => { this.submit(event) });
   }
 
-  submit(event) {
-    event.preventDefault();
-    this.confirmCardPayment();
+  shouldUseNewCard() {
+    let $newCardForm = this.$form.children('.collapse.show')
+
+    return (
+      this.$form.get(0).checkValidity() &&
+      (this.data.token_required || $newCardForm.length > 0) &&
+      this.$paymentIntentId.val().length == 0
+    )
   }
 
-  confirmCardPayment() {
-    this.stripe.confirmCardPayment(this.data.client_secret, {
+  submit(event) {
+    event.preventDefault();
+
+    let payment = this.shouldUseNewCard() ? this.useNewCard() : this.useExistingCard();
+
+    payment.then((result) => {
+      if (result.error) {
+        this.errorPayment(result.error)
+      } else if (result.paymentIntent.status == 'succeeded') {
+        this.submitPayment(result.paymentIntent);
+      }
+    });
+  }
+
+  useExistingCard() {
+    return this.stripe.confirmCardPayment(this.data.client_secret, {
+      payment_method: this.data.payment_method
+    });
+  }
+
+  useNewCard() {
+    return this.stripe.confirmCardPayment(this.data.client_secret, {
       payment_method: {
         card: this.card,
         billing_details: {
           email: this.data.email
         }
-      }
-    }).then((result) => {
-      if(result.error) {
-        $('#stripe-card-errors').text(result.error.message);
-        EffectiveForm.invalidate(this.$form);
-      } else if(result.paymentIntent.status == 'succeeded') {
-        this.submitPayment(result.paymentIntent);
-      }
+      },
+      setup_future_usage: 'off_session'
     });
+  }
+
+  errorPayment(error) {
+    $('#stripe-card-errors').text(error.message);
+    EffectiveForm.invalidate(this.$form);
   }
 
   submitPayment(payment) {

@@ -2,16 +2,17 @@
 
 - stripe = stripe_payment_intent(order)
 
-= effective_form_with(scope: :stripe, url: effective_orders.stripe_order_path(order), data: { 'stripe-form': stripe }) do |f|
+= effective_form_with(scope: :stripe, url: effective_orders.stripe_order_path(order), data: { 'stripe-form': stripe.to_json }) do |f|
   = f.hidden_field :purchased_url, value: purchased_url
   = f.hidden_field :declined_url, value: declined_url
 
+  -# This is set by the stripe.js javascript
   = f.hidden_field :payment_intent_id
 
-  - if stripe['payment_required']
+  - if stripe[:token_required]
     = render('effective/orders/stripe/elements')
   - else
-    %p We have your credit card. Your active card *** *** will be charged
+    %p Your active card #{stripe[:active_card]} will be charged.
 
     = collapse('Click here to update your card info', class: 'update-stripe-payment-method') do
       = render('effective/orders/stripe/elements')

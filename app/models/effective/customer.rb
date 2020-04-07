@@ -10,6 +10,7 @@ module Effective
 
     # Attributes
     # stripe_customer_id            :string  # cus_xja7acoa03
+    # payment_method_id             :string  # Last payment method used
     # active_card                   :string  # **** **** **** 4242 Visa 05/12
 
     # timestamps
@@ -29,6 +30,18 @@ module Effective
 
     def email
       user.email if user
+    end
+
+    def create_stripe_customer!
+      return if stripe_customer.present?
+      raise('expected a user') unless user.present?
+
+      Rails.logger.info "[STRIPE] create customer: #{user.email}"
+
+      self.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
+      self.stripe_customer_id = stripe_customer.id
+
+      save!
     end
 
     def stripe_customer

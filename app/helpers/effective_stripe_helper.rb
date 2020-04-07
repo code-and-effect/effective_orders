@@ -46,22 +46,40 @@ module EffectiveStripeHelper
   end
 
   def stripe_payment_intent(order)
-    intent = Stripe::PaymentIntent.create({
+    customer = Effective::Customer.for_user(order.user)
+    customer.create_stripe_customer! # Only creates if customer not already present
+
+    payment = {
       amount: order.total,
       currency: EffectiveOrders.stripe[:currency],
-      metadata: { integration_check: 'accept_a_payment'}
-    })
-
-    payload = {
-      client_secret: intent.client_secret,
-      name: EffectiveOrders.stripe[:site_title],
-      image: stripe_site_image_url,
-      email: order.user.email,
-      key: EffectiveOrders.stripe[:publishable_key],
-      payment_required: true # Mine
+      customer: customer.stripe_customer_id,
+      payment_method: customer.payment_method_id.presence,
+      description: stripe_order_description(order),
+      metadata: { order_id: order.id },
     }
 
-    payload.to_json
+    token_required = customer.token_required?
+
+    intent = begin
+      Rails.logger.info "[STRIPE] create payment intent : #{payment}"
+      Stripe::PaymentIntent.create(payment)
+    rescue Stripe::CardError => e
+      token_required = true
+      Rails.logger.info "[STRIPE] (error) get payment intent : #{e.error.payment_intent.id}"
+      Stripe::PaymentIntent.retrieve(e.error.payment_intent.id)
+    end
+
+    payload = {
+      key: EffectiveOrders.stripe[:publishable_key],
+      client_secret: intent.client_secret,
+      payment_method: intent.payment_method,
+
+      active_card: customer.active_card,
+      email: customer.email,
+      token_required: token_required
+    }
+
+    payload
   end
 
 end
