@@ -10,6 +10,14 @@ Sends order receipt emails automatically.
 
 Has Order History, My Purchases, My Sales and Admin screens.
 
+## Upgrade to effective_orders 4.3
+
+Add the migration
+
+```
+add_column :customers, :payment_method_id, :string
+```
+
 ## effective_orders 4.0
 
 This is the 4.0 series of effective_orders.
