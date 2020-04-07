@@ -23,6 +23,10 @@ module EffectiveOrders
       )
     end
 
+    initializer "effective_orders.append_precompiled_assets" do |app|
+      Rails.application.config.assets.precompile += ['effective_orders/*']
+    end
+
     initializer 'effective_orders.stripe', after: :load_config_initializers do
       if EffectiveOrders.stripe?
         begin
