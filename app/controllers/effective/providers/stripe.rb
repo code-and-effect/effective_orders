@@ -3,65 +3,63 @@ module Effective
     module Stripe
       extend ActiveSupport::Concern
 
-      # TODO: Make stripe charge work with admin checkout workflow, purchased_url and declined_url
-      # Make it save the customer and not require typing in a CC every time.
-
-      def stripe_charge
-        @order ||= Effective::Order.find(stripe_charge_params[:effective_order_id])
-        @stripe_charge = Effective::Providers::StripeCharge.new(stripe_charge_params)
-        @stripe_charge.order = @order
+      def stripe
+        @order = Order.find(params[:id])
 
         EffectiveOrders.authorize!(self, :update, @order)
 
-        if @stripe_charge.valid? && (response = process_stripe_charge(@stripe_charge)) != false
-          order_purchased(
-            payment: response,
-            provider: 'stripe',
-            card: (response[:charge]['source']['brand'] rescue nil)
-          )
-        else
-          @page_title = 'Checkout'
-          flash.now[:danger] = @stripe_charge.errors.full_messages.to_sentence
-          render :show
+        payment = validate_stripe_payment(stripe_params[:payment_intent_id])
+
+        if payment.blank? || !payment.kind_of?(Hash)
+          return order_declined(payment: payment, provider: 'stripe', declined_url: stripe_params[:declined_url])
         end
+
+        order_purchased(
+          payment: payment,
+          provider: 'stripe',
+          card: payment[:card],
+          purchased_url: stripe_params[:purchased_url],
+          declined_url: stripe_params[:declined_url]
+        )
       end
 
       private
 
-      def process_stripe_charge(charge)
-        Effective::Order.transaction do
-          begin
-            subscripter = Effective::Subscripter.new(user: charge.order.user, stripe_token: charge.stripe_token)
-            subscripter.save!
-
-            return charge_with_stripe(charge, subscripter.customer)
-          rescue => e
-            charge.errors.add(:base, "Unable to process order with Stripe. Your credit card has not been charged. Message: \"#{e.message}\".")
-            raise ActiveRecord::Rollback
-          end
-        end
-
-        false
+      def stripe_params
+        params.require(:stripe).permit(:payment_intent_id, :purchased_url, :declined_url)
       end
 
-      def charge_with_stripe(charge, customer)
-        results = { charge: nil }
+      def validate_stripe_payment(payment_intent_id)
+        begin
+          intent = ::Stripe::PaymentIntent.retrieve(payment_intent_id)
+          raise('status is not succeeded') unless intent.status == 'succeeded'
+          raise('charges are not present') unless intent.charges.present?
 
-        if charge.order.total > 0
-          results[:charge] = JSON.parse(::Stripe::Charge.create(
-            amount: charge.order.total,
-            currency: EffectiveOrders.stripe[:currency],
-            customer: customer.stripe_customer.id,
-            description: "Charge for Order ##{charge.order.to_param}"
-          ).to_json)
+          charge = intent.charges.data.first
+          raise('charge not succeeded') unless charge.status == 'succeeded'
+
+          card = charge.payment_method_details.try(:card) || {}
+
+          {
+            payment_intent_id: intent.id,
+            payment_method: intent.payment_method,
+
+            charge_id: charge.id,
+            amount: charge.amount,
+            created: charge.created,
+            currency: charge.currency,
+            customer: charge.customer,
+            description: charge.customer,
+            status: charge.status,
+
+            card: card['brand'],
+            exp_month: card['exp_month'],
+            exp_year: card['exp_year'],
+            last4: card['last4']
+          }
+        rescue => e
+          e.message
         end
-
-        results
-      end
-
-      # StrongParameters
-      def stripe_charge_params
-        params.require(:effective_providers_stripe_charge).permit(:stripe_token, :effective_order_id)
       end
 
     end

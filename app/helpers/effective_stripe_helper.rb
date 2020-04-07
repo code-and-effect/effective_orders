@@ -45,17 +45,23 @@ module EffectiveStripeHelper
     "#{order.num_items} items (#{price_to_currency(order.total)})"
   end
 
-  def stripe_charge_data(order)
-    {
-      stripe: {
-        key: EffectiveOrders.stripe[:publishable_key],
-        name: EffectiveOrders.stripe[:site_title],
-        image: stripe_site_image_url,
-        email: order.user.email,
-        amount: order.total,
-        description: stripe_order_description(order)
-      }.to_json
+  def stripe_payment_intent(order)
+    intent = Stripe::PaymentIntent.create({
+      amount: order.total,
+      currency: EffectiveOrders.stripe[:currency],
+      metadata: { integration_check: 'accept_a_payment'}
+    })
+
+    payload = {
+      client_secret: intent.client_secret,
+      name: EffectiveOrders.stripe[:site_title],
+      image: stripe_site_image_url,
+      email: order.user.email,
+      key: EffectiveOrders.stripe[:publishable_key],
+      payment_required: true # Mine
     }
+
+    payload.to_json
   end
 
 end

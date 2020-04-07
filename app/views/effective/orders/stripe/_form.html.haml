@@ -1,8 +1,19 @@
-= javascript_include_tag 'https://checkout.stripe.com/checkout.js'
+= javascript_include_tag 'https://js.stripe.com/v3/'
 
-#effective-orders-new-charge-form{data: stripe_charge_data(order) }
-  = effective_form_with(model: @stripe_charge || Effective::Providers::StripeCharge.new(order: order), url: effective_orders.stripe_charge_orders_path) do |f|
-    = f.hidden_field :stripe_token
-    = f.hidden_field :effective_order_id
+- stripe = stripe_payment_intent(order)
 
-    = f.submit order_checkout_label(:stripe), border: false
+= effective_form_with(scope: :stripe, url: effective_orders.stripe_order_path(order), data: { 'stripe-form': stripe }) do |f|
+  = f.hidden_field :purchased_url, value: purchased_url
+  = f.hidden_field :declined_url, value: declined_url
+
+  = f.hidden_field :payment_intent_id
+
+  - if stripe['payment_required']
+    = render('effective/orders/stripe/elements')
+  - else
+    %p We have your credit card. Your active card *** *** will be charged
+
+    = collapse('Click here to update your card info', class: 'update-stripe-payment-method') do
+      = render('effective/orders/stripe/elements')
+
+  = f.submit order_checkout_label(:stripe), border: false

@@ -11,6 +11,7 @@ EffectiveOrders::Engine.routes.draw do
         post :pay_by_cheque if EffectiveOrders.cheque?
         post :pretend if EffectiveOrders.pretend?
         post :refund if EffectiveOrders.refunds?
+        post :stripe if EffectiveOrders.stripe?
       end
 
       collection do
@@ -18,7 +19,6 @@ EffectiveOrders::Engine.routes.draw do
 
         post :moneris_postback if EffectiveOrders.moneris?
         post :paypal_postback if EffectiveOrders.paypal?
-        post :stripe_charge if EffectiveOrders.stripe?
       end
     end
 
