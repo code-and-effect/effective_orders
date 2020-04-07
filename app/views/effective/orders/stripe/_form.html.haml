@@ -2,19 +2,30 @@
 
 - stripe = stripe_payment_intent(order)
 
-= effective_form_with(scope: :stripe, url: effective_orders.stripe_order_path(order), data: { 'stripe-form': stripe.to_json }) do |f|
-  = f.hidden_field :purchased_url, value: purchased_url
-  = f.hidden_field :declined_url, value: declined_url
+.card
+  .card-body
+    %h3= order_checkout_label(:stripe)
+    %p
+      %em This checkout is powered by stripe.
 
-  -# This is set by the stripe.js javascript
-  = f.hidden_field :payment_intent_id
+    .my-4.text-center
+      = link_to(image_tag('effective_orders/stripe.png'), 'https://www.stripe.com', target: '_blank')
 
-  - if stripe[:token_required]
-    = render('effective/orders/stripe/elements')
-  - else
-    %p Your active card #{stripe[:active_card]} will be charged.
+    = effective_form_with(scope: :stripe, url: effective_orders.stripe_order_path(order), data: { 'stripe-form': stripe.to_json }) do |f|
+      = f.hidden_field :purchased_url, value: purchased_url
+      = f.hidden_field :declined_url, value: declined_url
 
-    = collapse('Click here to update your card info', class: 'update-stripe-payment-method') do
-      = render('effective/orders/stripe/elements')
+      -# This is set by the stripe.js javascript
+      = f.hidden_field :payment_intent_id
 
-  = f.submit order_checkout_label(:stripe), border: false
+      - if stripe[:token_required]
+        %p Please enter your credit card information.
+        = render('effective/orders/stripe/element')
+      - else
+        %p Your existing card <strong>#{stripe[:active_card]}</strong> will be charged.
+
+        = collapse('Use this card instead...', class: 'update-stripe-payment-method') do
+          = render('effective/orders/stripe/element')
+
+      .mt-4
+        = f.submit 'Pay Now', center: true, border: false

@@ -83,17 +83,15 @@ class StripeForm {
     return {
       base: {
         color: "#32325d",
-        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-        fontSmoothing: "antialiased",
         fontSize: "16px",
-        "::placeholder": { color: "#aab7c4" }
       },
       invalid: {
-        color: "#fa755a",
-        iconColor: "#fa755a"
+        color: "#dc3545",
+        iconColor: "#dc3545"
       }
     };
   }
+
 }
 
 $(document).ready(function () { new StripeForm().initialize(); });
