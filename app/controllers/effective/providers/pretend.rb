@@ -12,9 +12,13 @@ module Effective
           payment: 'for pretend',
           provider: 'pretend',
           card: 'none',
-          purchased_url: params[:purchased_url],
-          declined_url: params[:declined_url]
+          purchased_url: pretend_params[:purchased_url],
+          declined_url: pretend_params[:declined_url]
         )
+      end
+
+      def pretend_params
+        params.require(:pretend).permit(:purchased_url, :declined_url)
       end
 
     end
