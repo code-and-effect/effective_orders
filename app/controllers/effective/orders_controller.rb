@@ -13,7 +13,7 @@ module Effective
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
 
-    before_action :authenticate_user!, except: [:ccbill_postback, :free, :paypal_postback, :pretend]
+    before_action :authenticate_user!, except: [:ccbill_postback, :free, :paypal_postback, :moneris_postback, :pretend]
     before_action :set_page_title, except: [:show]
 
     # If you want to use the Add to Cart -> Checkout flow
