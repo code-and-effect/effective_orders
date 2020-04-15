@@ -8,7 +8,7 @@ module Effective
     include Providers::Moneris if EffectiveOrders.moneris?
     include Providers::Paypal if EffectiveOrders.paypal?
     include Providers::Pretend if EffectiveOrders.pretend?
-    include Providers::Refund if EffectiveOrders.refunds?
+    include Providers::Refund if EffectiveOrders.refund?
     include Providers::Stripe if EffectiveOrders.stripe?
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)

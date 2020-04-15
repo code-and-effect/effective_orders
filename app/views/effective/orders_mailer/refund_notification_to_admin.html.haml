@@ -1,0 +1,15 @@
+%p.effective-orders-receipt-info A new refund has been created!
+
+%p Please sign in to your payment processor and issue the following refund:
+
+%p
+  Refund
+  = price_to_currency(@order.total)
+  to
+  = @order.billing_name
+  = @order.user.email
+
+
+%p Thanks and have a great day!
+
+= render(@order, no_order_actions: true)

@@ -76,7 +76,7 @@ module Effective
       validates :total, presence: true, numericality: {
         greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
         message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
-      }, unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refunds?) }
+      }, unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }
     end
 
     # User validations -- An admin skips these when working in the admin/ namespace
@@ -343,6 +343,7 @@ module Effective
 
       raise "Failed to purchase order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
+      send_refund_notification! if email && refund?
       send_order_receipts! if email
 
       run_purchasable_callbacks(:after_purchase)
@@ -403,6 +404,10 @@ module Effective
 
     def send_pending_order_invoice_to_buyer!
       send_email(:pending_order_invoice_to_buyer, to_param) unless purchased?
+    end
+
+    def send_refund_notification!
+      send_email(:refund_notification_to_admin, to_param) if purchased? && refund?
     end
 
     def skip_qb_sync!

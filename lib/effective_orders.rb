@@ -54,7 +54,6 @@ module EffectiveOrders
   # Features
   mattr_accessor :free_enabled
   mattr_accessor :mark_as_paid_enabled
-  mattr_accessor :refunds_enabled
   mattr_accessor :pretend_enabled
   mattr_accessor :pretend_message
 
@@ -62,6 +61,7 @@ module EffectiveOrders
   mattr_accessor :cheque
   mattr_accessor :moneris
   mattr_accessor :paypal
+  mattr_accessor :refund
   mattr_accessor :stripe
   mattr_accessor :subscriptions  # Stripe subscriptions
   mattr_accessor :trial          # Trial mode
@@ -121,8 +121,8 @@ module EffectiveOrders
     pretend_enabled == true
   end
 
-  def self.refunds?
-    refunds_enabled == true
+  def self.refund?
+    refund.kind_of?(Hash)
   end
 
   def self.stripe?
@@ -144,11 +144,12 @@ module EffectiveOrders
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
     [
-      ('cheque' if cheque?),
+      ('cheque' if cheque? || mark_as_paid?),
       ('free' if free?),
       ('moneris' if moneris?),
       ('paypal' if paypal?),
       ('pretend' if pretend?),
+      ('refund' if refund?),
       ('stripe' if stripe?),
       ('credit card' if mark_as_paid?),
       ('other' if mark_as_paid?),

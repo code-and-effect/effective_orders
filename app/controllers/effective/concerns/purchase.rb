@@ -11,12 +11,12 @@ module Effective
 
           Effective::Cart.where(user_id: @order.user_id).destroy_all
 
-          if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && email
-            flash[:success] = "Payment successful! A receipt has been sent to #{@order.user.email}"
-          elsif @order.free?
-            # Nothing
-          else
-            flash[:success] = 'Payment successful! An email receipt has not been sent.'
+          unless flash[:success]
+            if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && email
+              flash[:success] = "Payment successful! A receipt has been sent to #{@order.user.email}"
+            else
+              flash[:success] = "Payment successful! An email receipt has not been sent."
+            end
           end
 
           redirect_to (purchased_url.presence || effective_orders.purchased_order_path(':id')).gsub(':id', @order.to_param.to_s)

@@ -49,7 +49,7 @@ module EffectiveOrdersHelper
     when :pretend
       'Purchase Order (skip payment processor)'
     when :refund
-      'Complete Refund'
+      'Accept Refund'
     when :stripe
       'Checkout with Credit Card'
     else

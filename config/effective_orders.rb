@@ -98,11 +98,6 @@ EffectiveOrders.setup do |config|
   # This is accessed via the admin screens only. Must have can?(:admin, :effective_orders)
   config.mark_as_paid_enabled = false
 
-  # Refunds
-  # Allow admins to create orders with a negative total
-  # Refunds don't perform any kind of refund action with the payment processor. This just changes the validations.
-  config.refunds_enabled = false
-
   # Pretend Purchase
   # Display a 'Purchase order' button on the Checkout screen allowing the user
   # to purchase an Order without going through the payment processor.
@@ -150,6 +145,7 @@ EffectiveOrders.setup do |config|
     subject_for_order_receipt_to_buyer: '',
     subject_for_payment_request_to_buyer: '',
     subject_for_pending_order_invoice_to_buyer: '',
+    subject_for_refund_notification_to_admin: '',
 
     # Procs yield an Effective::Customer object
     subject_for_subscription_created: '',
@@ -165,7 +161,7 @@ EffectiveOrders.setup do |config|
     layout: 'effective_orders_mailer_layout',
 
     default_from: 'info@example.com',
-    admin_email: 'admin@example.com',
+    admin_email: 'admin@example.com',   # Refund notifications will also be sent here
 
     deliver_method: nil  # When nil, will use deliver_later if active_job is configured, otherwise deliver_now
   }
@@ -227,6 +223,17 @@ EffectiveOrders.setup do |config|
   #     app_key: "#{Rails.root}/config/paypalcerts/#{Rails.env}/app_key.pem"
   #   }
   # end
+
+
+  # Refunds
+  # This does not issue a refund with the payment processor at all.
+  # Instead, we mark the order as purchased, create a refund object to track it, and
+  # send an email to notify_email with instructions to issue a refund
+  config.refund = false
+
+  # config.refund = {
+  #   success: 'Thank you! Your refund will be processed in the next few business days.'
+  # }
 
   # Stripe
   config.stripe = false

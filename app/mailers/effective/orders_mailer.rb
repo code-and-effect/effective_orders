@@ -52,6 +52,16 @@ module Effective
       mail(to: @order.user.email, subject: @subject)
     end
 
+    # This is sent to admin when someone Accepts Refund
+    def refund_notification_to_admin(order_param)
+      @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
+      @user = @order.user
+
+      @subject = subject_for(@order, :refund_notification_to_admin, "New Refund: ##{@order.to_param}")
+
+      mail(to: EffectiveOrders.mailer[:admin_email], subject: @subject)
+    end
+
     # Sent by the invoice.payment_succeeded webhook event
     def subscription_payment_succeeded(customer_param)
       return true unless EffectiveOrders.mailer[:send_subscription_payment_succeeded]

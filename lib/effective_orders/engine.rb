@@ -27,6 +27,14 @@ module EffectiveOrders
       Rails.application.config.assets.precompile += ['effective_orders/*']
     end
 
+    initializer 'effective_orders.refund', after: :load_config_initializers do
+      if EffectiveOrders.refund?
+        unless (EffectiveOrders.mailer[:admin_email].to_s.include?('@') rescue false)
+          raise("config.mailer[:admin_email] must be present when refunds enabled.")
+        end
+      end
+    end
+
     initializer 'effective_orders.stripe', after: :load_config_initializers do
       if EffectiveOrders.stripe?
         begin

@@ -10,8 +10,8 @@
   - if EffectiveOrders.free? && order.free?
     = render partial: '/effective/orders/free/form', locals: provider_locals
 
-  - elsif EffectiveOrders.refunds? && order.refund?
-    -# Nothing
+  - elsif EffectiveOrders.refund? && order.refund?
+    = render partial: '/effective/orders/refund/form', locals: provider_locals
 
   - else
     - if EffectiveOrders.pretend? && EffectiveOrders.pretend_message.present?
@@ -33,10 +33,7 @@
       = render partial: '/effective/orders/cheque/form', locals: provider_locals
 
   - if EffectiveOrders.authorized?(controller, :admin, :effective_orders) && order.user != current_user
-    - if EffectiveOrders.refunds? && order.refund?
-      .effective-order-admin-purchase-actions
-        = render partial: '/effective/orders/refund/form', locals: provider_locals
-    - elsif EffectiveOrders.mark_as_paid?
+    - if EffectiveOrders.mark_as_paid?
       .effective-order-admin-purchase-actions
         = render partial: '/effective/orders/mark_as_paid/form', locals: provider_locals
 
