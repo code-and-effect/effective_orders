@@ -4,10 +4,6 @@ module Admin
 
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
 
-    # def effective_resource
-    #   @_effective_resource ||= Effective::Resource.new('effective/order', namespace: :admin)
-    # end
-
     def new
       @order = Effective::Order.new
 

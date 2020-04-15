@@ -29,7 +29,7 @@ module Effective
     attr_accessor :skip_buyer_validations # Set by Admin::Orders#create
 
     belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
-    has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem'
+    has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem', dependent: :delete_all
 
     accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true

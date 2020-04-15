@@ -89,7 +89,11 @@ class EffectiveOrdersDatatable < Effective::Datatable
       scope = EffectiveOrders.orders_collection_scope.call(scope)
     end
 
-    attributes[:user_id].present? ? scope.where(user_id: attributes[:user_id]) : scope
+    if attributes[:user_id].present?
+      scope = scope.where(user_id: attributes[:user_id])
+    end
+
+    scope
   end
 
 end
