@@ -18,14 +18,14 @@ module Effective
           payment: 'free order. no payment required.',
           provider: 'free',
           card: 'none',
-          purchased_url: params[:purchased_url],
-          declined_url: params[:declined_url],
+          purchased_url: free_params[:purchased_url],
+          declined_url: free_params[:declined_url],
           email: false
         )
       end
 
       def free_params
-        params.require(:effective_order).permit(:purchased_url, :declined_url)
+        params.require(:free).permit(:purchased_url, :declined_url)
       end
 
     end
