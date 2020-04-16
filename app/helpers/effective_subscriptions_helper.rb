@@ -31,6 +31,4 @@ module EffectiveSubscriptionsHelper
     render('effective/customers/form', subscripter: subscripter)
   end
 
-
-
 end

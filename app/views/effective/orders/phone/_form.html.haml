@@ -1,0 +1,5 @@
+= effective_form_with(scope: :phone, url: effective_orders.phone_order_path(order), method: :post) do |f|
+  = f.hidden_field :purchased_url, value: purchased_url
+  = f.hidden_field :declined_url, value: declined_url
+
+  = f.submit order_checkout_label(:phone), center: true, border: false, 'data-confirm': EffectiveOrders.phone[:confirm]

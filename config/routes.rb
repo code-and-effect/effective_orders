@@ -8,7 +8,8 @@ EffectiveOrders::Engine.routes.draw do
 
         post :free if EffectiveOrders.free?
         post :mark_as_paid if EffectiveOrders.mark_as_paid?
-        post :pay_by_cheque if EffectiveOrders.cheque?
+        post :cheque if EffectiveOrders.cheque?
+        post :phone if EffectiveOrders.phone?
         post :pretend if EffectiveOrders.pretend?
         post :refund if EffectiveOrders.refund?
         post :stripe if EffectiveOrders.stripe?

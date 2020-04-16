@@ -292,8 +292,7 @@ module Effective
     end
 
     def confirm!
-      self.state = EffectiveOrders::CONFIRMED
-      save!
+      update!(state: EffectiveOrders::CONFIRMED)
     end
 
     # This lets us skip to the confirmed workflow for an admin...

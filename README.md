@@ -471,8 +471,6 @@ If the configuration options `config.billing_address` and/or `config.shipping_ad
 
 If `config.use_address_full_name` is set to `true` then appropriate form field will be shown and the user will be prompted for the appropriate address full name during the checkout process, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
 
-As well, if the config option `config.collect_user_fields` is present, form fields to collect those user attributes will be present on this page.
-
 When the user submits the form on this screen, a POST to `effective_orders.order_path` is made, and the `Effective::Order` object is validated and created.
 
 On this final checkout screen, links to all configured payment providers are displayed, and the user may choose which payment processor should be used to make a payment.

@@ -33,8 +33,6 @@ module EffectiveOrdersHelper
   end
 
   def order_checkout_label(processor = nil)
-    return 'Checkout' if (EffectiveOrders.single_payment_processor? && ![:pretend, :mark_as_paid, :free, :refund].include?(processor))
-
     case processor
     when :cheque
       'Pay by Cheque'
@@ -46,12 +44,14 @@ module EffectiveOrdersHelper
       'Checkout with Credit Card'
     when :paypal
       'Checkout with PayPal'
+    when :phone
+      'Pay by Phone'
     when :pretend
       'Purchase Order (skip payment processor)'
     when :refund
       'Accept Refund'
     when :stripe
-      'Checkout with Credit Card'
+      'Pay Now'
     else
       'Checkout'
     end

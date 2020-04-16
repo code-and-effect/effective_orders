@@ -163,11 +163,12 @@ EffectiveOrders.setup do |config|
   #######################################
 
   # Cheque
+  # This is an offline payment
   config.cheque = false
 
   # config.cheque = {
-  #   confirm: 'Your order will not be considered purchased until we receive your cheque. Proceed with pay by cheque?',
-  #   success_message: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience. We will mark this order purchased upon receiving payment.'
+  #   confirm: 'Proceed with pay by cheque?',
+  #   success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
   # }
 
   # Moneris
@@ -216,11 +217,20 @@ EffectiveOrders.setup do |config|
   #   }
   # end
 
+  # Phone
+  # This is an offline payment
+  config.phone = false
+
+  # config.phone = {
+  #   confirm: 'Proceed with pay by phone?',
+  #   success: 'Thank you! You have indicated that this order will be purchased by phone. Please give us a call at your earliest convenience.'
+  # }
+
 
   # Refunds
   # This does not issue a refund with the payment processor at all.
   # Instead, we mark the order as purchased, create a refund object to track it, and
-  # send an email to notify_email with instructions to issue a refund
+  # send an email to mailer[:admin_email] with instructions to issue a refund
   config.refund = false
 
   # config.refund = {
