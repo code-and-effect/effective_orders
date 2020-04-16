@@ -28,6 +28,7 @@ module Effective
     end
 
     # This is sent when an admin creates a new order or /admin/orders/new
+    # Or when Pay by Cheque or Pay by Phone (deferred payments)
     # Or uses the order action Send Payment Request
     def payment_request_to_buyer(order_param)
       return true unless EffectiveOrders.mailer[:send_payment_request_to_buyer]

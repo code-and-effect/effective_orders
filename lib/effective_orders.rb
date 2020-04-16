@@ -3,12 +3,13 @@ require 'effective_orders/engine'
 require 'effective_orders/version'
 
 module EffectiveOrders
-  PENDING = 'pending'.freeze
-  CONFIRMED = 'confirmed'.freeze
-  PURCHASED = 'purchased'.freeze
-  DECLINED = 'declined'.freeze
+  PENDING = 'pending'.freeze        # New orders are created in a pending state
+  CONFIRMED = 'confirmed'.freeze    # Once the order has passed checkout step 1
+  DEFERRED = 'deferred'.freeze      # Deferred providers. Cheque or Phone was selected.
+  PURCHASED = 'purchased'.freeze    # Purchased by provider
+  DECLINED = 'declined'.freeze      # Declined by provider
 
-  STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, PURCHASED => PURCHASED, DECLINED => DECLINED }
+  STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, DEFERRED => DEFERRED, PURCHASED => PURCHASED, DECLINED => DECLINED }
 
   # Subscription statuses (as per stripe)
   ACTIVE = 'active'.freeze
@@ -58,6 +59,7 @@ module EffectiveOrders
   mattr_accessor :cheque
   mattr_accessor :moneris
   mattr_accessor :paypal
+  mattr_accessor :phone
   mattr_accessor :refund
   mattr_accessor :stripe
   mattr_accessor :subscriptions  # Stripe subscriptions
@@ -101,6 +103,10 @@ module EffectiveOrders
     free_enabled == true
   end
 
+  def self.deferred?
+    deferred_providers.present?
+  end
+
   def self.mark_as_paid?
     mark_as_paid_enabled == true
   end
@@ -111,6 +117,10 @@ module EffectiveOrders
 
   def self.paypal?
     paypal.kind_of?(Hash)
+  end
+
+  def self.phone?
+    phone.kind_of?(Hash)
   end
 
   def self.pretend?
@@ -140,17 +150,22 @@ module EffectiveOrders
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
     [
-      ('cheque' if cheque? || mark_as_paid?),
+      ('cheque' if cheque?),
       ('credit card' if mark_as_paid?),
       ('free' if free?),
       ('moneris' if moneris?),
       ('paypal' if paypal?),
+      ('phone' if phone?),
       ('pretend' if pretend?),
       ('refund' if refund?),
       ('stripe' if stripe?),
       ('other' if mark_as_paid?),
       'none'
     ].compact
+  end
+
+  def self.deferred_providers
+    [('cheque' if cheque?), ('phone' if phone?)].compact
   end
 
   def self.can_skip_checkout_step1?

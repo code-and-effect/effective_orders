@@ -1,0 +1,9 @@
+- if order.deferred?
+  .effective-order-deferred
+    %table.table
+      %thead
+        %tr
+          %th Payment
+      %tbody
+        %tr
+          %td Waiting for payment by #{order.payment_provider}

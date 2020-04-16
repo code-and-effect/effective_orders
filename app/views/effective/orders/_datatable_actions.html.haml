@@ -1,0 +1,2 @@
+= dropdown(variation: :dropleft) do
+  = dropdown_link_to (order.purchased? ? 'View' : 'Checkout'), effective_orders.order_path(order)

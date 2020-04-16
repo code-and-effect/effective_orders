@@ -8,7 +8,7 @@
       data: { confirm: "Send receipt to #{order.user.email}?" }
 
   - if order.persisted? && EffectiveOrders.authorized?(controller, :admin, :effective_orders)
-    - if order.pending? || order.confirmed?
+    - if order.pending? || order.confirmed? || order.deferred?
       = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
         class: 'btn btn-secondary',
         data: { method: :post, confirm: "Send request for payment to #{order.user.email}?" }

@@ -2,4 +2,7 @@
   = f.hidden_field :purchased_url, value: purchased_url
   = f.hidden_field :declined_url, value: declined_url
 
+  - if EffectiveOrders.pretend_message.present?
+    %p.text-right= EffectiveOrders.pretend_message
+
   = f.submit order_checkout_label(:pretend), border: false

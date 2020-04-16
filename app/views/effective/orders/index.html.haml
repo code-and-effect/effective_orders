@@ -1,12 +1,3 @@
 %h1.effective-heading= @page_title
 
-- if @pending_orders.present?
-  %h2 Pending Orders
-  = render_orders(@pending_orders)
-
-- if @orders.present?
-  %h2 Purchased Orders
-  = render_orders(@orders)
-
-- unless (@pending_orders.present? || @orders.present?)
-  %p You have no purchased orders.
+= render_datatable(@datatable)

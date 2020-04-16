@@ -4,7 +4,7 @@
 
 .card
   .card-body
-    %h3= order_checkout_label(:stripe)
+    %h2 Checkout
     %p
       %em This checkout is powered by stripe.
 
@@ -28,4 +28,4 @@
           = render('effective/orders/stripe/element')
 
       .mt-4
-        = f.submit 'Pay Now', center: true, border: false
+        = f.submit order_checkout_label(:stripe), center: true, border: false

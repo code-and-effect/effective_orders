@@ -1,7 +1,0 @@
-%h1.effective-heading= @page_title
-
-- if EffectiveOrders.cheque[:success_message].present?
-  %p.effective-orders-page-content
-    = EffectiveOrders.cheque[:success_message]
-
-= render @order

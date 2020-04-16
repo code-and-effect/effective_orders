@@ -5,7 +5,7 @@
     = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow, class: 'btn btn-secondary'
 
 .effective-order-purchase-actions
-  - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }
+  - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url }
 
   - if EffectiveOrders.free? && order.free?
     = render partial: '/effective/orders/free/form', locals: provider_locals
@@ -14,9 +14,6 @@
     = render partial: '/effective/orders/refund/form', locals: provider_locals
 
   - else
-    - if EffectiveOrders.pretend? && EffectiveOrders.pretend_message.present?
-      %p.text-right= EffectiveOrders.pretend_message
-
     - if EffectiveOrders.pretend?
       = render partial: '/effective/orders/pretend/form', locals: provider_locals
 
@@ -29,8 +26,9 @@
     - if EffectiveOrders.stripe?
       = render partial: '/effective/orders/stripe/form', locals: provider_locals
 
-    - if EffectiveOrders.cheque? && order.user == current_user
-      = render partial: '/effective/orders/cheque/form', locals: provider_locals
+    - if EffectiveOrders.deferred? && order.user == current_user
+      %p.my-4.text-center - or -
+      = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
   - if EffectiveOrders.authorized?(controller, :admin, :effective_orders) && order.user != current_user
     - if EffectiveOrders.mark_as_paid?

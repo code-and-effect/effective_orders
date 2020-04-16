@@ -1,0 +1,18 @@
+= dropdown(variation: :dropleft) do
+  = dropdown_link_to 'View', effective_orders.admin_order_path(order)
+
+  - if order.purchased? == false
+    = dropdown_link_to 'Edit', effective_orders.edit_admin_order_path(order)
+
+  - if order.purchased?
+    = dropdown_link_to 'Email receipt to buyer', effective_orders.send_buyer_receipt_order_path(order),
+      data: { confirm: "Send receipt to #{order.user.email}?" }
+
+  - if order.pending? || order.confirmed? || order.deferred?
+    = dropdown_link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
+      data: { method: :post, confirm: "Send request for payment to #{order.user.email}?" }
+
+    = dropdown_link_to 'Admin: Checkout', effective_orders.checkout_admin_order_path(order)
+
+    = dropdown_link_to "Delete #{order}", effective_orders.admin_order_path(order),
+      data: { method: :delete, confirm: "Really delete #{order}?" }

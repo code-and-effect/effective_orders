@@ -430,7 +430,6 @@ In addition to the above, the following permissions allow access to the `/admin`
 
 ```ruby
 can :admin, :effective_orders # Can access the admin screens
-can :show, :payment_details # Can see the payment purchase details on orders
 ```
 
 ## Whats Included
@@ -470,8 +469,6 @@ On the Checkout page (`effective_orders.new_order_path`) a new `Effective::Order
 If the configuration options `config.billing_address` and/or `config.shipping_address` options are `true` then the user will be prompted for the appropriate addresses, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
 
 If `config.use_address_full_name` is set to `true` then appropriate form field will be shown and the user will be prompted for the appropriate address full name during the checkout process, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
-
-As well, if the config option `config.collect_user_fields` is present, form fields to collect those user attributes will be present on this page.
 
 When the user submits the form on this screen, a POST to `effective_orders.order_path` is made, and the `Effective::Order` object is validated and created.
 

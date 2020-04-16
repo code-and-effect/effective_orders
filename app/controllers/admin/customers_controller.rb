@@ -5,7 +5,7 @@ module Admin
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_customers] : EffectiveOrders.layout)
 
     def index
-      @datatable = EffectiveCustomersDatatable.new(self)
+      @datatable = Admin::EffectiveCustomersDatatable.new(self)
 
       @page_title = 'Customers'
 

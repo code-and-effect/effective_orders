@@ -1,10 +1,8 @@
 .card
   .card-body
-    %h2 Admin: Offline Payment
+    %h2 Admin: Mark as Paid
 
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
-      = hidden_field_tag(:purchased_url, purchased_url)
-      = hidden_field_tag(:declined_url, declined_url)
       = f.select :payment_provider, EffectiveOrders.payment_providers, required: true
 
       = f.text_field :payment_card,
