@@ -3,6 +3,7 @@ EffectiveOrders::Engine.routes.draw do
     resources :orders, except: [:destroy] do
       member do
         get :purchased
+        get :deferred
         get :declined
         get :send_buyer_receipt
 

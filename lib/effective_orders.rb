@@ -3,12 +3,13 @@ require 'effective_orders/engine'
 require 'effective_orders/version'
 
 module EffectiveOrders
-  PENDING = 'pending'.freeze
-  CONFIRMED = 'confirmed'.freeze
-  PURCHASED = 'purchased'.freeze
-  DECLINED = 'declined'.freeze
+  PENDING = 'pending'.freeze        # New orders are created in a pending state
+  CONFIRMED = 'confirmed'.freeze    # Once the order has passed checkout step 1
+  DEFERRED = 'deferred'.freeze      # Deferred providers. Cheque or Phone was selected.
+  PURCHASED = 'purchased'.freeze    # Purchased by provider
+  DECLINED = 'declined'.freeze      # Declined by provider
 
-  STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, PURCHASED => PURCHASED, DECLINED => DECLINED }
+  STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, DEFERRED => DEFERRED, PURCHASED => PURCHASED, DECLINED => DECLINED }
 
   # Subscription statuses (as per stripe)
   ACTIVE = 'active'.freeze
@@ -102,8 +103,8 @@ module EffectiveOrders
     free_enabled == true
   end
 
-  def self.offline?
-    offline_payment_providers.present?
+  def self.deferred?
+    deferred_providers.present?
   end
 
   def self.mark_as_paid?
@@ -163,7 +164,7 @@ module EffectiveOrders
     ].compact
   end
 
-  def self.offline_payment_providers
+  def self.deferred_providers
     [('cheque' if cheque?), ('phone' if phone?)].compact
   end
 

@@ -8,24 +8,13 @@ module Effective
 
         EffectiveOrders.authorize!(self, :update, @order)
 
-        unless @order.free?
-          flash[:danger] = 'Unable to process free order with a non-zero total'
-          redirect_to effective_orders.order_path(@order)
-          return
-        end
+        flash[:success] = EffectiveOrders.phone[:success]
 
-        order_purchased(
-          payment: 'free order. no payment required.',
-          provider: 'free',
-          card: 'none',
-          purchased_url: free_params[:purchased_url],
-          declined_url: free_params[:declined_url],
-          email: false
-        )
+        order_deferred(provider: 'phone', deferred_url: phone_params[:deferred_url])
       end
 
-      def free_params
-        params.require(:free).permit(:purchased_url, :declined_url)
+      def phone_params
+        params.require(:phone).permit(:deferred_url)
       end
 
     end

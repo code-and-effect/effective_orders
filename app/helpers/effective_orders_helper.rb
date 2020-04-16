@@ -72,14 +72,14 @@ module EffectiveOrdersHelper
     render(partial: 'effective/orders/order', locals: { order: order })
   end
 
-  def render_checkout(order, namespace: nil, purchased_url: nil, declined_url: nil)
+  def render_checkout(order, namespace: nil, purchased_url: nil, declined_url: nil, deferred_url: nil)
     raise 'unable to checkout an order without a user' unless order && order.user
 
-    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
+    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url, namespace: namespace }
 
     if order.purchased?
       render(partial: 'effective/orders/order', locals: locals)
-    elsif order.confirmed? && order.errors.blank?
+    elsif (order.confirmed? || order.deferred?) && order.errors.blank?
       render(partial: 'effective/orders/checkout_step2', locals: locals)
     else
       render(partial: 'effective/orders/checkout_step1', locals: locals)

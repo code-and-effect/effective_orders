@@ -112,6 +112,10 @@ module Effective
       validates :payment_card, presence: true
     end
 
+    with_options if: -> { deferred? } do
+      validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.deferred_providers }
+    end
+
     scope :deep, -> { includes(:user, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
@@ -121,6 +125,7 @@ module Effective
 
     scope :pending, -> { where(state: EffectiveOrders::PENDING) }
     scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
+    scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
     scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
 
     # Effective::Order.new()
@@ -224,6 +229,10 @@ module Effective
       state == EffectiveOrders::CONFIRMED
     end
 
+    def deferred?
+      state == EffectiveOrders::DEFERRED
+    end
+
     def purchased?(provider = nil)
       return false if (state != EffectiveOrders::PURCHASED)
       return true if provider.nil? || payment_provider == provider.to_s
@@ -291,6 +300,7 @@ module Effective
       true
     end
 
+    # Used by admin checkout only
     def confirm!
       update!(state: EffectiveOrders::CONFIRMED)
     end
@@ -341,6 +351,21 @@ module Effective
       send_order_receipts! if email
 
       run_purchasable_callbacks(:after_purchase)
+
+      true
+    end
+
+    def defer!(provider: 'none', email: true)
+      return false if purchased?
+
+      assign_attributes(
+        state: EffectiveOrders::DEFERRED,
+        payment_provider: provider
+      )
+
+      save!
+
+      send_payment_request_to_buyer! if email
 
       true
     end

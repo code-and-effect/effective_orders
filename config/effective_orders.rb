@@ -163,7 +163,7 @@ EffectiveOrders.setup do |config|
   #######################################
 
   # Cheque
-  # This is an offline payment
+  # This is an deferred payment
   config.cheque = false
 
   # config.cheque = {
@@ -218,7 +218,7 @@ EffectiveOrders.setup do |config|
   # end
 
   # Phone
-  # This is an offline payment
+  # This is an deferred payment
   config.phone = false
 
   # config.phone = {

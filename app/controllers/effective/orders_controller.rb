@@ -7,6 +7,7 @@ module Effective
     include Providers::MarkAsPaid if EffectiveOrders.mark_as_paid?
     include Providers::Moneris if EffectiveOrders.moneris?
     include Providers::Paypal if EffectiveOrders.paypal?
+    include Providers::Phone if EffectiveOrders.phone?
     include Providers::Pretend if EffectiveOrders.pretend?
     include Providers::Refund if EffectiveOrders.refund?
     include Providers::Stripe if EffectiveOrders.stripe?
@@ -92,26 +93,18 @@ module Effective
 
     # Thank you for Purchasing this Order. This is where a successfully purchased order ends up
     def purchased # Thank You!
-      @order = if params[:id].present?
-        Effective::Order.find(params[:id])
-      elsif current_user.present?
-        Effective::Order.sorted.purchased_by(current_user).last
-      end
-
-      if @order.blank?
-        redirect_to(effective_orders.orders_path) and return
-      end
-
+      @order = Effective::Order.purchased.find(params[:id])
       EffectiveOrders.authorize!(self, :show, @order)
+    end
 
-      redirect_to(effective_orders.order_path(@order)) unless @order.purchased?
+    def deferred
+      @order = Effective::Order.deferred.find(params[:id])
+      EffectiveOrders.authorize!(self, :show, @order)
     end
 
     def declined
-      @order = Effective::Order.find(params[:id])
+      @order = Effective::Order.declined.find(params[:id])
       EffectiveOrders.authorize!(self, :show, @order)
-
-      redirect_to(effective_orders.order_path(@order)) unless @order.declined?
     end
 
     def send_buyer_receipt
@@ -163,6 +156,7 @@ module Effective
         when 'index'        ; 'Order History'
         when 'purchased'    ; 'Thank You'
         when 'declined'     ; 'Payment Declined'
+        when 'deferred'     ; 'Thank You'
         else 'Checkout'
       end
     end

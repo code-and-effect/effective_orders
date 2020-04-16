@@ -1,7 +1,10 @@
-- if order.purchased? && EffectiveOrders.authorized?(controller, :show, :payment_details)
+- if order.purchased? && (EffectiveOrders.authorized?(controller, :show, :payment_details) rescue false)
   .effective-order-payment-details
-    %h2 Payment Details
     %table.table
+      %thead
+        %tr
+          %th Payment Details
+          %th
       %tbody
         %tr
           %td Provider
@@ -11,8 +14,7 @@
           %td
             = payment_card_label(order.payment_card)
             = (order.payment['f4l4'] rescue nil)
-
         %tr
           %td Purchased at
-          %td= order.purchased_at.strftime('%F %H:%M')
+          %td= order.purchased_at&.strftime('%F %H:%M')
 

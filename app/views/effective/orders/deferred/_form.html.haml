@@ -5,12 +5,12 @@
     %p
       = succeed('.') do
         Please indicate that you would like to pay by
-        = EffectiveOrders.offline_payment_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
+        = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
 
     %p Your order will not be considered purchased until we receive your payment.
 
-    - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }
+    - provider_locals = { order: order, deferred_url: deferred_url, declined_url: declined_url }
 
     .d-flex.justify-content-around
-      - EffectiveOrders.offline_payment_providers.each do |provider|
+      - EffectiveOrders.deferred_providers.each do |provider|
         = render partial: "/effective/orders/#{provider}/form", locals: provider_locals
