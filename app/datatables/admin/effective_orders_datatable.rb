@@ -85,12 +85,16 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     if attributes[:user_id].present?
-      scope = scope.where(user_id: attributes[:user_id])
+      scope = scope.where(user: user)
     else
       scope = scope.joins(:user)
     end
 
     scope
+  end
+
+  def user
+    @user ||= User.find(attributes[:user_id])
   end
 
 end
