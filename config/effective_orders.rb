@@ -54,14 +54,6 @@ EffectiveOrders.setup do |config|
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
   config.obfuscate_order_ids = false
 
-  # If set, the orders#new screen will render effective/orders/_order_user_fields to capture this User Info
-  # The partial can be overridden to customize the form, but the following fields are also fed into strong_paramters
-  config.collect_user_fields = []
-  #config.collect_user_fields = [:first_name, :last_name] # Must be valid fields on the User object
-
-  # Don't validate_associated :user when saving an Order
-  config.skip_user_validation = false
-
   # If set, the orders#new screen will render effective/orders/_order_note_fields to capture any Note info
   config.collect_note = false
   config.collect_note_required = false

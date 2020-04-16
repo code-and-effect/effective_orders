@@ -1,4 +1,4 @@
-- include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? rescue false }
+- include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? }
 - include_quantity_column = order.order_items.any? { |order_item| order_item.quantity > 1 }
 
 .effective-order-items
@@ -19,7 +19,7 @@
             %td.quantity= item.quantity
           - if include_download_column
             %td.download
-              - if item.purchased? && (item.purchased_download_url rescue nil).present?
+              - if item.purchased_download_url.present?
                 = link_to 'download', item.purchased_download_url
               - else
                 = '-'

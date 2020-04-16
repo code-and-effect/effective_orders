@@ -27,7 +27,7 @@ module Effective
       end
 
       def order_declined(payment:, provider:, card: 'none', message: nil, declined_url: nil)
-        @order.decline!(payment: payment, provider: provider, card: card) rescue nil
+        @order.decline!(payment: payment, provider: provider, card: card)
 
         flash[:danger] = message.presence || 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
 

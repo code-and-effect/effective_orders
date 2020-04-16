@@ -5,9 +5,6 @@ module Effective
     belongs_to :order, class_name: 'Effective::Order'
     belongs_to :purchasable, polymorphic: true
 
-    delegate :purchased_download_url, to: :purchasable
-    delegate :purchased?, :declined?, to: :order
-
     # Attributes
     # name                  :string
     # quantity              :integer
@@ -28,6 +25,10 @@ module Effective
 
     def to_s
       (quantity || 0) > 1 ? "#{quantity}x #{name}" : name
+    end
+
+    def purchased_download_url
+      purchasable&.purchased_download_url
     end
 
     def subtotal

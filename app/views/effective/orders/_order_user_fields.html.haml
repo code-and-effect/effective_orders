@@ -1,5 +1,0 @@
-.effective-order-user-fields
-  %h2 User Information
-  = form.fields_for :user, user do |fu|
-    - Array(EffectiveOrders.collect_user_fields).select { |field| fu.object.respond_to?(field) }.each do |field|
-      = fu.text_field field, required: true

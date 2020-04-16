@@ -2,6 +2,7 @@
   %h2 Terms and Conditions
 
   - terms = EffectiveOrders.terms_and_conditions_label
+  - label = terms.respond_to?(:call) ? instance_exec(form.object, &terms) : terms
 
   = form.check_box :terms_and_conditions, required: true,
-    label: ((terms.respond_to?(:call) ? instance_exec(form.object, &terms) : terms).presence || 'I accept the terms and conditions.').html_safe
+    label: (label.presence || 'I accept the terms and conditions.').html_safe

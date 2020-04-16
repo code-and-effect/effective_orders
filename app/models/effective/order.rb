@@ -84,11 +84,6 @@ module Effective
       validates :tax_rate, presence: { message: "can't be determined based on billing address" }
       validates :tax, presence: true
 
-      unless EffectiveOrders.skip_user_validation
-        validates :billing_name, presence: true
-        validates :user, associated: true
-      end
-
       if EffectiveOrders.billing_address
         validates :billing_address, presence: true
       end

@@ -9,11 +9,10 @@
 
       = f.text_field :payment_card,
         label: 'Payment card type, cheque or transaction number',
-        placeholder: 'visa card',
-        hint: 'Full credit card numbers should not be entered here, or anywhere.'
+        hint: 'Do not enter credit card numbers here, or anywhere.'
 
       = f.text_area :payment,
-        label: 'Additional details',
+        label: 'Additional payment details',
         input_html: { value: f.object.payment.kind_of?(Hash) ? f.object.payment[:details] : f.object.payment.presence }
 
       = f.check_box :send_mark_as_paid_email_to_buyer,
@@ -22,5 +21,5 @@
 
       = f.text_area :note_to_buyer, hint: 'This message will be displayed on the receipt.'
 
-      = f.submit order_checkout_label(:mark_as_paid)
+      = f.submit order_checkout_label(:mark_as_paid), center: true
 

@@ -9,9 +9,6 @@
   .effective-order-change-items
     = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-secondary'
 
-- if EffectiveOrders.collect_user_fields.present? && form.object.user.present?
-  = render 'effective/orders/order_user_fields', form: form, user: form.object.user
-
 - num_addresses = [EffectiveOrders.billing_address, EffectiveOrders.shipping_address].count(true)
 
 - if num_addresses > 0

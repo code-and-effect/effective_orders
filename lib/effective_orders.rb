@@ -39,9 +39,6 @@ module EffectiveOrders
   mattr_accessor :shipping_address
   mattr_accessor :use_address_full_name
 
-  mattr_accessor :collect_user_fields
-  mattr_accessor :skip_user_validation
-
   mattr_accessor :collect_note
   mattr_accessor :collect_note_required
   mattr_accessor :collect_note_message
@@ -92,7 +89,6 @@ module EffectiveOrders
       :note, :terms_and_conditions, :confirmed_checkout,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
-      user_attributes: (EffectiveOrders.collect_user_fields || []),
       subscripter: [:stripe_plan_id, :stripe_token]
     ]
   end
@@ -138,20 +134,20 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [cheque?, moneris?, paypal?, stripe?].select { |enabled| enabled }.length == 1
+    [moneris?, paypal?, stripe?].select { |enabled| enabled }.length == 1
   end
 
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
     [
       ('cheque' if cheque? || mark_as_paid?),
+      ('credit card' if mark_as_paid?),
       ('free' if free?),
       ('moneris' if moneris?),
       ('paypal' if paypal?),
       ('pretend' if pretend?),
       ('refund' if refund?),
       ('stripe' if stripe?),
-      ('credit card' if mark_as_paid?),
       ('other' if mark_as_paid?),
       'none'
     ].compact
@@ -162,7 +158,6 @@ module EffectiveOrders
     return false if require_shipping_address
     return false if collect_note
     return false if terms_and_conditions
-    return false if collect_user_fields.present?
     true
   end
 
