@@ -1,32 +1,18 @@
+# This is a user specific EffectiveOrdersDatatable
+
 class EffectiveOrdersDatatable < Effective::Datatable
-  bulk_actions do
-    if EffectiveOrders.authorized?(view.controller, :admin, :effective_orders)
-      bulk_action(
-      'Send payment request email to selected pending orders',
-        effective_orders.bulk_send_payment_request_admin_orders_path,
-        data: { confirm: 'Send payment request emails to pending orders?' }
-      )
-    end
-
-    bulk_action(
-    'Send receipt email to selected purchased orders',
-      effective_orders.bulk_send_buyer_receipt_orders_path,
-      data: { confirm: 'Send receipt emails to purchased orders?' }
-    )
-  end
-
   filters do
-    scope :purchased, default: true
-    scope :deferred
-    scope :refunds
-    scope :not_purchased
-    scope :all
+    unless attributes[:not_purchased]
+      scope :purchased, default: true
+      scope :deferred
+      scope :refunds
+      scope :not_purchased
+      scope :all
+    end
   end
 
   datatable do
     order :id, :desc
-
-    bulk_actions_col
 
     col :created_at, visible: false
     col :updated_at, visible: false
@@ -35,18 +21,10 @@ class EffectiveOrdersDatatable < Effective::Datatable
       '#' + order.to_param
     end
 
-    col :purchased_at do |order|
-      order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
-    end
-
-    if attributes[:user_id].blank?
-      col :user
-
-      col :email, label: 'Email', visible: false, search: :string, sort: :email do |order|
-        link_to order.user.email, (edit_admin_user_path(order.user) rescue admin_user_path(order.user) rescue '#')
+    unless attributes[:not_purchased]
+      col :purchased_at do |order|
+        order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
       end
-
-      col :billing_name, visible: false
     end
 
     if EffectiveOrders.billing_address
@@ -56,10 +34,6 @@ class EffectiveOrdersDatatable < Effective::Datatable
     if EffectiveOrders.shipping_address
       col :shipping_address, visible: false
     end
-
-    # col :state, label: 'State', search: { collection: EffectiveOrders::STATES.invert } do |order|
-    #   EffectiveOrders::STATES[order.state]
-    # end
 
     col :order_items, search: { as: :string }
 
@@ -75,27 +49,31 @@ class EffectiveOrdersDatatable < Effective::Datatable
     col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.payment_providers }
     col :payment_card, label: 'Card', visible: false
 
-    col :note, visible: EffectiveOrders.collect_note
-    col :note_to_buyer, visible: false
-    col :note_internal, visible: false
+    if EffectiveOrders.collect_note
+      col :note
+    end
 
-    actions_col partial: 'admin/orders/actions', partial_as: :order
+    col :note_to_buyer
 
-    aggregate :total
+    actions_col partial: 'effective/orders/datatable_actions', partial_as: :order
   end
 
   collection do
-    scope = Effective::Order.unscoped.includes(:addresses, :order_items, :user)
+    scope = Effective::Order.all.where(user: user).includes(:addresses, :order_items, :user)
 
     if EffectiveOrders.orders_collection_scope.respond_to?(:call)
       scope = EffectiveOrders.orders_collection_scope.call(scope)
     end
 
-    if attributes[:user_id].present?
-      scope = scope.where(user_id: attributes[:user_id])
+    if attributes[:not_purchased]
+      scope = scope.not_purchased
     end
 
     scope
+  end
+
+  def user
+    @user ||= User.find(attributes[:user_id])
   end
 
 end

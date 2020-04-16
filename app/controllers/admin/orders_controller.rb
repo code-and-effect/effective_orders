@@ -123,7 +123,7 @@ module Admin
     end
 
     def index
-      @datatable = EffectiveOrdersDatatable.new(self)
+      @datatable = Admin::EffectiveOrdersDatatable.new(self)
 
       @page_title = 'Orders'
 

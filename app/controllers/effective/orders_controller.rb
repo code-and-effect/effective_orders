@@ -85,9 +85,7 @@ module Effective
 
     # My Orders History
     def index
-      @orders = Effective::Order.deep.purchased.where(user: current_user)
-      @pending_orders = Effective::Order.deep.pending.where(user: current_user)
-
+      @datatable = EffectiveOrdersDatatable.new(user_id: current_user.id)
       EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
@@ -134,7 +132,6 @@ module Effective
 
         @orders.each do |order|
           next unless EffectiveOrders.authorized?(self, :show, order)
-
           order.send_order_receipt_to_buyer!
         end
 
