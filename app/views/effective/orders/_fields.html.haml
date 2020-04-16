@@ -25,7 +25,7 @@
           = effective_address_fields(form, :shipping_address)
 
 - if EffectiveOrders.collect_note
-  = render 'effective/orders/order_note_fields', form: form
+  = render 'effective/orders/fields_note', form: form
 
 - if EffectiveOrders.terms_and_conditions
-  = render 'effective/orders/order_terms_and_conditions_fields', form: form
+  = render 'effective/orders/fields_terms', form: form

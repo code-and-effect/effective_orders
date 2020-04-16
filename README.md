@@ -430,7 +430,6 @@ In addition to the above, the following permissions allow access to the `/admin`
 
 ```ruby
 can :admin, :effective_orders # Can access the admin screens
-can :show, :payment_details # Can see the payment purchase details on orders
 ```
 
 ## Whats Included

@@ -127,6 +127,7 @@ module Effective
     scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
     scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
     scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
+    scope :refunds, -> { purchased.where('total < ?', 0) }
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)

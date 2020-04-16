@@ -17,6 +17,8 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
   filters do
     scope :purchased, default: true
+    scope :deferred
+    scope :refunds
     scope :not_purchased
     scope :all
   end
