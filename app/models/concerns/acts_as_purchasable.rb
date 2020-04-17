@@ -1,7 +1,7 @@
 module ActsAsPurchasable
   extend ActiveSupport::Concern
 
-  module ActiveRecord
+  module Base
     def acts_as_purchasable(*options)
       @acts_as_purchasable = options || []
 

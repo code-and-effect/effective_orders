@@ -3,7 +3,7 @@ module ActsAsSubscribable
 
   mattr_accessor :descendants
 
-  module ActiveRecord
+  module Base
     def acts_as_subscribable(*options)
       @acts_as_subscribable = options || []
 

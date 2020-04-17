@@ -1,7 +1,7 @@
 module ActsAsSubscribableBuyer
   extend ActiveSupport::Concern
 
-  module ActiveRecord
+  module Base
     def acts_as_subscribable_buyer(*options)
       include ::ActsAsSubscribableBuyer
     end

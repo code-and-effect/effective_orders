@@ -5,9 +5,9 @@ module EffectiveOrders
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_orders.active_record' do |app|
       ActiveSupport.on_load :active_record do
-        ActiveRecord::Base.extend(ActsAsPurchasable::ActiveRecord)
-        ActiveRecord::Base.extend(ActsAsSubscribable::ActiveRecord)
-        ActiveRecord::Base.extend(ActsAsSubscribableBuyer::ActiveRecord)
+        ActiveRecord::Base.extend(ActsAsPurchasable::Base)
+        ActiveRecord::Base.extend(ActsAsSubscribable::Base)
+        ActiveRecord::Base.extend(ActsAsSubscribableBuyer::Base)
       end
     end
 
