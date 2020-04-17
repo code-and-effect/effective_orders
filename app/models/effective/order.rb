@@ -79,6 +79,12 @@ module Effective
       }, unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }
     end
 
+    validate(if: -> { tax_rate.present? }) do
+      if (tax_rate > 100.0 || (tax_rate < 0.25 && tax_rate > 0.0000))
+        errors.add(:tax_rate, "is invalid. expected a value between 100.0 (100%) and 0.25 (0.25%) or 0")
+      end
+    end
+
     # User validations -- An admin skips these when working in the admin/ namespace
     with_options unless: -> { pending? || skip_buyer_validations? } do
       validates :tax_rate, presence: { message: "can't be determined based on billing address" }
@@ -437,12 +443,13 @@ module Effective
     protected
 
     def get_tax_rate
-      self.instance_exec(self, &EffectiveOrders.order_tax_rate_method).tap do |rate|
-        rate = rate.to_f
-        if (rate > 100.0 || (rate < 0.25 && rate > 0.0000))
-          raise "expected EffectiveOrders.order_tax_rate_method to return a value between 100.0 (100%) and 0.25 (0.25%) or 0 or nil. Received #{rate}. Please return 5.25 for 5.25% tax."
-        end
+      rate = instance_exec(self, &EffectiveOrders.order_tax_rate_method).to_f
+
+      if (rate > 100.0 || (rate < 0.25 && rate > 0.0000))
+        raise "expected EffectiveOrders.order_tax_rate_method to return a value between 100.0 (100%) and 0.25 (0.25%) or 0 or nil. Received #{rate}. Please return 5.25 for 5.25% tax."
       end
+
+      rate
     end
 
     def get_tax
@@ -454,7 +461,7 @@ module Effective
 
     def assign_order_totals
       self.subtotal = order_items.map { |oi| oi.subtotal }.sum
-      self.tax_rate = get_tax_rate()
+      self.tax_rate = get_tax_rate() unless (tax_rate || 0) > 0
       self.tax = get_tax()
       self.total = subtotal + (tax || 0)
     end
