@@ -1,20 +1,24 @@
 = effective_form_with(model: [:admin, order], url: (order.persisted? ? effective_orders.admin_order_path(order) : effective_orders.admin_orders_path)) do |f|
   - if f.object.new_record?
-    = f.select :user_id, @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s }, label: 'Buyer', required: true
+    = f.select :user_id, @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s },
+      label: 'Buyer', required: true, hint: 'The user that should purchase this order.'
+
+    = f.cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
 
     %h2 Order Items
     .order_items
       - f.object.order_items.build unless f.object.order_items.present?
+
       = f.fields_for :order_items, f.object.order_items do |order_item|
         = render 'order_item_fields', f: order_item
 
       .links
-        = link_to_add_association "Add line item".html_safe, f, :order_items, class: 'btn btn-success', partial: 'order_item_fields'
+        = link_to_add_association (icon('plus') + 'Add item'), f, :order_items, class: 'btn btn-secondary', partial: 'order_item_fields'
 
     %hr
 
     = f.check_box :send_payment_request_to_buyer,
-      label: 'Yes, send a payment request email to the buyer.',
+      label: 'Yes, send a payment request email to the buyer and any cc.',
       value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.mailer[:send_payment_request_to_buyer] : f.object.send_payment_request_to_buyer?)
 
   .row

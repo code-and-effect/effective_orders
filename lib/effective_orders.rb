@@ -88,7 +88,7 @@ module EffectiveOrders
 
   def self.permitted_params
     [
-      :note, :terms_and_conditions, :confirmed_checkout,
+      :cc, :note, :terms_and_conditions, :confirmed_checkout,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,
       subscripter: [:stripe_plan_id, :stripe_token]

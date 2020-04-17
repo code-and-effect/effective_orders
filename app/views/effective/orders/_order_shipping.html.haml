@@ -14,8 +14,16 @@
             %br
 
           - if order.billing_address.present?
-            = render partial: 'effective/addresses/address',
-              locals: { address: order.billing_address, email: order.user.email }
+            = render partial: 'effective/addresses/address', locals: { address: order.billing_address }
+            %br
+
+          = mail_to(order.email)
+
+          - if order.cc.present?
+            %br
+            Cc:
+            - order.cc.split(',').each do |email|
+              = mail_to(email)
 
         - if order.shipping_address.present?
           %td

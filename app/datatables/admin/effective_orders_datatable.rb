@@ -39,9 +39,11 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
 
     if attributes[:user_id].blank?
       col :user
-      col 'user.email', visible: false
       col :billing_name, visible: false
+      col :email, visible: false
     end
+
+    col :cc, visible: false
 
     if EffectiveOrders.billing_address
       col :billing_address, visible: false
@@ -86,8 +88,6 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
 
     if attributes[:user_id].present?
       scope = scope.where(user: user)
-    else
-      scope = scope.joins(:user)
     end
 
     scope

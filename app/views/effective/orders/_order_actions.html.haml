@@ -5,13 +5,13 @@
   - if order.purchased?
     = link_to 'Email receipt to buyer', effective_orders.send_buyer_receipt_order_path(order),
       class: 'btn btn-secondary',
-      data: { confirm: "Send receipt to #{order.user.email}?" }
+      data: { confirm: "Send receipt to #{order.emails_send_to}?" }
 
   - if order.persisted? && EffectiveOrders.authorized?(controller, :admin, :effective_orders)
     - if order.pending? || order.confirmed? || order.deferred?
       = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
         class: 'btn btn-secondary',
-        data: { method: :post, confirm: "Send request for payment to #{order.user.email}?" }
+        data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
 
       = link_to 'Delete', effective_orders.admin_order_path(order),
         class: 'btn btn-danger',

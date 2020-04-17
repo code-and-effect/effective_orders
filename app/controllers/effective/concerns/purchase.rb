@@ -13,7 +13,7 @@ module Effective
 
           if flash[:success].blank?
             if EffectiveOrders.mailer[:send_order_receipt_to_buyer] && email
-              flash[:success] = "Payment successful! A receipt has been sent to #{@order.user.email}"
+              flash[:success] = "Payment successful! A receipt has been sent to #{@order.emails_send_to}"
             else
               flash[:success] = "Payment successful! An email receipt has not been sent."
             end
@@ -36,7 +36,7 @@ module Effective
 
         if flash[:success].blank?
           if email
-            flash[:success] = "Deferred payment created! A request for payment has been sent to #{@order.user.email}"
+            flash[:success] = "Deferred payment created! A request for payment has been sent to #{@order.emails_send_to}"
           else
             flash[:success] = "Deferred payment created!"
           end

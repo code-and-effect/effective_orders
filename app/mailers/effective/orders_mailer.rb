@@ -24,7 +24,7 @@ module Effective
 
       @subject = subject_for(@order, :order_receipt_to_buyer, "Order Receipt: ##{@order.to_param}")
 
-      mail(to: @order.user.email, subject: @subject)
+      mail(to: @order.email, cc: @order.cc, subject: @subject)
     end
 
     # This is sent when an admin creates a new order or /admin/orders/new
@@ -38,7 +38,7 @@ module Effective
 
       @subject = subject_for(@order, :payment_request_to_buyer, "Request for Payment: Invoice ##{@order.to_param}")
 
-      mail(to: @order.user.email, subject: @subject)
+      mail(to: @order.email, cc: @order.cc, subject: @subject)
     end
 
     # This is sent when someone chooses to Pay by Cheque
@@ -50,7 +50,7 @@ module Effective
 
       @subject = subject_for(@order, :pending_order_invoice_to_buyer, "Pending Order: ##{@order.to_param}")
 
-      mail(to: @order.user.email, subject: @subject)
+      mail(to: @order.email, cc: @order.cc, subject: @subject)
     end
 
     # This is sent to admin when someone Accepts Refund

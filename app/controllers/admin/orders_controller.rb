@@ -43,7 +43,7 @@ module Admin
           @order.pending!
 
           message = 'Successfully created order'
-          message << ". A request for payment has been sent to #{@order.user.email}" if @order.send_payment_request_to_buyer?
+          message << ". A request for payment has been sent to #{@order.emails_send_to}" if @order.send_payment_request_to_buyer?
           flash[:success] = message
 
           redirect_to(admin_redirect_path) and return
@@ -149,7 +149,7 @@ module Admin
       authorize_effective_order!
 
       if @order.send_payment_request_to_buyer!
-        flash[:success] = "A request for payment has been sent to #{@order.user.email}"
+        flash[:success] = "A request for payment has been sent to #{@order.emails_send_to}"
       else
         flash[:danger] = 'Unable to send payment request'
       end
@@ -179,8 +179,8 @@ module Admin
     private
 
     def order_params
-      params.require(:effective_order).permit(:user_id, :send_payment_request_to_buyer,
-        :note_internal, :note_to_buyer,
+      params.require(:effective_order).permit(:user_id, :cc,
+        :send_payment_request_to_buyer, :note_internal, :note_to_buyer,
         :payment_provider, :payment_card, :payment, :send_mark_as_paid_email_to_buyer,
         order_items_attributes: [
           :quantity, :_destroy, purchasable_attributes: [

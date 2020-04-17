@@ -42,9 +42,11 @@ module Effective
     # note_to_buyer     :text   # From admin to buyer
     # note_internal     :text   # Internal admin only
     #
-    # billing_name      :string # name of buyer
-    # payment           :text   # serialized hash containing all the payment details.
+    # billing_name      :string   # name of buyer
+    # email             :string   # same as user.email
+    # cc                :string   # can be set by admin
     #
+    # payment           :text     # serialized hash containing all the payment details.
     # payment_provider  :string
     # payment_card      :string
     #
@@ -60,6 +62,7 @@ module Effective
 
     before_validation { assign_order_totals }
     before_validation { assign_billing_name }
+    before_validation { assign_email }
     before_validation { assign_last_address }
 
     before_validation(if: -> { confirmed_checkout }) do
@@ -68,6 +71,9 @@ module Effective
 
     # Order validations
     validates :user_id, presence: true
+    validates :email, presence: true, email: true  # email and cc validators are from effective_resources
+    validates :cc, email_cc: true
+
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
     validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
     validates :subtotal, presence: true
@@ -411,6 +417,11 @@ module Effective
       true
     end
 
+    # Doesn't control anything. Purely for the flash messaging
+    def emails_send_to
+      [email, cc.presence].compact.to_sentence
+    end
+
     def send_order_receipts!
       send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
       send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
@@ -468,6 +479,10 @@ module Effective
 
     def assign_billing_name
       self.billing_name = [(billing_address.full_name.presence if billing_address.present?), (user.to_s.presence)].compact.first
+    end
+
+    def assign_email
+      self.email = user&.email
     end
 
     def assign_last_address
