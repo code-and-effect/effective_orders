@@ -3,7 +3,7 @@
     = f.select :user_id, @users || User.all.to_a.sort { |user1, user2| user1.to_s <=> user2.to_s },
       label: 'Buyer', required: true, hint: 'The user that should purchase this order.'
 
-    = f.cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
+    = f.email_cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
 
     %h2 Order Items
     .order_items
