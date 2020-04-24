@@ -42,12 +42,16 @@ class StripeForm {
 
     let payment = this.shouldUseNewCard() ? this.useNewCard() : this.useExistingCard();
 
+    $.active = $.active + 1;
+
     payment.then((result) => {
       if (result.error) {
         this.errorPayment(result.error)
       } else if (result.paymentIntent.status == 'succeeded') {
         this.submitPayment(result.paymentIntent);
       }
+    }).then((result) => {
+      $.active = $.active - 1;
     });
   }
 

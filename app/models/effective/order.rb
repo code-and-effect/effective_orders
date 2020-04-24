@@ -504,7 +504,7 @@ module Effective
     end
 
     def update_purchasables_purchased_order!
-      order_items.each { |oi| oi.purchasable.update_column(:purchased_order_id, self.id) }
+      order_items.each { |oi| oi.purchasable&.update_column(:purchased_order_id, self.id) }
     end
 
     def run_purchasable_callbacks(name)
