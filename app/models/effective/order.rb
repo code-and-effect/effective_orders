@@ -337,12 +337,13 @@ module Effective
 
       assign_attributes(
         state: EffectiveOrders::PURCHASED,
-        purchased_at: Time.zone.now,
         payment: payment_to_h(payment),
         payment_provider: provider,
         payment_card: (card.presence || 'none'),
         skip_buyer_validations: skip_buyer_validations
       )
+
+      self.purchased_at ||= Time.zone.now
 
       Effective::Order.transaction do
         begin
