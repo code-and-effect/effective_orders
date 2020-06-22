@@ -15,7 +15,7 @@
               %td= sub.quantity
               %td= sub.interval
 
-- if customer.stripe_customer.invoices.present?
+- if customer.invoices.present?
   .card.my-4
     .card-header Invoices
     .card-body
@@ -26,7 +26,7 @@
             %th Invoice
             %th Total
         %tbody
-          - customer.stripe_customer.invoices.each do |invoice|
+          - customer.invoices.each do |invoice|
             - date_method = [(:date if invoice.respond_to?(:date)), (:period_start if invoice.respond_to?(:period_start)), :created].compact.first
             %tr
               %td= link_to Time.zone.at(invoice.public_send(date_method)).strftime('%F'), invoice.invoice_pdf

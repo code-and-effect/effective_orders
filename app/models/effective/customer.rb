@@ -51,6 +51,13 @@ module Effective
       end
     end
 
+    def invoices
+      @invoices ||= if stripe_customer_id.present?
+        Rails.logger.info "[STRIPE] list invoices: #{stripe_customer_id}"
+        ::Stripe::Invoice.list(customer: stripe_customer_id) rescue nil
+      end
+    end
+
     def upcoming_invoice
       @upcoming_invoice ||= if stripe_customer_id.present?
         Rails.logger.info "[STRIPE] get upcoming invoice: #{stripe_customer_id}"

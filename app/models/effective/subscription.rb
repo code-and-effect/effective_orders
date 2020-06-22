@@ -56,6 +56,10 @@ module Effective
 
     validates :status, inclusion: { in: EffectiveOrders::STATUSES.keys }
 
+    before_validation do
+      self.name ||= EffectiveOrders.stripe_plans.find { |plan| plan[:id] == stripe_plan_id }&[:name] || 'Subscribed Plan'
+    end
+
     def to_s
       name || 'New Subscription'
     end

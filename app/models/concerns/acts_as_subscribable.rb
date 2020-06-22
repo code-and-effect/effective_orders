@@ -7,9 +7,11 @@ module ActsAsSubscribable
     def acts_as_subscribable(*options)
       @acts_as_subscribable = options || []
 
-      instance = new()
-      raise 'must respond to trialing_until' unless instance.respond_to?(:trialing_until)
-      raise 'must respond to subscription_status' unless instance.respond_to?(:subscription_status)
+      # if table_exists?
+      #   instance = new()
+      #   raise 'must respond to trialing_until' unless instance.respond_to?(:trialing_until) || !EffectiveOrders.trial?
+      #   raise 'must respond to subscription_status' unless instance.respond_to?(:subscription_status)
+      # end
 
       include ::ActsAsSubscribable
       (ActsAsSubscribable.descendants ||= []) << self

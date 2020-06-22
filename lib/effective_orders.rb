@@ -183,7 +183,7 @@ module EffectiveOrders
       Rails.logger.info '[STRIPE] index plans'
 
       plans = begin
-        Stripe::Plan.all
+        Stripe::Plan.respond_to?(:all) ? Stripe::Plan.all : Stripe::Plan.list
       rescue => e
         raise e if Rails.env.production?
         Rails.logger.info "[STRIPE ERROR]: #{e.message}"
@@ -192,15 +192,18 @@ module EffectiveOrders
       end
 
       plans = plans.map do |plan|
+        description = ("$#{'%0.2f' % (plan.amount / 100.0)}" + ' ' + plan.currency.upcase + '/' +  plan.interval.to_s)
+
         {
           id: plan.id,
           product_id: plan.product,
-          name: plan.nickname,
+          name: plan.nickname || description,
+          description: description,
           amount: plan.amount,
           currency: plan.currency,
-          description: ("$#{'%0.2f' % (plan.amount / 100.0)}" + ' ' + plan.currency.upcase + '/' +  plan.interval.to_s),
           interval: plan.interval,
-          interval_count: plan.interval_count
+          interval_count: plan.interval_count,
+          trial_period_days: plan.trial_period_days
         }
       end.sort do |x, y|
         val ||= (x[:interval] <=> y[:interval])
