@@ -22,7 +22,7 @@ module ActsAsSubscribable
     has_one :subscription, as: :subscribable, class_name: 'Effective::Subscription', inverse_of: :subscribable
     has_one :customer, through: :subscription, class_name: 'Effective::Customer'
 
-    before_validation(if: -> { trialing_until.blank? && EffectiveOrders.trial? }) do
+    before_validation(if: -> { EffectiveOrders.trial? && trialing_until.blank? }) do
       self.trialing_until = (Time.zone.now + EffectiveOrders.trial.fetch(:length)).beginning_of_day
     end
 
@@ -30,7 +30,10 @@ module ActsAsSubscribable
       raise :abort unless (subscripter.destroy! rescue false)
     end
 
-    validates :trialing_until, presence: true, if: -> { EffectiveOrders.trial? }
+    if EffectiveOrders.trial?
+      validates :trialing_until, presence: true
+    end
+
     validates :subscription_status, inclusion: { allow_nil: true, in: EffectiveOrders::STATUSES.keys }
 
     scope :trialing, -> { where(subscription_status: nil).where('trialing_until > ?', Time.zone.now) }
