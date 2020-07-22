@@ -86,13 +86,13 @@ module EffectiveOrdersHelper
     end
   end
 
-  def render_checkout_step1(order, namespace: nil, purchased_url: nil, declined_url: nil)
-    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
+  def render_checkout_step1(order, namespace: nil, purchased_url: nil, declined_url: nil, deferred_url: nil)
+    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url, namespace: namespace }
     render(partial: 'effective/orders/checkout_step1', locals: locals)
   end
 
-  def render_checkout_step2(order, namespace: nil, purchased_url: nil, declined_url: nil)
-    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, namespace: namespace }
+  def render_checkout_step2(order, namespace: nil, purchased_url: nil, declined_url: nil, deferred_url: nil)
+    locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url, namespace: namespace }
     render(partial: 'effective/orders/checkout_step2', locals: locals)
   end
 
