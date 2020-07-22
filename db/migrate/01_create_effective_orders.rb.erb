@@ -2,6 +2,10 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
   def self.up
     create_table <%= @orders_table_name %> do |t|
       t.integer   :user_id
+
+      t.integer   :parent_id
+      t.string    :parent_type
+
       t.string    :state
       t.datetime  :purchased_at
 

@@ -28,6 +28,9 @@ module Effective
     attr_accessor :send_mark_as_paid_email_to_buyer  # Set by Admin::Orders#mark_as_paid
     attr_accessor :skip_buyer_validations # Set by Admin::Orders#create
 
+    # If we want to use orders in a has_many way
+    belongs_to :parent, polymorphic: true, optional: true
+
     belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
     has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem', dependent: :delete_all
 
