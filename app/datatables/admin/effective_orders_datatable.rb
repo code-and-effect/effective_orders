@@ -14,11 +14,13 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
   end
 
   filters do
-    scope :purchased, default: true
-    scope :deferred
-    scope :refunds
-    scope :not_purchased
-    scope :all
+    if attributes[:user_id].blank? && attributes[:parent_id].blank?
+      scope :purchased, default: true
+      scope :deferred
+      scope :refunds
+      scope :not_purchased
+      scope :all
+    end
   end
 
   datatable do
@@ -42,6 +44,8 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
       col :billing_name, visible: false
       col :email, visible: false
     end
+
+    col :parent, visible: false, search: :string
 
     col :cc, visible: false
 
@@ -88,6 +92,10 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
 
     if attributes[:user_id].present?
       scope = scope.where(user: user)
+    end
+
+    if attributes[:parent_id].present? && attributes[:parent_type].present?
+      scope = scope.where(parent_id: attributes[:parent_id], parent_type: attributes[:parent_type])
     end
 
     scope

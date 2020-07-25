@@ -21,6 +21,8 @@ class EffectiveOrdersDatatable < Effective::Datatable
       '#' + order.to_param
     end
 
+    col :parent, visible: false, search: :string
+
     unless attributes[:not_purchased]
       col :purchased_at do |order|
         order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
@@ -67,6 +69,10 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
     if attributes[:not_purchased]
       scope = scope.not_purchased
+    end
+
+    if attributes[:parent_id].present? && attributes[:parent_type].present?
+      scope = scope.where(parent_id: attributes[:parent_id], parent_type: attributes[:parent_type])
     end
 
     scope
