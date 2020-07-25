@@ -225,6 +225,24 @@ module Effective
       retval.size == 1 ? retval.first : retval
     end
 
+
+    def update_prices!
+      raise('already purchased') if purchased?
+      raise('must be pending') unless pending?
+
+      order_items.each do |item|
+        purchasable = item.purchasable
+
+        if purchasable.blank? || purchasable.marked_for_destruction?
+          item.mark_for_destruction 
+        else
+          item.price = purchasable.price
+        end
+      end
+
+      save!
+    end
+
     def to_s
       if refund?
         "Refund ##{to_param}"
