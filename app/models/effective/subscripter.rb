@@ -126,7 +126,13 @@ module Effective
       return false unless subscription.stripe_subscription.blank?
 
       Rails.logger.info "[STRIPE] create subscription: #{items}"
-      stripe_subscription = Stripe::Subscription.create(customer: customer.stripe_customer_id, items: items, metadata: metadata)
+
+      stripe_subscription = Stripe::Subscription.create(
+        customer: customer.stripe_customer_id,
+        items: items,
+        metadata: metadata,
+        trial_from_plan: true
+      )
 
       subscription.update!(
         stripe_subscription: stripe_subscription,

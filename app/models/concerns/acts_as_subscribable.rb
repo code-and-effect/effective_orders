@@ -67,6 +67,12 @@ module ActsAsSubscribable
     subscribed? && subscription_status == EffectiveOrders::PAST_DUE
   end
 
+  # If we do use stripe
+  def subscription_trialing?
+    subscribed? && subscription_status == EffectiveOrders::TRIALING
+  end
+
+  # If we don't use stripe
   def trialing?
     subscription_status.blank?
   end

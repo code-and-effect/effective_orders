@@ -79,6 +79,10 @@ module Effective
       name.to_s <=> other&.name.to_s
     end
 
+    def trialing?
+      status == 'trialing'
+    end
+
     def active?
       status == 'active'
     end

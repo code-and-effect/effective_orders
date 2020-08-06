@@ -14,9 +14,10 @@ module EffectiveOrders
   # Subscription statuses (as per stripe)
   ACTIVE = 'active'.freeze
   PAST_DUE = 'past_due'.freeze
+  TRIALING = 'trialing'.freeze
   CANCELED = 'canceled'.freeze
 
-  STATUSES = { ACTIVE => ACTIVE, PAST_DUE => PAST_DUE, CANCELED => CANCELED }
+  STATUSES = { ACTIVE => ACTIVE, PAST_DUE => PAST_DUE, CANCELED => CANCELED, TRIALING => TRIALING }
 
   # The following are all valid config keys
   mattr_accessor :orders_table_name
