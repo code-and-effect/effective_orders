@@ -234,7 +234,7 @@ module Effective
         purchasable = item.purchasable
 
         if purchasable.blank? || purchasable.marked_for_destruction?
-          item.mark_for_destruction 
+          item.mark_for_destruction
         else
           item.price = purchasable.price
         end
@@ -487,13 +487,17 @@ module Effective
 
     def get_tax
       return nil unless tax_rate.present?
-      order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+      present_order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
     end
 
     private
 
+    def present_order_items
+      order_items.reject { |oi| oi.marked_for_destruction? }
+    end
+
     def assign_order_totals
-      self.subtotal = order_items.map { |oi| oi.subtotal }.sum
+      self.subtotal = present_order_items.map { |oi| oi.subtotal }.sum
       self.tax_rate = get_tax_rate() unless (tax_rate || 0) > 0
       self.tax = get_tax()
       self.total = subtotal + (tax || 0)
