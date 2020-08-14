@@ -4,6 +4,8 @@ module Effective
 
     include Effective::CrudController
 
+    before_action :authenticate_user!
+
     submit :save, 'Save', success: -> { 'Successfully updated card.' }
     page_title 'Customer Settings'
 

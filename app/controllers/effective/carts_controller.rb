@@ -2,6 +2,8 @@ module Effective
   class CartsController < ApplicationController
     layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:carts] : EffectiveOrders.layout)
 
+    before_action :authenticate_user!
+
     def show
       @cart = current_cart
       @pending_orders = Effective::Order.pending.where(user: current_user) if current_user.present?
