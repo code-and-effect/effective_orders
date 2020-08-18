@@ -382,10 +382,10 @@ module Effective
 
       raise "Failed to purchase order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
+      run_purchasable_callbacks(:after_purchase)
+
       send_refund_notification! if email && refund?
       send_order_receipts! if email
-
-      run_purchasable_callbacks(:after_purchase)
 
       true
     end
@@ -538,7 +538,11 @@ module Effective
     end
 
     def send_email(email, *mailer_args)
-      Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
+      begin
+        Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
+      rescue => e
+        raise if Rails.env.development? || Rails.env.test?
+      end
     end
 
     def truthy?(value)
