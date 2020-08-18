@@ -8,7 +8,7 @@ this.StripeForm ||= class StripeForm
     @card = null
 
   initialize: ->
-    @form = $('form[data-stripe-form]').first()
+    @form = $('form[data-stripe-form]:not(.initialized)').first()
     return false unless @form.length > 0
 
     @paymentIntent = @form.find("input[name$='[payment_intent_id]']").first()
@@ -17,6 +17,7 @@ this.StripeForm ||= class StripeForm
     @card = @stripe.elements().create('card', @style())
 
     @mount()
+    @form.addClass('initialized')
 
   style: ->
     style: {
