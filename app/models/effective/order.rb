@@ -228,7 +228,7 @@ module Effective
 
     def update_prices!
       raise('already purchased') if purchased?
-      raise('must be pending') unless pending?
+      raise('must be pending or confirmed') unless pending? || confirmed?
 
       order_items.each do |item|
         purchasable = item.purchasable
