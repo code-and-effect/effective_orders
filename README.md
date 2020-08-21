@@ -828,6 +828,12 @@ effective_orders works around this by appending a timestamp to the order ID.
 
 Make sure `gem 'stripe'` is included in your Gemfile.
 
+Add to your application layout / header
+
+```
+= javascript_include_tag 'https://js.stripe.com/v3/'
+```
+
 First register for an account with Stripe
 
 https://manage.stripe.com/register
@@ -1001,4 +1007,3 @@ MIT License.  Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Bonus points for test coverage
 6. Create new Pull Request
-

@@ -76,3 +76,4 @@ this.StripeForm ||= class StripeForm
     EffectiveForm.invalidate(@form);
 
 $ -> (new StripeForm()).initialize()
+$(document).on 'turbolinks:load', -> (new StripeForm()).initialize()
