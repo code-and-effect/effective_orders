@@ -204,7 +204,7 @@ module EffectiveOrders
           currency: plan.currency,
           interval: plan.interval,
           interval_count: plan.interval_count,
-          trial_period_days: plan.trial_period_days
+          trial_period_days: (plan.trial_period_days if plan.respond_to?(:trial_period_days))
         }
       end.sort do |x, y|
         val ||= (x[:interval] <=> y[:interval])
