@@ -24,7 +24,8 @@ module Effective
 
       def mark_as_paid_params
         params.require(:effective_order).permit(
-          :payment, :payment_provider, :payment_card, :note_to_buyer, :send_mark_as_paid_email_to_buyer
+          :purchased_at, :payment, :payment_provider, :payment_card,
+          :note_to_buyer, :send_mark_as_paid_email_to_buyer
         )
       end
 

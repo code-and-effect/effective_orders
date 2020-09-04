@@ -3,6 +3,8 @@
     %h2 Admin: Mark as Paid
 
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
+      = f.date_field :purchased_at, required: true
+
       = f.select :payment_provider, EffectiveOrders.payment_providers, required: true
 
       = f.text_field :payment_card,
@@ -20,4 +22,3 @@
       = f.text_area :note_to_buyer, hint: 'This message will be displayed on the receipt.'
 
       = f.submit order_checkout_label(:mark_as_paid), center: true
-
