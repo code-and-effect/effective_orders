@@ -31,7 +31,7 @@ module Effective
     end
 
     def customer
-      @customer ||= Effective::Customer.deep.where(user: user).first_or_initialize
+      @customer ||= Effective::Customer.deep.where(user: subscribable&.subscribable_buyer || user).first_or_initialize
     end
 
     def current_user=(user)
