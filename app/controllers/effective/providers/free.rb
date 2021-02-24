@@ -4,9 +4,11 @@ module Effective
       extend ActiveSupport::Concern
 
       def free
+        raise('free provider is not available') unless EffectiveOrders.free?
+
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :update, @order)
 
         unless @order.free?
           flash[:danger] = 'Unable to process free order with a non-zero total'

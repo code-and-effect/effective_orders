@@ -2,12 +2,15 @@ module Effective
   class CartItem < ActiveRecord::Base
     self.table_name = EffectiveOrders.cart_items_table_name.to_s
 
-    belongs_to :cart, counter_cache: true, class_name: 'Effective::Cart'
+    belongs_to :cart, counter_cache: true
     belongs_to :purchasable, polymorphic: true
 
-    # Attributes
-    # quantity    :integer
-    # timestamps
+    effective_resource do
+      unique      :string
+      quantity    :integer
+
+      timestamps
+    end
 
     validates :purchasable, presence: true
     validates :quantity, presence: true

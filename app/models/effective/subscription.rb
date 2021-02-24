@@ -4,20 +4,21 @@ module Effective
 
     attr_accessor :stripe_subscription
 
-    belongs_to :customer, class_name: 'Effective::Customer', counter_cache: true
+    belongs_to :customer, counter_cache: true
     belongs_to :subscribable, polymorphic: true
 
-    # Attributes
-    # stripe_plan_id            :string
-    # stripe_subscription_id    :string
-    # name                      :string
-    # description               :string
-    # interval                  :string
-    # quantity                  :integer
-    #
-    # status                    :string
-    #
-    # timestamps
+    effective_resource do
+      stripe_plan_id            :string
+      stripe_subscription_id    :string
+      name                      :string
+      description               :string
+      interval                  :string
+      quantity                  :integer
+
+      status                    :string
+
+      timestamps
+    end
 
     before_validation(if: -> { plan && (stripe_plan_id_changed? || new_record?) }) do
       self.name = plan[:name]

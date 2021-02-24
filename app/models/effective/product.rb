@@ -4,12 +4,15 @@ module Effective
 
     acts_as_purchasable
 
-    # Attributes
-    # name          :string
-    # price         :integer, default: 0
-    # tax_exempt    :boolean, default: false
-    #
-    # timestamps
+    effective_resource do
+      name          :string
+      qb_item_name  :string
+
+      price         :integer
+      tax_exempt    :boolean
+
+      timestamps
+    end
 
     validates :name, presence: true
     validates :price, presence: true

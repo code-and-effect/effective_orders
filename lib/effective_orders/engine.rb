@@ -16,13 +16,6 @@ module EffectiveOrders
       eval File.read("#{config.root}/config/effective_orders.rb")
     end
 
-    # Set up mail delivering config option
-    initializer 'effective_orders.mailer', after: :load_config_initializers do |app|
-      EffectiveOrders.mailer[:deliver_method] ||= (
-        (Rails.application.config.respond_to?(:active_job) && Rails.application.config.active_job.queue_adapter) ? :deliver_later : :deliver_now
-      )
-    end
-
     initializer "effective_orders.append_precompiled_assets" do |app|
       Rails.application.config.assets.precompile += ['effective_orders/*']
     end

@@ -1,32 +1,21 @@
 module Admin
   class OrdersController < ApplicationController
-    before_action :authenticate_user!
+    before_action(:authenticate_user!) if defined?(Devise)
+    before_action { EffectiveResources.authorize!(self, :admin, :effective_orders) }
 
-    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
+    include Effective::CrudController
 
-    def new
-      @order = Effective::Order.new
-
-      if params[:user_id]
-        @order.user = User.where(id: params[:user_id]).first
-      end
-
-      if params[:duplicate_id]
-        @duplicate = Effective::Order.deep.find(params[:duplicate_id])
-        EffectiveOrders.authorize!(self, :show, @duplicate)
-
-        @order.add(@duplicate)
-      end
-
-      @page_title = 'New Order'
-
-      raise 'please install cocoon gem to use this page' unless defined?(Cocoon)
-
-      authorize_effective_order!
+    if (config = EffectiveOrders.layout)
+      layout(config.kind_of?(Hash) ? config[:admin] : config)
     end
 
+    submit :save, 'Continue', redirect: :index
+    submit :save, 'Add New', redirect: -> { effective_orders.new_admin_order_path(user_id: resource.user&.to_param) }
+    submit :save, 'Duplicate', redirect: -> { effective_posts.new_admin_post_path(duplicate_id: resource.id) }
+    submit :save, 'Checkout', redirect: -> { effective_orders.checkout_admin_order_path(resource) }
+
     def create
-      @user = User.find_by_id(order_params[:user_id])
+      @user = current_user.class.find_by_id(order_params[:user_id])
       @order = Effective::Order.new(user: @user)
 
       authorize_effective_order!
@@ -54,44 +43,8 @@ module Admin
       end
 
       @page_title = 'New Order'
-      flash.now[:danger] = flash_danger(@order)
+      flash.now[:danger] = flash_danger(@order) + error.to_s
       render :new
-    end
-
-    def edit
-      @order = Effective::Order.find(params[:id])
-      @page_title ||= @order.to_s
-
-      authorize_effective_order!
-    end
-
-    def update
-      @order = Effective::Order.find(params[:id])
-
-      @page_title ||= @order.to_s
-
-      authorize_effective_order!
-
-      Effective::Order.transaction do
-        begin
-          @order.assign_attributes(order_params)
-          @order.save!
-          redirect_to(admin_redirect_path) and return
-        rescue => e
-          raise ActiveRecord::Rollback
-        end
-      end
-
-      flash.now[:danger] = "Unable to update order: #{@order.errors.full_messages.to_sentence}"
-      render :edit
-    end
-
-    def show
-      @order = Effective::Order.find(params[:id])
-
-      @page_title ||= @order.to_s
-
-      authorize_effective_order!
     end
 
     # The show page posts to this action
@@ -120,14 +73,6 @@ module Admin
 
       flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
       render :checkout
-    end
-
-    def index
-      @datatable = Admin::EffectiveOrdersDatatable.new(self)
-
-      @page_title = 'Orders'
-
-      authorize_effective_order!
     end
 
     def destroy
@@ -179,12 +124,12 @@ module Admin
     private
 
     def order_params
-      params.require(:effective_order).permit(:user_id, :cc,
+      params.require(:effective_order).permit(:user_id, :user_type, :cc,
         :send_payment_request_to_buyer, :note_internal, :note_to_buyer,
         :payment_provider, :payment_card, :payment, :send_mark_as_paid_email_to_buyer,
         order_items_attributes: [
           :quantity, :_destroy, purchasable_attributes: [
-            :name, :price, :tax_exempt
+            :name, :qb_item_name, :price, :tax_exempt
           ]
         ]
       )
@@ -195,27 +140,18 @@ module Admin
     end
 
     def authorize_effective_order!
-      EffectiveOrders.authorize!(self, :admin, :effective_orders)
-      EffectiveOrders.authorize!(self, action_name.to_sym, @order || Effective::Order)
+      EffectiveResources.authorize!(self, action_name.to_sym, @order || Effective::Order)
     end
 
     def admin_redirect_path
-      # Allow an app to define effective_orders_admin_redirect_path in their ApplicationController
-      path = if self.respond_to?(:effective_orders_admin_redirect_path)
-        effective_orders_admin_redirect_path(params[:commit], @order)
-      end
-
-      return path if path.present?
-
       case params[:commit].to_s
       when 'Save'               ; effective_orders.admin_order_path(@order)
-
       when 'Continue'           ; effective_orders.admin_orders_path
       when 'Add New'            ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
       when 'Duplicate'          ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
       when 'Checkout'           ; effective_orders.checkout_admin_order_path(@order.to_param)
-
-      else effective_orders.admin_order_path(@order)
+      else
+        effective_orders.admin_order_path(@order)
       end
     end
 

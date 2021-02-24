@@ -4,10 +4,12 @@ module Effective
       extend ActiveSupport::Concern
 
       def mark_as_paid
+        raise('mark_as_paid provider is not available') unless EffectiveOrders.mark_as_paid?
+
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorize!(self, :update, @order)
-        EffectiveOrders.authorize!(self, :admin, :effective_orders)
+        EffectiveResources.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :admin, :effective_orders)
 
         @order.assign_attributes(mark_as_paid_params.except(:payment, :payment_provider, :payment_card))
 

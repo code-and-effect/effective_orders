@@ -1,10 +1,12 @@
 module Effective
   class CustomersController < ApplicationController
-    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:customers] : EffectiveOrders.layout)
+    before_action(:authenticate_user!) if defined?(Devise)
 
     include Effective::CrudController
 
-    before_action :authenticate_user!
+    if (config = EffectiveOrders.layout)
+      layout(config.kind_of?(Hash) ? (config[:customers] || config[:application]) : config)
+    end
 
     submit :save, 'Save', success: -> { 'Successfully updated card.' }
     page_title 'Customer Settings'

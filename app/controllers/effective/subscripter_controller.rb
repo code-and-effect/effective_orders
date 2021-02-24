@@ -1,8 +1,10 @@
 module Effective
   class SubscripterController < ApplicationController
-    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:subscriptions] : EffectiveOrders.layout)
-
     include Effective::CrudController
+
+    if (config = EffectiveOrders.layout)
+      layout(config.kind_of?(Hash) ? (config[:subscriptions] || config[:application]) : config)
+    end
 
     submit :save, 'Save', redirect: :back, success: -> { 'Successfully updated plan.' }
 

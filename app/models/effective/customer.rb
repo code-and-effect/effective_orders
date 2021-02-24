@@ -4,16 +4,17 @@ module Effective
 
     attr_accessor :stripe_customer
 
-    belongs_to :user
+    belongs_to :user, polymorphic: true
     has_many :subscriptions, -> { includes(:subscribable) }, class_name: 'Effective::Subscription', foreign_key: 'customer_id'
     accepts_nested_attributes_for :subscriptions
 
-    # Attributes
-    # stripe_customer_id            :string  # cus_xja7acoa03
-    # payment_method_id             :string  # Last payment method used
-    # active_card                   :string  # **** **** **** 4242 Visa 05/12
+    effective_resource do
+      stripe_customer_id            :string  # cus_xja7acoa03
+      payment_method_id             :string  # Last payment method used
+      active_card                   :string  # **** **** **** 4242 Visa 05/12
 
-    # timestamps
+      timestamps
+    end
 
     scope :deep, -> { includes(subscriptions: :subscribable) }
 

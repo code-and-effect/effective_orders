@@ -1,14 +1,10 @@
-.nested-fields.order-item
-  .row.align-items-center
-    = f.fields_for :purchasable, (f.object.purchasable || Effective::Product.new) do |pf|
-      .col-md-2= f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
-      .col-md-4= pf.text_field :name, maxlength: 255
-      .col-md-2= pf.price_field :price
+.row.align-items-center
+  = f.fields_for :purchasable, (f.object.purchasable || Effective::Product.new) do |pf|
+    .col= f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
+    .col= pf.text_field :name
+    .col= pf.price_field :price
 
-      - if defined?(EffectiveQbSync)
-        .col-md-2= pf.text_field :qb_item_name, maxlength: 255, label: 'Quickbooks Item'
+    - if EffectiveOrders.use_effective_qb_sync
+      .col= pf.text_field :qb_item_name, label: 'Quickbooks Item'
 
-      .col-md-2.mt-4= pf.check_box :tax_exempt, label: "Tax&nbsp;Exempt", title: 'When checked, tax will not be applied to this item'
-      .col-md-1
-        = link_to_remove_association(f, 'data-confirm': 'Remove?') do
-          = icon('trash-2', class: 'text-danger')
+    .col= pf.check_box :tax_exempt, label: "Tax&nbsp;Exempt", title: 'When checked, tax will not be applied to this item'

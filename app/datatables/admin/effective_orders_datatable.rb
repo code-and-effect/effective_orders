@@ -40,7 +40,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     if attributes[:user_id].blank?
-      col :user
+      col :user, search: :string
       col :billing_name, visible: false
       col :email, visible: false
     end
@@ -102,7 +102,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
   end
 
   def user
-    @user ||= User.find(attributes[:user_id])
+    @user ||= current_user.class.find(attributes[:user_id])
   end
 
 end

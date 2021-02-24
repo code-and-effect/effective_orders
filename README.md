@@ -2,21 +2,13 @@
 
 Carts, Orders, and collecting payment via Stripe, PayPal and Moneris.
 
-A Rails Engine to handle the purchase workflow in a Rails 3.2.x / Rails 4 application.
+A Rails Engine to handle the purchase workflow in a Rails application.
 
 Also works with Stripe Subscriptions.
 
 Sends order receipt emails automatically.
 
 Has Order History, My Purchases, My Sales and Admin screens.
-
-## Upgrade to effective_orders 4.3
-
-Add the migration
-
-```
-add_column :customers, :payment_method_id, :string
-```
 
 ## effective_orders 4.0
 

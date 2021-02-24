@@ -79,7 +79,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   def user
-    @user ||= User.find(attributes[:user_id])
+    @user ||= current_user.class.find(attributes[:user_id])
   end
 
 end

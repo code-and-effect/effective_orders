@@ -4,9 +4,11 @@ module Effective
       extend ActiveSupport::Concern
 
       def refund
+        raise('refund provider is not available') unless EffectiveOrders.refund?
+
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :update, @order)
 
         unless @order.refund?
           flash[:danger] = 'Unable to process refund order with a positive total'

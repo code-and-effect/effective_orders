@@ -1,16 +1,13 @@
 module Admin
   class OrderItemsController < ApplicationController
-    before_action :authenticate_user!
+    before_action(:authenticate_user!) if defined?(Devise)
+    before_action { EffectiveResources.authorize!(self, :admin, :effective_orders) }
 
-    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_orders] : EffectiveOrders.layout)
+    include Effective::CrudController
 
-    def index
-      @datatable = Admin::EffectiveOrderItemsDatatable.new(self)
-
-      @page_title = 'Order Items'
-
-      EffectiveOrders.authorize!(self, :admin, :effective_orders)
-      EffectiveOrders.authorize!(self, :index, Effective::OrderItem)
+    if (config = EffectiveOrders.layout)
+      layout(config.kind_of?(Hash) ? config[:admin] : config)
     end
+
   end
 end

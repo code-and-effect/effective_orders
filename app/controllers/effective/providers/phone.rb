@@ -4,9 +4,11 @@ module Effective
       extend ActiveSupport::Concern
 
       def phone
+        raise('phone provider is not available') unless EffectiveOrders.phone?
+
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :update, @order)
 
         flash[:success] = EffectiveOrders.phone[:success]
 

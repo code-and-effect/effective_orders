@@ -1,5 +1,5 @@
 EffectiveOrders::Engine.routes.draw do
-  scope :module => 'effective' do
+  scope module: 'effective' do
     resources :orders, except: [:destroy] do
       member do
         get :purchased
@@ -7,33 +7,32 @@ EffectiveOrders::Engine.routes.draw do
         get :declined
         get :send_buyer_receipt
 
-        post :free if EffectiveOrders.free?
-        post :mark_as_paid if EffectiveOrders.mark_as_paid?
-        post :cheque if EffectiveOrders.cheque?
-        post :phone if EffectiveOrders.phone?
-        post :pretend if EffectiveOrders.pretend?
-        post :refund if EffectiveOrders.refund?
-        post :stripe if EffectiveOrders.stripe?
+        post :free
+        post :mark_as_paid
+        post :cheque
+        post :phone
+        post :pretend
+        post :refund
+        post :stripe
       end
 
       collection do
         post :bulk_send_buyer_receipt
 
-        post :moneris_postback if EffectiveOrders.moneris?
-        post :paypal_postback if EffectiveOrders.paypal?
+        post :moneris_postback
+        post :paypal_postback
       end
     end
 
     post 'orders/:id', to: 'orders#update'
 
-    if EffectiveOrders.subscriptions?
-      match 'subscribe', to: 'subscripter#update', via: :post, as: :subscripter
+    # Subscriptions
+    match 'subscribe', to: 'subscripter#update', via: :post, as: :subscripter
+    match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
+    match 'customer/settings', to: 'customers#update', via: [:patch, :put, :post]
+    match 'webhooks/stripe', to: 'webhooks#stripe', via: [:get, :post, :put]
 
-      match 'customer/settings', to: 'customers#edit', as: :customer_settings, via: [:get]
-      match 'customer/settings', to: 'customers#update', via: [:patch, :put, :post]
-      match 'webhooks/stripe', to: 'webhooks#stripe', via: [:get, :post, :put]
-    end
-
+    # Carts
     match 'cart', to: 'carts#show', as: 'cart', via: :get
     match 'cart', to: 'carts#destroy', via: :delete
 

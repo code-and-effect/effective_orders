@@ -4,9 +4,11 @@ module Effective
       extend ActiveSupport::Concern
 
       def cheque
+        raise('cheque provider is not available') unless EffectiveOrders.cheque?
+
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :update, @order)
 
         flash[:success] = EffectiveOrders.cheque[:success]
 

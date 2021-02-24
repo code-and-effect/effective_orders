@@ -4,9 +4,11 @@ module Effective
       extend ActiveSupport::Concern
 
       def pretend
+        raise('pretend provider is not available') unless EffectiveOrders.pretend?
+
         @order ||= Order.find(params[:id])
 
-        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :update, @order)
 
         order_purchased(
           payment: 'for pretend',

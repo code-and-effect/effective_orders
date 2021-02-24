@@ -2,6 +2,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
   def self.up
     create_table <%= @orders_table_name %> do |t|
       t.integer   :user_id
+      t.string    :user_type
 
       t.integer   :parent_id
       t.string    :parent_type
@@ -53,6 +54,8 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
     create_table <%= @carts_table_name %> do |t|
       t.integer   :user_id
+      t.string    :user_type
+
       t.integer   :cart_items_count, :default => 0
       t.timestamps
     end
@@ -76,6 +79,7 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
     create_table <%= @customers_table_name %> do |t|
       t.integer   :user_id
+      t.string    :user_type
 
       t.string    :stripe_customer_id
       t.string    :payment_method_id

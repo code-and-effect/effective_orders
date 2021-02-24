@@ -2,8 +2,12 @@ class Admin::EffectiveCustomersDatatable < Effective::Datatable
    datatable do
 
     col :id, visible: false
-    col :user
-    col 'user.email'
+
+    col :user, search: :string
+
+    col :email do |customer|
+      customer.user.email
+    end
 
     if EffectiveOrders.stripe?
       col :stripe_customer_id
@@ -17,6 +21,6 @@ class Admin::EffectiveCustomersDatatable < Effective::Datatable
   end
 
   collection do
-    Effective::Customer.joins(:user).all
+    Effective::Customer.includes(:user).all
   end
 end

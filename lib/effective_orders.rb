@@ -1,94 +1,47 @@
 require 'effective_addresses'
+require 'effective_resources'
 require 'effective_orders/engine'
 require 'effective_orders/version'
 
 module EffectiveOrders
-  PENDING = 'pending'.freeze        # New orders are created in a pending state
-  CONFIRMED = 'confirmed'.freeze    # Once the order has passed checkout step 1
-  DEFERRED = 'deferred'.freeze      # Deferred providers. Cheque or Phone was selected.
-  PURCHASED = 'purchased'.freeze    # Purchased by provider
-  DECLINED = 'declined'.freeze      # Declined by provider
-
+  # Order states
+  PENDING = 'pending'        # New orders are created in a pending state
+  CONFIRMED = 'confirmed'    # Once the order has passed checkout step 1
+  DEFERRED = 'deferred'      # Deferred providers. Cheque or Phone was selected.
+  PURCHASED = 'purchased'    # Purchased by provider
+  DECLINED = 'declined'      # Declined by provider
   STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, DEFERRED => DEFERRED, PURCHASED => PURCHASED, DECLINED => DECLINED }
 
   # Subscription statuses (as per stripe)
-  ACTIVE = 'active'.freeze
-  PAST_DUE = 'past_due'.freeze
-  TRIALING = 'trialing'.freeze
-  CANCELED = 'canceled'.freeze
+  ACTIVE = 'active'
+  PAST_DUE = 'past_due'
+  TRIALING = 'trialing'
+  CANCELED = 'canceled'
 
   STATUSES = { ACTIVE => ACTIVE, PAST_DUE => PAST_DUE, CANCELED => CANCELED, TRIALING => TRIALING }
 
-  # The following are all valid config keys
-  mattr_accessor :orders_table_name
-  mattr_accessor :order_items_table_name
-  mattr_accessor :carts_table_name
-  mattr_accessor :cart_items_table_name
-  mattr_accessor :customers_table_name
-  mattr_accessor :subscriptions_table_name
-  mattr_accessor :products_table_name
+  def self.config_keys
+    [
+      :orders_table_name, :order_items_table_name, :carts_table_name, :cart_items_table_name,
+      :customers_table_name, :subscriptions_table_name, :products_table_name,
+      :layout, :mailer,
+      :orders_collection_scope, :order_tax_rate_method,
+      :obfuscate_order_ids, :use_effective_qb_sync,
+      :billing_address, :shipping_address, :use_address_full_name,
+      :collect_note, :collect_note_required, :collect_note_message,
+      :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
 
-  mattr_accessor :authorization_method
-
-  mattr_accessor :layout
-  mattr_accessor :mailer
-
-  mattr_accessor :orders_collection_scope
-  mattr_accessor :order_tax_rate_method
-
-  mattr_accessor :obfuscate_order_ids
-  mattr_accessor :billing_address
-  mattr_accessor :shipping_address
-  mattr_accessor :use_address_full_name
-
-  mattr_accessor :collect_note
-  mattr_accessor :collect_note_required
-  mattr_accessor :collect_note_message
-
-  mattr_accessor :terms_and_conditions
-  mattr_accessor :terms_and_conditions_label
-
-  mattr_accessor :minimum_charge
-
-  # Features
-  mattr_accessor :free_enabled
-  mattr_accessor :mark_as_paid_enabled
-  mattr_accessor :pretend_enabled
-  mattr_accessor :pretend_message
-
-  # Payment processors. false or Hash
-  mattr_accessor :cheque
-  mattr_accessor :moneris
-  mattr_accessor :paypal
-  mattr_accessor :phone
-  mattr_accessor :refund
-  mattr_accessor :stripe
-  mattr_accessor :subscriptions  # Stripe subscriptions
-  mattr_accessor :trial          # Trial mode
-
-  def self.setup
-    yield self
+      # Features
+      :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message,
+      # Payment processors. false or Hash
+      :cheque, :moneris, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
+    ]
   end
 
-  def self.authorized?(controller, action, resource)
-    @_exceptions ||= [Effective::AccessDenied, (CanCan::AccessDenied if defined?(CanCan)), (Pundit::NotAuthorizedError if defined?(Pundit))].compact
-
-    return !!authorization_method unless authorization_method.respond_to?(:call)
-    controller = controller.controller if controller.respond_to?(:controller)
-
-    begin
-      !!(controller || self).instance_exec((controller || self), action, resource, &authorization_method)
-    rescue *@_exceptions
-      false
-    end
-  end
-
-  def self.authorize!(controller, action, resource)
-    raise Effective::AccessDenied.new('Access Denied', action, resource) unless authorized?(controller, action, resource)
-  end
+  include EffectiveGem
 
   def self.permitted_params
-    [
+    @permitted_params ||= [
       :cc, :note, :terms_and_conditions, :confirmed_checkout,
       billing_address: EffectiveAddresses.permitted_params,
       shipping_address: EffectiveAddresses.permitted_params,

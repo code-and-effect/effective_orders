@@ -31,35 +31,41 @@ module Effective
     # If we want to use orders in a has_many way
     belongs_to :parent, polymorphic: true, optional: true
 
-    belongs_to :user, validate: false  # This is the buyer/user of the order. We validate it below.
-    has_many :order_items, -> { order(:id) }, inverse_of: :order, class_name: 'Effective::OrderItem', dependent: :delete_all
+    belongs_to :user, polymorphic: true, validate: false  # This is the buyer/user of the order. We validate it below.
+    has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
+
+    if defined?(EffectiveQbSync)
+      has_one :qb_order_item
+    end
 
     accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
     # Attributes
-    # state             :string
-    # purchased_at      :datetime
-    #
-    # note              :text   # From buyer to admin
-    # note_to_buyer     :text   # From admin to buyer
-    # note_internal     :text   # Internal admin only
-    #
-    # billing_name      :string   # name of buyer
-    # email             :string   # same as user.email
-    # cc                :string   # can be set by admin
-    #
-    # payment           :text     # serialized hash containing all the payment details.
-    # payment_provider  :string
-    # payment_card      :string
-    #
-    # tax_rate          :decimal, precision: 6, scale: 3
-    #
-    # subtotal          :integer
-    # tax               :integer
-    # total             :integer
-    #
-    # timestamps
+    effective_resource do
+      state             :string
+      purchased_at      :datetime
+
+      note              :text   # From buyer to admin
+      note_to_buyer     :text   # From admin to buyer
+      note_internal     :text   # Internal admin only
+
+      billing_name      :string   # name of buyer
+      email             :string   # same as user.email
+      cc                :string   # can be set by admin
+
+      payment           :text     # serialized hash containing all the payment details.
+      payment_provider  :string
+      payment_card      :string
+
+      tax_rate          :decimal, precision: 6, scale: 3
+
+      subtotal          :integer
+      tax               :integer
+      total             :integer
+
+      timestamps
+    end
 
     serialize :payment, Hash
 
@@ -255,6 +261,12 @@ module Effective
       end
     end
 
+    # first or build
+    def qb_item_name
+      raise('expected EffectiveQbSync gem') unless defined?(EffectiveQbSync)
+      (qb_order_item || build_qb_order_item(name: purchasable.qb_item_name)).name
+    end
+
     def pending?
       state == EffectiveOrders::PENDING
     end
@@ -310,15 +322,15 @@ module Effective
     end
 
     def send_payment_request_to_buyer?
-      truthy?(send_payment_request_to_buyer) && !free? && !refund?
+      EffectiveResources.truthy?(send_payment_request_to_buyer) && !free? && !refund?
     end
 
     def send_mark_as_paid_email_to_buyer?
-      truthy?(send_mark_as_paid_email_to_buyer)
+      EffectiveResources.truthy?(send_mark_as_paid_email_to_buyer)
     end
 
     def skip_buyer_validations?
-      truthy?(skip_buyer_validations)
+      EffectiveResources.truthy?(skip_buyer_validations)
     end
 
     # This is called from admin/orders#create
@@ -470,7 +482,7 @@ module Effective
     end
 
     def skip_qb_sync!
-      defined?(EffectiveQbSync) ? EffectiveQbSync.skip_order!(self) : true
+      EffectiveOrders.use_effective_qb_sync ? EffectiveQbSync.skip_order!(self) : true
     end
 
     protected
@@ -538,18 +550,12 @@ module Effective
     end
 
     def send_email(email, *mailer_args)
+      deliver_method = EffectiveOrders.mailer[:deliver_method] || EffectiveResources.deliver_method
+
       begin
-        Effective::OrdersMailer.public_send(email, *mailer_args).public_send(EffectiveOrders.mailer[:deliver_method])
+        Effective::OrdersMailer.public_send(email, *mailer_args).send(deliver_method)
       rescue => e
         raise if Rails.env.development? || Rails.env.test?
-      end
-    end
-
-    def truthy?(value)
-      if defined?(::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES)  # Rails <5
-        ::ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES.include?(value)
-      else
-        ::ActiveRecord::Type::Boolean.new.cast(value)
       end
     end
 

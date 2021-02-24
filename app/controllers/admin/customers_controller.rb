@@ -1,23 +1,12 @@
 module Admin
   class CustomersController < ApplicationController
-    before_action :authenticate_user!
+    before_action(:authenticate_user!) if defined?(Devise)
+    before_action { EffectiveResources.authorize!(self, :admin, :effective_orders) }
 
-    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:admin_customers] : EffectiveOrders.layout)
+    include Effective::CrudController
 
-    def index
-      @datatable = Admin::EffectiveCustomersDatatable.new(self)
-
-      @page_title = 'Customers'
-
-      EffectiveOrders.authorize!(self, :admin, :effective_orders)
-      EffectiveOrders.authorize!(self, :index, Effective::Customer)
-    end
-
-    def show
-      @customer = Effective::Customer.find(params[:id])
-
-      @page_title ||= @customer.to_s
-      EffectiveOrders.authorize!(self, :show, Effective::Customer)
+    if (config = EffectiveOrders.layout)
+      layout(config.kind_of?(Hash) ? config[:admin] : config)
     end
 
   end

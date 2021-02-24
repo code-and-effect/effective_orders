@@ -10,9 +10,11 @@ module Effective
       end
 
       def moneris_postback
+        raise('moneris provider is not available') unless EffectiveOrders.moneris?
+
         @order ||= Effective::Order.find(params[:response_order_id])
 
-        (EffectiveOrders.authorize!(self, :update, @order) rescue false)
+        (EffectiveResources.authorize!(self, :update, @order) rescue false)
 
         # Delete the Purchased and Declined Redirect URLs
         purchased_url = params.delete(:rvar_purchased_url)

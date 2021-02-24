@@ -4,10 +4,12 @@ module Effective
       extend ActiveSupport::Concern
 
       def stripe
+        raise('stripe provider is not available') unless EffectiveOrders.stripe?
+
         @order = Order.find(params[:id])
         @customer = Effective::Customer.for_user(@order.user)
 
-        EffectiveOrders.authorize!(self, :update, @order)
+        EffectiveResources.authorize!(self, :update, @order)
 
         payment = validate_stripe_payment(stripe_params[:payment_intent_id])
 

@@ -2,15 +2,17 @@ module Effective
   class OrderItem < ActiveRecord::Base
     self.table_name = EffectiveOrders.order_items_table_name.to_s
 
-    belongs_to :order, class_name: 'Effective::Order'
+    belongs_to :order
     belongs_to :purchasable, polymorphic: true
 
-    # Attributes
-    # name                  :string
-    # quantity              :integer
-    # price                 :integer, default: 0
-    # tax_exempt            :boolean
-    # timestamps
+    effective_resource do
+      name                  :string
+      quantity              :integer
+      price                 :integer
+      tax_exempt            :boolean
+
+      timestamps
+    end
 
     validates :purchasable, associated: true, presence: true
     accepts_nested_attributes_for :purchasable
@@ -24,7 +26,7 @@ module Effective
     scope :purchased_by, lambda { |user| where(order_id: Effective::Order.purchased_by(user)) }
 
     def to_s
-      (quantity || 0) > 1 ? "#{quantity}x #{name}" : name
+      ((quantity || 0) > 1 ? "#{quantity}x #{name}" : name) || 'order item'
     end
 
     def purchased_download_url

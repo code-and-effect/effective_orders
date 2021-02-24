@@ -10,9 +10,11 @@ module Effective
       # TODO: Make paypal postback work with admin checkout workflow
 
       def paypal_postback
+        raise('paypal provider is not available') unless EffectiveOrders.paypal?
+
         @order ||= Effective::Order.where(id: (params[:invoice].to_i rescue 0)).first
 
-        (EffectiveOrders.authorize!(self, :update, @order) rescue false)
+        (EffectiveResources.authorize!(self, :update, @order) rescue false)
 
         if @order.present?
           if @order.purchased?
@@ -26,7 +28,6 @@ module Effective
 
         head(:ok)
       end
-
 
     end
   end

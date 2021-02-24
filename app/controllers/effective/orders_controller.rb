@@ -2,17 +2,21 @@ module Effective
   class OrdersController < ApplicationController
     include Concerns::Purchase
 
-    include Providers::Cheque if EffectiveOrders.cheque?
-    include Providers::Free if EffectiveOrders.free?
-    include Providers::MarkAsPaid if EffectiveOrders.mark_as_paid?
-    include Providers::Moneris if EffectiveOrders.moneris?
-    include Providers::Paypal if EffectiveOrders.paypal?
-    include Providers::Phone if EffectiveOrders.phone?
-    include Providers::Pretend if EffectiveOrders.pretend?
-    include Providers::Refund if EffectiveOrders.refund?
-    include Providers::Stripe if EffectiveOrders.stripe?
+    include Providers::Cheque
+    include Providers::Free
+    include Providers::MarkAsPaid
+    include Providers::Moneris
+    include Providers::Paypal
+    include Providers::Phone
+    include Providers::Pretend
+    include Providers::Refund
+    include Providers::Stripe
 
-    layout (EffectiveOrders.layout.kind_of?(Hash) ? EffectiveOrders.layout[:orders] : EffectiveOrders.layout)
+    include Effective::CrudController
+
+    if (config = EffectiveOrders.layout)
+      layout(config.kind_of?(Hash) ? (config[:orders] || config[:application]) : config)
+    end
 
     before_action :authenticate_user!, except: [:ccbill_postback, :free, :paypal_postback, :moneris_postback, :pretend]
     before_action :set_page_title, except: [:show]
@@ -26,7 +30,7 @@ module Effective
     def new
       @order ||= Effective::Order.new(view_context.current_cart)
 
-      EffectiveOrders.authorize!(self, :new, @order)
+      EffectiveResources.authorize!(self, :new, @order)
 
       unless @order.valid?
         flash[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
@@ -38,7 +42,7 @@ module Effective
     # Confirms an order from the cart.
     def create
       @order ||= Effective::Order.new(view_context.current_cart)
-      EffectiveOrders.authorize!(self, :create, @order)
+      EffectiveResources.authorize!(self, :create, @order)
 
       @order.assign_attributes(checkout_params)
 
@@ -57,7 +61,7 @@ module Effective
     # Might render step1 or step2
     def show
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorize!(self, :show, @order)
+      EffectiveResources.authorize!(self, :show, @order)
 
       @page_title ||= ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
     end
@@ -65,13 +69,13 @@ module Effective
     # Always step1
     def edit
       @order ||= Effective::Order.find(params[:id])
-      EffectiveOrders.authorize!(self, :edit, @order)
+      EffectiveResources.authorize!(self, :edit, @order)
     end
 
     # Confirms the order from existing order
     def update
       @order ||= Effective::Order.find(params[:id])
-      EffectiveOrders.authorize!(self, :update, @order)
+      EffectiveResources.authorize!(self, :update, @order)
 
       @order.assign_attributes(checkout_params)
 
@@ -86,28 +90,28 @@ module Effective
     # My Orders History
     def index
       @datatable = EffectiveOrdersDatatable.new(user_id: current_user.id)
-      EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
+      EffectiveResources.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Thank you for Purchasing this Order. This is where a successfully purchased order ends up
     def purchased # Thank You!
       @order = Effective::Order.purchased.find(params[:id])
-      EffectiveOrders.authorize!(self, :show, @order)
+      EffectiveResources.authorize!(self, :show, @order)
     end
 
     def deferred
       @order = Effective::Order.deferred.find(params[:id])
-      EffectiveOrders.authorize!(self, :show, @order)
+      EffectiveResources.authorize!(self, :show, @order)
     end
 
     def declined
       @order = Effective::Order.declined.find(params[:id])
-      EffectiveOrders.authorize!(self, :show, @order)
+      EffectiveResources.authorize!(self, :show, @order)
     end
 
     def send_buyer_receipt
       @order = Effective::Order.find(params[:id])
-      EffectiveOrders.authorize!(self, :show, @order)
+      EffectiveResources.authorize!(self, :show, @order)
 
       if @order.send_order_receipt_to_buyer!
         flash[:success] = "A receipt has been sent to #{@order.emails_send_to}"
@@ -128,10 +132,10 @@ module Effective
       @orders = Effective::Order.purchased.where(id: params[:ids])
 
       begin
-        EffectiveOrders.authorize!(self, :index, Effective::Order.new(user: current_user))
+        EffectiveResources.authorize!(self, :index, Effective::Order.new(user: current_user))
 
         @orders.each do |order|
-          next unless EffectiveOrders.authorized?(self, :show, order)
+          next unless EffectiveResources.authorized?(self, :show, order)
           order.send_order_receipt_to_buyer!
         end
 
