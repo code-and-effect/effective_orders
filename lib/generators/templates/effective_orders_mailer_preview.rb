@@ -4,55 +4,55 @@
 
 class EffectiveOrdersMailerPreview < ActionMailer::Preview
   def order_receipt_to_admin
-    Effective::OrdersMailer.order_receipt_to_admin(build_preview_order)
+    EffectiveOrders.mailer.order_receipt_to_admin(build_preview_order)
   end
 
   def order_receipt_to_buyer
-    Effective::OrdersMailer.order_receipt_to_buyer(build_preview_order)
+    EffectiveOrders.mailer.order_receipt_to_buyer(build_preview_order)
   end
 
   def payment_request_to_buyer
-    Effective::OrdersMailer.payment_request_to_buyer(build_preview_order)
+    EffectiveOrders.mailer.payment_request_to_buyer(build_preview_order)
   end
 
   def pending_order_invoice_to_buyer
-    Effective::OrdersMailer.pending_order_invoice_to_buyer(build_preview_order)
+    EffectiveOrders.mailer.pending_order_invoice_to_buyer(build_preview_order)
   end
 
   def subscription_payment_succeeded
-    Effective::OrdersMailer.subscription_payment_succeeded(preview_customer)
+    EffectiveOrders.mailer.subscription_payment_succeeded(preview_customer)
   end
 
   def subscription_payment_failed
-    Effective::OrdersMailer.subscription_payment_failed(preview_customer)
+    EffectiveOrders.mailer.subscription_payment_failed(preview_customer)
   end
 
   def subscription_created
-    Effective::OrdersMailer.subscription_created(preview_customer)
+    EffectiveOrders.mailer.subscription_created(preview_customer)
   end
 
   def subscription_updated
-    Effective::OrdersMailer.subscription_updated(preview_customer)
+    EffectiveOrders.mailer.subscription_updated(preview_customer)
   end
 
   def subscription_canceled
-    Effective::OrdersMailer.subscription_canceled(preview_customer)
+    EffectiveOrders.mailer.subscription_canceled(preview_customer)
   end
 
   def subscription_trialing
-    Effective::OrdersMailer.subscription_trialing(preview_subscribable)
+    EffectiveOrders.mailer.subscription_trialing(preview_subscribable)
   end
 
   def subscription_trial_expired
-    Effective::OrdersMailer.subscription_trial_expired(preview_subscribable)
+    EffectiveOrders.mailer.subscription_trial_expired(preview_subscribable)
   end
 
   def subscription_event_to_admin
-    Effective::OrdersMailer.subscription_event_to_admin(:subscription_updated, preview_customer)
+    EffectiveOrders.mailer.subscription_event_to_admin(:subscription_updated, preview_customer)
   end
 
   def order_error
-    Effective::OrdersMailer.order_error(order: build_preview_order, error: 'Something did not work out')
+    EffectiveOrders.mailer.order_error(order: build_preview_order, error: 'Something did not work out')
   end
 
   protected

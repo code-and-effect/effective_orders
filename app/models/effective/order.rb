@@ -549,11 +549,18 @@ module Effective
       order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
     end
 
-    def send_email(email, *mailer_args)
+    def send_email(email, *args)
+      raise('expected args to be an Array') unless args.kind_of?(Array)
+
+      if defined?(Tenant)
+        tenant = Tenant.current || raise('expected a current tenant')
+        args << { tenant: tenant }
+      end
+
       deliver_method = EffectiveOrders.mailer[:deliver_method] || EffectiveResources.deliver_method
 
       begin
-        Effective::OrdersMailer.public_send(email, *mailer_args).send(deliver_method)
+        EffectiveOrders.mailer.public_send(email, *args).send(deliver_method)
       rescue => e
         raise if Rails.env.development? || Rails.env.test?
       end

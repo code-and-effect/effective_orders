@@ -86,6 +86,9 @@ EffectiveOrders.setup do |config|
 
   # subject_for_subscription_trialing: Proc.new { |subscribable| "Pending Order #{order.to_param}"}
 
+  # Use this mailer class. You can extend.
+  config.mailer_class_name = 'Effective::OrdersMailer'
+
   config.mailer = {
     send_order_receipt_to_admin: true,
     send_order_receipt_to_buyer: true,

@@ -24,7 +24,7 @@ module EffectiveOrders
     [
       :orders_table_name, :order_items_table_name, :carts_table_name, :cart_items_table_name,
       :customers_table_name, :subscriptions_table_name, :products_table_name,
-      :layout, :mailer,
+      :layout, :mailer_class_name, :mailer,
       :orders_collection_scope, :order_tax_rate_method,
       :obfuscate_order_ids, :use_effective_qb_sync,
       :billing_address, :shipping_address, :use_address_full_name,
@@ -120,6 +120,11 @@ module EffectiveOrders
 
   def self.deferred_providers
     [('cheque' if cheque?), ('phone' if phone?)].compact
+  end
+
+  def self.mailer
+    name = mailer_class_name.presence || 'Effective::OrdersMailer'
+    name.safe_constantize || raise("unable to constantize mailer class. check config.mailer_class_name")
   end
 
   def self.can_skip_checkout_step1?
