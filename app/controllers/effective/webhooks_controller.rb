@@ -99,8 +99,8 @@ module Effective
 
       deliver_method = EffectiveOrders.mailer[:deliver_method] || EffectiveResources.deliver_method
 
-      EffectiveOrders.mailer.send(email, *args).send(deliver_method)
-      EffectiveOrders.mailer.send(:subscription_event_to_admin, email.to_s, *args).send(deliver_method)
+      EffectiveOrders.mailer_klass.send(email, *args).send(deliver_method)
+      EffectiveOrders.mailer_klass.send(:subscription_event_to_admin, email.to_s, *args).send(deliver_method)
     end
 
     def run_subscribable_buyer_callbacks!

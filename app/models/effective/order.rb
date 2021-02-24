@@ -560,7 +560,7 @@ module Effective
       deliver_method = EffectiveOrders.mailer[:deliver_method] || EffectiveResources.deliver_method
 
       begin
-        EffectiveOrders.mailer.public_send(email, *args).send(deliver_method)
+        EffectiveOrders.mailer_klass.send(email, *args).send(deliver_method)
       rescue => e
         raise if Rails.env.development? || Rails.env.test?
       end

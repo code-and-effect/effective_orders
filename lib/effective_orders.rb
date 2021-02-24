@@ -122,7 +122,7 @@ module EffectiveOrders
     [('cheque' if cheque?), ('phone' if phone?)].compact
   end
 
-  def self.mailer
+  def self.mailer_klass
     name = mailer_class_name.presence || 'Effective::OrdersMailer'
     name.safe_constantize || raise("unable to constantize mailer class. check config.mailer_class_name")
   end
