@@ -10,9 +10,9 @@ Sends order receipt emails automatically.
 
 Has Order History, My Purchases, My Sales and Admin screens.
 
-## effective_orders 4.0
+## effective_orders 5.0
 
-This is the 4.0 series of effective_orders.
+This is the 5.0 series of effective_orders.
 
 This requires Twitter Bootstrap 4 and Rails 5.1+
 
@@ -152,32 +152,18 @@ Once the database has been migrated, it is time to scaffold/build the CRUD Produ
 
 ### Products#new/#edit
 
-Use an [effective_form_inputs](https://github.com/code-and-effect/effective_form_inputs#effective-price) effective_price input to enter the price.
+Use an [effective_bootstrap](https://github.com/code-and-effect/effective_bootstrap#effective-price) f.price_field input to enter the price.
 
 It displays the underlying Integer price as a currency formatted value, ensures that a properly formatted price is entered by the user, and POSTs the appropriate Integer value back to the server.
 
 This is available for simple_form, formtastic and Rails default FormBuilder.
 
 ```haml
-= simple_form_for(@product) do |f|
-  = f.input :name
-  = f.input :tax_exempt
-  = f.input :price, as: :effective_price
-  = f.button :submit
-```
-
-or
-
-```ruby
-= semantic_form_for(@product) do |f|
-  = f.input :price, as: :effective_price
-```
-
-or
-
-```haml
-= form_for(@product) do |f|
-  = f.effective_price :price
+= effective_form_with(model: @product) do |f|
+  = f.text_field :name
+  = f.checkbox :tax_exempt
+  = f.price_field :price
+  = f.submit
 ```
 
 ### Products#show
@@ -278,8 +264,6 @@ end
 ```
 
 Of course, there's no mechanism here to prevent someone from just copy&pasting this URL to a friend.
-
-If you're interested in that kind of restricted-download functionality, please check out [effective_assets](https://github.com/code-and-effect/effective_assets) and the authenticated-read temporary URLs.
 
 
 ### Tax Exempt
@@ -395,7 +379,6 @@ When a non-logged-in user comes to the website, a new `Effective::Cart` object i
 Only when the user proceeds to Checkout will they be required to login.
 
 Upon log in, the session Cart will be assigned to that User's ID, and if the User had a previous existing cart, all CartItems will be merged.
-
 
 
 You shouldn't need to deal with the Cart object at all, except to make a link from your Site Menu to the 'My Cart' page (as documented above).
@@ -939,7 +922,7 @@ You should generate separate private and public certificates/keys for this and i
 
 ## License
 
-MIT License.  Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)
+MIT License. Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)
 
 ## Contributing
 
