@@ -212,11 +212,7 @@ module Effective
     protected
 
     def around_mail_action(name, param, atts = {}, &block)
-      if (tenant = atts[:tenant]).present? && defined?(Tenant)
-        Tenant.as(tenant) { yield }
-      else
-        yield
-      end
+      yield
     end
 
     private
