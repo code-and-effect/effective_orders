@@ -72,6 +72,10 @@ module Effective
       self.state = EffectiveOrders::CONFIRMED if pending?
     end
 
+    before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
+      raise Exception.new('cannot change state of purchased order') unless purchased?
+    end
+
     # Order validations
     validates :user_id, presence: true
     validates :email, presence: true, email: true  # email and cc validators are from effective_resources
