@@ -68,13 +68,13 @@ module Effective
 
     # Always step1
     def edit
-      @order ||= Effective::Order.find(params[:id])
+      @order ||= Effective::Order.not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :edit, @order)
     end
 
     # Confirms the order from existing order
     def update
-      @order ||= Effective::Order.find(params[:id])
+      @order ||= Effective::Order.not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :update, @order)
 
       @order.assign_attributes(checkout_params)
@@ -110,7 +110,7 @@ module Effective
     end
 
     def send_buyer_receipt
-      @order = Effective::Order.find(params[:id])
+      @order = Effective::Order.purchased.find(params[:id])
       EffectiveResources.authorize!(self, :show, @order)
 
       if @order.send_order_receipt_to_buyer!

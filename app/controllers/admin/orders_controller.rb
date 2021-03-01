@@ -50,7 +50,7 @@ module Admin
     # The show page posts to this action
     # See Effective::OrdersController checkout
     def checkout
-      @order = Effective::Order.find(params[:id])
+      @order = Effective::Order.not_purchased.find(params[:id])
 
       authorize_effective_order!
 

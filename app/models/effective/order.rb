@@ -78,6 +78,10 @@ module Effective
       self.state = EffectiveOrders::CONFIRMED if pending?
     end
 
+    before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
+      raise EffectiveOrders::AlreadyPurchasedException.new('cannot unpurchase an order') unless purchased?
+    end
+
     # Order validations
     validates :user_id, presence: true
     validates :email, presence: true, email: true  # email and cc validators are from effective_resources
@@ -338,6 +342,8 @@ module Effective
     # It skips any address or bad user validations
     # It's basically the same as save! on a new order, except it might send the payment request to buyer
     def pending!
+      return false if purchased?
+
       self.state = EffectiveOrders::PENDING
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
@@ -348,6 +354,7 @@ module Effective
 
     # Used by admin checkout only
     def confirm!
+      return false if purchased?
       update!(state: EffectiveOrders::CONFIRMED)
     end
 
