@@ -34,10 +34,6 @@ module Effective
     belongs_to :user, polymorphic: true, validate: false  # This is the buyer/user of the order. We validate it below.
     has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
 
-    if defined?(EffectiveQbSync)
-      has_one :qb_order_item
-    end
-
     accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
@@ -263,12 +259,6 @@ module Effective
       else
         "Order ##{to_param}"
       end
-    end
-
-    # first or build
-    def qb_item_name
-      raise('expected EffectiveQbSync gem') unless defined?(EffectiveQbSync)
-      (qb_order_item || build_qb_order_item(name: purchasable.qb_item_name)).name
     end
 
     def pending?

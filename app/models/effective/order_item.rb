@@ -5,6 +5,10 @@ module Effective
     belongs_to :order
     belongs_to :purchasable, polymorphic: true
 
+    if defined?(EffectiveQbSync)
+      has_one :qb_order_item
+    end
+
     effective_resource do
       name                  :string
       quantity              :integer
@@ -59,6 +63,12 @@ module Effective
       else
         raise 'expected price to be an Integer representing the number of cents.'
       end
+    end
+
+    # first or build
+    def qb_item_name
+      raise('expected EffectiveQbSync gem') unless defined?(EffectiveQbSync)
+      (qb_order_item || build_qb_order_item(name: purchasable.qb_item_name)).name
     end
 
   end
