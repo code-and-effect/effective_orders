@@ -107,13 +107,7 @@ module EffectiveOrdersHelper
     end
   end
 
-  def render_orders(obj, opts = {})
-    orders = Array(obj.kind_of?(User) ? Effective::Order.purchased_by(obj) : obj)
-
-    if orders.any? { |order| order.kind_of?(Effective::Order) == false }
-      raise 'expected a User or Effective::Order'
-    end
-
+  def render_orders(orders, opts = {})
     render(partial: 'effective/orders/orders_table', locals: { orders: orders }.merge(opts))
   end
 
