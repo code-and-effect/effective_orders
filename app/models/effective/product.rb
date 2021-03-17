@@ -4,6 +4,8 @@ module Effective
 
     acts_as_purchasable
 
+    # belongs_to :purchased_order_id
+
     effective_resource do
       name          :string
       qb_item_name  :string

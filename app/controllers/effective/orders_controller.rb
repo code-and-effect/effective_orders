@@ -1,5 +1,6 @@
 module Effective
   class OrdersController < ApplicationController
+    include Effective::CrudController
     include Concerns::Purchase
 
     include Providers::Cheque
@@ -11,8 +12,6 @@ module Effective
     include Providers::Pretend
     include Providers::Refund
     include Providers::Stripe
-
-    include Effective::CrudController
 
     if (config = EffectiveOrders.layout)
       layout(config.kind_of?(Hash) ? (config[:orders] || config[:application]) : config)
