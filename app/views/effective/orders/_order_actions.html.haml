@@ -3,7 +3,7 @@
     = link_to 'Print', '#', class: 'btn btn-primary print-button', data: { role: 'print-button' }, onClick: 'window.print(); false;'
 
   - if order.purchased?
-    = link_to 'Email receipt to buyer', effective_orders.send_buyer_receipt_order_path(order),
+    = link_to 'E-mail Receipt', effective_orders.send_buyer_receipt_order_path(order),
       class: 'btn btn-secondary',
       data: { confirm: "Send receipt to #{order.emails_send_to}?" }
 

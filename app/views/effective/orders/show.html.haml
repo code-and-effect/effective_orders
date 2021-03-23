@@ -4,3 +4,7 @@
   = render_checkout(@order)
 - else
   = render @order
+
+%hr
+
+= link_to 'Continue', effective_orders.orders_path, class: 'btn btn-primary'

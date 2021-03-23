@@ -6,8 +6,6 @@ class EffectiveOrdersDatatable < Effective::Datatable
       scope :purchased, default: true
       scope :deferred
       scope :refunds
-      scope :not_purchased
-      scope :all
     end
   end
 
@@ -79,7 +77,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   def user
-    @user ||= current_user.class.find(attributes[:user_id])
+    @user ||= view.current_user.class.find(attributes[:user_id])
   end
 
 end

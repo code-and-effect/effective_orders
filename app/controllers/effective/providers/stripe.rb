@@ -26,8 +26,7 @@ module Effective
           payment: payment,
           provider: 'stripe',
           card: payment[:card],
-          purchased_url: stripe_params[:purchased_url],
-          declined_url: stripe_params[:declined_url]
+          purchased_url: stripe_params[:purchased_url]
         )
       end
 

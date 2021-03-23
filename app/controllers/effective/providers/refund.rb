@@ -21,8 +21,7 @@ module Effective
         order_purchased(
           payment: 'refund. no payment required.',
           provider: 'refund',
-          purchased_url: refund_params[:purchased_url],
-          declined_url: refund_params[:declined_url]
+          purchased_url: refund_params[:purchased_url]
         )
       end
 

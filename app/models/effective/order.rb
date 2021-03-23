@@ -362,38 +362,31 @@ module Effective
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
     def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false)
-      return false if purchased?
-      error = nil
+      # Assign attributes
+      self.state = EffectiveOrders::PURCHASED
+      self.skip_buyer_validations = skip_buyer_validations
 
-      assign_attributes(
-        state: EffectiveOrders::PURCHASED,
-        payment: payment_to_h(payment),
-        payment_provider: provider,
-        payment_card: (card.presence || 'none'),
-        skip_buyer_validations: skip_buyer_validations
-      )
-
+      self.payment_provider ||= provider
+      self.payment_card ||= (card.presence || 'none')
       self.purchased_at ||= Time.zone.now
+      self.payment = payment_to_h(payment) if self.payment.blank?
 
-      Effective::Order.transaction do
-        begin
+      begin
+        Effective::Order.transaction do
           run_purchasable_callbacks(:before_purchase)
           save!
           update_purchasables_purchased_order!
-        rescue => e
-          self.state = state_was
-          self.purchased_at = nil
-
-          error = e.message
-          raise ::ActiveRecord::Rollback
         end
+      rescue => e
+        Effective::Order.transaction do
+          save!(validate: false)
+          update_purchasables_purchased_order!
+        end
+
+        raise(e)
       end
 
-      raise "Failed to purchase order: #{error || errors.full_messages.to_sentence}" unless error.nil?
-
       run_purchasable_callbacks(:after_purchase)
-
-      send_refund_notification! if email && refund?
       send_order_receipts! if email
 
       true
@@ -456,6 +449,7 @@ module Effective
     def send_order_receipts!
       send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
       send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      send_refund_notification! if refund?
     end
 
     def send_order_receipt_to_admin!
