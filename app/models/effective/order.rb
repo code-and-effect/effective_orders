@@ -137,7 +137,7 @@ module Effective
       validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.deferred_providers }
     end
 
-    scope :deep, -> { includes(:user, order_items: :purchasable) }
+    scope :deep, -> { includes(:addresses, :user, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }

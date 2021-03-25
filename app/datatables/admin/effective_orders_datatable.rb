@@ -14,7 +14,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
   end
 
   filters do
-    if attributes[:user_id].blank? && attributes[:parent_id].blank?
+    unless attributes[:skip_filters]
       scope :purchased, default: true
       scope :deferred
       scope :refunds
@@ -84,13 +84,14 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
   end
 
   collection do
-    scope = Effective::Order.all.includes(:addresses, :order_items, :user)
+    scope = Effective::Order.all.deep
 
     if EffectiveOrders.orders_collection_scope.respond_to?(:call)
       scope = EffectiveOrders.orders_collection_scope.call(scope)
     end
 
     if attributes[:user_id].present?
+      user = current_user.class.find(attributes[:user_id])
       scope = scope.where(user: user)
     end
 
@@ -99,10 +100,6 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     scope
-  end
-
-  def user
-    @user ||= current_user.class.find(attributes[:user_id])
   end
 
 end

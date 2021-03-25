@@ -59,7 +59,9 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   collection do
-    scope = Effective::Order.all.where(user: user).includes(:addresses, :order_items, :user)
+    user = current_user.class.find(attributes[:user_id])
+
+    scope = Effective::Order.all.deep.where(user: user)
 
     if EffectiveOrders.orders_collection_scope.respond_to?(:call)
       scope = EffectiveOrders.orders_collection_scope.call(scope)
@@ -74,10 +76,6 @@ class EffectiveOrdersDatatable < Effective::Datatable
     end
 
     scope
-  end
-
-  def user
-    @user ||= view.current_user.class.find(attributes[:user_id])
   end
 
 end
