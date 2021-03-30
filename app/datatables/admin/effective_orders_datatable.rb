@@ -15,11 +15,11 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
 
   filters do
     unless attributes[:skip_filters]
-      scope :purchased, default: true
+      scope :all
+      scope :purchased
       scope :deferred
       scope :refunds
       scope :not_purchased
-      scope :all
     end
   end
 
