@@ -16,8 +16,8 @@ module EffectiveOrders
       eval File.read("#{config.root}/config/effective_orders.rb")
     end
 
-    initializer "effective_orders.append_precompiled_assets" do |app|
-      Rails.application.config.assets.precompile += ['effective_orders/*']
+    initializer 'effective_orders.assets' do |app|
+      app.config.assets.precompile += ['effective_orders_manifest.js', 'effective_orders/*']
     end
 
     initializer 'effective_orders.refund', after: :load_config_initializers do
