@@ -250,14 +250,18 @@ module Effective
     end
 
     def to_s
+      [label, ' #', to_param].join
+    end
+
+    def label
       if refund?
-        "Refund ##{to_param}"
+        "Refund"
       elsif purchased?
-        "Receipt ##{to_param}"
+        "Receipt"
       elsif pending?
-        "Pending Order ##{to_param}"
+        "Pending Order"
       else
-        "Order ##{to_param}"
+        "Order"
       end
     end
 
@@ -267,18 +271,18 @@ module Effective
 
       # Normalize payment card
       card = case payment_card.to_s.downcase.gsub(' ', '').strip
-        when '' then ''
+        when '' then nil
         when 'v', 'visa' then 'Visa'
         when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
         when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
         when 'd', 'discover' then 'Discover'
         else payment_card.to_s
-      end
+      end unless payment_provider == 'free'
 
       # stripe, moneris, moneris_checkout
       last4 = (payment[:active_card] || payment['f4l4'] || payment['first6last4']).to_s.last(4)
 
-      [card, '-', last4].join(' ').html_safe
+      [card, '-', last4].compact.join(' ')
     end
 
     # For moneris and moneris_checkout. Just a unique value.

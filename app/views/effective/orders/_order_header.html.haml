@@ -2,8 +2,6 @@
   .mb-4.text-center
     = image_tag('effective_orders/logo.png')
 
-    %h2
-      = order.purchased? ? 'Receipt' : 'Order'
-      from Example Inc.
+    %h2 #{order.label} from Example Inc.
 
     %p.text-muted= order.to_s
