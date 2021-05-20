@@ -3,9 +3,9 @@
     = render partial: 'effective/orders/order_actions', locals: { order: order }
 
   = render partial: 'effective/orders/order_header', locals: { order: order }
+  = render partial: 'effective/orders/order_payment', locals: { order: order }
   = render partial: 'effective/orders/order_shipping', locals: { order: order }
   = render partial: 'effective/orders/order_deferred', locals: { order: order }
   = render partial: 'effective/orders/order_notes', locals: { order: order }
   = render partial: 'effective/orders/order_items', locals: { order: order }
-  = render partial: 'effective/orders/order_payment', locals: { order: order }
   = render partial: 'effective/orders/order_footer', locals: { order: order }

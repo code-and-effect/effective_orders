@@ -19,6 +19,8 @@ module ActsAsSubscribableBuyer
   end
 
   module ClassMethods
+    def acts_as_subscribable_buyer?; true; end
+
     def after_invoice_payment_succeeded(&block)
       send :define_method, :after_invoice_payment_succeeded do |event| self.instance_exec(event, &block) end
     end
@@ -46,4 +48,3 @@ module ActsAsSubscribableBuyer
   end
 
 end
-

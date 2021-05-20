@@ -18,7 +18,7 @@ module Effective
           end
         end
 
-        purchased_url ||= effective_orders.purchased_order_path(':id')
+        purchased_url = effective_orders.purchased_order_path(':id') if purchased_url.blank?
         redirect_to purchased_url.gsub(':id', @order.to_param.to_s)
       end
 
@@ -35,7 +35,7 @@ module Effective
           end
         end
 
-        deferred_url ||= effective_orders.deferred_order_path(':id')
+        deferred_url = effective_orders.deferred_order_path(':id') if deferred_url.blank?
         redirect_to deferred_url.gsub(':id', @order.to_param.to_s)
       end
 
@@ -46,7 +46,7 @@ module Effective
           flash[:danger] = 'Payment was unsuccessful. Your credit card was declined by the payment processor. Please try again.'
         end
 
-        declined_url ||= effective_orders.declined_order_path(':id')
+        declined_url = effective_orders.declined_order_path(':id') if declined_url.blank?
         redirect_to declined_url.gsub(':id', @order.to_param.to_s)
       end
 

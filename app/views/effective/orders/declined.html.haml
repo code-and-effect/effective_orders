@@ -1,12 +1,10 @@
 %h1.effective-heading= @page_title
 
 %p.effective-orders-page-content
-  = link_to 'Home', root_path
-
-%p.effective-orders-page-content
   - if current_cart.present?
     Your #{link_to_current_cart(label: 'Cart')} items have been saved. Please try again.
   - else
     Please try again.
 
-= link_to 'Continue', root_path, class: 'btn btn-primary'
+%p.text-center
+  = link_to 'Continue', root_path, class: 'btn btn-primary'

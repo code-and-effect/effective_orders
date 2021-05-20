@@ -2,5 +2,5 @@
 
 //= require ./effective_orders/customers
 //= require ./effective_orders/subscriptions
-//= require_tree ./effective_orders/providers
 
+//= require_tree ./effective_orders/providers

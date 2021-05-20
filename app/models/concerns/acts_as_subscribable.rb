@@ -40,6 +40,7 @@ module ActsAsSubscribable
   end
 
   module ClassMethods
+    def acts_as_subscribable?; true; end
   end
 
   def subscripter

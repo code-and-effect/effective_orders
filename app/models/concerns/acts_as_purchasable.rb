@@ -42,6 +42,8 @@ module ActsAsPurchasable
   end
 
   module ClassMethods
+    def acts_as_purchasable?; true; end
+
     def before_purchase(&block)
       send :define_method, :before_purchase do |order, order_item| self.instance_exec(order, order_item, &block) end
     end

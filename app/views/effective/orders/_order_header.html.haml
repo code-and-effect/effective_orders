@@ -1,23 +1,9 @@
 .effective-order-header
-  %h2 Acme Industries Inc.
-  .row
-    .col-sm-6
-      - email_address = EffectiveOrders.mailer[:admin_email] || 'info@acmeindustries.com'
-      %p= mail_to u(email_address), email_address
-      %p
-        1234 Fake Street
-        %br
-        Edmonton, AB, T5H 4A5
-        %br
-        %small Customize me by overriding '/app/views/effective/orders/_order_header.html.haml'
+  .mb-4.text-center
+    = image_tag('effective_orders/logo.png')
 
-    .col-sm-6
-      - if order.purchased?
-        %p Receipt: ##{order.to_param}
-      - elsif order.persisted?
-        %p Order: ##{order.to_param}
+    %h2
+      = order.purchased? ? 'Receipt' : 'Order'
+      from Example Inc.
 
-      - if order.purchased?
-        %p Purchased at: #{order.purchased_at.strftime("%F %H:%M")}
-      - else
-        %p Date: #{Time.zone.now.strftime("%F %H:%M")}
+    %p.text-muted= order.to_s
