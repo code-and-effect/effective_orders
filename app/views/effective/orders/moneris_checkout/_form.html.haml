@@ -4,10 +4,8 @@
 
 .card
   .card-body.bg-light
-    .text-center
+    .mb-3.text-center
       %h2 Checkout
-      %p
-        %em This checkout is powered by moneris.
 
     = effective_form_with(scope: :moneris_checkout, url: effective_orders.moneris_checkout_order_path(order), data: { 'moneris-checkout-form': moneris_checkout.to_json }) do |f|
       = f.hidden_field :purchased_url, value: purchased_url
@@ -17,3 +15,9 @@
       = f.hidden_field :ticket
 
       = render('effective/orders/moneris_checkout/element')
+
+    .mt-3.text-center
+      %em
+        This checkout provided by
+        = succeed('.') do
+          = link_to('Moneris', 'https://www.moneris.com', target: '_blank', class: 'btn-link')
