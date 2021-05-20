@@ -17,9 +17,14 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'rails', '>= 4.0.0'
   s.add_dependency 'coffee-rails'
-  s.add_dependency 'devise'
-  s.add_dependency 'sass'
-  s.add_dependency 'effective_datatables', '>= 4.0.0'
+  s.add_dependency 'sassc'
+  s.add_dependency 'effective_addresses'
+  s.add_dependency 'effective_datatables'
   s.add_dependency 'effective_bootstrap'
   s.add_dependency 'effective_resources'
+
+  s.add_development_dependency 'sqlite3'
+  s.add_development_dependency 'devise'
+  s.add_development_dependency 'haml-rails'
+  s.add_development_dependency 'pry-byebug'
 end
