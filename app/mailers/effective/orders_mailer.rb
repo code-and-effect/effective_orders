@@ -1,6 +1,8 @@
 module Effective
   class OrdersMailer < ActionMailer::Base
-    default from: -> { EffectiveOrders.mailer[:default_from] }
+    default from: -> { EffectiveOrders.mailer[:default_from].presence }
+    default cc: -> { EffectiveOrders.mailer[:default_cc].presence }
+    default bcc: -> { EffectiveOrders.mailer[:default_bcc].presence }
     layout -> { EffectiveOrders.mailer[:layout].presence || 'effective_orders_mailer_layout' }
 
     helper EffectiveOrdersHelper
@@ -27,7 +29,7 @@ module Effective
 
         @subject = subject_for(@order, :order_receipt_to_buyer, "Order Receipt: ##{@order.to_param}")
 
-        mail(to: @order.email, cc: @order.cc, subject: @subject)
+        mail({to: @order.email, cc: @order.cc, subject: @subject}.compact)
       end
     end
 
@@ -43,7 +45,7 @@ module Effective
 
         @subject = subject_for(@order, :payment_request_to_buyer, "Request for Payment: Invoice ##{@order.to_param}")
 
-        mail(to: @order.email, cc: @order.cc, subject: @subject)
+        mail({to: @order.email, cc: @order.cc, subject: @subject}.compact)
       end
     end
 
@@ -58,7 +60,7 @@ module Effective
 
         @subject = subject_for(@order, :pending_order_invoice_to_buyer, "Pending Order: ##{@order.to_param}")
 
-        mail(to: @order.email, cc: @order.cc, subject: @subject)
+        mail({to: @order.email, cc: @order.cc, subject: @subject}.compact)
       end
     end
 
