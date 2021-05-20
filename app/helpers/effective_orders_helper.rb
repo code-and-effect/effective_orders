@@ -42,6 +42,8 @@ module EffectiveOrdersHelper
       'Admin: Mark as Paid'
     when :moneris
       'Checkout with Credit Card'
+    when :moneris_checkout
+      'Pay Now' # Doesn't get displayed anyway
     when :paypal
       'Checkout with PayPal'
     when :phone
@@ -109,25 +111,6 @@ module EffectiveOrdersHelper
 
   def render_orders(orders, opts = {})
     render(partial: 'effective/orders/orders_table', locals: { orders: orders }.merge(opts))
-  end
-
-  def payment_card_label(card)
-    card = card.to_s.downcase.gsub(' ', '').strip
-
-    case card
-    when ''
-      'None'
-    when 'v', 'visa'
-      'Visa'
-    when 'm', 'mc', 'master', 'mastercard'
-      'MasterCard'
-    when 'a', 'ax', 'american', 'americanexpress'
-      'American Express'
-    when 'd', 'discover'
-      'Discover'
-    else
-      card.to_s
-    end
   end
 
   def checkout_icon_to(path, options = {})

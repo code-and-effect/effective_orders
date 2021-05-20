@@ -10,6 +10,7 @@ EffectiveOrders::Engine.routes.draw do
         post :free
         post :mark_as_paid
         post :cheque
+        post :moneris_checkout
         post :phone
         post :pretend
         post :refund

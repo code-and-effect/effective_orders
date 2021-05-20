@@ -45,6 +45,10 @@ form.new_effective_order {
   a.remove_fields.dynamic { float: right; }
 }
 
+.effective-moneris-checkout {
+  height: 640px;
+}
+
 @media print {
   .effective-orders-page-content { display: none; }
 

@@ -34,7 +34,7 @@ module EffectiveOrders
       # Features
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message,
       # Payment processors. false or Hash
-      :cheque, :moneris, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
+      :cheque, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
   end
 
@@ -69,6 +69,10 @@ module EffectiveOrders
     moneris.kind_of?(Hash)
   end
 
+  def self.moneris_checkout?
+    moneris_checkout.kind_of?(Hash)
+  end
+
   def self.paypal?
     paypal.kind_of?(Hash)
   end
@@ -98,7 +102,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris?, paypal?, stripe?].select { |enabled| enabled }.length == 1
+    [moneris?, moneris_checkout?, paypal?, stripe?].select { |enabled| enabled }.length == 1
   end
 
   # The Effective::Order.payment_provider value must be in this collection
@@ -108,6 +112,7 @@ module EffectiveOrders
       ('credit card' if mark_as_paid?),
       ('free' if free?),
       ('moneris' if moneris?),
+      ('moneris_checkout' if moneris_checkout?),
       ('paypal' if paypal?),
       ('phone' if phone?),
       ('pretend' if pretend?),
@@ -195,6 +200,22 @@ module EffectiveOrders
 
   def self.stripe_plans_collection
     stripe_plans.map { |plan| [plan[:name], plan[:id]] }
+  end
+
+  def self.moneris_checkout_script_url
+    case EffectiveOrders.moneris_checkout.fetch(:environment)
+    when 'prod' then 'https://gateway.moneris.com/chkt/js/chkt_v1.00.js'
+    when 'qa' then 'https://gatewayt.moneris.com/chkt/js/chkt_v1.00.js'
+    else raise('unexpected EffectiveOrders.moneris_checkout :environment key. Please check your config/initializers/effective_orders.rb file')
+    end
+  end
+
+  def self.moneris_request_url
+    case EffectiveOrders.moneris_checkout.fetch(:environment)
+    when 'prod' then 'https://gateway.moneris.com/chkt/request/request.php'
+    when 'qa' then 'https://gatewayt.moneris.com/chkt/request/request.php'
+    else raise('unexpected EffectiveOrders.moneris_checkout :environment key. Please check your config/initializers/effective_orders.rb file')
+    end
   end
 
   class SoldOutException < Exception; end

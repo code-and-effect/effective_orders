@@ -7,6 +7,7 @@ module Effective
     include Providers::Free
     include Providers::MarkAsPaid
     include Providers::Moneris
+    include Providers::MonerisCheckout
     include Providers::Paypal
     include Providers::Phone
     include Providers::Pretend

@@ -594,8 +594,74 @@ You will need an external IP address to work with these sandboxes.
 
 We suggest the free application `https://ngrok.com/` for this ability.
 
+## Paying with Moneris Checkout
 
-## Paying via Moneris
+Use the following instructions to set up a Moneris Checkout store.
+
+This is the javascript / pay in place form implementation.
+
+We do not use or implement tokenization of credentials with Moneris Checkout.
+
+We are also going to use ngrok to give us a public facing URL
+
+### Create Test / Development Store
+
+Visit https://esqa.moneris.com/mpg/ and login with: demouser / store1 / password
+
+- Select Admin -> Moneris Checkout Config from the menu
+- Click Create Profile
+
+Checkout Type: I have my custom order form and want to use Moneris simply for payment processing
+
+Multi-Currency: None
+
+Payment:
+
+- Google Pay: No
+- Card Logos: Yes
+- Payment Security: CVV
+- Transaction Type: Purchase
+- Transaction Limits: None
+
+Branding & Design
+
+- Logo Url: None
+- Colors: Default
+
+Customizations
+
+- Enable Fullscreen: No false (important)
+- Card Borders/Shadows: Yes
+
+Order Confirmation
+
+- Order Confirmation Processing: Use Moneris
+- Confirmation Page Content: Check all
+
+Email Communications
+
+- None
+- Customer Emails: None
+
+
+Now copy the Checkout id, something like `chktJF76Btore1` into the config/initializers/effective_orders.rb file.
+
+For the store_id and api_token values, you can use
+
+```
+config.moneris_checkout = {
+  environment: 'qa',
+  store_id: 'store1',
+  api_token: 'yesguy1',
+  checkout_id: '',  # You need to generate this one
+}
+```
+
+[Testing a Solution](https://developer.moneris.com/en/More/Testing/Testing%20a%20Solution)
+
+
+
+## Paying via Moneris (hosted pay page - old)
 
 Use the following instructions to set up a Moneris TEST store.
 

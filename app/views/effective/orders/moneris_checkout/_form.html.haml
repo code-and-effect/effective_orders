@@ -1,0 +1,19 @@
+= javascript_include_tag(EffectiveOrders.moneris_checkout_script_url)
+
+- moneris_checkout = moneris_checkout_preload_request(order)
+
+.card
+  .card-body.bg-light
+    .text-center
+      %h2 Checkout
+      %p
+        %em This checkout is powered by moneris.
+
+    = effective_form_with(scope: :moneris_checkout, url: effective_orders.moneris_checkout_order_path(order), data: { 'moneris-checkout-form': moneris_checkout.to_json }) do |f|
+      = f.hidden_field :purchased_url, value: purchased_url
+      = f.hidden_field :declined_url, value: declined_url
+
+      -# This is set by the moneris_checkout.js javascript
+      = f.hidden_field :ticket
+
+      = render('effective/orders/moneris_checkout/element')

@@ -166,6 +166,25 @@ EffectiveOrders.setup do |config|
   #   }
   # end
 
+  # Moneris Checkout
+  config.moneris_checkout = false
+
+  # if Rails.env.production?
+  #   config.moneris_checkout = {
+  #     environment: 'prod',
+  #     store_id: '',
+  #     api_token: '',
+  #     checkout_id: '',
+  #   }
+  # else
+  #   config.moneris_checkout = {
+  #     environment: 'qa',
+  #     store_id: 'store1',
+  #     api_token: 'yesguy1',
+  #     checkout_id: 'chktJF76Btore1',
+  #   }
+  # end
+
   # Paypal
   config.paypal = false
 

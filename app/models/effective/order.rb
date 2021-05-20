@@ -261,6 +261,39 @@ module Effective
       end
     end
 
+    # Visa - 1234
+    def payment_method
+      return nil unless purchased?
+
+      # Normalize payment card
+      card = case payment_card.to_s.downcase.gsub(' ', '').strip
+        when '' then ''
+        when 'v', 'visa' then 'Visa'
+        when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
+        when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
+        when 'd', 'discover' then 'Discover'
+        else payment_card.to_s
+      end
+
+      # stripe, moneris, moneris_checkout
+      last4 = (payment[:active_card] || payment['f4l4'] || payment['first6last4']).to_s.last(4)
+
+      [card, '-', last4].join(' ').html_safe
+    end
+
+    # For moneris and moneris_checkout. Just a unique value.
+    def transaction_id
+      [to_param, billing_name.to_s.parameterize.presence, Time.zone.now.to_i].compact.join('-')
+    end
+
+    def billing_first_name
+      billing_name.to_s.split(' ').first
+    end
+
+    def billing_last_name
+      Array(billing_name.to_s.split(' ')[1..-1]).join(' ')
+    end
+
     def pending?
       state == EffectiveOrders::PENDING
     end

@@ -20,6 +20,9 @@
     - if EffectiveOrders.moneris?
       = render partial: '/effective/orders/moneris/form', locals: provider_locals
 
+    - if EffectiveOrders.moneris_checkout?
+      = render partial: '/effective/orders/moneris_checkout/form', locals: provider_locals
+
     - if EffectiveOrders.paypal?
       = render partial: '/effective/orders/paypal/form', locals: provider_locals
 
