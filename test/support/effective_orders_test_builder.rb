@@ -3,15 +3,72 @@ module EffectiveOrdersTestBuilder
     build_effective_order.tap { |order| order.save! }
   end
 
-  def build_effective_order(user: nil)
+  def build_effective_order(user: nil, items: nil, billing_address: nil, shipping_address: nil)
     user ||= create_user!
+    items ||= [build_effective_product, build_effective_product]
+    billing_address ||= build_effective_address(category: 'billing')
+    shipping_address ||= build_effective_address(category: 'shipping')
 
     order = Effective::Order.new(
-      user: user
+      user: user,
+      items: items,
+      billing_address: billing_address,
+      shipping_address: shipping_address
     )
 
     order
   end
+
+  def create_effective_product!
+    build_effective_product.tap { |product| product.save! }
+  end
+
+  def build_effective_product
+    @product_index ||= 0
+    @product_index += 1
+
+    product = Effective::Product.new(
+      name: "Item #{@product_index}",
+      price: (100 * @product_index),
+      tax_exempt: false
+    )
+
+    product
+  end
+
+  def build_preview_order
+    order = Effective::Order.new(id: 1)
+    order.user = preview_user
+    preview_order_items.each { |atts| order.order_items.build(atts) }
+
+    order.state = 'purchased'
+    order.payment_card = 'visa'
+    order.purchased_at = Time.zone.now
+    order.payment = { 'f4l4' => '1234'}
+
+    order.valid?
+    order
+  end
+
+  def create_effective_address!
+    build_effective_address.tap { |address| address.save! }
+  end
+
+  def build_effective_address(category: 'billing')
+    address = Effective::Address.new(
+      category: category,
+      full_name: 'Valued Customer',
+      address1: '1234 Fake Street',
+      address2: 'Suite 200',
+      city: 'Edmonton',
+      state_code: 'AB',
+      country_code: 'CA',
+      postal_code: 'T5T 2T1'
+    )
+
+    address
+  end
+
 
   def create_user!
     build_user.tap { |user| user.save! }
