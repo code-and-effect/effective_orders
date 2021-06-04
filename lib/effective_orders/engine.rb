@@ -2,7 +2,7 @@ module EffectiveOrders
   class Engine < ::Rails::Engine
     engine_name 'effective_orders'
 
-    config.autoload_paths += Dir["#{config.root}/app/models/**/"]
+    #config.autoload_paths += Dir["#{config.root}/app/models/**/"]
 
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_orders.active_record' do |app|
@@ -16,6 +16,10 @@ module EffectiveOrders
     # Set up our default configuration options.
     initializer 'effective_orders.defaults', before: :load_config_initializers do |app|
       eval File.read("#{config.root}/config/effective_orders.rb")
+    end
+
+    initializer 'effective_orders.assets' do |app|
+      app.config.assets.precompile += ['effective_orders_manifest.js', 'effective_orders/*']
     end
 
     # Set up mail delivering config option
