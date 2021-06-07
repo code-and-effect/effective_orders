@@ -32,7 +32,7 @@ module Effective
     validates :stripe_customer_id, presence: true
     validates :status, if: -> { stripe_subscription_id.present? }, inclusion: { in: %w(active past_due) }
 
-    def self.for_user(user)
+    def self.for_buyer(user)
       Effective::Customer.where(user: user).first_or_initialize
     end
 

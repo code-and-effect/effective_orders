@@ -4,7 +4,7 @@ module Effective
 
     belongs_to :order, class_name: 'Effective::Order'
     belongs_to :purchasable, polymorphic: true
-    belongs_to :seller, class_name: 'User'
+    belongs_to :seller, class_name: 'User', optional: true
 
     delegate :purchased_download_url, to: :purchasable
     delegate :purchased?, :declined?, to: :order
