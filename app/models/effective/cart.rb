@@ -2,7 +2,8 @@ module Effective
   class Cart < ActiveRecord::Base
     self.table_name = EffectiveOrders.carts_table_name.to_s
 
-    belongs_to :user    # Optional. We want non-logged-in users to have carts too.
+    # Optional. We want non-logged-in users to have carts too.
+    belongs_to :user, optional: true
     has_many :cart_items, -> { includes(:purchasable).order(:updated_at) }, dependent: :delete_all, class_name: 'Effective::CartItem'
 
     accepts_nested_attributes_for :cart_items
