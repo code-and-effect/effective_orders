@@ -118,12 +118,6 @@ module Effective
       end
     end
 
-    with_options if: -> { confirmed? && !skip_buyer_validations? } do
-      if EffectiveOrders.terms_and_conditions
-        validates :terms_and_conditions, presence: true
-      end
-    end
-
     # When Purchased
     with_options if: -> { purchased? } do
       validates :purchased_at, presence: true
