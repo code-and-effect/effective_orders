@@ -11,7 +11,7 @@ module Admin
 
     submit :save, 'Continue', redirect: :index
     submit :save, 'Add New', redirect: -> { effective_orders.new_admin_order_path(user_id: resource.user&.to_param) }
-    submit :save, 'Duplicate', redirect: -> { effective_posts.new_admin_post_path(duplicate_id: resource.id) }
+    submit :save, 'Duplicate', redirect: -> { effective_orders.new_admin_order_path(duplicate_id: resource.to_param) }
     submit :save, 'Checkout', redirect: -> { effective_orders.checkout_admin_order_path(resource) }
 
     def create
