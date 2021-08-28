@@ -8,7 +8,7 @@
     = f.email_cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
 
     %h2 Order Items
-    = f.has_many :order_items do |fc|
+    = f.has_many :order_items, remove: f.object.new_record? do |fc|
       = render 'order_item_fields', f: fc
 
     %hr
