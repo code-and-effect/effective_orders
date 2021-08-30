@@ -225,7 +225,6 @@ module Effective
       retval.size == 1 ? retval.first : retval
     end
 
-
     def update_prices!
       raise('already purchased') if purchased?
       raise('must be pending or confirmed') unless pending? || confirmed?
