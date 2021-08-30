@@ -107,7 +107,7 @@ module EffectiveOrders
 
   # The Effective::Order.payment_provider value must be in this collection
   def self.payment_providers
-    [
+    @payment_providers ||= [
       ('cheque' if cheque?),
       ('credit card' if mark_as_paid?),
       ('free' if free?),
