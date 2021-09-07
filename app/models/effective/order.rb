@@ -156,30 +156,44 @@ module Effective
     def initialize(atts = nil, &block)
       super(state: EffectiveOrders::PENDING) # Initialize with state: PENDING
 
-      return unless atts.present?
+      return self unless atts.present?
 
       if atts.kind_of?(Hash)
-        items = Array(atts.delete(:item)) + Array(atts.delete(:items))
+        items = Array(atts[:item]) + Array(atts[:items])
 
-        self.user = atts.delete(:user) || (items.first.user if items.first.respond_to?(:user))
+        self.user = atts[:user] || (items.first.user if items.first.respond_to?(:user))
 
-        if (address = atts.delete(:billing_address)).present?
+        if (address = atts[:billing_address]).present?
           self.billing_address = address
           self.billing_address.full_name ||= user.to_s.presence
         end
 
-        if (address = atts.delete(:shipping_address)).present?
+        if (address = atts[:shipping_address]).present?
           self.shipping_address = address
           self.shipping_address.full_name ||= user.to_s.presence
         end
 
-        atts.each { |key, value| self.send("#{key}=", value) }
+        atts.except(:item, :items, :user, :billing_address, :shipping_address).each do |key, value|
+          self.send("#{key}=", value)
+        end
 
         add(items) if items.present?
       else # Attributes are not a Hash
         self.user = atts.user if atts.respond_to?(:user)
         add(atts)
       end
+
+      if self.billing_address.blank? && self.user.respond_to?(:billing_address) && self.user.billing_address.present?
+        self.billing_address = self.user.billing_address
+        self.billing_address.full_name ||= user.to_s.presence
+      end
+
+      if self.shipping_address.blank? && self.user.respond_to?(:shipping_address) && self.user.shipping_address.present?
+        self.shipping_address = self.user.shipping_address
+        self.shipping_address.full_name ||= user.to_s.presence
+      end
+
+      self
     end
 
     # Items can be an Effective::Cart, an Effective::order, a single acts_as_purchasable, or multiple acts_as_purchasables
