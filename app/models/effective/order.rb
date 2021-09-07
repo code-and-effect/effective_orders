@@ -184,7 +184,6 @@ module Effective
         add(atts)
       end
 
-
       self
     end
 
@@ -351,6 +350,14 @@ module Effective
       order_items.map { |oi| oi.quantity }.sum
     end
 
+    def send_order_receipt_to_admin?
+      EffectiveOrders.mailer[:send_order_receipt_to_admin] && !free?
+    end
+
+    def send_order_receipt_to_buyer?
+      EffectiveOrders.mailer[:send_order_receipt_to_buyer] && !free?
+    end
+
     def send_payment_request_to_buyer?
       EffectiveResources.truthy?(send_payment_request_to_buyer) && !free? && !refund?
     end
@@ -431,11 +438,7 @@ module Effective
     def defer!(provider: 'none', email: true)
       return false if purchased?
 
-      assign_attributes(
-        state: EffectiveOrders::DEFERRED,
-        payment_provider: provider
-      )
-
+      assign_attributes(state: EffectiveOrders::DEFERRED, payment_provider: provider)
       save!
 
       send_payment_request_to_buyer! if email
@@ -483,8 +486,8 @@ module Effective
     end
 
     def send_order_receipts!
-      send_order_receipt_to_admin! if EffectiveOrders.mailer[:send_order_receipt_to_admin]
-      send_order_receipt_to_buyer! if EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      send_order_receipt_to_admin! if send_order_receipt_to_admin?
+      send_order_receipt_to_buyer! if send_order_receipt_to_buyer?
       send_refund_notification! if refund?
     end
 
