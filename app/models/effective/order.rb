@@ -69,6 +69,7 @@ module Effective
     before_validation { assign_billing_name }
     before_validation { assign_email }
     before_validation { assign_last_address }
+    before_validation { assign_user_address }
 
     before_validation(if: -> { confirmed_checkout }) do
       self.state = EffectiveOrders::CONFIRMED if pending?
@@ -183,15 +184,6 @@ module Effective
         add(atts)
       end
 
-      if self.billing_address.blank? && self.user.respond_to?(:billing_address) && self.user.billing_address.present?
-        self.billing_address = self.user.billing_address
-        self.billing_address.full_name ||= user.to_s.presence
-      end
-
-      if self.shipping_address.blank? && self.user.respond_to?(:shipping_address) && self.user.shipping_address.present?
-        self.shipping_address = self.user.shipping_address
-        self.shipping_address.full_name ||= user.to_s.presence
-      end
 
       self
     end
@@ -573,6 +565,23 @@ module Effective
 
       if EffectiveOrders.shipping_address && last_order.shipping_address.present?
         self.shipping_address = last_order.shipping_address
+      end
+    end
+
+    def assign_user_address
+      return unless user.present?
+      return unless (EffectiveOrders.billing_address || EffectiveOrders.shipping_address)
+      return if EffectiveOrders.billing_address && billing_address.present?
+      return if EffectiveOrders.shipping_address && shipping_address.present?
+
+      if billing_address.blank? && user.respond_to?(:billing_address) && user.billing_address.present?
+        self.billing_address = user.billing_address
+        self.billing_address.full_name ||= user.to_s.presence
+      end
+
+      if shipping_address.blank? && user.respond_to?(:shipping_address) && user.shipping_address.present?
+        self.shipping_address = user.shipping_address
+        self.shipping_address.full_name ||= user.to_s.presence
       end
     end
 
