@@ -203,9 +203,21 @@ module Effective
           # Duplicate an existing order
           self.note_to_buyer ||= item.note_to_buyer
           self.note_internal ||= item.note_internal
+          self.cc ||= item.cc
 
           item.order_items.select { |oi| oi.purchasable.kind_of?(Effective::Product) }.map do |oi|
-            product = Effective::Product.new(name: oi.purchasable.purchasable_name, price: oi.purchasable.price, tax_exempt: oi.purchasable.tax_exempt)
+            purchasable = oi.purchasable
+
+            product = Effective::Product.new(name: purchasable.purchasable_name, price: purchasable.price, tax_exempt: purchasable.tax_exempt)
+
+            # Copy over any extended attributes that may have been created
+            atts = purchasable.dup.attributes.except('name', 'price', 'tax_exempt', 'purchased_order_id').compact
+
+            atts.each do |k, v|
+              next unless product.respond_to?("#{k}=") && product.respond_to?(k)
+              product.send("#{k}=", v) if product.send(k).blank?
+            end
+
             Effective::CartItem.new(quantity: oi.quantity, purchasable: product)
           end
         else
@@ -281,6 +293,10 @@ module Effective
       last4 = (payment[:active_card] || payment['f4l4'] || payment['first6last4']).to_s.last(4)
 
       [card, '-', last4].compact.join(' ')
+    end
+
+    def duplicate
+      Effective::Order.new(self)
     end
 
     # For moneris and moneris_checkout. Just a unique value.
