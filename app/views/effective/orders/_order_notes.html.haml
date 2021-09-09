@@ -11,7 +11,7 @@
       %tbody
         %tr
           - if order.note.present?
-            %td= order.note
+            %td= simple_format(order.note)
 
           - if order.note_to_buyer.present?
-            %td= order.note_to_buyer
+            %td= simple_format(order.note_to_buyer)
