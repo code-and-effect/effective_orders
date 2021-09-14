@@ -5,7 +5,10 @@
       = order.refund? ? 'Complete Refund' : 'Mark as Paid'
 
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
-      = f.date_field :purchased_at, required: true
+      - if order.refund?
+        = f.hidden_field :purchased_at, value: Time.zone.now
+      - else
+        = f.date_field :purchased_at, required: true
 
       = f.select :payment_provider, EffectiveOrders.payment_providers, required: true
 
@@ -23,4 +26,4 @@
 
       = f.text_area :note_to_buyer, hint: 'This message will be displayed on the receipt.'
 
-      = f.submit order_checkout_label(order.refund? ? :refund : :mark_as_paid), center: true
+      = f.submit 'Admin: ' + order_checkout_label(order.refund? ? :refund : :mark_as_paid)
