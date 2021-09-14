@@ -72,7 +72,7 @@ module Effective
     before_validation { assign_user_address }
 
     before_validation(if: -> { confirmed_checkout }) do
-      self.state = EffectiveOrders::CONFIRMED if pending?
+      assign_attributes(state: EffectiveOrders::CONFIRMED) if pending?
     end
 
     before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
