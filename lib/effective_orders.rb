@@ -10,7 +10,16 @@ module EffectiveOrders
   DEFERRED = 'deferred'      # Deferred providers. Cheque or Phone was selected.
   PURCHASED = 'purchased'    # Purchased by provider
   DECLINED = 'declined'      # Declined by provider
-  STATES = { PENDING => PENDING, CONFIRMED => CONFIRMED, DEFERRED => DEFERRED, PURCHASED => PURCHASED, DECLINED => DECLINED }
+  ABANDONED = 'abandoned'    # Not set by this gem. Can be set outside it.
+
+  STATES = {
+    PENDING => PENDING,
+    CONFIRMED => CONFIRMED,
+    DEFERRED => DEFERRED,
+    PURCHASED => PURCHASED,
+    DECLINED => DECLINED,
+    ABANDONED => ABANDONED
+  }
 
   # Subscription statuses (as per stripe)
   ACTIVE = 'active'

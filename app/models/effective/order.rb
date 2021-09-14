@@ -143,6 +143,7 @@ module Effective
     scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
     scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
     scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
+    scope :abandoned, -> { where(state: EffectiveOrders::ABANDONED) }
     scope :refunds, -> { purchased.where('total < ?', 0) }
 
     # Effective::Order.new()
@@ -332,6 +333,10 @@ module Effective
 
     def declined?
       state == EffectiveOrders::DECLINED
+    end
+
+    def abandoned?
+      state == EffectiveOrders::ABANDONED
     end
 
     def purchasables
