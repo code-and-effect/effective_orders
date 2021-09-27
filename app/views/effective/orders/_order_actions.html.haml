@@ -5,7 +5,7 @@
   - if order.purchased?
     = link_to 'E-mail Receipt', effective_orders.send_buyer_receipt_order_path(order),
       class: 'btn btn-secondary',
-      data: { confirm: "Send receipt to #{order.emails_send_to}?" }
+      data: { method: :post, confirm: "Send receipt to #{order.emails_send_to}?" }
 
   - if order.persisted? && EffectiveResources.authorized?(controller, :admin, :effective_orders)
     - if order.pending? || order.confirmed? || order.deferred?

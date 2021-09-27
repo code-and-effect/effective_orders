@@ -5,7 +5,7 @@ EffectiveOrders::Engine.routes.draw do
         get :purchased
         get :deferred
         get :declined
-        get :send_buyer_receipt
+        post :send_buyer_receipt
 
         post :free
         post :mark_as_paid
