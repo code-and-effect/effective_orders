@@ -5,10 +5,7 @@
       = order.refund? ? 'Complete Refund' : 'Mark as Paid'
 
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
-      - if order.refund?
-        = f.hidden_field :purchased_at, value: Time.zone.now
-      - else
-        = f.date_field :purchased_at, required: true
+      = f.hidden_field :purchased_at, value: Time.zone.now
 
       = f.select :payment_provider, EffectiveOrders.payment_providers, required: true
 
