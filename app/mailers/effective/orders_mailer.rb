@@ -43,7 +43,7 @@ module Effective
         @order = (order_param.kind_of?(Effective::Order) ? order_param : Effective::Order.find(order_param))
         @user = @order.user
 
-        @subject = subject_for(@order, :payment_request_to_buyer, "Request for Payment: Invoice ##{@order.to_param}")
+        @subject = subject_for(@order, :payment_request_to_buyer, "Payment request - Order ##{@order.to_param}")
 
         mail({to: @order.email, cc: @order.cc, subject: @subject}.compact)
       end

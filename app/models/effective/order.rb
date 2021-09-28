@@ -265,14 +265,30 @@ module Effective
     end
 
     def label
-      if refund?
-        "Refund"
+      if refund? && purchased?
+        'Refund'
       elsif purchased?
-        "Receipt"
-      elsif pending?
-        "Pending Order"
+        'Receipt'
+      elsif refund? && (pending? || confirmed?)
+        'Pending Refund'
+      elsif (pending? || confirmed?)
+        'Pending Order'
       else
-        "Order"
+        'Order'
+      end
+    end
+
+    def total_label
+      if refund? && purchased?
+        'Total Paid'
+      elsif purchased?
+        'Total Paid'
+      elsif refund? && (pending? || confirmed?)
+        'Total Due'
+      elsif (pending? || confirmed?)
+        'Total Due'
+      else
+        'Total'
       end
     end
 

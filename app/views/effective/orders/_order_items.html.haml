@@ -62,11 +62,6 @@
             %th.download
 
           %th.total
-            - if order.pending?
-              Amount Due
-            - elsif order.purchased?
-              Amount Paid
-            - else
-              Total
+            = order.total_label
 
           %td.price.total-price= price_to_currency(order.total)
