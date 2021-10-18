@@ -17,8 +17,10 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     unless attributes[:skip_filters]
       scope :all
       scope :purchased
-      scope :deferred
-      scope :refunds
+
+      scope :deferred if EffectiveOrders.deferred_providers.present?
+      scope :refunds if EffectiveOrders.refund
+
       scope :not_purchased
     end
   end
