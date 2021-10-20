@@ -1,3 +1,3 @@
 module EffectiveOrders
-  VERSION = '5.1.14'.freeze
+  VERSION = '5.1.15'.freeze
 end
