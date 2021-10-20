@@ -21,7 +21,6 @@ module Effective
           provider: 'free',
           card: 'none',
           purchased_url: free_params[:purchased_url],
-          email: false
         )
       end
 
