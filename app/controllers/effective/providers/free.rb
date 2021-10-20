@@ -20,7 +20,7 @@ module Effective
           payment: 'free order. no payment required.',
           provider: 'free',
           card: 'none',
-          purchased_url: free_params[:purchased_url],
+          purchased_url: free_params[:purchased_url]
         )
       end
 
