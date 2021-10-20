@@ -388,15 +388,20 @@ module Effective
     end
 
     def send_order_receipt_to_admin?
-      EffectiveOrders.mailer[:send_order_receipt_to_admin] && !free?
+      return false if free? && !EffectiveOrders.mailer[:send_order_receipts_when_free]
+      EffectiveOrders.mailer[:send_order_receipt_to_admin]
     end
 
     def send_order_receipt_to_buyer?
-      EffectiveOrders.mailer[:send_order_receipt_to_buyer] && !free?
+      return false if free? && !EffectiveOrders.mailer[:send_order_receipts_when_free]
+      EffectiveOrders.mailer[:send_order_receipt_to_buyer]
     end
 
     def send_payment_request_to_buyer?
-      EffectiveResources.truthy?(send_payment_request_to_buyer) && !free? && !refund?
+      return false if free? && !EffectiveOrders.mailer[:send_order_receipts_when_free]
+      return false if refund?
+
+      EffectiveResources.truthy?(send_payment_request_to_buyer)
     end
 
     def send_mark_as_paid_email_to_buyer?

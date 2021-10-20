@@ -95,6 +95,7 @@ EffectiveOrders.setup do |config|
     send_payment_request_to_buyer: true,
     send_pending_order_invoice_to_buyer: true,
     send_order_receipts_when_mark_as_paid: false,
+    send_order_receipts_when_free: false,
 
     send_subscription_event_to_admin: true,
     send_subscription_created: true,
