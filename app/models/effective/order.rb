@@ -68,8 +68,8 @@ module Effective
     before_validation { assign_order_totals }
     before_validation { assign_billing_name }
     before_validation { assign_email }
-    before_validation { assign_last_address }
     before_validation { assign_user_address }
+    before_validation { assign_last_address }
 
     before_validation(if: -> { confirmed_checkout }) do
       assign_attributes(state: EffectiveOrders::CONFIRMED) if pending?
