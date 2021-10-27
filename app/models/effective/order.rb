@@ -15,10 +15,7 @@ module Effective
       acts_as_obfuscated format: '###-####-###'
     end
 
-    acts_as_addressable(
-      billing: { singular: true, use_full_name: EffectiveOrders.use_address_full_name },
-      shipping: { singular: true, use_full_name: EffectiveOrders.use_address_full_name }
-    )
+    acts_as_addressable(billing: { singular: true }, shipping: { singular: true })
 
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
     attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
@@ -88,11 +85,14 @@ module Effective
     validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
     validates :subtotal, presence: true
 
-    if EffectiveOrders.minimum_charge.to_i > 0
-      validates :total, presence: true, numericality: {
-        greater_than_or_equal_to: EffectiveOrders.minimum_charge.to_i,
-        message: "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items."
-      }, unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }
+    with_options(if: -> { EffectiveOrders.minimum_charge.to_i > 0 }) do
+      validates :total, presence: true
+
+      validate(unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }) do
+        if total.present? && total < EffectiveOrders.minimum_charge
+          self.errors.add(:total, "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items.")
+        end
+      end
     end
 
     validate(if: -> { tax_rate.present? }) do
@@ -106,17 +106,9 @@ module Effective
       validates :tax_rate, presence: { message: "can't be determined based on billing address" }
       validates :tax, presence: true
 
-      if EffectiveOrders.billing_address
-        validates :billing_address, presence: true
-      end
-
-      if EffectiveOrders.shipping_address
-        validates :shipping_address, presence: true
-      end
-
-      if EffectiveOrders.collect_note_required
-        validates :note, presence: true
-      end
+      validates :billing_address, presence: true, if: -> { EffectiveOrders.billing_address }
+      validates :shipping_address, presence: true, if: -> { EffectiveOrders.shipping_address }
+      validates :note, presence: true, if: -> { EffectiveOrders.collect_note_required }
     end
 
     # When Purchased
@@ -124,12 +116,21 @@ module Effective
       validates :purchased_at, presence: true
       validates :payment, presence: true
 
-      validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.payment_providers }
+      validates :payment_provider, presence: true
+
+      validate do
+        self.errors.add(:payment_provider, "unknown payment provider") unless EffectiveOrders.payment_providers.include?(payment_provider)
+      end
+
       validates :payment_card, presence: true
     end
 
     with_options if: -> { deferred? } do
-      validates :payment_provider, presence: true, inclusion: { in: EffectiveOrders.deferred_providers }
+      validates :payment_provider, presence: true
+
+      validate do
+        self.errors.add(:payment_provider, "unknown deferred payment provider") unless EffectiveOrders.deferred_providers.include?(payment_provider)
+      end
     end
 
     scope :deep, -> { includes(:addresses, :user, order_items: :purchasable) }

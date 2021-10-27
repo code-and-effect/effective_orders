@@ -47,7 +47,10 @@ module Effective
     validates :subscribable, presence: true
 
     validates :stripe_plan_id, presence: true
-    validates :stripe_plan_id, inclusion: { in: EffectiveOrders.stripe_plans.map { |plan| plan[:id] } }
+
+    validate(if: -> { stripe_plan_id.present? }) do
+      self.errors.add(:stripe_plan_id, 'unknown plan') unless EffectiveOrders.stripe_plans.map { |plan| plan[:id] }.include?(stripe_plan_id)
+    end
 
     validates :stripe_subscription_id, presence: true
 

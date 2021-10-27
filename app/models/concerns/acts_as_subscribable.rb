@@ -24,9 +24,7 @@ module ActsAsSubscribable
       raise :abort unless (subscripter.destroy! rescue false)
     end
 
-    if EffectiveOrders.trial?
-      validates :trialing_until, presence: true
-    end
+    validates :trialing_until, presence: true, if: -> { EffectiveOrders.trial? }
 
     validates :subscription_status, inclusion: { allow_nil: true, in: EffectiveOrders::STATUSES.keys }
 
