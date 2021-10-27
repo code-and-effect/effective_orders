@@ -19,7 +19,6 @@ EffectiveOrders.setup do |config|
   # Require these addresses when creating a new Order.  Works with effective_addresses gem
   config.billing_address = true
   config.shipping_address = false
-  config.use_address_full_name = true
 
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
   config.obfuscate_order_ids = false

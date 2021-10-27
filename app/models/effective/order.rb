@@ -12,6 +12,7 @@ module Effective
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
     if EffectiveOrders.obfuscate_order_ids
+      raise('unsupported obfuscation with tenant') if defined?(Tenant)
       acts_as_obfuscated format: '###-####-###'
     end
 

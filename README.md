@@ -399,8 +399,6 @@ On the Checkout page (`effective_orders.new_order_path`) a new `Effective::Order
 
 If the configuration options `config.billing_address` and/or `config.shipping_address` options are `true` then the user will be prompted for the appropriate addresses, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
 
-If `config.use_address_full_name` is set to `true` then appropriate form field will be shown and the user will be prompted for the appropriate address full name during the checkout process, based on [effective_addresses](https://github.com/code-and-effect/effective_addresses/).
-
 When the user submits the form on this screen, a POST to `effective_orders.order_path` is made, and the `Effective::Order` object is validated and created.
 
 On this final checkout screen, links to all configured payment providers are displayed, and the user may choose which payment processor should be used to make a payment.

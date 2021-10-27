@@ -36,7 +36,7 @@ module EffectiveOrders
       :layout, :mailer_class_name, :mailer,
       :orders_collection_scope, :order_tax_rate_method,
       :obfuscate_order_ids, :use_effective_qb_sync,
-      :billing_address, :shipping_address, :use_address_full_name,
+      :billing_address, :shipping_address,
       :collect_note, :collect_note_required, :collect_note_message,
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
 
