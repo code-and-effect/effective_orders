@@ -638,6 +638,7 @@ module Effective
 
     def run_purchasable_callbacks(name)
       order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
+      parent.public_send(name, self) if parent.respond_to?(name)
     end
 
     def send_email(email, *args)

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (5.1.5)
+    effective_orders (5.2.0)
       coffee-rails
       effective_addresses
       effective_bootstrap
@@ -72,7 +72,7 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    autoprefixer-rails (10.3.1.0)
+    autoprefixer-rails (10.3.3.0)
       execjs (~> 2)
     bcrypt (3.1.16)
     bootstrap (4.6.0)
@@ -99,12 +99,12 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
-    effective_addresses (1.9.4)
+    effective_addresses (1.9.6)
       carmen
       coffee-rails
       effective_resources
       rails (>= 3.2.0)
-    effective_bootstrap (0.9.40)
+    effective_bootstrap (0.9.46)
       bootstrap (< 5)
       coffee-rails
       effective_resources
@@ -113,18 +113,18 @@ GEM
       jquery-rails
       rails (>= 4.0.0)
       sassc
-    effective_datatables (4.9.2)
+    effective_datatables (4.9.4)
       coffee-rails
       effective_bootstrap
       effective_resources
       rails (>= 3.2.0)
       sassc
-    effective_resources (1.8.27)
+    effective_resources (1.9.0)
       rails (>= 4.0.0)
     erubi (1.10.0)
     erubis (2.7.0)
     execjs (2.8.1)
-    ffi (1.15.3)
+    ffi (1.15.4)
     globalid (0.5.2)
       activesupport (>= 5.0)
     haml (5.2.1)
@@ -155,7 +155,7 @@ GEM
       nokogiri (>= 1.5.9)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
-    marcel (1.0.1)
+    marcel (1.0.2)
     method_source (1.0.0)
     mini_mime (1.0.3)
     mini_portile2 (2.5.1)
