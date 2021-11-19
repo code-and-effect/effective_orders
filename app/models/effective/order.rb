@@ -459,13 +459,16 @@ module Effective
       self.payment = payment_to_h(payment) if self.payment.blank?
 
       begin
-        Effective::Order.transaction do
+        EffectiveResources.transaction do
           run_purchasable_callbacks(:before_purchase)
+
           save!
           update_purchasables_purchased_order!
+
+          run_purchasable_callbacks(:after_purchase)
         end
       rescue => e
-        Effective::Order.transaction do
+        EffectiveResources.transaction do
           save!(validate: false)
           update_purchasables_purchased_order!
         end
@@ -473,7 +476,6 @@ module Effective
         raise(e)
       end
 
-      run_purchasable_callbacks(:after_purchase)
       send_order_receipts! if email
 
       true
@@ -506,9 +508,11 @@ module Effective
         skip_buyer_validations: true
       )
 
-      Effective::Order.transaction do
+      EffectiveResources.transaction do
         begin
+          run_purchasable_callbacks(:before_decline)
           save!(validate: validate)
+          run_purchasable_callbacks(:after_decline)
         rescue => e
           self.state = state_was
 
@@ -518,8 +522,6 @@ module Effective
       end
 
       raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless error.nil?
-
-      run_purchasable_callbacks(:after_decline)
 
       true
     end
@@ -637,8 +639,16 @@ module Effective
     end
 
     def run_purchasable_callbacks(name)
-      order_items.each { |oi| oi.purchasable.public_send(name, self, oi) if oi.purchasable.respond_to?(name) }
-      parent.public_send(name, self) if parent.respond_to?(name)
+      order_items.select { |item| item.purchasable.respond_to?(name) }.each do |item|
+        EffectiveResources.transaction(item) { item.purchasable.public_send(name, self, item) }
+        end
+      end
+
+      if parent.respond_to?(name)
+        EffectiveResources.transaction(parent) { parent.public_send(name, self) }
+      end
+
+      true
     end
 
     def send_email(email, *args)
