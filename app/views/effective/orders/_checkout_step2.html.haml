@@ -1,6 +1,7 @@
 = render partial: 'effective/orders/order', locals: { order: order }
 
-- if order.persisted? && order.user == current_user
+- # Show this if I'm on the effective orders checkout screen. But not on a rendered order.
+- if order.persisted? && order.user == current_user && request.path.to_s.start_with?(effective_orders.order_path(order))
   .effective-order-change-items
     = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow, class: 'btn btn-secondary'
 

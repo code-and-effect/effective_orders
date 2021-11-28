@@ -641,7 +641,6 @@ module Effective
     def run_purchasable_callbacks(name)
       order_items.select { |item| item.purchasable.respond_to?(name) }.each do |item|
         EffectiveResources.transaction(item) { item.purchasable.public_send(name, self, item) }
-        end
       end
 
       if parent.respond_to?(name)
