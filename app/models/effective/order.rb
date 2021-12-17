@@ -596,7 +596,7 @@ module Effective
     end
 
     def assign_email
-      self.email = user&.email
+      self.email = user&.email if user&.email.present?
     end
 
     def assign_last_address
