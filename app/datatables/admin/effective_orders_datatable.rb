@@ -93,7 +93,9 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     if attributes[:user_id].present?
-      user = current_user.class.find(attributes[:user_id])
+      user_klass = (attributes[:user_type].safe_constantize || current_user.class)
+      user = user_klass.find(attributes[:user_id])
+
       scope = scope.where(user: user)
     end
 
