@@ -62,7 +62,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   collection do
-    user_klass = (attributes[:user_type].safe_constantize || current_user.class)
+    user_klass = (attributes[:user_type]&.safe_constantize || current_user.class)
     user = user_klass.find(attributes[:user_id])
 
     scope = Effective::Order.all.deep.where(user: user)
