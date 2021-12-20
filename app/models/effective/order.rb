@@ -320,7 +320,7 @@ module Effective
 
     # For moneris and moneris_checkout. Just a unique value.
     def transaction_id
-      [to_param, billing_name.to_s.parameterize.presence, Time.zone.now.to_i].compact.join('-')
+      [to_param, billing_name.to_s.parameterize.presence, Time.zone.now.to_i, rand(10000)].compact.join('-')
     end
 
     def billing_first_name
