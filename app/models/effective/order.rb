@@ -103,7 +103,7 @@ module Effective
     end
 
     # User validations -- An admin skips these when working in the admin/ namespace
-    with_options unless: -> { pending? || skip_buyer_validations? } do
+    with_options unless: -> { pending? || skip_buyer_validations? || purchased? } do
       validates :tax_rate, presence: { message: "can't be determined based on billing address" }
       validates :tax, presence: true
 
