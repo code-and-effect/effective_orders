@@ -190,6 +190,31 @@ module Effective
       self
     end
 
+    def remove(*items)
+      raise 'unable to alter a purchased order' if purchased?
+      raise 'unable to alter a declined order' if declined?
+
+      removed = items.map do |item|
+        order_item = if item.kind_of?(Effective::OrderItem)
+          order_items.find { |oi| oi == item }
+        else
+          order_items.find { |oi| oi.purchasable == item }
+        end
+
+        raise("Unable to find order item for #{item}") if order_item.blank?
+        order_item
+      end
+
+      removed.each { |order_item| order_item.mark_for_destruction }
+
+      # Make sure to reset stored aggregates
+      self.total = nil
+      self.subtotal = nil
+      self.tax = nil
+
+      removed.length == 1 ? removed.first : removed
+    end
+
     # Items can be an Effective::Cart, an Effective::order, a single acts_as_purchasable, or multiple acts_as_purchasables
     # add(Product.first) => returns an Effective::OrderItem
     # add(Product.first, current_cart) => returns an array of Effective::OrderItems
@@ -249,7 +274,7 @@ module Effective
       raise('already purchased') if purchased?
       raise('must be pending or confirmed') unless pending? || confirmed?
 
-      order_items.each do |item|
+      present_order_items.each do |item|
         purchasable = item.purchasable
 
         if purchasable.blank? || purchasable.marked_for_destruction?
@@ -358,11 +383,11 @@ module Effective
     end
 
     def purchasables
-      order_items.map { |order_item| order_item.purchasable }
+      present_order_items.map { |order_item| order_item.purchasable }
     end
 
     def subtotal
-      self[:subtotal] || order_items.map { |oi| oi.subtotal }.sum
+      self[:subtotal] || present_order_items.map { |oi| oi.subtotal }.sum
     end
 
     def tax_rate
@@ -386,7 +411,7 @@ module Effective
     end
 
     def num_items
-      order_items.map { |oi| oi.quantity }.sum
+      present_order_items.map { |oi| oi.quantity }.sum
     end
 
     def send_order_receipt_to_admin?
