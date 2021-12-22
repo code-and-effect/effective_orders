@@ -318,9 +318,9 @@ module Effective
       Effective::Order.new(self)
     end
 
-    # For moneris and moneris_checkout. Just a unique value.
+    # For moneris and moneris_checkout. Just a unique value. Must be 50 characters or fewer or will raise moneris error.
     def transaction_id
-      [to_param, billing_name.to_s.parameterize.presence, Time.zone.now.to_i, rand(10000)].compact.join('-')
+      [to_param, billing_name.to_s.parameterize.first(20).presence, Time.zone.now.to_i, rand(1000..9999)].compact.join('-')
     end
 
     def billing_first_name
