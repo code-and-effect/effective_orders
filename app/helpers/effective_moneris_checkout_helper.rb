@@ -1,4 +1,5 @@
 module EffectiveMonerisCheckoutHelper
+  SCRUB = /[^\w\d#,\s]/
 
   def moneris_checkout_preload_request(order)
     # Make the Preload Request
@@ -19,8 +20,8 @@ module EffectiveMonerisCheckoutHelper
       language: 'en',
 
       contact_details: {
-        first_name: order.billing_first_name,
-        last_name: order.billing_last_name,
+        first_name: moneris_checkout_scrub(order.billing_first_name),
+        last_name: moneris_checkout_scrub(order.billing_last_name),
         email: order.email,
       }
     }
@@ -28,9 +29,9 @@ module EffectiveMonerisCheckoutHelper
     if (address = order.billing_address).present?
       params.merge!(
         billing_details: {
-          address_1: address.address1,
-          address_2: address.address2,
-          city: address.city,
+          address_1: moneris_checkout_scrub(address.address1),
+          address_2: moneris_checkout_scrub(address.address2),
+          city: moneris_checkout_scrub(address.city),
           province: address.state_code,
           country: address.country_code,
           postal_code: address.postal_code
@@ -41,8 +42,8 @@ module EffectiveMonerisCheckoutHelper
     if (address = order.shipping_address).present?
       params.merge!(
         shipping_details: {
-          address_1: address.address1,
-          address_2: address.address2,
+          address_1: moneris_checkout_scrub(address.address1),
+          address_2: moneris_checkout_scrub(address.address2),
           city: address.city,
           province: address.state_code,
           country: address.country_code,
@@ -60,6 +61,11 @@ module EffectiveMonerisCheckoutHelper
       environment: EffectiveOrders.moneris_checkout.fetch(:environment),
       ticket: preload['ticket']
     }
+  end
+
+  def moneris_checkout_scrub(value)
+    return value unless value.kind_of?(String)
+    value.gsub(SCRUB, '')
   end
 
 end
