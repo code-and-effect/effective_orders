@@ -611,7 +611,7 @@ module Effective
 
     def assign_order_totals
       self.subtotal = present_order_items.map { |oi| oi.subtotal }.sum
-      self.tax_rate = get_tax_rate() unless (tax_rate || 0) > 0
+      self.tax_rate = get_tax_rate()
       self.tax = get_tax()
       self.total = subtotal + (tax || 0)
     end
