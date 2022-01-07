@@ -484,7 +484,7 @@ module Effective
       self.payment = payment_to_h(payment) if self.payment.blank?
 
       begin
-        EffectiveResources.transaction do
+        Effective::Order.transaction do
           run_purchasable_callbacks(:before_purchase)
 
           save!
@@ -493,7 +493,7 @@ module Effective
           run_purchasable_callbacks(:after_purchase)
         end
       rescue => e
-        EffectiveResources.transaction do
+        Effective::Order.transaction do
           save!(validate: false)
           update_purchasables_purchased_order!
         end
@@ -533,7 +533,7 @@ module Effective
         skip_buyer_validations: true
       )
 
-      EffectiveResources.transaction do
+      Effective::Order.transaction do
         begin
           run_purchasable_callbacks(:before_decline)
           save!(validate: validate)
@@ -665,11 +665,19 @@ module Effective
 
     def run_purchasable_callbacks(name)
       order_items.select { |item| item.purchasable.respond_to?(name) }.each do |item|
-        EffectiveResources.transaction(item) { item.purchasable.public_send(name, self, item) }
+        if item.class.respond_to?(:transaction)
+          item.class.transaction { item.purchasable.public_send(name, self, item) }
+        else
+          item.purchasable.public_send(name, self, item)
+        end
       end
 
       if parent.respond_to?(name)
-        EffectiveResources.transaction(parent) { parent.public_send(name, self) }
+        if parent.class.respond_to?(:transaction)
+          parent.class.transaction { parent.public_send(name, self) }
+        else
+          parent.public_send(name, self)
+        end
       end
 
       true
