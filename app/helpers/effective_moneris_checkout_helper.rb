@@ -65,7 +65,7 @@ module EffectiveMonerisCheckoutHelper
 
   def moneris_checkout_scrub(value)
     return value unless value.kind_of?(String)
-    value.gsub(SCRUB, '')
+    value.gsub(SCRUB, '').first(50)
   end
 
 end
