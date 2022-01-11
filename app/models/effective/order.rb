@@ -333,8 +333,12 @@ module Effective
         else payment_card.to_s
       end unless payment_provider == 'free'
 
+      last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
+        payment[:active_card][15,4]
+      end
+
       # stripe, moneris, moneris_checkout
-      last4 = (payment[:active_card] || payment['f4l4'] || payment['first6last4']).to_s.last(4)
+      last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
 
       [card, '-', last4].compact.join(' ')
     end
