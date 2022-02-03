@@ -476,6 +476,14 @@ module Effective
       false
     end
 
+    # Call this as a way to skip over non consequential orders
+    # And mark some purchasables purchased
+    def mark_as_purchased!
+      purchase!(skip_buyer_validations: true, email: false)
+      skip_qb_sync!
+      true
+    end
+
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
     def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false)
       # Assign attributes
