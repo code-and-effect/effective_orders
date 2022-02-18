@@ -479,11 +479,11 @@ module Effective
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
     def mark_as_purchased!
-      purchase!(skip_buyer_validations: true, email: false, quickbooks: false)
+      purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true)
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false, quickbooks: true)
+    def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false, skip_quickbooks: false)
       # Assign attributes
       self.state = EffectiveOrders::PURCHASED
       self.skip_buyer_validations = skip_buyer_validations
@@ -512,19 +512,19 @@ module Effective
       end
 
       send_order_receipts! if email
-      after_commit { sync_quickbooks!(sync: quickbooks) }
+      after_commit { sync_quickbooks!(skip: skip_quickbooks) }
 
       true
     end
 
     # We support two different Quickbooks synchronization gems: effective_qb_sync and effective_qb_online
-    def sync_quickbooks!(sync:)
+    def sync_quickbooks!(skip:)
       if EffectiveOrders.qb_online?
-        sync ? EffectiveQbOnline.sync_order!(self) : EffectiveQbOnline.skip_order!(self)
+        skip ? EffectiveQbOnline.skip_order!(self) : EffectiveQbOnline.sync_order!(self)
       end
 
       if EffectiveOrders.qb_sync?
-        sync ? true : EffectiveQbSync.skip_order!(self)
+        skip ? EffectiveQbSync.skip_order!(self) : true # Nothing to do
       end
 
       true
