@@ -25,6 +25,7 @@ EffectiveOrders.setup do |config|
 
   # Synchronize with Quickbooks
   config.use_effective_qb_sync = false
+  config.use_effective_qb_online = false
 
   # If set, the orders#new screen will render effective/orders/_order_note_fields to capture any Note info
   config.collect_note = false

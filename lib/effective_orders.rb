@@ -35,7 +35,7 @@ module EffectiveOrders
       :customers_table_name, :subscriptions_table_name, :products_table_name,
       :layout, :mailer_class_name, :mailer,
       :orders_collection_scope, :order_tax_rate_method,
-      :obfuscate_order_ids, :use_effective_qb_sync,
+      :obfuscate_order_ids, :use_effective_qb_sync, :use_effective_qb_online,
       :billing_address, :shipping_address,
       :collect_note, :collect_note_required, :collect_note_message,
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
@@ -136,6 +136,14 @@ module EffectiveOrders
     [('cheque' if cheque?), ('phone' if phone?)].compact
   end
 
+  def self.qb_sync?
+    use_effective_qb_sync && defined?(EffectiveQbSync)
+  end
+
+  def self.qb_online?
+    use_effective_qb_online && defined?(EffectiveQbOnline)
+  end
+
   def self.mailer_klass
     name = mailer_class_name.presence || 'Effective::OrdersMailer'
     name.safe_constantize || raise("unable to constantize mailer class. check config.mailer_class_name")
@@ -229,4 +237,9 @@ module EffectiveOrders
 
   class SoldOutException < Exception; end
   class AlreadyPurchasedException < Exception; end
+
+  def self.gem_path
+    __dir__.chomp('/lib')
+  end
+
 end
