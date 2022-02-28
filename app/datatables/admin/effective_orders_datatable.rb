@@ -82,7 +82,10 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
 
     actions_col partial: 'admin/orders/datatable_actions', partial_as: :order
 
-    aggregate :total
+    unless attributes[:total] == false
+      aggregate :total
+    end
+
   end
 
   collection do
