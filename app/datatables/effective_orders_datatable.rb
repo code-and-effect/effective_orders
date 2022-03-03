@@ -38,7 +38,9 @@ class EffectiveOrdersDatatable < Effective::Datatable
       col :shipping_address, visible: false
     end
 
-    col :order_items, search: { as: :string }
+    col(:order_items, search: :string).search do |collection, term|
+      collection.where(id: Effective::OrderItem.where('name ILIKE ?', "%#{term}%").select('order_id'))
+    end
 
     col :subtotal, as: :price, visible: false
     col :tax, as: :price, visible: false
