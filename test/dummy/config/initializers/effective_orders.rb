@@ -130,7 +130,7 @@ EffectiveOrders.setup do |config|
     default_from: 'info@example.com',
     admin_email: 'admin@example.com',   # Refund notifications will also be sent here
 
-    deliver_method: nil  # When nil, will try deliver_later and fallback to deliver_now
+    deliver_method: :deliver_now # When nil, will try deliver_later and fallback to deliver_now
   }
 
   #######################################
