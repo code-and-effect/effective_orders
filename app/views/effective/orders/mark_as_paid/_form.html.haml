@@ -19,7 +19,7 @@
 
       = f.check_box :send_mark_as_paid_email_to_buyer,
         label: 'Yes, send a receipt email to the buyer.',
-        input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.mailer[:send_order_receipts_when_mark_as_paid] : f.object.send_mark_as_paid_email_to_buyer?) }
+        input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.send_order_receipts_when_mark_as_paid : f.object.send_mark_as_paid_email_to_buyer?) }
 
       = f.text_area :note_to_buyer, hint: 'This message will be displayed on the receipt.'
 

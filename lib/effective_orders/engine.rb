@@ -23,8 +23,8 @@ module EffectiveOrders
 
     initializer 'effective_orders.refund', after: :load_config_initializers do
       if EffectiveOrders.refund?
-        unless (EffectiveOrders.mailer[:admin_email].to_s.include?('@') rescue false)
-          raise("config.mailer[:admin_email] must be present when refunds enabled.")
+        unless (EffectiveOrders.mailer_admin.to_s.include?('@') rescue false)
+          raise("config.mailer_admin must be present when refunds enabled.")
         end
       end
     end

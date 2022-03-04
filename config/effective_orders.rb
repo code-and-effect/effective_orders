@@ -72,68 +72,37 @@ EffectiveOrders.setup do |config|
   config.pretend_message = '* payment information is not required to process this order at this time.'
 
   # Mailer Settings
-  # effective_orders sends out receipts to buyers and admins as well as trial and subscription related emails.
-  # For all the emails, the same :subject_prefix will be prefixed.  Leave as nil / empty string if you don't want any prefix
+  # Please see config/initializers/effective_resources.rb for default effective_* gem mailer settings
   #
-  # All the subject_* keys below can one of:
-  # - nil / empty string to use the built in defaults
-  # - A string with the full subject line for this email
-  # - A Proc to create the subject line based on the email
-  # The subject_prefix will then be applied ontop of these.
+  # Configure the class responsible to send e-mails.
+  # config.mailer = 'Effective::OrdersMailer'
   #
-  # send_order_receipt_to_buyer: Proc.new { |order| "Order #{order.to_param} has been purchased"}
-  # subject_for_subscription_payment_succeeded: Proc.new { |order| "Order #{order.to_param} has been purchased"}
+  # Override effective_resource mailer defaults
+  #
+  # config.parent_mailer = nil      # The parent class responsible for sending emails
+  # config.deliver_method = nil     # The deliver method, deliver_later or deliver_now
+  # config.mailer_layout = nil      # Default mailer layout
+  # config.mailer_sender = nil      # Default From value
+  # config.mailer_admin = nil       # Default To value for Admin correspondence
+  # config.mailer_subject = nil     # Proc.new method used to customize Subject
 
-  # subject_for_subscription_trialing: Proc.new { |subscribable| "Pending Order #{order.to_param}"}
+  config.mailer_layout = 'effective_orders_mailer_layout'
 
-  # Use this mailer class. You can extend.
-  config.mailer_class_name = 'Effective::OrdersMailer'
+  # Email settings
+  config.send_order_receipt_to_admin = true
+  config.send_order_receipt_to_buyer = true
+  config.send_payment_request_to_buyer = true
+  config.send_pending_order_invoice_to_buyer = true
 
-  config.mailer = {
-    send_order_receipt_to_admin: true,
-    send_order_receipt_to_buyer: true,
-    send_payment_request_to_buyer: true,
-    send_pending_order_invoice_to_buyer: true,
-    send_order_receipts_when_mark_as_paid: false,
-    send_order_receipts_when_free: false,
+  config.send_order_receipts_when_mark_as_paid = true
+  config.send_order_receipts_when_free = true
 
-    send_subscription_event_to_admin: true,
-    send_subscription_created: true,
-    send_subscription_updated: true,
-    send_subscription_canceled: true,
-    send_subscription_payment_succeeded: true,
-    send_subscription_payment_failed: true,
+  # Stripe Webhooks controller
+  config.send_subscription_events = true
 
-    send_subscription_trialing: true,   # Only if you schedule the rake task to run
-    send_subscription_trial_expired: true,    # Only if you schedule the rake task to run
-
-    subject_prefix: '[example]',
-
-    # Procs yield an Effective::Order object
-    subject_for_order_receipt_to_admin: '',
-    subject_for_order_receipt_to_buyer: '',
-    subject_for_payment_request_to_buyer: '',
-    subject_for_pending_order_invoice_to_buyer: '',
-    subject_for_refund_notification_to_admin: '',
-
-    # Procs yield an Effective::Customer object
-    subject_for_subscription_created: '',
-    subject_for_subscription_updated: '',
-    subject_for_subscription_canceled: '',
-    subject_for_subscription_payment_succeeded: '',
-    subject_for_subscription_payment_failed: '',
-
-    # Procs yield the acts_as_subscribable object
-    subject_for_subscription_trialing: '',
-    subject_for_subscription_trial_expired: '',
-
-    layout: 'effective_orders_mailer_layout',
-
-    default_from: 'info@example.com',
-    admin_email: 'admin@example.com',   # Refund notifications will also be sent here
-
-    deliver_method: nil # When nil, will try deliver_later and fallback to deliver_now
-  }
+  # These two only take affect if you schedule the rake task to run
+  config.send_subscription_trialing = true
+  config.send_subscription_trial_expired = true
 
   #######################################
   ## Payment Provider specific options ##
@@ -226,7 +195,7 @@ EffectiveOrders.setup do |config|
   # Refunds
   # This does not issue a refund with the payment processor at all.
   # Instead, we mark the order as purchased, create a refund object to track it, and
-  # send an email to mailer[:admin_email] with instructions to issue a refund
+  # send an email to config.mailer_admin with instructions to issue a refund
   config.refund = false
 
   # config.refund = {

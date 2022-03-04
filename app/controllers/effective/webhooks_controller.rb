@@ -89,18 +89,11 @@ module Effective
       end
     end
 
-    def send_email(email, *args)
-      raise('expected args to be an Array') unless args.kind_of?(Array)
+    def send_email(email, customer)
+      return unless EffectiveOrders.send_subscription_events
 
-      if defined?(Tenant)
-        tenant = Tenant.current || raise('expected a current tenant')
-        args << { tenant: tenant }
-      end
-
-      deliver_method = EffectiveOrders.mailer[:deliver_method] || EffectiveResources.deliver_method
-
-      EffectiveOrders.mailer_klass.send(email, *args).send(deliver_method)
-      EffectiveOrders.mailer_klass.send(:subscription_event_to_admin, email.to_s, *args).send(deliver_method)
+      EffectiveOrders.send_email(email, customer)
+      EffectiveOrders.send_email(:subscription_event_to_admin, email.to_s, customer)
     end
 
     def run_subscribable_buyer_callbacks!
