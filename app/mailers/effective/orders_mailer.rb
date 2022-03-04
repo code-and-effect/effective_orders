@@ -5,7 +5,7 @@ module Effective
 
     helper EffectiveOrdersHelper
 
-    def order_receipt_to_admin(resource, atts = {})
+    def order_receipt_to_admin(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
@@ -14,7 +14,7 @@ module Effective
       mail(to: EffectiveOrders.mailer_admin, subject: @subject, **headers_for(resource, opts))
     end
 
-    def order_receipt_to_buyer(resource, atts = {})
+    def order_receipt_to_buyer(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
@@ -26,7 +26,7 @@ module Effective
     # This is sent when an admin creates a new order or /admin/orders/new
     # Or when Pay by Cheque or Pay by Phone (deferred payments)
     # Or uses the order action Send Payment Request
-    def payment_request_to_buyer(resource, atts = {})
+    def payment_request_to_buyer(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
@@ -36,7 +36,7 @@ module Effective
     end
 
     # This is sent when someone chooses to Pay by Cheque
-    def pending_order_invoice_to_buyer(resource, atts = {})
+    def pending_order_invoice_to_buyer(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
@@ -46,7 +46,7 @@ module Effective
     end
 
     # This is sent to admin when someone Accepts Refund
-    def refund_notification_to_admin(order, atts = {})
+    def refund_notification_to_admin(order, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
@@ -56,7 +56,7 @@ module Effective
     end
 
     # Sent by the invoice.payment_succeeded webhook event
-    def subscription_payment_succeeded(resource, atts = {})
+    def subscription_payment_succeeded(resource, opts = {})
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
@@ -66,7 +66,7 @@ module Effective
     end
 
     # Sent by the invoice.payment_failed webhook event
-    def subscription_payment_failed(resource, atts = {})
+    def subscription_payment_failed(resource, opts = {})
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
@@ -76,7 +76,7 @@ module Effective
     end
 
     # Sent by the customer.subscription.created webhook event
-    def subscription_created(resource, atts = {})
+    def subscription_created(resource, opts = {})
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
@@ -86,7 +86,7 @@ module Effective
     end
 
     # Sent by the customer.subscription.updated webhook event
-    def subscription_created(resource, atts = {})
+    def subscription_created(resource, opts = {})
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
@@ -96,7 +96,7 @@ module Effective
     end
 
      # Sent by the invoice.payment_failed webhook event
-     def subscription_canceled(resource, atts = {})
+     def subscription_canceled(resource, opts = {})
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
@@ -106,7 +106,7 @@ module Effective
     end
 
     # Sent by the effective_orders:notify_trial_users rake task.
-    def subscription_trialing(resource, atts = {})
+    def subscription_trialing(resource, opts = {})
       raise('expected a subscribable resource') unless resource.respond_to?(:subscribable_buyer)
 
       @subscribable = resource
@@ -116,7 +116,7 @@ module Effective
     end
 
     # Sent by the effective_orders:notify_trial_users rake task.
-    def subscription_trial_expired(resource, atts = {})
+    def subscription_trial_expired(resource, opts = {})
       raise('expected a subscribable resource') unless resource.respond_to?(:subscribable_buyer)
 
       @subscribable = resource
@@ -125,7 +125,7 @@ module Effective
       mail(to: @subscribable.subscribable_buyer.email, subject: @subject, **headers_for(resource, opts))
     end
 
-    def subscription_event_to_admin(event, resource, atts = {})
+    def subscription_event_to_admin(event, resource, opts = {})
       raise('expected an event') unless event.present?
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
@@ -155,8 +155,9 @@ module Effective
 
     protected
 
-
-    private
+    def headers_for(resource, opts = {})
+      resource.respond_to?(:log_changes_datatable) ? opts.merge(log: resource) : opts
+    end
 
     def subject_for(order, action, fallback)
       subject = EffectiveOrders.mailer["subject_for_#{action}".to_sym]
