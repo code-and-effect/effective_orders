@@ -85,25 +85,23 @@ EffectiveOrders.setup do |config|
   # config.mailer_sender = nil      # Default From value
   # config.mailer_admin = nil       # Default To value for Admin correspondence
 
+  config.mailer_layout = 'effective_orders_mailer_layout'
+
   # Email settings
   config.send_order_receipt_to_admin = true
   config.send_order_receipt_to_buyer = true
   config.send_payment_request_to_buyer = true
   config.send_pending_order_invoice_to_buyer = true
 
-  config.send_order_receipts_when_mark_as_paid = false
-  config.send_order_receipts_when_free = false
+  config.send_order_receipts_when_mark_as_paid = true
+  config.send_order_receipts_when_free = true
 
-  config.send_subscription_event_to_admin = true
-  config.send_subscription_created = true
-  config.send_subscription_updated = true
-  config.send_subscription_payment_succeeded = true
-  config.send_subscription_payment_failed = true
+  # Stripe Webhooks controller
+  config.send_subscription_events = true
 
   # These two only take affect if you schedule the rake task to run
   config.send_subscription_trialing = true
   config.send_subscription_trial_expired = true
-
 
   #######################################
   ## Payment Provider specific options ##
@@ -196,7 +194,7 @@ EffectiveOrders.setup do |config|
   # Refunds
   # This does not issue a refund with the payment processor at all.
   # Instead, we mark the order as purchased, create a refund object to track it, and
-  # send an email to mailer[:admin_email] with instructions to issue a refund
+  # send an email to config.mailer_admin with instructions to issue a refund
   config.refund = false
 
   # config.refund = {

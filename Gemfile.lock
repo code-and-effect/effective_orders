@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (5.2.0)
+    effective_orders (5.3.2)
       coffee-rails
       effective_addresses
       effective_bootstrap
@@ -72,10 +72,10 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    autoprefixer-rails (10.3.3.0)
+    autoprefixer-rails (10.4.2.0)
       execjs (~> 2)
     bcrypt (3.1.16)
-    bootstrap (4.6.0)
+    bootstrap (4.6.1)
       autoprefixer-rails (>= 9.1.0)
       popper_js (>= 1.14.3, < 2)
       sassc-rails (>= 2.0.0)
@@ -99,12 +99,12 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
-    effective_addresses (1.9.6)
+    effective_addresses (1.9.8)
       carmen
       coffee-rails
       effective_resources
       rails (>= 3.2.0)
-    effective_bootstrap (0.9.46)
+    effective_bootstrap (0.10.5)
       bootstrap (< 5)
       coffee-rails
       effective_resources
@@ -113,19 +113,19 @@ GEM
       jquery-rails
       rails (>= 4.0.0)
       sassc
-    effective_datatables (4.9.4)
+    effective_datatables (4.10.5)
       coffee-rails
       effective_bootstrap
       effective_resources
       rails (>= 3.2.0)
       sassc
-    effective_resources (1.9.0)
+    effective_resources (1.14.0)
       rails (>= 4.0.0)
     erubi (1.10.0)
     erubis (2.7.0)
     execjs (2.8.1)
-    ffi (1.15.4)
-    globalid (0.5.2)
+    ffi (1.15.5)
+    globalid (1.0.0)
       activesupport (>= 5.0)
     haml (5.2.1)
       temple (>= 0.8.0)
@@ -143,7 +143,7 @@ GEM
       ruby_parser (~> 3.5)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
-    inline_svg (1.7.2)
+    inline_svg (1.8.0)
       activesupport (>= 3.0)
       nokogiri (>= 1.6)
     jquery-rails (4.4.0)
@@ -217,12 +217,12 @@ GEM
       sprockets-rails
       tilt
     sexp_processor (4.15.3)
-    sprockets (4.0.2)
+    sprockets (4.0.3)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
-    sprockets-rails (3.2.2)
-      actionpack (>= 4.0)
-      activesupport (>= 4.0)
+    sprockets-rails (3.4.2)
+      actionpack (>= 5.2)
+      activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
     temple (0.8.2)

@@ -419,17 +419,17 @@ module Effective
     end
 
     def send_order_receipt_to_admin?
-      return false if free? && !EffectiveOrders.mailer[:send_order_receipts_when_free]
-      EffectiveOrders.mailer[:send_order_receipt_to_admin]
+      return false if free? && !EffectiveOrders.send_order_receipts_when_free
+      EffectiveOrders.send_order_receipt_to_admin
     end
 
     def send_order_receipt_to_buyer?
-      return false if free? && !EffectiveOrders.mailer[:send_order_receipts_when_free]
-      EffectiveOrders.mailer[:send_order_receipt_to_buyer]
+      return false if free? && !EffectiveOrders.send_order_receipts_when_free
+      EffectiveOrders.send_order_receipt_to_buyer
     end
 
     def send_payment_request_to_buyer?
-      return false if free? && !EffectiveOrders.mailer[:send_order_receipts_when_free]
+      return false if free? && !EffectiveOrders.send_order_receipts_when_free
       return false if refund?
 
       EffectiveResources.truthy?(send_payment_request_to_buyer)
@@ -587,23 +587,23 @@ module Effective
     end
 
     def send_order_receipt_to_admin!
-      send_email(:order_receipt_to_admin, to_param) if purchased?
+      EffectiveOrders.send_email(:order_receipt_to_admin, self) if purchased?
     end
 
     def send_order_receipt_to_buyer!
-      send_email(:order_receipt_to_buyer, to_param) if purchased?
+      EffectiveOrders.send_email(:order_receipt_to_buyer, self) if purchased?
     end
 
     def send_payment_request_to_buyer!
-      send_email(:payment_request_to_buyer, to_param) unless purchased?
+      EffectiveOrders.send_email(:payment_request_to_buyer, self) unless purchased?
     end
 
     def send_pending_order_invoice_to_buyer!
-      send_email(:pending_order_invoice_to_buyer, to_param) unless purchased?
+      EffectiveOrders.send_email(:pending_order_invoice_to_buyer, self) unless purchased?
     end
 
     def send_refund_notification!
-      send_email(:refund_notification_to_admin, to_param) if purchased? && refund?
+      EffectiveOrders.send_email(:refund_notification_to_admin, self) if purchased? && refund?
     end
 
     def skip_qb_sync!
@@ -705,23 +705,6 @@ module Effective
       end
 
       true
-    end
-
-    def send_email(email, *args)
-      raise('expected args to be an Array') unless args.kind_of?(Array)
-
-      if defined?(Tenant)
-        tenant = Tenant.current || raise('expected a current tenant')
-        args << { tenant: tenant }
-      end
-
-      deliver_method = EffectiveOrders.mailer[:deliver_method] || EffectiveResources.deliver_method
-
-      begin
-        EffectiveOrders.mailer_klass.send(email, *args).send(deliver_method)
-      rescue => e
-        raise if Rails.env.development? || Rails.env.test?
-      end
     end
 
     def payment_to_h(payment)

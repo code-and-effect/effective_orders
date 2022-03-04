@@ -33,15 +33,25 @@ module EffectiveOrders
     [
       :orders_table_name, :order_items_table_name, :carts_table_name, :cart_items_table_name,
       :customers_table_name, :subscriptions_table_name, :products_table_name,
-      :layout, :mailer_class_name, :mailer,
+      :layout,
       :orders_collection_scope, :order_tax_rate_method,
       :obfuscate_order_ids, :use_effective_qb_sync, :use_effective_qb_online,
       :billing_address, :shipping_address,
       :collect_note, :collect_note_required, :collect_note_message,
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
 
+      # Mailer
+      :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin,
+
+      # Emails
+      :send_order_receipt_to_admin, :send_order_receipt_to_buyer, :send_payment_request_to_buyer, :send_pending_order_invoice_to_buyer,
+      :send_order_receipts_when_mark_as_paid, :send_order_receipts_when_free,
+      :send_subscription_events,
+      :send_subscription_trialing, :send_subscription_trial_expired,
+
       # Features
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message,
+
       # Payment processors. false or Hash
       :cheque, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
@@ -144,9 +154,8 @@ module EffectiveOrders
     use_effective_qb_online && defined?(EffectiveQbOnline)
   end
 
-  def self.mailer_klass
-    name = mailer_class_name.presence || 'Effective::OrdersMailer'
-    name.safe_constantize || raise("unable to constantize mailer class. check config.mailer_class_name")
+  def self.mailer_class
+    mailer&.constantize || Effective::OrdersMailer
   end
 
   def self.can_skip_checkout_step1?

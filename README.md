@@ -407,9 +407,9 @@ The payment processor handles collecting the Credit Card number, and through one
 
 Once the order has been marked purchased, the user is redirected to the `effective_orders.purchased_order_path` screen where they see a 'Thank You!' message, and the Order receipt.
 
-If the configuration option `config.mailer[:send_order_receipt_to_buyer] == true` the order receipt will be emailed to the user.
+If the configuration option `config.send_order_receipt_to_buyer == true` the order receipt will be emailed to the user.
 
-As well, if the configuration option `config.mailer[:send_order_receipt_to_admin] == true` the order receipt will be emailed to the site admin.
+As well, if the configuration option `config.send_order_receipt_to_admin == true` the order receipt will be emailed to the site admin.
 
 The Order has now been purchased.
 
@@ -427,7 +427,7 @@ If you are using effective_orders to roll your own custom payment workflow, you 
 
 #### Send Order Receipts in the Background
 
-Emails will be sent immediately unless `config.mailer[:deliver_method] == :deliver_later`.
+Emails will be sent immediately unless `config.deliver_method == :deliver_later`.
 
 ### Effective::Order Model
 
