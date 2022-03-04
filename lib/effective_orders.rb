@@ -41,7 +41,7 @@ module EffectiveOrders
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
 
       # Mailer
-      :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin,
+      :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin, :mailer_subject,
 
       # Emails
       :send_order_receipt_to_admin, :send_order_receipt_to_buyer, :send_payment_request_to_buyer, :send_pending_order_invoice_to_buyer,

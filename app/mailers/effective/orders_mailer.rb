@@ -1,7 +1,6 @@
 module Effective
   class OrdersMailer < EffectiveOrders.parent_mailer_class
-    default from: -> { EffectiveOrders.mailer_sender }
-    layout -> { EffectiveOrders.mailer_layout }
+    include EffectiveMailer
 
     helper EffectiveOrdersHelper
 
@@ -9,18 +8,20 @@ module Effective
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @subject = "Order Receipt: ##{@order.to_param}"
+      subject = subject_for(__method__, "Order Receipt: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: EffectiveOrders.mailer_admin, subject: @subject, **headers_for(resource, opts))
+      mail(to: mailer_admin, subject: subject, **headers)
     end
 
     def order_receipt_to_buyer(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @subject = "Order Receipt: ##{@order.to_param}"
+      subject = subject_for(__method__, "Order Receipt: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @order.email, cc: @order.cc.presence, subject: @subject, **headers_for(resource, opts))
+      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent when an admin creates a new order or /admin/orders/new
@@ -30,9 +31,10 @@ module Effective
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @subject = "Payment request - Order ##{@order.to_param}"
+      subject = subject_for(__method__, "Payment request - Order ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @order.email, cc: @order.cc.presence, subject: @subject, **headers_for(resource, opts))
+      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent when someone chooses to Pay by Cheque
@@ -40,9 +42,10 @@ module Effective
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @subject = "Pending Order: ##{@order.to_param}"
+      subject = subject_for(__method__, "Pending Order: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @order.email, cc: @order.cc.presence, subject: @subject, **headers_for(resource, opts))
+      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent to admin when someone Accepts Refund
@@ -50,9 +53,10 @@ module Effective
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @subject = "New Refund: ##{@order.to_param}"
+      subject = subject_for(__method__, "New Refund: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: EffectiveOrders.mailer_admin, subject: @subject, **headers_for(resource, opts))
+      mail(to: mailer_admin, subject: subject, **headers)
     end
 
     # Sent by the invoice.payment_succeeded webhook event
@@ -60,9 +64,10 @@ module Effective
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
-      @subject = 'Thank you for your payment'
+      subject = subject_for(__method__, 'Thank you for your payment', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @customer.user.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @customer.user.email, subject: subject, **headers)
     end
 
     # Sent by the invoice.payment_failed webhook event
@@ -70,9 +75,10 @@ module Effective
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
-      @subject = 'Payment failed - please update your card details'
+      subject = subject_for(__method__, 'Payment failed - please update your card details', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @customer.user.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @customer.user.email, subject: subject, **headers)
     end
 
     # Sent by the customer.subscription.created webhook event
@@ -80,19 +86,21 @@ module Effective
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
-      @subject = 'New Subscription'
+      subject = subject_for(__method__, 'New Subscription', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @customer.user.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @customer.user.email, subject: subject, **headers)
     end
 
     # Sent by the customer.subscription.updated webhook event
-    def subscription_created(resource, opts = {})
+    def subscription_updated(resource, opts = {})
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
-      @subject = 'Subscription Changed'
+      subject = subject_for(__method__, 'Subscription Changed', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @customer.user.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @customer.user.email, subject: subject, **headers)
     end
 
      # Sent by the invoice.payment_failed webhook event
@@ -100,9 +108,10 @@ module Effective
       raise('expected an Effective::Customer') unless resource.kind_of?(Effective::Customer)
 
       @customer = resource
-      @subject = 'Subscription canceled'
+      subject = subject_for(__method__, 'Subscription canceled', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @customer.user.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @customer.user.email, subject: subject, **headers)
     end
 
     # Sent by the effective_orders:notify_trial_users rake task.
@@ -110,9 +119,10 @@ module Effective
       raise('expected a subscribable resource') unless resource.respond_to?(:subscribable_buyer)
 
       @subscribable = resource
-      @subject = 'Trial is active'
+      subject = subject_for(__method__, 'Trial is active', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @subscribable.subscribable_buyer.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @subscribable.subscribable_buyer.email, subject: subject, **headers)
     end
 
     # Sent by the effective_orders:notify_trial_users rake task.
@@ -120,9 +130,10 @@ module Effective
       raise('expected a subscribable resource') unless resource.respond_to?(:subscribable_buyer)
 
       @subscribable = resource
-      @subject = 'Trial expired'
+      subject = subject_for(__method__, 'Trial expired', resource, opts)
+      headers = headers_for(resource, opts)
 
-      mail(to: @subscribable.subscribable_buyer.email, subject: @subject, **headers_for(resource, opts))
+      mail(to: @subscribable.subscribable_buyer.email, subject: subject, **headers)
     end
 
     def subscription_event_to_admin(event, resource, opts = {})
@@ -131,9 +142,11 @@ module Effective
 
       @event = event
       @customer = resource
-      @subject = "Subscription event - #{@event} - #{@customer}"
 
-      mail(to: EffectiveOrders.mailer_admin, subject: @subject, **headers_for(resource, opts))
+      subject = subject_for(__method__, "Subscription event - #{@event} - #{@customer}", resource, opts)
+      headers = headers_for(resource, opts)
+
+      mail(to: mailer_admin, subject: subject, **headers)
     end
 
     # This is only called by EffectiveQbSync
@@ -142,31 +155,15 @@ module Effective
 
       @order = order
       @error = error.to_s
-      @subject = "An error occurred with order: ##{@order.to_param}"
 
-      mail(
-        to: (to || EffectiveOrders.mailer[:admin_email]),
-        from: (from || EffectiveOrders.mailer_sender),
-        subject: (subject || @subject)
-      ) do |format|
+      to ||= EffectiveOrders.mailer_admin
+      from ||= EffectiveOrders.mailer_sender
+      subject ||= subject_for(__method__,"An error occurred with order: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
+
+      mail(to: to, from: from, subject: subject, **headers) do |format|
         format.html { render(template) }
       end
-    end
-
-    protected
-
-    def headers_for(resource, opts = {})
-      resource.respond_to?(:log_changes_datatable) ? opts.merge(log: resource) : opts
-    end
-
-    def subject_for(order, action, fallback)
-      subject = EffectiveOrders.mailer["subject_for_#{action}".to_sym]
-      prefix = EffectiveOrders.mailer[:subject_prefix].to_s
-
-      subject = self.instance_exec(order, &subject) if subject.respond_to?(:call)
-      subject = subject.presence || fallback
-
-      prefix.present? ? (prefix.chomp(' ') + ' ' + subject) : subject
     end
 
   end

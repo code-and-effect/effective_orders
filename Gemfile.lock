@@ -119,7 +119,7 @@ GEM
       effective_resources
       rails (>= 3.2.0)
       sassc
-    effective_resources (1.14.0)
+    effective_resources (1.15.0)
       rails (>= 4.0.0)
     erubi (1.10.0)
     erubis (2.7.0)
