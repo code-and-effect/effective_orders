@@ -49,7 +49,7 @@ module Effective
     end
 
     # This is sent to admin when someone Accepts Refund
-    def refund_notification_to_admin(order, opts = {})
+    def refund_notification_to_admin(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
