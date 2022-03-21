@@ -15,7 +15,7 @@ module Admin
     submit :save, 'Checkout', redirect: -> { effective_orders.checkout_admin_order_path(resource) }
 
     def create
-      @user = current_user.class.find_by_id(order_params[:user_id])
+      @user = current_user.class.find_by_id(permitted_params[:user_id])
       @order = Effective::Order.new(user: @user)
 
       authorize_effective_order!
@@ -23,12 +23,12 @@ module Admin
 
       Effective::Order.transaction do
         begin
-          (order_params[:order_items_attributes] || {}).each do |_, item_attrs|
+          (permitted_params[:order_items_attributes] || {}).each do |_, item_attrs|
             purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
             @order.add(purchasable, quantity: item_attrs[:quantity])
           end
 
-          @order.attributes = order_params.except(:order_items_attributes, :user_id)
+          @order.attributes = permitted_params.except(:order_items_attributes, :user_id)
           @order.pending!
 
           message = 'Successfully created order'
@@ -123,7 +123,7 @@ module Admin
 
     private
 
-    def order_params
+    def permitted_params
       params.require(:effective_order).permit(:user_id, :user_type, :cc,
         :send_payment_request_to_buyer, :note_internal, :note_to_buyer,
         :payment_provider, :payment_card, :payment, :send_mark_as_paid_email_to_buyer,
