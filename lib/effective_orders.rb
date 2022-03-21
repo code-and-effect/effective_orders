@@ -142,6 +142,24 @@ module EffectiveOrders
     ].compact
   end
 
+  # For the Admin Mark as Paid screen
+  def self.admin_payment_providers
+    [
+      ('cheque' if mark_as_paid?),
+      ('credit card' if mark_as_paid?),
+      #('free' if free?),
+      ('moneris' if moneris?),
+      ('moneris_checkout' if moneris_checkout?),
+      ('paypal' if paypal?),
+      ('phone' if mark_as_paid?),
+      #('pretend' if pretend?),
+      #('refund' if refund?),
+      ('stripe' if stripe?),
+      ('other' if mark_as_paid?),
+      'none'
+    ].compact
+  end
+
   def self.deferred_providers
     [('cheque' if cheque?), ('phone' if phone?)].compact
   end

@@ -72,7 +72,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
 
     col :total, as: :price
 
-    col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.payment_providers }
+    col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.admin_payment_providers }
     col :payment_card, label: 'Card', visible: false
 
     if EffectiveOrders.collect_note

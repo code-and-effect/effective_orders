@@ -120,7 +120,7 @@ module Effective
       validates :payment_provider, presence: true
 
       validate do
-        self.errors.add(:payment_provider, "unknown payment provider") unless EffectiveOrders.payment_providers.include?(payment_provider)
+        self.errors.add(:payment_provider, "unknown payment provider") unless (EffectiveOrders.payment_providers + EffectiveOrders.admin_payment_providers).include?(payment_provider)
       end
 
       validates :payment_card, presence: true
@@ -323,6 +323,8 @@ module Effective
     def payment_method
       return nil unless purchased?
 
+      provider = payment_provider if ['cheque', 'phone'].include?(payment_provider)
+
       # Normalize payment card
       card = case payment_card.to_s.downcase.gsub(' ', '').strip
         when '' then nil
@@ -331,7 +333,7 @@ module Effective
         when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
         when 'd', 'discover' then 'Discover'
         else payment_card.to_s
-      end unless payment_provider == 'free'
+      end
 
       last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
         payment[:active_card][15,4]
@@ -340,7 +342,7 @@ module Effective
       # stripe, moneris, moneris_checkout
       last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
 
-      [card, '-', last4].compact.join(' ')
+      [provider.presence, card.presence, last4.presence].compact.join(' - ')
     end
 
     def duplicate
