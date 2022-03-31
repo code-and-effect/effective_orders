@@ -47,6 +47,16 @@ module EffectiveStripeHelper
 
   def stripe_payment_intent(order)
     customer = Effective::Customer.for_user(order.user)
+
+    begin
+      stripe_payment_intent_payload(order, customer)
+    rescue => e
+      raise unless Rails.env.development?
+      stripe_payment_intent_payload(order, Effective::Customer.new(user: order.user))
+    end
+  end
+
+  def stripe_payment_intent_payload(order, customer)
     customer.create_stripe_customer! # Only creates if customer not already present
 
     payment = {
