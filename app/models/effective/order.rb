@@ -335,6 +335,18 @@ module Effective
         else payment_card.to_s
       end
 
+      # Try again
+      if card == 'none' && payment['card_type'].present?
+        card = case payment['card_type'].to_s.downcase.gsub(' ', '').strip
+          when '' then nil
+          when 'v', 'visa' then 'Visa'
+          when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
+          when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
+          when 'd', 'discover' then 'Discover'
+          else payment_card.to_s
+        end
+      end
+
       last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
         payment[:active_card][15,4]
       end
@@ -486,14 +498,18 @@ module Effective
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
     def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false, skip_quickbooks: false)
-      # Assign attributes
-      self.state = EffectiveOrders::PURCHASED
-      self.skip_buyer_validations = skip_buyer_validations
+      return true if purchased?
 
-      self.payment_provider ||= provider
-      self.payment_card ||= (card.presence || 'none')
-      self.purchased_at ||= Time.zone.now
-      self.payment = payment_to_h(payment) if self.payment.blank?
+      # Assign attributes
+      assign_attributes(
+        state: EffectiveOrders::PURCHASED,
+        skip_buyer_validations: skip_buyer_validations,
+
+        payment_provider: provider,
+        payment_card: (card.presence || 'none'),
+        purchased_at: Time.zone.now,
+        payment: payment_to_h(payment)
+      )
 
       begin
         Effective::Order.transaction do
