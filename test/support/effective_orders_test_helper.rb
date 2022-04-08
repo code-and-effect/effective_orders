@@ -33,7 +33,6 @@ module EffectiveOrdersTestHelper
     end
 
     actions = ActionMailer::Base.instance_variable_get(:@mailer_actions)
-    binding.pry
 
     ActionMailer::Base.deliveries.each do |message|
       matches = true

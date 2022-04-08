@@ -11,10 +11,10 @@ module Effective
         EffectiveResources.authorize!(self, :update, @order)
         EffectiveResources.authorize!(self, :admin, :effective_orders)
 
-        @order.assign_attributes(mark_as_paid_params.except(:payment, :payment_provider, :payment_card))
+        @order.assign_attributes(mark_as_paid_params.except(:payment_provider, :payment_card))
 
         order_purchased(
-          payment: mark_as_paid_params[:payment],
+          payment: 'mark as paid',
           provider: mark_as_paid_params[:payment_provider],
           card: mark_as_paid_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,
@@ -25,7 +25,7 @@ module Effective
 
       def mark_as_paid_params
         params.require(:effective_order).permit(
-          :purchased_at, :payment, :payment_provider, :payment_card,
+          :purchased_at, :payment_provider, :payment_card,
           :note_to_buyer, :note_internal, :send_mark_as_paid_email_to_buyer
         )
       end
