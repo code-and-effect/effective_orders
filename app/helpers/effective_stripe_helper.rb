@@ -70,6 +70,9 @@ module EffectiveStripeHelper
 
     token_required = customer.token_required?
 
+    # Always prompt them for a card unless remember card
+    token_required = true unless EffectiveOrders.stripe[:remember_card]
+
     intent = begin
       Rails.logger.info "[STRIPE] create payment intent : #{payment}"
       Stripe::PaymentIntent.create(payment)
