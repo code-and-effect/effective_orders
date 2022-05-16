@@ -9,7 +9,7 @@
       %em This checkout is powered by stripe.
 
     .my-4.text-center
-      = link_to(image_tag('effective_orders/stripe.png'), 'https://www.stripe.com', target: '_blank')
+      = image_tag('effective_orders/stripe.png', alt: 'Stripe.com Logo')
 
     = effective_form_with(scope: :stripe, url: effective_orders.stripe_order_path(order), data: { 'stripe-form': stripe.to_json }) do |f|
       = f.hidden_field :purchased_url, value: purchased_url
