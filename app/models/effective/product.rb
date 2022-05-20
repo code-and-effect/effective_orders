@@ -4,7 +4,7 @@ module Effective
 
     acts_as_purchasable
 
-    # belongs_to :purchased_order_id
+    has_many :order_items, as: :purchasable
 
     effective_resource do
       name          :string

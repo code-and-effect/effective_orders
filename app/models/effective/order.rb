@@ -30,10 +30,10 @@ module Effective
     belongs_to :parent, polymorphic: true, optional: true
 
     belongs_to :user, polymorphic: true, validate: false  # This is the buyer/user of the order. We validate it below.
-    has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
-
-    accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
+
+    has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
+    accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
 
     # Attributes
     effective_resource do
@@ -63,18 +63,30 @@ module Effective
 
     serialize :payment, Hash
 
-    before_validation { assign_order_totals }
-    before_validation { assign_billing_name }
-    before_validation { assign_email }
-    before_validation { assign_user_address }
-    before_validation { assign_last_address }
+    scope :deep, -> { includes(:addresses, :user, order_items: :purchasable) }
+    scope :sorted, -> { order(:id) }
 
-    before_validation(if: -> { confirmed_checkout }) do
-      assign_attributes(state: EffectiveOrders::CONFIRMED) if pending?
+    scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
+    scope :purchased_by, lambda { |user| purchased.where(user: user) }
+    scope :not_purchased, -> { where.not(state: EffectiveOrders::PURCHASED) }
+
+    scope :pending, -> { where(state: EffectiveOrders::PENDING) }
+    scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
+    scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
+    scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
+    scope :abandoned, -> { where(state: EffectiveOrders::ABANDONED) }
+    scope :refunds, -> { purchased.where('total < ?', 0) }
+
+    before_validation do
+      self.state ||= EffectiveOrders::PENDING
+      self.state = EffectiveOrders::CONFIRMED if pending? && confirmed_checkout
     end
 
-    before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
-      raise EffectiveOrders::AlreadyPurchasedException.new('cannot unpurchase an order') unless purchased?
+    with_options(unless: -> { purchased? }) do
+      before_validation { assign_email }
+      before_validation { assign_user_address }
+      before_validation { assign_billing_name }
+      before_validation { assign_order_totals }
     end
 
     # Order validations
@@ -84,6 +96,8 @@ module Effective
 
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
     validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
+
+    # Price validations
     validates :subtotal, presence: true
 
     with_options(if: -> { EffectiveOrders.minimum_charge.to_i > 0 }) do
@@ -118,11 +132,6 @@ module Effective
       validates :payment, presence: true
 
       validates :payment_provider, presence: true
-
-      validate do
-        self.errors.add(:payment_provider, "unknown payment provider") unless (EffectiveOrders.payment_providers + EffectiveOrders.admin_payment_providers).include?(payment_provider)
-      end
-
       validates :payment_card, presence: true
     end
 
@@ -134,19 +143,9 @@ module Effective
       end
     end
 
-    scope :deep, -> { includes(:addresses, :user, order_items: :purchasable) }
-    scope :sorted, -> { order(:id) }
-
-    scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
-    scope :purchased_by, lambda { |user| purchased.where(user: user) }
-    scope :not_purchased, -> { where.not(state: EffectiveOrders::PURCHASED) }
-
-    scope :pending, -> { where(state: EffectiveOrders::PENDING) }
-    scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
-    scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
-    scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
-    scope :abandoned, -> { where(state: EffectiveOrders::ABANDONED) }
-    scope :refunds, -> { purchased.where('total < ?', 0) }
+    before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
+      raise EffectiveOrders::AlreadyPurchasedException.new('cannot unpurchase an order') unless purchased?
+    end
 
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
@@ -548,6 +547,10 @@ module Effective
       true
     end
 
+    def skip_quickbooks!
+      sync_quickbooks!(skip: true)
+    end
+
     def defer!(provider: 'none', email: true)
       return false if purchased?
 
@@ -624,9 +627,6 @@ module Effective
       EffectiveOrders.send_email(:refund_notification_to_admin, self) if purchased? && refund?
     end
 
-    def skip_qb_sync!
-      EffectiveOrders.use_effective_qb_sync ? EffectiveQbSync.skip_order!(self) : true
-    end
 
     protected
 
@@ -651,54 +651,39 @@ module Effective
       order_items.reject { |oi| oi.marked_for_destruction? }
     end
 
-    def assign_order_totals
-      self.subtotal = present_order_items.map { |oi| oi.subtotal }.sum
-      self.tax_rate = get_tax_rate()
-      self.tax = get_tax()
-      self.total = subtotal + (tax || 0)
-    end
-
     def assign_billing_name
-      self.billing_name = [(billing_address.full_name.presence if billing_address.present?), (user.to_s.presence)].compact.first
+      self.billing_name = billing_address.try(:full_name).presence || user.to_s.presence
     end
 
     def assign_email
-      self.email = user&.email if user&.email.present?
-    end
-
-    def assign_last_address
-      return unless user.present?
-      return unless (EffectiveOrders.billing_address || EffectiveOrders.shipping_address)
-      return if EffectiveOrders.billing_address && billing_address.present?
-      return if EffectiveOrders.shipping_address && shipping_address.present?
-
-      last_order = Effective::Order.sorted.where(user: user).last
-      return unless last_order.present?
-
-      if EffectiveOrders.billing_address && last_order.billing_address.present?
-        self.billing_address = last_order.billing_address
-      end
-
-      if EffectiveOrders.shipping_address && last_order.shipping_address.present?
-        self.shipping_address = last_order.shipping_address
-      end
+      self.email = user.try(:email)
     end
 
     def assign_user_address
       return unless user.present?
-      return unless (EffectiveOrders.billing_address || EffectiveOrders.shipping_address)
-      return if EffectiveOrders.billing_address && billing_address.present?
-      return if EffectiveOrders.shipping_address && shipping_address.present?
 
-      if billing_address.blank? && user.respond_to?(:billing_address) && user.billing_address.present?
+      if EffectiveOrders.billing_address && billing_address.blank? && user.try(:billing_address).present?
         self.billing_address = user.billing_address
         self.billing_address.full_name ||= user.to_s.presence
       end
 
-      if shipping_address.blank? && user.respond_to?(:shipping_address) && user.shipping_address.present?
+      if EffectiveOrders.shipping_address && shipping_address.blank? && user.try(:shipping_address).present?
         self.shipping_address = user.shipping_address
         self.shipping_address.full_name ||= user.to_s.presence
       end
+    end
+
+    def assign_order_totals
+      # Copies prices from purchasable into order items
+      present_order_items.each { |oi| oi.assign_purchasable_attributes() }
+
+      # The subtotal
+      subtotal = present_order_items.map { |oi| oi.subtotal }.sum
+
+      self.subtotal = subtotal
+      self.tax_rate = get_tax_rate()
+      self.tax = get_tax()
+      self.total = subtotal + (tax || 0)
     end
 
     def update_purchasables_purchased_order!

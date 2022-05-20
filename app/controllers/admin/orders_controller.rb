@@ -14,38 +14,38 @@ module Admin
     submit :save, 'Duplicate', redirect: -> { effective_orders.new_admin_order_path(duplicate_id: resource.to_param) }
     submit :save, 'Checkout', redirect: -> { effective_orders.checkout_admin_order_path(resource) }
 
-    def create
-      @user = current_user.class.find_by_id(permitted_params[:user_id])
-      @order = Effective::Order.new(user: @user)
+    # def create
+    #   @user = current_user.class.find_by_id(permitted_params[:user_id])
+    #   @order = Effective::Order.new(user: @user)
 
-      authorize_effective_order!
-      error = nil
+    #   authorize_effective_order!
+    #   error = nil
 
-      Effective::Order.transaction do
-        begin
-          (permitted_params[:order_items_attributes] || {}).each do |_, item_attrs|
-            purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
-            @order.add(purchasable, quantity: item_attrs[:quantity])
-          end
+    #   Effective::Order.transaction do
+    #     begin
+    #       (permitted_params[:order_items_attributes] || {}).each do |_, item_attrs|
+    #         purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
+    #         @order.add(purchasable, quantity: item_attrs[:quantity])
+    #       end
 
-          @order.attributes = permitted_params.except(:order_items_attributes, :user_id)
-          @order.pending!
+    #       @order.attributes = permitted_params.except(:order_items_attributes, :user_id)
+    #       @order.pending!
 
-          message = 'Successfully created order'
-          message << ". A request for payment has been sent to #{@order.emails_send_to}" if @order.send_payment_request_to_buyer?
-          flash[:success] = message
+    #       message = 'Successfully created order'
+    #       message << ". A request for payment has been sent to #{@order.emails_send_to}" if @order.send_payment_request_to_buyer?
+    #       flash[:success] = message
 
-          redirect_to(admin_redirect_path) and return
-        rescue => e
-          error = e.message
-          raise ActiveRecord::Rollback
-        end
-      end
+    #       redirect_to(admin_redirect_path) and return
+    #     rescue => e
+    #       error = e.message
+    #       raise ActiveRecord::Rollback
+    #     end
+    #   end
 
-      @page_title = 'New Order'
-      flash.now[:danger] = flash_danger(@order) + error.to_s
-      render :new
-    end
+    #   @page_title = 'New Order'
+    #   flash.now[:danger] = flash_danger(@order) + error.to_s
+    #   render :new
+    # end
 
     # The show page posts to this action
     # See Effective::OrdersController checkout
@@ -124,15 +124,7 @@ module Admin
     private
 
     def permitted_params
-      params.require(:effective_order).permit(:user_id, :user_type, :cc,
-        :send_payment_request_to_buyer, :note_internal, :note_to_buyer,
-        :payment_provider, :payment_card, :payment, :send_mark_as_paid_email_to_buyer,
-        order_items_attributes: [
-          :quantity, :_destroy, purchasable_attributes: [
-            :name, :qb_item_name, :price, :tax_exempt
-          ]
-        ]
-      )
+      params.require(:effective_order).permit!
     end
 
     def checkout_params
