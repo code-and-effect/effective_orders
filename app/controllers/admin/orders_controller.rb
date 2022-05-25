@@ -14,38 +14,11 @@ module Admin
     submit :save, 'Duplicate', redirect: -> { effective_orders.new_admin_order_path(duplicate_id: resource.to_param) }
     submit :save, 'Checkout', redirect: -> { effective_orders.checkout_admin_order_path(resource) }
 
-    # def create
-    #   @user = current_user.class.find_by_id(permitted_params[:user_id])
-    #   @order = Effective::Order.new(user: @user)
-
-    #   authorize_effective_order!
-    #   error = nil
-
-    #   Effective::Order.transaction do
-    #     begin
-    #       (permitted_params[:order_items_attributes] || {}).each do |_, item_attrs|
-    #         purchasable = Effective::Product.new(item_attrs[:purchasable_attributes])
-    #         @order.add(purchasable, quantity: item_attrs[:quantity])
-    #       end
-
-    #       @order.attributes = permitted_params.except(:order_items_attributes, :user_id)
-    #       @order.pending!
-
-    #       message = 'Successfully created order'
-    #       message << ". A request for payment has been sent to #{@order.emails_send_to}" if @order.send_payment_request_to_buyer?
-    #       flash[:success] = message
-
-    #       redirect_to(admin_redirect_path) and return
-    #     rescue => e
-    #       error = e.message
-    #       raise ActiveRecord::Rollback
-    #     end
-    #   end
-
-    #   @page_title = 'New Order'
-    #   flash.now[:danger] = flash_danger(@order) + error.to_s
-    #   render :new
-    # end
+    submit :save, 'Save', success: -> {
+      message = flash_success(resource, params[:action])
+      message << ". A request for payment has been sent to #{resource.emails_send_to}" if resource.send_payment_request_to_buyer?
+      message
+    }
 
     # The show page posts to this action
     # See Effective::OrdersController checkout
@@ -58,21 +31,19 @@ module Admin
 
       if request.get?
         @order.assign_confirmed_if_valid!
-        render :checkout and return
+        render(:checkout)
+        return
       end
 
-      Effective::Order.transaction do
-        begin
-          @order.assign_attributes(checkout_params)
-          @order.confirm!
-          redirect_to(effective_orders.checkout_admin_order_path(@order)) and return
-        rescue => e
-          raise ActiveRecord::Rollback
-        end
-      end
+      # Otherwise a post
+      @order.assign_attributes(checkout_params)
 
-      flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
-      render :checkout
+      if (@order.confirm! rescue false)
+        redirect_to(effective_orders.checkout_admin_order_path(@order))
+      else
+        flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
+        render :checkout
+      end
     end
 
     def destroy
@@ -133,18 +104,6 @@ module Admin
 
     def authorize_effective_order!
       EffectiveResources.authorize!(self, action_name.to_sym, @order || Effective::Order)
-    end
-
-    def admin_redirect_path
-      case params[:commit].to_s
-      when 'Save'               ; effective_orders.admin_order_path(@order)
-      when 'Continue'           ; effective_orders.admin_orders_path
-      when 'Add New'            ; effective_orders.new_admin_order_path(user_id: @order.user.try(:to_param))
-      when 'Duplicate'          ; effective_orders.new_admin_order_path(duplicate_id: @order.to_param)
-      when 'Checkout'           ; effective_orders.checkout_admin_order_path(@order.to_param)
-      else
-        effective_orders.admin_order_path(@order)
-      end
     end
 
   end

@@ -164,7 +164,7 @@ module Effective
       if atts.kind_of?(Hash)
         items = Array(atts[:item]) + Array(atts[:items])
 
-        self.user = atts[:user] || (items.first.user if items.first.respond_to?(:user))
+        self.user = atts[:user] || items.first.try(:user)
 
         if (address = atts[:billing_address]).present?
           self.billing_address = address
@@ -279,7 +279,7 @@ module Effective
         if purchasable.blank? || purchasable.marked_for_destruction?
           item.mark_for_destruction
         else
-          item.price = purchasable.price
+          item.assign_purchasable_attributes
         end
       end
 
@@ -383,6 +383,20 @@ module Effective
 
     def deferred?
       state == EffectiveOrders::DEFERRED
+    end
+
+    def in_progress?
+      pending? || confirmed? || deferred?
+    end
+
+    def done?
+      purchased? || declined?
+    end
+
+    # A custom order is one that was created by an admin
+    # We allow custom orders to have their order items updated
+    def custom_order?
+      order_items.all? { |oi| oi.purchasable_type == 'Effective::Product' }
     end
 
     def purchased?(provider = nil)
@@ -652,11 +666,11 @@ module Effective
     end
 
     def assign_billing_name
-      self.billing_name = billing_address.try(:full_name).presence || user.to_s.presence
+      self.billing_name ||= billing_address.try(:full_name).presence || user.to_s.presence
     end
 
     def assign_email
-      self.email = user.try(:email)
+      self.email ||= user.try(:email)
     end
 
     def assign_user_address
@@ -673,6 +687,7 @@ module Effective
       end
     end
 
+    # This overwrites the prices, taxes, etc on every save.
     def assign_order_totals
       # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes() }

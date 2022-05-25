@@ -13,15 +13,15 @@
         label: 'Payment card type, cheque or transaction number',
         hint: 'Do not enter credit card numbers here, or anywhere.'
 
+      = f.check_box :send_mark_as_paid_email_to_buyer,
+        label: 'Yes, send a receipt email to the buyer.',
+        input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.send_order_receipts_when_mark_as_paid : f.object.send_mark_as_paid_email_to_buyer?) }
+
+
       .row
         .col
           = f.text_area :note_to_buyer, hint: 'This message will be displayed to the buyer on the receipt.'
         .col
           = f.text_area :note_internal, hint: 'For or internal admin use only. This note will never be displayed to the buyer.'
-
-      = f.check_box :send_mark_as_paid_email_to_buyer,
-        label: 'Yes, send a receipt email to the buyer.',
-        input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.send_order_receipts_when_mark_as_paid : f.object.send_mark_as_paid_email_to_buyer?) }
-
 
       = f.submit order_checkout_label(order.refund? ? :refund : :mark_as_paid)
