@@ -1,6 +1,13 @@
 %h1.effective-admin-heading= @page_title
 
-= render partial: 'effective/orders/order', locals: { order: @order }
+= render 'effective/orders/order_actions', order: @order
 
-.effective-order
-  = render partial: 'form', locals: { order: @order }
+- if @order.custom_order?
+  .mb-4
+    = collapse('show order') do
+      = render 'effective/orders/order', order: @order, no_order_actions: true
+
+  = render 'admin/orders/form', order: @order
+
+- else
+  = render 'effective/orders/order', order: @order

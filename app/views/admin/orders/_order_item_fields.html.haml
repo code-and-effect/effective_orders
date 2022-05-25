@@ -1,10 +1,19 @@
 .row.align-items-center
-  = f.fields_for :purchasable, (f.object.purchasable || Effective::Product.new) do |pf|
-    .col= f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
-    .col= pf.text_field :name
+  = f.fields_for :purchasable, (f.object.purchasable || f.object.build_purchasable) do |pf|
+    -# Order item fields
+    .col
+      = f.hidden_field :purchasable_id
+      = f.hidden_field :purchasable_type
+      = f.number_field :quantity, input_html: { value: f.object.quantity || 1, min: 1 }
+
+    -# Purchasable fields
+    .col
+      = pf.hidden_field :id
+      = pf.text_field :name
+
     .col= pf.price_field :price
 
-    - if EffectiveOrders.use_effective_qb_sync
+    - if EffectiveOrders.qb_sync? || EffectiveOrders.qb_online?
       .col= pf.text_field :qb_item_name, label: 'Quickbooks Item'
 
     .col= pf.check_box :tax_exempt, label: "Tax&nbsp;Exempt", title: 'When checked, tax will not be applied to this item'
