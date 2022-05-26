@@ -147,6 +147,10 @@ module Effective
       raise EffectiveOrders::AlreadyPurchasedException.new('cannot unpurchase an order') unless purchased?
     end
 
+    before_save(if: -> { done? }) do
+      raise('cannot change total of a purchased order') if changes[:total].present?
+    end
+
     # Effective::Order.new()
     # Effective::Order.new(Product.first)
     # Effective::Order.new(current_cart)
