@@ -82,7 +82,7 @@ module Effective
       self.state = EffectiveOrders::CONFIRMED if pending? && confirmed_checkout
     end
 
-    with_options(unless: -> { purchased? }) do
+    with_options(unless: -> { done? }) do
       before_validation { assign_email }
       before_validation { assign_user_address }
       before_validation { assign_billing_name }
@@ -390,7 +390,7 @@ module Effective
     end
 
     def done?
-      purchased? || declined?
+      persisted? && (purchased? || declined?)
     end
 
     # A custom order is one that was created by an admin
@@ -641,7 +641,6 @@ module Effective
       EffectiveOrders.send_email(:refund_notification_to_admin, self) if purchased? && refund?
     end
 
-
     protected
 
     def get_tax_rate
@@ -666,11 +665,11 @@ module Effective
     end
 
     def assign_billing_name
-      self.billing_name ||= billing_address.try(:full_name).presence || user.to_s.presence
+      self.billing_name = billing_address.try(:full_name).presence || user.to_s.presence
     end
 
     def assign_email
-      self.email ||= user.try(:email)
+      self.email = user.email if user.try(:email).present?
     end
 
     def assign_user_address
@@ -689,10 +688,8 @@ module Effective
 
     # This overwrites the prices, taxes, etc on every save.
     def assign_order_totals
-      # Copies prices from purchasable into order items
-      present_order_items.each { |oi| oi.assign_purchasable_attributes() }
+      present_order_items.each { |oi| oi.assign_purchasable_attributes }
 
-      # The subtotal
       subtotal = present_order_items.map { |oi| oi.subtotal }.sum
 
       self.subtotal = subtotal
