@@ -105,7 +105,7 @@ module Effective
 
       validate(unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }) do
         if total.present? && total < EffectiveOrders.minimum_charge
-          self.errors.add(:total, "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items.")
+          errors.add(:total, "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items.")
         end
       end
     end
@@ -139,7 +139,7 @@ module Effective
       validates :payment_provider, presence: true
 
       validate do
-        self.errors.add(:payment_provider, "unknown deferred payment provider") unless EffectiveOrders.deferred_providers.include?(payment_provider)
+        errors.add(:payment_provider, "unknown deferred payment provider") unless EffectiveOrders.deferred_providers.include?(payment_provider)
       end
     end
 
@@ -692,8 +692,10 @@ module Effective
 
     # This overwrites the prices, taxes, etc on every save.
     def assign_order_totals
+      # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes }
 
+      # Sum of order item subtotals
       subtotal = present_order_items.map { |oi| oi.subtotal }.sum
 
       self.subtotal = subtotal
