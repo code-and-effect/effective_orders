@@ -7,17 +7,18 @@
       class: 'btn btn-secondary',
       data: { method: :post, confirm: "Send receipt to #{order.emails_send_to}?" }
 
-  - if order.persisted? && order.in_progress? && EffectiveResources.authorized?(controller, :admin, :effective_orders)
-    - if params[:action] == 'show'
-      = link_to('Edit', effective_orders.edit_admin_order_path(order), class: 'btn btn-primary')
+  - if controller_path.include?('admin/') && (EffectiveResources.authorized?(controller, :admin, :effective_orders) rescue false)
+    - if order.persisted? && order.in_progress?
+      - if params[:action] == 'show'
+        = link_to('Edit', effective_orders.edit_admin_order_path(order), class: 'btn btn-primary')
 
-    - if params[:action] == 'edit'
-      = link_to('Show', effective_orders.admin_order_path(order), class: 'btn btn-primary')
+      - if params[:action] == 'edit'
+        = link_to('Show', effective_orders.admin_order_path(order), class: 'btn btn-primary')
 
-    = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
-      class: 'btn btn-secondary',
-      data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
+      = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
+        class: 'btn btn-secondary',
+        data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
 
-    = link_to 'Delete', effective_orders.admin_order_path(order),
-      class: 'btn btn-danger',
-      data: { method: :delete, confirm: "Really delete #{order}?" }
+      = link_to 'Delete', effective_orders.admin_order_path(order),
+        class: 'btn btn-danger',
+        data: { method: :delete, confirm: "Really delete #{order}?" }
