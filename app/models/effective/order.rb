@@ -33,7 +33,7 @@ module Effective
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
     has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
-    accepts_nested_attributes_for :order_items, allow_destroy: false, reject_if: :all_blank
+    accepts_nested_attributes_for :order_items, allow_destroy: true, reject_if: :all_blank
 
     # Attributes
     effective_resource do
