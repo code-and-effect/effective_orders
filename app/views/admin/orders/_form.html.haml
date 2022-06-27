@@ -1,8 +1,10 @@
 = effective_form_with(model: [:admin, order], engine: true) do |f|
   = f.hidden_field :user_type, value: (f.object.user || current_user).class.name
 
+  - ajax_url = (@select2_ajax_path || effective_resources.users_admin_select2_ajax_index_path)
+
   = f.select :user_id, current_user.class.all, label: 'Buyer', required: true,
-    ajax_url: effective_resources.users_admin_select2_ajax_index_path,
+    ajax_url: ajax_url,
     hint: 'The user that should purchase this order.'
 
   = f.email_cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
