@@ -63,6 +63,8 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
       collection.where(id: Effective::OrderItem.where('name ILIKE ?', "%#{term}%").select('order_id'))
     end
 
+    col :payment_method
+
     col :subtotal, as: :price, visible: false
     col :tax, as: :price, visible: false
 
