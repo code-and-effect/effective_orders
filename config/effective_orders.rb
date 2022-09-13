@@ -61,6 +61,7 @@ EffectiveOrders.setup do |config|
   # Mark as Paid
   # Mark an order as paid without going through a processor
   # This is accessed via the admin screens only. Must have can?(:admin, :effective_orders)
+  # Should be true when using deferred payment providers
   config.mark_as_paid_enabled = false
 
   # Pretend Purchase
@@ -115,6 +116,15 @@ EffectiveOrders.setup do |config|
   # config.cheque = {
   #   confirm: 'Proceed with pay by cheque?',
   #   success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
+  # }
+
+  # E-transfer
+  # This is an deferred payment
+  config.etransfer = false
+
+  # config.etransfer = {
+  #   confirm: 'Proceed with pay by e-transfer?',
+  #   success: 'Thank you! You have indicated that this order will be purchased by e-transfer. Please send us an e-transfer to "payments@example.com" with password "example" at your earliest convenience'
   # }
 
   # Moneris

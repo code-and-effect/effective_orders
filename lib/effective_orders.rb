@@ -7,7 +7,7 @@ module EffectiveOrders
   # Order states
   PENDING = 'pending'        # New orders are created in a pending state
   CONFIRMED = 'confirmed'    # Once the order has passed checkout step 1
-  DEFERRED = 'deferred'      # Deferred providers. Cheque or Phone was selected.
+  DEFERRED = 'deferred'      # Deferred providers. cheque, etransfer or phone was selected.
   PURCHASED = 'purchased'    # Purchased by provider
   DECLINED = 'declined'      # Declined by provider
   ABANDONED = 'abandoned'    # Not set by this gem. Can be set outside it.
@@ -53,7 +53,7 @@ module EffectiveOrders
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message,
 
       # Payment processors. false or Hash
-      :cheque, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
+      :cheque, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
   end
 
@@ -70,6 +70,10 @@ module EffectiveOrders
 
   def self.cheque?
     cheque.kind_of?(Hash)
+  end
+
+  def self.etransfer?
+    etransfer.kind_of?(Hash)
   end
 
   def self.free?
@@ -129,6 +133,7 @@ module EffectiveOrders
     [
       ('cheque' if cheque?),
       ('credit card' if mark_as_paid?),
+      ('etransfer' if etransfer?),
       ('free' if free?),
       ('moneris' if moneris?),
       ('moneris_checkout' if moneris_checkout?),
@@ -147,6 +152,7 @@ module EffectiveOrders
     [
       ('cheque' if mark_as_paid?),
       ('credit card' if mark_as_paid?),
+      ('etransfer' if etransfer?),
       #('free' if free?),
       ('moneris' if moneris?),
       ('moneris_checkout' if moneris_checkout?),
@@ -161,7 +167,7 @@ module EffectiveOrders
   end
 
   def self.deferred_providers
-    [('cheque' if cheque?), ('phone' if phone?)].compact
+    [('cheque' if cheque?), ('etransfer' if etransfer?), ('phone' if phone?)].compact
   end
 
   def self.qb_sync?

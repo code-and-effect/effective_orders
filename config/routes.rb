@@ -7,9 +7,10 @@ EffectiveOrders::Engine.routes.draw do
         get :declined
         post :send_buyer_receipt
 
+        post :cheque
+        post :etransfer
         post :free
         post :mark_as_paid
-        post :cheque
         post :moneris_checkout
         post :phone
         post :pretend

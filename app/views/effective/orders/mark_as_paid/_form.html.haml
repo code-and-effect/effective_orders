@@ -10,13 +10,12 @@
       = f.select :payment_provider, EffectiveOrders.admin_payment_providers, required: true
 
       = f.text_field :payment_card,
-        label: 'Payment card type, cheque or transaction number',
+        label: 'Payment card type, cheque, e-transfer or transaction number',
         hint: 'Do not enter credit card numbers here, or anywhere.'
 
       = f.check_box :send_mark_as_paid_email_to_buyer,
         label: 'Yes, send a receipt email to the buyer.',
         input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.send_order_receipts_when_mark_as_paid : f.object.send_mark_as_paid_email_to_buyer?) }
-
 
       .row
         .col

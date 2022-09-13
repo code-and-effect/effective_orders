@@ -1,0 +1,4 @@
+= effective_form_with(scope: :etransfer, url: effective_orders.etransfer_order_path(order), method: :post) do |f|
+  = f.hidden_field :deferred_url, value: deferred_url
+
+  = f.submit order_checkout_label(:etransfer), center: true, border: false, 'data-confirm': EffectiveOrders.etransfer[:confirm]

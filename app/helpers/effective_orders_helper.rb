@@ -36,6 +36,8 @@ module EffectiveOrdersHelper
     case processor
     when :cheque
       'Pay by Cheque'
+    when :etransfer
+      'Pay by E-transfer'
     when :free
       'Checkout Free'
     when :mark_as_paid

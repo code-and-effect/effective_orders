@@ -4,6 +4,7 @@ module Effective
     include Concerns::Purchase
 
     include Providers::Cheque
+    include Providers::Etransfer
     include Providers::Free
     include Providers::MarkAsPaid
     include Providers::Moneris

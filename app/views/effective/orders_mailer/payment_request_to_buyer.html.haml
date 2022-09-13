@@ -6,8 +6,8 @@
 
 %p #{link_to('Click here', effective_orders.order_url(@order))} to review your order and pay online with a credit card.
 
-- if EffectiveOrders.cheque?
-  %p We also accept cheques via the mail, and we will manually mark your order paid upon receiving it.
+- if EffectiveOrders.deferred_providers.present?
+  - providers = EffectiveOrders.deferred_providers.to_sentence()
+  %p We also accept #{providers}. We will mark your order paid upon receiving it.
 
 = render(@order, no_order_actions: true)
-

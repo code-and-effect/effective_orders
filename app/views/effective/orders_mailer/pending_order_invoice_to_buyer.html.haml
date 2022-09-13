@@ -6,8 +6,8 @@
 
 %p #{link_to('Click here', effective_orders.order_url(@order))} to review your order online.
 
-- if EffectiveOrders.cheque?
-  %p When we receive your cheque in the mail we will mark your order paid.
+- if EffectiveOrders.deferred_providers.present?
+  - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
+  %p When we receive your #{providers} we will mark your order paid.
 
 = render(@order, no_order_actions: true)
-
