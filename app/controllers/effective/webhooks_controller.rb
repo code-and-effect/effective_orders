@@ -16,7 +16,8 @@ module Effective
     after_action :run_subscribable_buyer_callbacks!
 
     def stripe
-      @event = (Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscriptions[:webhook_secret]) rescue nil)
+      @event = EffectiveOrders.with_stripe { ::Stripe::Webhook.construct_event(request.body.read, request.env['HTTP_STRIPE_SIGNATURE'], EffectiveOrders.subscriptions[:webhook_secret]) rescue nil }
+
       (head(:ok) and return) if request.get? && @event.blank?
       (head(:bad_request) and return) unless @event
 

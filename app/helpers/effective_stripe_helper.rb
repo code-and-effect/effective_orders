@@ -75,11 +75,11 @@ module EffectiveStripeHelper
 
     intent = begin
       Rails.logger.info "[STRIPE] create payment intent : #{payment}"
-      Stripe::PaymentIntent.create(payment)
+      EffectiveOrders.with_stripe { ::Stripe::PaymentIntent.create(payment) }
     rescue Stripe::CardError => e
       token_required = true
       Rails.logger.info "[STRIPE] (error) get payment intent : #{e.error.payment_intent.id}"
-      Stripe::PaymentIntent.retrieve(e.error.payment_intent.id)
+      EffectiveOrders.with_stripe { ::Stripe::PaymentIntent.retrieve(e.error.payment_intent.id) }
     end
 
     payload = {

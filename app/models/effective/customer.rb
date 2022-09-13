@@ -39,7 +39,7 @@ module Effective
 
       Rails.logger.info "[STRIPE] create customer: #{user.email}"
 
-      self.stripe_customer = Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id })
+      self.stripe_customer = EffectiveOrders.with_stripe { ::Stripe::Customer.create(email: user.email, description: user.to_s, metadata: { user_id: user.id }) }
       self.stripe_customer_id = stripe_customer.id
 
       save!
@@ -48,21 +48,21 @@ module Effective
     def stripe_customer
       @stripe_customer ||= if stripe_customer_id.present?
         Rails.logger.info "[STRIPE] get customer: #{stripe_customer_id}"
-        ::Stripe::Customer.retrieve(stripe_customer_id)
+        EffectiveOrders.with_stripe { ::Stripe::Customer.retrieve(stripe_customer_id) }
       end
     end
 
     def invoices
       @invoices ||= if stripe_customer_id.present?
         Rails.logger.info "[STRIPE] list invoices: #{stripe_customer_id}"
-        ::Stripe::Invoice.list(customer: stripe_customer_id) rescue nil
+        EffectiveOrders.with_stripe { ::Stripe::Invoice.list(customer: stripe_customer_id) rescue nil }
       end
     end
 
     def upcoming_invoice
       @upcoming_invoice ||= if stripe_customer_id.present?
         Rails.logger.info "[STRIPE] get upcoming invoice: #{stripe_customer_id}"
-        ::Stripe::Invoice.upcoming(customer: stripe_customer_id) rescue nil
+        EffectiveOrders.with_stripe { ::Stripe::Invoice.upcoming(customer: stripe_customer_id) rescue nil }
       end
     end
 
@@ -89,5 +89,6 @@ module Effective
         'Please update or confirm your card details to continue.'
       end.html_safe
     end
+
   end
 end

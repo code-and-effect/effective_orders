@@ -38,7 +38,8 @@ module Effective
 
       def validate_stripe_payment(payment_intent_id)
         begin
-          intent = ::Stripe::PaymentIntent.retrieve(payment_intent_id)
+          intent = EffectiveOrders.with_stripe { ::Stripe::PaymentIntent.retrieve(payment_intent_id) }
+
           raise('status is not succeeded') unless intent.status == 'succeeded'
           raise('charges are not present') unless intent.charges.present?
 

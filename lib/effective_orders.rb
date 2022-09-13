@@ -184,6 +184,17 @@ module EffectiveOrders
     true
   end
 
+  def self.with_stripe(&block)
+    raise('expected stripe to be enabled') unless stripe?
+
+    begin
+      ::Stripe.api_key = stripe[:secret_key]
+      yield
+    ensure
+      ::Stripe.api_key = nil
+    end
+  end
+
   def self.stripe_plans
     return [] unless (stripe? && subscriptions?)
 
