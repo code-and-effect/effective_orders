@@ -65,6 +65,8 @@ module ActsAsPurchasable
       super
     elsif value.kind_of?(String) && !value.include?('.') # Looks like an integer
       super
+    elsif value.blank?
+      super
     else
       raise 'expected price to be an Integer representing the number of cents.'
     end
