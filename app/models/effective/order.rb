@@ -524,7 +524,7 @@ module Effective
 
         payment_provider: provider,
         payment_card: (card.presence || 'none'),
-        purchased_at: Time.zone.now,
+        purchased_at: (purchased_at.presence || Time.zone.now),
         payment: payment_to_h(payment)
       )
 
