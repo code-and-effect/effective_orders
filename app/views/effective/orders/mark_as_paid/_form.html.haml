@@ -13,7 +13,7 @@
             label: 'Payment card type, cheque, e-transfer or transaction number',
             hint: 'Do not enter credit card numbers here, or anywhere.'
 
-          = f.datetime_field :purchased_at
+          = f.datetime_field :purchased_at, label: 'Purchased or completed'
 
           = f.check_box :send_mark_as_paid_email_to_buyer,
             label: 'Yes, send a receipt email to the buyer.',
@@ -25,4 +25,5 @@
         .col
           = f.text_area :note_internal, hint: 'For or internal admin use only. This note will never be displayed to the buyer.'
 
-      = f.submit order_checkout_label(order.refund? ? :refund : :mark_as_paid)
+      = f.submit(center: true) do
+        = f.save(order.refund? ? 'Complete Refund' : 'Mark as Paid')

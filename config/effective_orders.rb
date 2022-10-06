@@ -95,6 +95,8 @@ EffectiveOrders.setup do |config|
   config.send_payment_request_to_buyer = true
   config.send_pending_order_invoice_to_buyer = true
 
+  config.send_refund_notification_to_admin = true
+
   config.send_order_receipts_when_mark_as_paid = true
   config.send_order_receipts_when_free = true
 
@@ -201,16 +203,32 @@ EffectiveOrders.setup do |config|
   #   success: 'Thank you! You have indicated that this order will be purchased by phone. Please give us a call at your earliest convenience.'
   # }
 
-
   # Refunds
   # This does not issue a refund with the payment processor at all.
-  # Instead, we mark the order as purchased, create a refund object to track it, and
-  # send an email to config.mailer_admin with instructions to issue a refund
+  #
+  # The historic way of doing refunds was the user would click Accept Refund
+  # Which marks the order as purchased and sends an admin the notification to issue a refund with processor
+  # To support this, set:
+  # config.buyer_purchases_refund = true
+  # config.send_refund_notification_to_admin = true
+  #
+  # The newer way of doing refunds is driven by the admin
+  # The user just sees a pending refund and cannot purchase the order
+  # The admin does the refund with processor, then uses Admin: Mark as Paid to mark order as purchased thereby completing the refund
+  # To support this, set:
+  # config.buyer_purchases_refund = false
+  # config.send_refund_notification_to_admin = false
+  #
+  # You can call order.send_refund_notification! directly or implement a better one in your app
   config.refund = false
 
   # config.refund = {
-  #   success: 'Thank you! Your refund will be processed in the next few business days.'
+  #   success: 'Thank you! Your refund will be processed in the next few business days.',
+  #   pending: 'Thank you! Your refund will be processed in the next few business days.'
   # }
+
+  config.buyer_purchases_refund = true
+  config.send_refund_notification_to_admin = true  # On Purchase
 
   # Stripe
   config.stripe = false

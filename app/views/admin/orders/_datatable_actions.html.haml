@@ -8,7 +8,7 @@
     = dropdown_link_to 'Email receipt to buyer', effective_orders.send_buyer_receipt_order_path(order),
       data: { method: :post, confirm: "Send receipt to #{order.emails_send_to}?" }
 
-  - if order.pending? || order.confirmed? || order.deferred?
+  - if (order.pending? || order.confirmed? || order.deferred?) && !order.refund?
     = dropdown_link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
       data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
 

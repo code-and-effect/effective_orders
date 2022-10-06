@@ -19,6 +19,8 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
       scope :purchased
 
       scope :deferred if EffectiveOrders.deferred_providers.present?
+
+      scope :pending_refunds if EffectiveOrders.refund && !EffectiveOrders.buyer_purchases_refund?
       scope :refunds if EffectiveOrders.refund
 
       scope :not_purchased
@@ -38,7 +40,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     col :purchased_at do |order|
-      order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
+      order.purchased_at&.strftime('%F %H:%M') || ('pending refund' if order.pending_refund?) || 'not purchased'
     end
 
     if attributes[:user_id].blank?
