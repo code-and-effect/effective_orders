@@ -75,7 +75,9 @@ module Effective
     scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
     scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
     scope :abandoned, -> { where(state: EffectiveOrders::ABANDONED) }
+
     scope :refunds, -> { purchased.where('total < ?', 0) }
+    scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
 
     before_validation do
       self.state ||= EffectiveOrders::PENDING
@@ -445,6 +447,13 @@ module Effective
       total.to_i < 0
     end
 
+    def pending_refund?
+      return false if EffectiveOrders.buyer_purchases_refund?
+      return false if purchased?
+
+      refund?
+    end
+
     def num_items
       present_order_items.map { |oi| oi.quantity }.sum
     end
@@ -464,6 +473,11 @@ module Effective
       return false if refund?
 
       EffectiveResources.truthy?(send_payment_request_to_buyer)
+    end
+
+    def send_refund_notification_to_admin?
+      return false unless refund?
+      EffectiveOrders.send_refund_notification_to_admin
     end
 
     def send_mark_as_paid_email_to_buyer?
@@ -622,7 +636,7 @@ module Effective
     def send_order_receipts!
       send_order_receipt_to_admin! if send_order_receipt_to_admin?
       send_order_receipt_to_buyer! if send_order_receipt_to_buyer?
-      send_refund_notification! if refund?
+      send_refund_notification! if send_refund_notification_to_admin?
     end
 
     def send_order_receipt_to_admin!
@@ -642,7 +656,7 @@ module Effective
     end
 
     def send_refund_notification!
-      EffectiveOrders.send_email(:refund_notification_to_admin, self) if purchased? && refund?
+      EffectiveOrders.send_email(:refund_notification_to_admin, self) if refund?
     end
 
     protected

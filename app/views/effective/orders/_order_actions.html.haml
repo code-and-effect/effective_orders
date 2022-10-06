@@ -15,9 +15,10 @@
       - if params[:action] == 'edit'
         = link_to('Show', effective_orders.admin_order_path(order), class: 'btn btn-primary')
 
-      = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
-        class: 'btn btn-secondary',
-        data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
+      - unless order.refund?
+        = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
+          class: 'btn btn-secondary',
+          data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
 
       = link_to 'Delete', effective_orders.admin_order_path(order),
         class: 'btn btn-danger',

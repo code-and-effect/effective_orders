@@ -48,9 +48,10 @@ module EffectiveOrders
       :send_order_receipts_when_mark_as_paid, :send_order_receipts_when_free,
       :send_subscription_events,
       :send_subscription_trialing, :send_subscription_trial_expired,
+      :send_refund_notification_to_admin,
 
       # Features
-      :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message,
+      :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message, :buyer_purchases_refund,
 
       # Payment processors. false or Hash
       :cheque, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
@@ -110,6 +111,10 @@ module EffectiveOrders
 
   def self.refund?
     refund.kind_of?(Hash)
+  end
+
+  def self.buyer_purchases_refund?
+    buyer_purchases_refund == true
   end
 
   def self.stripe?

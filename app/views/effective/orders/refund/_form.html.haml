@@ -1,5 +1,10 @@
-= effective_form_with(scope: :refund, url: effective_orders.refund_order_path(order), method: :post) do |f|
-  = f.hidden_field :purchased_url, value: purchased_url
-  = f.hidden_field :declined_url, value: declined_url
+- if EffectiveOrders.buyer_purchases_refund?
+  = effective_form_with(scope: :refund, url: effective_orders.refund_order_path(order), method: :post) do |f|
+    = f.hidden_field :purchased_url, value: purchased_url
+    = f.hidden_field :declined_url, value: declined_url
 
-  = f.submit order_checkout_label(:refund), center: true, border: false
+    = f.submit order_checkout_label(:refund), center: true, border: false
+
+- else
+  .text-center
+    = EffectiveOrders.refund[:pending].presence || 'Refund pending'
