@@ -449,7 +449,9 @@ module Effective
 
     def pending_refund?
       return false if EffectiveOrders.buyer_purchases_refund?
-      refund? && persisted?
+      return false if purchased?
+
+      refund?
     end
 
     def num_items
