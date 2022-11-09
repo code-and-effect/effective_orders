@@ -40,7 +40,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     col :purchased_at do |order|
-      order.purchased_at&.strftime('%F %H:%M') || ('pending refund' if order.pending_refund?) || 'not purchased'
+      order.purchased_at&.strftime('%F %H:%M') || ('pending refund' if order.pending_refund?) || ("pending #{order.payment_provider}" if order.deferred?) || 'not purchased'
     end
 
     if attributes[:user_id].blank?
@@ -66,6 +66,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     col :payment_method
+    col :payment_provider
 
     col :subtotal, as: :price, visible: false
     col :tax, as: :price, visible: false
