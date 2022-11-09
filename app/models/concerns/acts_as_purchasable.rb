@@ -1,3 +1,15 @@
+# Acts as purchasable
+# Add to your model:
+# t.integer :purchased_order_id
+# t.integer :price
+# t.boolean :tax_exempt, default: false
+# t.string :qb_item_name
+# or
+# add_column :resources, :purchased_order_id, :integer
+# add_column :resources, :price, :integer
+# add_column :resources, :tax_exempt, :boolean, default: false
+# add_column :resources, :qb_item_name, :string
+
 module ActsAsPurchasable
   extend ActiveSupport::Concern
 
