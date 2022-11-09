@@ -1,3 +1,4 @@
-%h1.effective-admin-heading= @page_title
+= render 'layout' do
+  %h1.effective-admin-heading= @page_title
 
-= render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))
+  = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))

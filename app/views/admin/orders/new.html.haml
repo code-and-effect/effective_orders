@@ -1,3 +1,4 @@
-%h1.effective-admin-heading= @page_title
+= render 'layout' do
+  %h1.effective-admin-heading= @page_title
 
-= render 'admin/orders/form', order: @order
+  = render 'admin/orders/form', order: @order

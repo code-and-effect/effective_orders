@@ -1,11 +1,12 @@
-%h1.effective-heading= @page_title
+= render 'layout' do
+  %h1.effective-heading= @page_title
 
-%p.effective-orders-page-content
-  You have indicated that this order will be paid by #{@order.payment_provider}.
-  Your order will not be considered purchased until we receive your payment.
-  Please contact us at your earliest convenience.
+  %p.effective-orders-page-content
+    You have indicated that this order will be paid by #{@order.payment_provider}.
+    Your order will not be considered purchased until we receive your payment.
+    Please contact us at your earliest convenience.
 
-= render @order
+  = render @order
 
-%p.text-center
-  = link_to 'Continue', root_path, class: 'btn btn-primary'
+  %p.text-center
+    = link_to 'Continue', root_path, class: 'btn btn-primary'

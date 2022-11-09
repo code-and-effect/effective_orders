@@ -1,15 +1,16 @@
-%h1.effective-admin-heading= @page_title
+= render 'layout' do
+  %h1.effective-admin-heading= @page_title
 
-- if @order.custom_order? && @order.in_progress?
-  = render 'effective/orders/order_actions', order: @order
+  - if @order.custom_order? && @order.in_progress?
+    = render 'effective/orders/order_actions', order: @order
 
-  .mb-4
-    = collapse('show order') do
-      = render 'effective/orders/order', order: @order, no_order_actions: true
+    .mb-4
+      = collapse('show order') do
+        = render 'effective/orders/order', order: @order, no_order_actions: true
 
-  = render 'admin/orders/form', order: @order
+    = render 'admin/orders/form', order: @order
 
-- else
-  - # Same as the show action
-  = render 'effective/orders/order', order: @order
-  = render 'admin/orders/form_note_internal', order: @order
+  - else
+    - # Same as the show action
+    = render 'effective/orders/order', order: @order
+    = render 'admin/orders/form_note_internal', order: @order

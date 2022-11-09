@@ -1,9 +1,10 @@
-%h1.effective-heading= @page_title
+= render 'layout' do
+  %h1.effective-heading= @page_title
 
-- if !@order.purchased? && @order.user == current_user
-  = render_checkout(@order)
-- else
-  = render(@order)
+  - if !@order.purchased? && @order.user == current_user
+    = render_checkout(@order)
+  - else
+    = render(@order)
 
-  %p.text-center
-    = link_to 'Continue', effective_orders.orders_path, class: 'btn btn-primary'
+    %p.text-center
+      = link_to 'Continue', effective_orders.orders_path, class: 'btn btn-primary'
