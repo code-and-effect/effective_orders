@@ -499,7 +499,10 @@ module Effective
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
 
-      send_payment_request_to_buyer! if send_payment_request_to_buyer?
+      if send_payment_request_to_buyer?
+        after_commit { send_payment_request_to_buyer! }
+      end
+
       true
     end
 
