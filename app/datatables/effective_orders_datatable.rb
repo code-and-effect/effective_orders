@@ -3,12 +3,12 @@
 class EffectiveOrdersDatatable < Effective::Datatable
   filters do
     unless attributes[:not_purchased]
-      scope :purchased, default: true
+      scope :all
+      scope :purchased
 
       scope :deferred if EffectiveOrders.deferred_providers.present?
       scope :refunds if EffectiveOrders.refund
-
-      scope :all
+      scope :not_purchased
     end
   end
 

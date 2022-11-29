@@ -20,6 +20,21 @@ module Admin
       message
     }
 
+    def create
+      @order = Effective::Order.new
+      @order.assign_attributes(permitted_params)
+
+      authorize_effective_order!
+
+      @page_title ||= 'New Order'
+
+      if save_resource(@order, :pending)
+        respond_with_success(@order, :save)
+      else
+        respond_with_error(@order, :save)
+      end
+    end
+
     # The show page posts to this action
     # See Effective::OrdersController checkout
     def checkout
