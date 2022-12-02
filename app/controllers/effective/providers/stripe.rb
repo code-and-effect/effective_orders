@@ -13,7 +13,7 @@ module Effective
 
         payment = validate_stripe_payment(stripe_params[:payment_intent_id])
 
-        if payment.blank? || !payment.kind_of?(Hash)
+        if payment.blank?
           return order_declined(payment: payment, provider: 'stripe', declined_url: stripe_params[:declined_url])
         end
 
@@ -37,36 +37,35 @@ module Effective
       end
 
       def validate_stripe_payment(payment_intent_id)
-        begin
-          intent = EffectiveOrders.with_stripe { ::Stripe::PaymentIntent.retrieve(payment_intent_id) }
+        intent = EffectiveOrders.with_stripe { ::Stripe::PaymentIntent.retrieve(payment_intent_id) }
+        raise('expected stripe intent to be present') if intent.blank?
+        return unless intent.status == 'succeeded'
 
-          raise('status is not succeeded') unless intent.status == 'succeeded'
-          raise('charges are not present') unless intent.charges.present?
+        # Stripe API version 2022-11-15 and 2022-08-01
+        charge_id = intent.try(:latest_charge) || (intent.charges.data.first.id rescue nil)
+        raise('expected stripe charge_id to be present') if charge_id.blank?
 
-          charge = intent.charges.data.first
-          raise('charge not succeeded') unless charge.status == 'succeeded'
+        charge = EffectiveOrders.with_stripe { ::Stripe::Charge.retrieve(charge_id) }
+        raise('expected stripe charge to be present') if charge.blank?
+        return unless charge.status == 'succeeded'
 
-          card = charge.payment_method_details.try(:card) || {}
-          active_card = "**** **** **** #{card['last4']} #{card['brand']} #{card['exp_month']}/#{card['exp_year']}" if card.present?
+        card = charge.payment_method_details.try(:card) || {}
+        active_card = "**** **** **** #{card['last4']} #{card['brand']} #{card['exp_month']}/#{card['exp_year']}" if card.present?
 
-          {
-            charge_id: charge.id,
-            payment_method_id: charge.payment_method,
-            payment_intent_id: intent.id,
+        {
+          charge_id: charge.id,
+          payment_method_id: charge.payment_method,
+          payment_intent_id: intent.id,
 
-            active_card: active_card,
-            card: card['brand'],
+          active_card: active_card,
+          card: card['brand'],
 
-            amount: charge.amount,
-            created: charge.created,
-            currency: charge.currency,
-            customer: charge.customer,
-            status: charge.status
-          }.compact
-
-        rescue => e
-          e.message
-        end
+          amount: charge.amount,
+          created: charge.created,
+          currency: charge.currency,
+          customer: charge.customer,
+          status: charge.status
+        }.compact
       end
 
     end
