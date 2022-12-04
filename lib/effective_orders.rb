@@ -39,6 +39,7 @@ module EffectiveOrders
       :billing_address, :shipping_address,
       :collect_note, :collect_note_required, :collect_note_message,
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
+      :credit_card_surcharge_percent, :credit_card_surcharge_qb_item_name,
 
       # Mailer
       :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin, :mailer_subject,

@@ -134,8 +134,10 @@ ActiveRecord::Schema.define(version: 5) do
     t.string "payment_provider"
     t.string "payment_card"
     t.decimal "tax_rate", precision: 6, scale: 3
+    t.decimal "surcharge_percent", precision: 6, scale: 3
     t.integer "subtotal"
     t.integer "tax"
+    t.integer "surcharge"
     t.integer "total"
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -12,10 +12,15 @@ class OrdersTest < ActiveSupport::TestCase
     assert order.billing_address.present?
     assert order.shipping_address.present?
 
-    assert_equal 315, order.total
     assert_equal 300, order.subtotal
-    assert_equal 15, order.tax
+
     assert_equal 5.0, order.tax_rate
+    assert_equal 15, order.tax
+
+    assert_equal 2.4, order.surcharge_percent
+    assert_equal 7, order.surcharge
+
+    assert_equal 322, order.total
   end
 
   test 'sends an email when purchased' do

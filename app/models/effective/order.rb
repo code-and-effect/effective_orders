@@ -52,10 +52,12 @@ module Effective
       payment_provider  :string
       payment_card      :string
 
-      tax_rate          :decimal, precision: 6, scale: 3
+      tax_rate            :decimal, precision: 6, scale: 3
+      surcharge_percent   :decimal, precision: 6, scale: 3
 
       subtotal          :integer
       tax               :integer
+      surcharge         :integer
       total             :integer
 
       timestamps
@@ -213,9 +215,7 @@ module Effective
       removed.each { |order_item| order_item.mark_for_destruction }
 
       # Make sure to reset stored aggregates
-      self.total = nil
-      self.subtotal = nil
-      self.tax = nil
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, surcharge_percent: nil, surcharge: nil, total: nil)
 
       removed.length == 1 ? removed.first : removed
     end
@@ -259,9 +259,7 @@ module Effective
       end.compact
 
       # Make sure to reset stored aggregates
-      self.total = nil
-      self.subtotal = nil
-      self.tax = nil
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, surcharge_percent: nil, surcharge: nil, total: nil)
 
       retval = cart_items.map do |item|
         order_items.build(
@@ -424,7 +422,7 @@ module Effective
     end
 
     def subtotal
-      self[:subtotal] || present_order_items.map { |oi| oi.subtotal }.sum
+      self[:subtotal] || get_subtotal()
     end
 
     def tax_rate
@@ -435,8 +433,16 @@ module Effective
       self[:tax] || get_tax()
     end
 
+    def surcharge_percent
+      self[:surcharge_percent] || get_surcharge_percent()
+    end
+
+    def surcharge
+      self[:surcharge] || get_surcharge()
+    end
+
     def total
-      (self[:total] || (subtotal + tax.to_i)).to_i
+      self[:total] || get_total()
     end
 
     def free?
@@ -664,6 +670,10 @@ module Effective
 
     protected
 
+    def get_subtotal
+      present_order_items.map { |oi| oi.subtotal }.sum
+    end
+
     def get_tax_rate
       rate = instance_exec(self, &EffectiveOrders.order_tax_rate_method).to_f
 
@@ -677,6 +687,27 @@ module Effective
     def get_tax
       return nil unless tax_rate.present?
       present_order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+    end
+
+    def get_surcharge_percent
+      surcharge = EffectiveOrders.credit_card_surcharge_percent.to_f
+      return nil if surcharge == 0.0
+
+      if (surcharge > 10.0 || surcharge < 0.5)
+        raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{surcharge}. Please return 2.5 for 2.5% surcharge."
+      end
+
+      surcharge
+    end
+
+    def get_surcharge
+      return nil unless surcharge_percent.present?
+
+      (subtotal + tax) * (surcharge_percent / 100.0)
+    end
+
+    def get_total
+      ((subtotal || 0) + (tax || 0) + (surcharge || 0)).to_i
     end
 
     private
@@ -707,18 +738,24 @@ module Effective
       end
     end
 
-    # This overwrites the prices, taxes, etc on every save.
+    # This overwrites the prices, taxes, surcharge, etc on every save.
     def assign_order_totals
       # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes }
 
-      # Sum of order item subtotals
-      subtotal = present_order_items.map { |oi| oi.subtotal }.sum
+      # Calculated from each item
+      self.subtotal = get_subtotal()
 
-      self.subtotal = subtotal
+      # We only know tax if there is a billing address
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
-      self.total = subtotal + (tax || 0)
+
+      # We only apply surcharge for credit card orders
+      self.surcharge_percent = get_surcharge_percent()
+      self.surcharge = get_surcharge()
+
+      # Subtotal + Tax + Surcharge
+      self.total = get_total()
     end
 
     def update_purchasables_purchased_order!

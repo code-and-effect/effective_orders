@@ -47,6 +47,12 @@ EffectiveOrders.setup do |config|
   # An order must have a tax rate (even if the value is 0) to be purchased
   config.order_tax_rate_method = Proc.new { |order| Effective::TaxRateCalculator.new(order: order).tax_rate }
 
+  # Credit Card Surcharge
+  # Will be applied to all orders based off the after-tax total.
+  # Use 2.4 for 2.4% or nil for none
+  config.credit_card_surcharge_percent = nil
+  config.credit_card_surcharge_qb_item_name = 'Credit Card Surcharge'
+
   # Minimum Charge
   # Prevent orders less than this value from being purchased
   # Stripe doesn't allow orders less than $0.50
