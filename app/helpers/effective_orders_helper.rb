@@ -5,6 +5,12 @@ module EffectiveOrdersHelper
     number_to_currency(price / 100.0)
   end
 
+  def rate_to_percentage(rate)
+    rate = rate || 0.0
+    number_to_percentage(rate, strip_insignificant_zeros: true)
+  end
+
+  # Deprecated.
   def tax_rate_to_percentage(tax_rate, options = {})
     options[:strip_insignificant_zeros] = true if options[:strip_insignificant_zeros].nil?
     number_to_percentage(tax_rate, strip_insignificant_zeros: true)
