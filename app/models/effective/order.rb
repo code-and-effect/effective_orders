@@ -328,7 +328,7 @@ module Effective
     def payment_method
       return nil unless purchased?
 
-      provider = payment_provider if ['cheque', 'etransfer', 'phone'].include?(payment_provider)
+      provider = payment_provider if ['cheque', 'etransfer', 'phone', 'credit card'].include?(payment_provider)
 
       # Normalize payment card
       card = case payment_card.to_s.downcase.gsub(' ', '').strip

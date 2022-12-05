@@ -28,7 +28,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
   end
 
   datatable do
-    order :id, :desc
+    order :updated_at
 
     bulk_actions_col
 
