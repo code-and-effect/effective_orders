@@ -95,6 +95,7 @@ module Effective
       before_validation { assign_user_address }
       before_validation { assign_billing_name }
       before_validation { assign_order_values }
+      before_validation { assign_order_charges }
     end
 
     # Order validations
@@ -151,11 +152,18 @@ module Effective
       end
     end
 
-    before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
-      raise EffectiveOrders::AlreadyPurchasedException.new('cannot unpurchase an order') unless purchased?
-    end
+    # Sanity check
+    before_save(if: -> { was_purchased? }) do
+      raise('cannot unpurchase an order') unless purchased?
 
-    before_save(if: -> { done? }) do
+      raise('cannot change subtotal of a purchased order') if changes[:subtotal].present?
+
+      raise('cannot change tax of a purchased order') if changes[:tax].present?
+      raise('cannot change tax of a purchased order') if changes[:tax_rate].present?
+
+      raise('cannot change surcharge of a purchased order') if changes[:surcharge].present?
+      raise('cannot change surcharge percent of a purchased order') if changes[:surcharge_percent].present?
+
       raise('cannot change total of a purchased order') if changes[:total].present?
     end
 
@@ -403,6 +411,18 @@ module Effective
       false
     end
 
+    def was_purchased?
+      state_was == EffectiveOrders::PURCHASED
+    end
+
+    def purchased_with_credit_card?
+      purchased? && EffectiveOrders.credit_card_payment_providers.include?(payment_provider)
+    end
+
+    def purchased_without_credit_card?
+      purchased? && EffectiveOrders.credit_card_payment_providers.exclude?(payment_provider)
+    end
+
     def declined?
       state == EffectiveOrders::DECLINED
     end
@@ -563,6 +583,9 @@ module Effective
         payment_card: (card.presence || 'none')
       )
 
+      # Updates surcharge and total based on payment_provider
+      assign_order_charges()
+
       begin
         Effective::Order.transaction do
           run_purchasable_callbacks(:before_purchase)
@@ -618,7 +641,7 @@ module Effective
     def decline!(payment: 'none', provider: 'none', card: 'none', validate: true)
       return false if declined?
 
-      raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
+      raise('order already purchased') if purchased?
 
       error = nil
 
@@ -709,6 +732,8 @@ module Effective
       percent = EffectiveOrders.credit_card_surcharge_percent.to_f
       return nil unless percent > 0.0
 
+      return 0.0 if purchased_without_credit_card?
+
       if (percent > 10.0 || percent < 0.5)
         raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{percent}. Please return 2.5 for 2.5% surcharge."
       end
@@ -781,8 +806,10 @@ module Effective
 
       # Subtotal + Tax
       self.amount_owing = get_amount_owing()
+    end
 
-      # We only apply surcharge for credit card orders
+    def assign_order_charges
+      # We only apply surcharge for credit card orders. But we have to display and calculate for non purchased orders
       self.surcharge_percent = get_surcharge_percent()
       self.surcharge = get_surcharge()
       self.surcharge_tax = get_surcharge_tax()

@@ -29,7 +29,7 @@
       - if order.tax_rate.blank?
         -# Nothing to do. We can't display Tax, Total or Credit Card Surcharge (which is taxed) yet.
 
-      - elsif order.tax_rate.present? && order.surcharge_percent.present?
+      - elsif order.tax_rate.present? && order.surcharge_percent.to_f > 0.0
         %tr
           %th
           %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
@@ -60,7 +60,7 @@
           %td.total Total amount charged to credit card
           %td.price.total-price= price_to_currency(order.total)
 
-      - elsif order.tax_rate.present? && order.surcharge_percent.blank?
+      - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0)
         %tr
           %th
           %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
