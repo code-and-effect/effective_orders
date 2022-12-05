@@ -1,7 +1,7 @@
 .effective-order {
   table {
-    clear: both;
-    margin-bottom: 1.5rem;
+
+    .price { text-align: right; }
 
     tfoot {
       th, td {
@@ -11,13 +11,7 @@
       }
 
       // This is the first column
-      th {
-        width: 100%;
-      }
-
-      td.price {
-        padding-left: 2rem;
-      }
+      th { width: 100%; }
 
       tr.single-line {
         td { border-top: solid 1px; }
@@ -26,10 +20,12 @@
       tr.double-line {
         td { border-top: double 4px; }
       }
+
+      .price { padding-left: 2rem; }
+      .amount-owing { font-style: italic; }
+      .total { font-style: italic; }
     }
   }
-
-  .price { text-align: right; }
 }
 
 // Print - Resend Receipt.  Ontop of order.
