@@ -87,4 +87,22 @@ module EffectiveOrdersTestBuilder
     )
   end
 
+  def build_user_with_address
+    user = build_user()
+
+    user.addresses.build(
+      addressable: user,
+      category: 'billing',
+      full_name: 'Test User',
+      address1: '1234 Fake Street',
+      city: 'Victoria',
+      state_code: 'BC',
+      country_code: 'CA',
+      postal_code: 'H0H0H0'
+    )
+
+    user.save!
+    user
+  end
+
 end

@@ -31,16 +31,31 @@ module EffectivePaypalHelper
       cert_id: EffectiveOrders.paypal[:cert_id],
       currency_code: EffectiveOrders.paypal[:currency],
       invoice: order.id,
-      amount: (order.subtotal / 100.0).round(2),
-      tax_cart: (order.tax / 100.0).round(2)
+      amount: '%.2f' % (order.amount_owing / 100.0),
+      tax_cart: '%.2f' % ((order.tax + order.surcharge_tax) / 100.0)
     }
 
-    order.order_items.each_with_index do |item, x|
-      values["item_number_#{x+1}"] = x+1
-      values["item_name_#{x+1}"] = item.name
-      values["quantity_#{x+1}"] = item.quantity
-      values["amount_#{x+1}"] = '%.2f' % (item.price / 100.0)
-      values["tax_#{x+1}"] = '%.2f' % ((item.tax / 100.0) / item.quantity)  # Tax for 1 of these items
+    number = 0
+
+    order.order_items.each do |item|
+      number += 1
+
+      values["item_number_#{number}"] = number
+      values["item_name_#{number}"] = item.name
+      values["quantity_#{number}"] = item.quantity
+      values["amount_#{number}"] = '%.2f' % (item.price / 100.0)
+      values["tax_#{number}"] = '%.2f' % ((item.tax / 100.0) / item.quantity)  # Tax for 1 of these items
+    end
+
+    # Credit Card Surcharge
+    if order.surcharge != 0
+      number += 1
+
+      values["item_number_#{number}"] = number
+      values["item_name_#{number}"] = 'Credit Card Surcharge'
+      values["quantity_#{number}"] = 1
+      values["amount_#{number}"] = '%.2f' % (order.surcharge / 100.0)
+      values["tax_#{number}"] = '%.2f' % (order.surcharge_tax / 100.0)
     end
 
     signed = OpenSSL::PKCS7::sign(OpenSSL::X509::Certificate.new(APP_CERT_PEM), OpenSSL::PKey::RSA.new(APP_KEY_PEM, ''), values.map { |k, v| "#{k}=#{v}" }.join("\n"), [], OpenSSL::PKCS7::BINARY)

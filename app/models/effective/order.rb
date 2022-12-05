@@ -52,11 +52,17 @@ module Effective
       payment_provider  :string
       payment_card      :string
 
-      tax_rate          :decimal, precision: 6, scale: 3
+      tax_rate            :decimal, precision: 6, scale: 3
+      surcharge_percent   :decimal, precision: 6, scale: 3
 
-      subtotal          :integer
-      tax               :integer
-      total             :integer
+      subtotal          :integer   # Sum of items subtotal
+      tax               :integer   # Tax on subtotal
+      amount_owing      :integer   # Subtotal + Tax
+
+      surcharge         :integer   # Credit Card Surcharge
+      surcharge_tax     :integer   # Tax on surcharge
+
+      total             :integer   # Subtotal + Tax + Surcharge + Surcharge Tax
 
       timestamps
     end
@@ -88,7 +94,8 @@ module Effective
       before_validation { assign_email }
       before_validation { assign_user_address }
       before_validation { assign_billing_name }
-      before_validation { assign_order_totals }
+      before_validation { assign_order_values }
+      before_validation { assign_order_charges }
     end
 
     # Order validations
@@ -119,7 +126,7 @@ module Effective
     end
 
     # User validations -- An admin skips these when working in the admin/ namespace
-    with_options unless: -> { pending? || skip_buyer_validations? || purchased? } do
+    with_options(unless: -> { pending? || skip_buyer_validations? || purchased? }) do
       validates :tax_rate, presence: { message: "can't be determined based on billing address" }
       validates :tax, presence: true
 
@@ -129,7 +136,7 @@ module Effective
     end
 
     # When Purchased
-    with_options if: -> { purchased? } do
+    with_options(if: -> { purchased? }) do
       validates :purchased_at, presence: true
       validates :payment, presence: true
 
@@ -137,7 +144,7 @@ module Effective
       validates :payment_card, presence: true
     end
 
-    with_options if: -> { deferred? } do
+    with_options(if: -> { deferred? }) do
       validates :payment_provider, presence: true
 
       validate do
@@ -145,11 +152,18 @@ module Effective
       end
     end
 
-    before_save(if: -> { state_was == EffectiveOrders::PURCHASED }) do
-      raise EffectiveOrders::AlreadyPurchasedException.new('cannot unpurchase an order') unless purchased?
-    end
+    # Sanity check
+    before_save(if: -> { was_purchased? }) do
+      raise('cannot unpurchase an order') unless purchased?
 
-    before_save(if: -> { done? }) do
+      raise('cannot change subtotal of a purchased order') if changes[:subtotal].present?
+
+      raise('cannot change tax of a purchased order') if changes[:tax].present?
+      raise('cannot change tax of a purchased order') if changes[:tax_rate].present?
+
+      raise('cannot change surcharge of a purchased order') if changes[:surcharge].present?
+      raise('cannot change surcharge percent of a purchased order') if changes[:surcharge_percent].present?
+
       raise('cannot change total of a purchased order') if changes[:total].present?
     end
 
@@ -213,9 +227,7 @@ module Effective
       removed.each { |order_item| order_item.mark_for_destruction }
 
       # Make sure to reset stored aggregates
-      self.total = nil
-      self.subtotal = nil
-      self.tax = nil
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, surcharge_percent: nil, surcharge: nil, total: nil)
 
       removed.length == 1 ? removed.first : removed
     end
@@ -259,9 +271,7 @@ module Effective
       end.compact
 
       # Make sure to reset stored aggregates
-      self.total = nil
-      self.subtotal = nil
-      self.tax = nil
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, surcharge_percent: nil, surcharge: nil, total: nil)
 
       retval = cart_items.map do |item|
         order_items.build(
@@ -311,24 +321,14 @@ module Effective
     end
 
     def total_label
-      if refund? && purchased?
-        'Total Paid'
-      elsif purchased?
-        'Total Paid'
-      elsif refund? && (pending? || confirmed?)
-        'Total Due'
-      elsif (pending? || confirmed?)
-        'Total Due'
-      else
-        'Total'
-      end
+      purchased? ? 'Total Paid' : 'Total Due'
     end
 
     # Visa - 1234
     def payment_method
       return nil unless purchased?
 
-      provider = payment_provider if ['cheque', 'etransfer', 'phone'].include?(payment_provider)
+      provider = payment_provider if ['cheque', 'etransfer', 'phone', 'credit card'].include?(payment_provider)
 
       # Normalize payment card
       card = case payment_card.to_s.downcase.gsub(' ', '').strip
@@ -411,6 +411,18 @@ module Effective
       false
     end
 
+    def was_purchased?
+      state_was == EffectiveOrders::PURCHASED
+    end
+
+    def purchased_with_credit_card?
+      purchased? && EffectiveOrders.credit_card_payment_providers.include?(payment_provider)
+    end
+
+    def purchased_without_credit_card?
+      purchased? && EffectiveOrders.credit_card_payment_providers.exclude?(payment_provider)
+    end
+
     def declined?
       state == EffectiveOrders::DECLINED
     end
@@ -424,7 +436,7 @@ module Effective
     end
 
     def subtotal
-      self[:subtotal] || present_order_items.map { |oi| oi.subtotal }.sum
+      self[:subtotal] || get_subtotal()
     end
 
     def tax_rate
@@ -435,8 +447,32 @@ module Effective
       self[:tax] || get_tax()
     end
 
+    def amount_owing
+      self[:amount_owing] || get_amount_owing()
+    end
+
+    def surcharge_percent
+      self[:surcharge_percent] || get_surcharge_percent()
+    end
+
+    def surcharge
+      self[:surcharge] || get_surcharge()
+    end
+
+    def surcharge_tax
+      self[:surcharge_tax] || get_surcharge_tax()
+    end
+
     def total
-      (self[:total] || (subtotal + tax.to_i)).to_i
+      self[:total] || get_total()
+    end
+
+    def total_with_surcharge
+      get_total_with_surcharge()
+    end
+
+    def total_without_surcharge
+      get_total_without_surcharge()
     end
 
     def free?
@@ -526,12 +562,13 @@ module Effective
 
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
+    # This is different than the Mark as Paid payment processor
     def mark_as_purchased!
       purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true)
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false, skip_quickbooks: false)
+    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false)
       return true if purchased?
 
       # Assign attributes
@@ -539,11 +576,15 @@ module Effective
         state: EffectiveOrders::PURCHASED,
         skip_buyer_validations: skip_buyer_validations,
 
-        payment_provider: provider,
-        payment_card: (card.presence || 'none'),
+        payment: payment_to_h(payment.presence || 'none'),
         purchased_at: (purchased_at.presence || Time.zone.now),
-        payment: payment_to_h(payment)
+
+        payment_provider: (provider.presence || 'none'),
+        payment_card: (card.presence || 'none')
       )
+
+      # Updates surcharge and total based on payment_provider
+      assign_order_charges()
 
       begin
         Effective::Order.transaction do
@@ -600,7 +641,7 @@ module Effective
     def decline!(payment: 'none', provider: 'none', card: 'none', validate: true)
       return false if declined?
 
-      raise EffectiveOrders::AlreadyPurchasedException.new('order already purchased') if purchased?
+      raise('order already purchased') if purchased?
 
       error = nil
 
@@ -664,6 +705,10 @@ module Effective
 
     protected
 
+    def get_subtotal
+      present_order_items.map { |oi| oi.subtotal }.sum
+    end
+
     def get_tax_rate
       rate = instance_exec(self, &EffectiveOrders.order_tax_rate_method).to_f
 
@@ -675,8 +720,47 @@ module Effective
     end
 
     def get_tax
-      return nil unless tax_rate.present?
+      return 0 unless tax_rate.present?
       present_order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+    end
+
+    def get_amount_owing
+      subtotal + tax
+    end
+
+    def get_surcharge_percent
+      percent = EffectiveOrders.credit_card_surcharge_percent.to_f
+      return nil unless percent > 0.0
+
+      return 0.0 if purchased_without_credit_card?
+
+      if (percent > 10.0 || percent < 0.5)
+        raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{percent}. Please return 2.5 for 2.5% surcharge."
+      end
+
+      percent
+    end
+
+    def get_surcharge
+      return 0 unless surcharge_percent.present?
+      ((subtotal + tax) * (surcharge_percent / 100.0)).round(0).to_i
+    end
+
+    def get_surcharge_tax
+      return 0 unless tax_rate.present?
+      (surcharge * (tax_rate / 100.0)).round(0).to_i
+    end
+
+    def get_total
+      subtotal + tax + surcharge + surcharge_tax
+    end
+
+    def get_total_with_surcharge
+      subtotal + tax + surcharge + surcharge_tax
+    end
+
+    def get_total_without_surcharge
+      subtotal + tax
     end
 
     private
@@ -707,18 +791,31 @@ module Effective
       end
     end
 
-    # This overwrites the prices, taxes, etc on every save.
-    def assign_order_totals
+    # This overwrites the prices, taxes, surcharge, etc on every save.
+    # Does not get run from the before_validate on purchase.
+    def assign_order_values
       # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes }
 
-      # Sum of order item subtotals
-      subtotal = present_order_items.map { |oi| oi.subtotal }.sum
+      # Calculated from each item
+      self.subtotal = get_subtotal()
 
-      self.subtotal = subtotal
+      # We only know tax if there is a billing address
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
-      self.total = subtotal + (tax || 0)
+
+      # Subtotal + Tax
+      self.amount_owing = get_amount_owing()
+    end
+
+    def assign_order_charges
+      # We only apply surcharge for credit card orders. But we have to display and calculate for non purchased orders
+      self.surcharge_percent = get_surcharge_percent()
+      self.surcharge = get_surcharge()
+      self.surcharge_tax = get_surcharge_tax()
+
+      # Subtotal + Tax + Surcharge + Surcharge Tax
+      self.total = get_total()
     end
 
     def update_purchasables_purchased_order!

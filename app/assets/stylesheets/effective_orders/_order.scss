@@ -1,31 +1,37 @@
 .effective-order {
   table {
-    clear: both;
-    margin-bottom: 25px;
+    .quantity { width: 0%; }
+
+    .price {
+      text-align: right;
+      padding-left: 2rem;
+    }
 
     tfoot {
-      > tr:first-child {
-        border-top: 20px solid transparent;
-      }
-
-      th {
+      th, td {
         border: none;
         text-align: right;
-        padding-right: 65px;
+        white-space: nowrap;
       }
 
-      td {
-        text-align: right;
+      // This is the first column
+      th { width: 100%; }
+
+      tr.single-line {
+        td { border-top: solid 1px; }
       }
 
-      .actions { border: none; }
+      tr.double-line {
+        td { border-top: double 4px; }
+      }
+
+      .amount-owing { font-style: italic; }
+      .total { font-style: italic; }
     }
   }
-
-  .price { text-align: right; }
 }
 
-// Print - Resend Receipt.  Ontop of order.
+// Print - Resend Receipt. Ontop of order.
 .effective-order-actions {
   text-align: right;
   margin-bottom: 0.5rem;

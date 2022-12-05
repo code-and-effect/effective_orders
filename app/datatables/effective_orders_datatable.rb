@@ -42,17 +42,19 @@ class EffectiveOrdersDatatable < Effective::Datatable
       collection.where(id: Effective::OrderItem.where('name ILIKE ?', "%#{term}%").select('order_id'))
     end
 
-    col :subtotal, as: :price, visible: false
-    col :tax, as: :price, visible: false
-
-    col :tax_rate, visible: false do |order|
-      tax_rate_to_percentage(order.tax_rate)
-    end
-
-    col :total, as: :price
-
+    col :payment_method, visible: false
     col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.payment_providers }
     col :payment_card, label: 'Card', visible: false
+
+    col :subtotal, as: :price, visible: false
+
+    col :tax, as: :price, visible: false
+    col(:tax_rate, visible: false) { |order| rate_to_percentage(order.tax_rate) }
+
+    col :surcharge, as: :price, visible: false
+    col(:surcharge_percent, visible: false) { |order| rate_to_percentage(order.surcharge_percent) }
+
+    col :total, as: :price
 
     if EffectiveOrders.collect_note
       col :note

@@ -60,12 +60,12 @@ module EffectiveStripeHelper
     customer.create_stripe_customer! # Only creates if customer not already present
 
     payment = {
-      amount: order.total,
+      amount: order.total_with_surcharge,
       currency: EffectiveOrders.stripe[:currency],
       customer: customer.stripe_customer_id,
       payment_method: customer.payment_method_id.presence,
       description: stripe_order_description(order),
-      metadata: { order_id: order.id },
+      metadata: { order_id: order.id }
     }
 
     token_required = customer.token_required?

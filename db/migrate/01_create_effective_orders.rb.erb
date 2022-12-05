@@ -23,9 +23,13 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.string    :payment_card
 
       t.decimal   :tax_rate, :precision => 6, :scale => 3
+      t.decimal   :surcharge_percent, :precision => 6, :scale => 3
 
       t.integer   :subtotal
       t.integer   :tax
+      t.integer   :amount_owing
+      t.integer   :surcharge
+      t.integer   :surcharge_tax
       t.integer   :total
 
       t.timestamps

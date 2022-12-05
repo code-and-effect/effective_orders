@@ -7,7 +7,8 @@
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
       .row
         .col-6
-          = f.select :payment_provider, EffectiveOrders.admin_payment_providers, required: true
+          - collection = admin_mark_as_paid_payment_providers()
+          = f.select :payment_provider, collection, required: true, grouped: collection.kind_of?(Hash)
 
           = f.text_field :payment_card,
             label: 'Payment card type, cheque, e-transfer or transaction number',

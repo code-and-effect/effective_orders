@@ -4,15 +4,24 @@
     %meta{:content => 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type'}
 
   :css
-    .effective-order table.table { min-width: 650px; vertical-align: top; border: 0; }
-    .effective-order table.table td { border: 0; vertical-align: top; }
-    .effective-order { text-align: left; }
-    .effective-order .price { text-align: right; }
-    .effective-order tfoot th { text-align: right; }
-    .effective-order tfoot tr:first-child td { padding-top: 24px; }
-    .effective-order tfoot tr:first-child th { padding-top: 24px; }
-    .effective-order-shipping { padding-top: 12px; padding-bottom: 12px; }
     .effective-order-header h1 { margin: 0; }
+    .effective-order-shipping { padding-top: 12px; padding-bottom: 12px; }
+
+    .effective-order table.table { min-width: 650px; vertical-align: top; border: 0; }
+    .effective-order { text-align: left; }
+    .effective-order .price { text-align: right; padding-left: 24px; }
+
+    .effective-order tfoot th { text-align: right; white-space: nowrap; }
+    .effective-order tfoot td { text-align: right; white-space: nowrap; }
+
+    .effective-order tfoot th { width: 100%; }
+
+    .effective-order tfoot tr.single-line td { border-top: solid 1px; }
+    .effective-order tfoot tr.double-line td { border-top: double 4px; }
+
+    .effective-order tfoot .amount-owing { font-style: italic; }
+    .effective-order tfoot .total { font-style: italic; }
+
     @media print { .effective-page-break { page-break-inside: avoid; page-break-after: always; min-height: 1px; } }
 
   %body{style: 'background: #fff;'}

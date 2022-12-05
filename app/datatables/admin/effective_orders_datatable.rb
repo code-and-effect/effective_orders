@@ -28,7 +28,7 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
   end
 
   datatable do
-    order :id, :desc
+    order :updated_at
 
     bulk_actions_col
 
@@ -66,19 +66,18 @@ class Admin::EffectiveOrdersDatatable < Effective::Datatable
     end
 
     col :payment_method
-    col :payment_provider
-
-    col :subtotal, as: :price, visible: false
-    col :tax, as: :price, visible: false
-
-    col :tax_rate, visible: false do |order|
-      tax_rate_to_percentage(order.tax_rate)
-    end
-
-    col :total, as: :price
-
     col :payment_provider, label: 'Provider', visible: false, search: { collection: EffectiveOrders.admin_payment_providers }
     col :payment_card, label: 'Card', visible: false
+
+    col :subtotal, as: :price, visible: false
+
+    col :tax, as: :price, visible: false
+    col(:tax_rate, visible: false) { |order| rate_to_percentage(order.tax_rate) }
+
+    col :surcharge, as: :price, visible: false
+    col(:surcharge_percent, visible: false) { |order| rate_to_percentage(order.surcharge_percent) }
+
+    col :total, as: :price
 
     if EffectiveOrders.collect_note
       col :note, visible: false

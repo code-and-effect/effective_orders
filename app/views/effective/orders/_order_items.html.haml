@@ -1,67 +1,72 @@
-- include_quantity_column = order.order_items.any? { |order_item| order_item.quantity > 1 }
-- include_download_column = order.purchased? && order.order_items.any? { |order_item| order_item.purchased_download_url.present? }
-
 .effective-order-items
   %table.table
     %thead
       %tr
-        - if include_quantity_column
-          %th.quantity Qty
-
-        - if include_download_column
-          %th.download Download
-
+        %th.quantity Qty
         %th.item= order.order_items.length > 1 ? 'Items' : 'Item'
         %th.price Price
 
     %tbody
       - order.order_items.each do |item|
         %tr
-          - if include_quantity_column
-            %td.quantity= item.quantity
+          %td.quantity= item.quantity
 
-          - if include_download_column
-            %td.download
-              - if item.purchased_download_url.present?
-                = link_to 'download', item.purchased_download_url
-              - else
-                = '-'
+          %td.item
+            = item.name.html_safe
 
-          %td.item= item.name.html_safe
+            - if order.purchased? && item.purchased_download_url.present?
+              = link_to 'Download', item.purchased_download_url
+
           %td.price= price_to_currency(item.subtotal)
 
+  %table.table
     %tfoot
-      - if order.tax.to_i != 0 || order.tax_rate == nil
+      %tr
+        %th
+        %td.subtotal Subtotal
+        %td.price.subtotal-price= price_to_currency(order.subtotal)
+
+      - if order.tax_rate.blank?
+        -# Nothing to do. We can't display Tax, Total or Credit Card Surcharge (which is taxed) yet.
+
+      - elsif order.tax_rate.present? && order.surcharge_percent.to_f > 0.0
         %tr
-          - if include_quantity_column
-            %th.quantity
-
-          - if include_download_column
-            %th.download
-
-          %th.subtotal Subtotal
-          %td.price.subtotal-price= price_to_currency(order.subtotal)
-
-      - if order.tax.to_i != 0
-        %tr
-          - if include_quantity_column
-            %th.quantity
-
-          - if include_download_column
-            %th.download
-
-          %th.tax Tax (#{tax_rate_to_percentage(order.tax_rate)})
+          %th
+          %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
 
-      - if order.tax_rate.present?
+        %tr.single-line
+          %th
+          %td.amount-owing Amount owing before Credit Card Processing Fee
+          %td.price.amount-owing-price= price_to_currency(order.amount_owing)
+
         %tr
-          - if include_quantity_column
-            %th.quantity
+          %th
+          %td
+          %td
 
-          - if include_download_column
-            %th.download
+        %tr
+          %th
+          %td.surcharge Credit Card Processing Fee (#{rate_to_percentage(order.surcharge_percent)}) on #{price_to_currency(order.amount_owing)}
+          %td.price.surcharge-price= price_to_currency(order.surcharge)
 
-          %th.total
-            = order.total_label
+        %tr
+          %th
+          %td.surcharge-tax Tax (#{rate_to_percentage(order.tax_rate)}) on Credit Card Processing Fee
+          %td.price.surcharge-tax-price= price_to_currency(order.surcharge_tax)
 
+        %tr.double-line
+          %th
+          %td.total Total amount charged to credit card
+          %td.price.total-price= price_to_currency(order.total)
+
+      - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0)
+        %tr
+          %th
+          %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
+          %td.price.tax-price= price_to_currency(order.tax)
+
+        %tr.single-line
+          %th
+          %td.total= order.total_label
           %td.price.total-price= price_to_currency(order.total)

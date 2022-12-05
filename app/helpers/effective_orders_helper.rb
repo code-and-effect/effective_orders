@@ -5,6 +5,12 @@ module EffectiveOrdersHelper
     number_to_currency(price / 100.0)
   end
 
+  def rate_to_percentage(rate)
+    rate = rate || 0.0
+    number_to_percentage(rate, strip_insignificant_zeros: true)
+  end
+
+  # Deprecated.
   def tax_rate_to_percentage(tax_rate, options = {})
     options[:strip_insignificant_zeros] = true if options[:strip_insignificant_zeros].nil?
     number_to_percentage(tax_rate, strip_insignificant_zeros: true)
@@ -117,6 +123,23 @@ module EffectiveOrdersHelper
 
   def checkout_icon_to(path, options = {})
     icon_to('shopping-cart', path, { title: 'Checkout' }.merge(options))
+  end
+
+  def admin_mark_as_paid_payment_providers
+    providers = EffectiveOrders.admin_payment_providers
+
+    percentage = EffectiveOrders.credit_card_surcharge_percent.to_f
+    return providers unless percentage > 0.0
+
+    surcharge_providers = EffectiveOrders.credit_card_payment_providers
+
+    with_surcharge = providers.select { |provider| surcharge_providers.include?(provider) }
+    without_surcharge = providers.reject { |provider| surcharge_providers.include?(provider) }
+
+    {
+      "With #{rate_to_percentage(percentage)} credit card surcharge": with_surcharge.map { |provider| [provider, provider] },
+      'Without credit card surcharge': without_surcharge.map { |provider| [provider, provider] }
+    }
   end
 
 end

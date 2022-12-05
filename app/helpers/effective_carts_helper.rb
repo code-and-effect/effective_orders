@@ -103,11 +103,12 @@ module EffectiveCartsHelper
 
   def render_cart(cart = nil)
     cart ||= current_cart
-    render(partial: 'effective/carts/cart', locals: { cart: cart })
+    render('effective/carts/cart', cart: cart)
   end
 
   def render_purchasables(*purchasables)
-    render(partial: 'effective/orders/order_items', locals: { order: Effective::Order.new(purchasables) })
+    order = Effective::Order.new(purchasables)
+    render('effective/orders/purchasables', order: order)
   end
 
 end

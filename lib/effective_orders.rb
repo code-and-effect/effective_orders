@@ -39,6 +39,7 @@ module EffectiveOrders
       :billing_address, :shipping_address,
       :collect_note, :collect_note_required, :collect_note_message,
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
+      :credit_card_surcharge_percent, :credit_card_surcharge_qb_item_name,
 
       # Mailer
       :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin, :mailer_subject,
@@ -166,13 +167,17 @@ module EffectiveOrders
       #('pretend' if pretend?),
       #('refund' if refund?),
       ('stripe' if stripe?),
-      ('other' if mark_as_paid?),
+      ('other (non credit card)' if mark_as_paid?),
       'none'
     ].compact
   end
 
   def self.deferred_providers
     [('cheque' if cheque?), ('etransfer' if etransfer?), ('phone' if phone?)].compact
+  end
+
+  def self.credit_card_payment_providers
+    ['credit card', 'moneris', 'moneris_checkout', 'paypal', 'stripe']
   end
 
   def self.qb_sync?
@@ -285,7 +290,6 @@ module EffectiveOrders
   end
 
   class SoldOutException < Exception; end
-  class AlreadyPurchasedException < Exception; end
 
   def self.gem_path
     __dir__.chomp('/lib')
