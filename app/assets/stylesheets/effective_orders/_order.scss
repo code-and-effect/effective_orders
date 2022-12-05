@@ -1,7 +1,11 @@
 .effective-order {
   table {
+    .quantity { width: 0%; }
 
-    .price { text-align: right; }
+    .price {
+      text-align: right;
+      padding-left: 2rem;
+    }
 
     tfoot {
       th, td {
@@ -21,14 +25,13 @@
         td { border-top: double 4px; }
       }
 
-      .price { padding-left: 2rem; }
       .amount-owing { font-style: italic; }
       .total { font-style: italic; }
     }
   }
 }
 
-// Print - Resend Receipt.  Ontop of order.
+// Print - Resend Receipt. Ontop of order.
 .effective-order-actions {
   text-align: right;
   margin-bottom: 0.5rem;

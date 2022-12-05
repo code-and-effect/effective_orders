@@ -313,17 +313,7 @@ module Effective
     end
 
     def total_label
-      if refund? && purchased?
-        'Total Paid'
-      elsif purchased?
-        'Total Paid'
-      elsif refund? && (pending? || confirmed?)
-        'Total Due'
-      elsif (pending? || confirmed?)
-        'Total Due'
-      else
-        'Total'
-      end
+      purchased? ? 'Total Paid' : 'Total Due'
     end
 
     # Visa - 1234
@@ -455,6 +445,14 @@ module Effective
 
     def total
       self[:total] || get_total()
+    end
+
+    def total_with_surcharge
+      get_total_with_surcharge()
+    end
+
+    def total_without_surcharge
+      get_total_without_surcharge()
     end
 
     def free?
@@ -707,7 +705,7 @@ module Effective
 
     def get_surcharge_percent
       percent = EffectiveOrders.credit_card_surcharge_percent.to_f
-      return nil if percent == 0.0
+      return nil unless percent > 0.0
 
       if (percent > 10.0 || percent < 0.5)
         raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{percent}. Please return 2.5 for 2.5% surcharge."
@@ -728,6 +726,14 @@ module Effective
 
     def get_total
       subtotal + tax + surcharge + surcharge_tax
+    end
+
+    def get_total_with_surcharge
+      subtotal + tax + surcharge + surcharge_tax
+    end
+
+    def get_total_without_surcharge
+      subtotal + tax
     end
 
     private

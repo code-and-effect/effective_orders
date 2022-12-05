@@ -12,7 +12,7 @@ module EffectiveMonerisCheckoutHelper
       checkout_id: EffectiveOrders.moneris_checkout.fetch(:checkout_id),
 
       action: :preload,
-      txn_total: price_to_currency(order.total).gsub(',', '').gsub('$', ''),
+      txn_total: '%.2f' % (order.total_with_surcharge / 100.0)
 
       # Optional
       order_no: order.transaction_id, # Has to be unique. This is order number, billing name and Time.now

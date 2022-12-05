@@ -31,8 +31,8 @@ module EffectivePaypalHelper
       cert_id: EffectiveOrders.paypal[:cert_id],
       currency_code: EffectiveOrders.paypal[:currency],
       invoice: order.id,
-      amount: ((order.subtotal + order.try(:surcharge).to_i) / 100.0).round(2),
-      tax_cart: (order.tax / 100.0).round(2)
+      amount: '%.2f' % (order.amount_owing / 100.0),
+      tax_cart: '%.2f' % ((order.tax + order.surcharge_tax) / 100.0)
     }
 
     number = 0
@@ -48,14 +48,14 @@ module EffectivePaypalHelper
     end
 
     # Credit Card Surcharge
-    if order.try(:surcharge).to_i != 0
+    if order.surcharge != 0
       number += 1
 
       values["item_number_#{number}"] = number
       values["item_name_#{number}"] = 'Credit Card Surcharge'
       values["quantity_#{number}"] = 1
       values["amount_#{number}"] = '%.2f' % (order.surcharge / 100.0)
-      values["tax_#{number}"] = '0.00'
+      values["tax_#{number}"] = '%.2f' % (order.surcharge_tax / 100.0)
     end
 
     signed = OpenSSL::PKCS7::sign(OpenSSL::X509::Certificate.new(APP_CERT_PEM), OpenSSL::PKey::RSA.new(APP_KEY_PEM, ''), values.map { |k, v| "#{k}=#{v}" }.join("\n"), [], OpenSSL::PKCS7::BINARY)
