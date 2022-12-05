@@ -542,12 +542,13 @@ module Effective
 
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
+    # This is different than the Mark as Paid payment processor
     def mark_as_purchased!
       purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true)
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: 'none', provider: 'none', card: 'none', email: true, skip_buyer_validations: false, skip_quickbooks: false)
+    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false)
       return true if purchased?
 
       # Assign attributes
@@ -555,10 +556,11 @@ module Effective
         state: EffectiveOrders::PURCHASED,
         skip_buyer_validations: skip_buyer_validations,
 
-        payment_provider: provider,
-        payment_card: (card.presence || 'none'),
+        payment: payment_to_h(payment.presence || 'none'),
         purchased_at: (purchased_at.presence || Time.zone.now),
-        payment: payment_to_h(payment)
+
+        payment_provider: (provider.presence || 'none'),
+        payment_card: (card.presence || 'none')
       )
 
       begin
@@ -765,6 +767,7 @@ module Effective
     end
 
     # This overwrites the prices, taxes, surcharge, etc on every save.
+    # Does not get run from the before_validate on purchase.
     def assign_order_values
       # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes }
