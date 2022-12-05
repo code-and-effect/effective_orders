@@ -227,7 +227,7 @@ module Effective
       removed.each { |order_item| order_item.mark_for_destruction }
 
       # Make sure to reset stored aggregates
-      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, surcharge_percent: nil, surcharge: nil, total: nil)
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, amount_owing: nil, surcharge_percent: nil, surcharge: nil, total: nil)
 
       removed.length == 1 ? removed.first : removed
     end
@@ -271,7 +271,7 @@ module Effective
       end.compact
 
       # Make sure to reset stored aggregates
-      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, surcharge_percent: nil, surcharge: nil, total: nil)
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, amount_owing: nil, surcharge_percent: nil, surcharge: nil, total: nil)
 
       retval = cart_items.map do |item|
         order_items.build(
