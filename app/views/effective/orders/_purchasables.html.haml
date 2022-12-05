@@ -1,0 +1,20 @@
+.effective-order-items
+  %table.table
+    %thead
+      %tr
+        %th.quantity Qty
+        %th.item= order.order_items.length > 1 ? 'Items' : 'Item'
+        %th.price Price
+
+    %tbody
+      - order.order_items.each do |item|
+        %tr
+          %td.quantity= item.quantity
+
+          %td.item
+            = item.name.html_safe
+
+            - if order.purchased? && item.purchased_download_url.present?
+              = link_to 'Download', item.purchased_download_url
+
+          %td.price= price_to_currency(item.subtotal)

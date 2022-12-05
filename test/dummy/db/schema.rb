@@ -137,7 +137,9 @@ ActiveRecord::Schema.define(version: 5) do
     t.decimal "surcharge_percent", precision: 6, scale: 3
     t.integer "subtotal"
     t.integer "tax"
+    t.integer "amount_owing"
     t.integer "surcharge"
+    t.integer "surcharge_tax"
     t.integer "total"
     t.datetime "created_at"
     t.datetime "updated_at"

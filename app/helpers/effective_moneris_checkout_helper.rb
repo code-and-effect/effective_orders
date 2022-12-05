@@ -10,9 +10,8 @@ module EffectiveMonerisCheckoutHelper
       api_token: EffectiveOrders.moneris_checkout.fetch(:api_token),
       store_id: EffectiveOrders.moneris_checkout.fetch(:store_id),
       checkout_id: EffectiveOrders.moneris_checkout.fetch(:checkout_id),
-
       action: :preload,
-      txn_total: '%.2f' % (order.total_with_surcharge / 100.0)
+      txn_total: ('%.2f' % (order.total_with_surcharge / 100.0)),
 
       # Optional
       order_no: order.transaction_id, # Has to be unique. This is order number, billing name and Time.now
