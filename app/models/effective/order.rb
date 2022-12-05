@@ -55,10 +55,14 @@ module Effective
       tax_rate            :decimal, precision: 6, scale: 3
       surcharge_percent   :decimal, precision: 6, scale: 3
 
-      subtotal          :integer
-      tax               :integer
-      surcharge         :integer
-      total             :integer
+      subtotal          :integer   # Sum of items subtotal
+      tax               :integer   # Tax on subtotal
+      amount_owing      :integer   # Subtotal + Tax
+
+      surcharge         :integer   # Credit Card Surcharge
+      surcharge_tax     :integer   # Tax on surcharge
+
+      total             :integer   # Subtotal + Tax + Surcharge + Surcharge Tax
 
       timestamps
     end
@@ -90,7 +94,7 @@ module Effective
       before_validation { assign_email }
       before_validation { assign_user_address }
       before_validation { assign_billing_name }
-      before_validation { assign_order_totals }
+      before_validation { assign_order_values }
     end
 
     # Order validations
@@ -433,12 +437,20 @@ module Effective
       self[:tax] || get_tax()
     end
 
+    def amount_owing
+      self[:amount_owing] || get_amount_owing()
+    end
+
     def surcharge_percent
       self[:surcharge_percent] || get_surcharge_percent()
     end
 
     def surcharge
       self[:surcharge] || get_surcharge()
+    end
+
+    def surcharge_tax
+      self[:surcharge_tax] || get_surcharge_tax()
     end
 
     def total
@@ -685,29 +697,37 @@ module Effective
     end
 
     def get_tax
-      return nil unless tax_rate.present?
+      return 0 unless tax_rate.present?
       present_order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
     end
 
-    def get_surcharge_percent
-      surcharge = EffectiveOrders.credit_card_surcharge_percent.to_f
-      return nil if surcharge == 0.0
+    def get_amount_owing
+      subtotal + tax
+    end
 
-      if (surcharge > 10.0 || surcharge < 0.5)
-        raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{surcharge}. Please return 2.5 for 2.5% surcharge."
+    def get_surcharge_percent
+      percent = EffectiveOrders.credit_card_surcharge_percent.to_f
+      return nil if percent == 0.0
+
+      if (percent > 10.0 || percent < 0.5)
+        raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{percent}. Please return 2.5 for 2.5% surcharge."
       end
 
-      surcharge
+      percent
     end
 
     def get_surcharge
-      return nil unless surcharge_percent.present?
+      return 0 unless surcharge_percent.present?
+      ((subtotal + tax) * (surcharge_percent / 100.0)).round(0).to_i
+    end
 
-      (subtotal + tax) * (surcharge_percent / 100.0)
+    def get_surcharge_tax
+      return 0 unless tax_rate.present?
+      (surcharge * (tax_rate / 100.0)).round(0).to_i
     end
 
     def get_total
-      ((subtotal || 0) + (tax || 0) + (surcharge || 0)).to_i
+      subtotal + tax + surcharge + surcharge_tax
     end
 
     private
@@ -739,7 +759,7 @@ module Effective
     end
 
     # This overwrites the prices, taxes, surcharge, etc on every save.
-    def assign_order_totals
+    def assign_order_values
       # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes }
 
@@ -750,11 +770,15 @@ module Effective
       self.tax_rate = get_tax_rate()
       self.tax = get_tax()
 
+      # Subtotal + Tax
+      self.amount_owing = get_amount_owing()
+
       # We only apply surcharge for credit card orders
       self.surcharge_percent = get_surcharge_percent()
       self.surcharge = get_surcharge()
+      self.surcharge_tax = get_surcharge_tax()
 
-      # Subtotal + Tax + Surcharge
+      # Subtotal + Tax + Surcharge + Surcharge Tax
       self.total = get_total()
     end
 

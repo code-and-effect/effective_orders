@@ -1,24 +1,31 @@
 .effective-order {
   table {
     clear: both;
-    margin-bottom: 25px;
+    margin-bottom: 1.5rem;
 
     tfoot {
-      > tr:first-child {
-        border-top: 20px solid transparent;
-      }
-
-      th {
+      th, td {
         border: none;
         text-align: right;
-        padding-right: 65px;
+        white-space: nowrap;
       }
 
-      td {
-        text-align: right;
+      // This is the first column
+      th {
+        width: 100%;
       }
 
-      .actions { border: none; }
+      td.price {
+        padding-left: 2rem;
+      }
+
+      tr.single-line {
+        td { border-top: solid 1px; }
+      }
+
+      tr.double-line {
+        td { border-top: double 4px; }
+      }
     }
   }
 

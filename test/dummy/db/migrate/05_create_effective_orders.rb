@@ -27,7 +27,9 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
 
       t.integer   :subtotal
       t.integer   :tax
+      t.integer   :amount_owing
       t.integer   :surcharge
+      t.integer   :surcharge_tax
       t.integer   :total
 
       t.timestamps

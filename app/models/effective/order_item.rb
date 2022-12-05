@@ -32,7 +32,7 @@ module Effective
       ((quantity || 0) > 1 ? "#{quantity}x #{name}" : name) || 'order item'
     end
 
-    # This method is called in a before_validation in order.assign_order_totals()
+    # This method is called in a before_validation in order.assign_order_values()
     def assign_purchasable_attributes
       assign_attributes(name: purchasable.purchasable_name, price: purchasable.price, tax_exempt: purchasable.tax_exempt) if purchasable
     end

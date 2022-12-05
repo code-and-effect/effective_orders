@@ -19,27 +19,54 @@
 
           %td.price= price_to_currency(item.subtotal)
 
+  %table.table
     %tfoot
       %tr
-        %th.quantity
-        %th.subtotal Subtotal
+        %th
+        %td.subtotal Subtotal
         %td.price.subtotal-price= price_to_currency(order.subtotal)
 
-      - if order.tax_rate.present?
+      - if order.tax_rate.blank?
+        -# Nothing to do. We can't display Tax, Total or Credit Card Surcharge (which is taxed) yet.
+
+      - elsif order.tax_rate.present? && order.surcharge_percent.present?
         %tr
-          %th.quantity
-          %th.tax Tax (#{rate_to_percentage(order.tax_rate)})
+          %th
+          %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
 
-      - if order.surcharge_percent.present?
+        %tr.single-line
+          %th
+          %td.amount-owing Amount owing before Credit Card Processing Fee
+          %td.price.amount-owing-price= price_to_currency(order.amount_owing)
+
         %tr
-          %th.quantity
-          %th.surcharge Credit Card Surcharge (#{rate_to_percentage(order.surcharge_percent)})
+          %th
+          %td
+          %td
+
+        %tr
+          %th
+          %td.surcharge Credit Card Processing Fee (#{rate_to_percentage(order.surcharge_percent)}) on #{price_to_currency(order.amount_owing)}
           %td.price.surcharge-price= price_to_currency(order.surcharge)
 
-      - # Only display order total if we know the tax. Otherwise we only display Subtotal until tax is known.
-      - if order.tax_rate.present?
         %tr
-          %th.quantity
-          %th.total= order.total_label
+          %th
+          %td.surcharge-tax Tax (#{rate_to_percentage(order.tax_rate)}) on Credit Card Processing Fee
+          %td.price.surcharge-tax-price= price_to_currency(order.surcharge_tax)
+
+        %tr.double-line
+          %th
+          %td.total Total amount charged to credit card
+          %td.price.total-price= price_to_currency(order.total)
+
+      - elsif order.tax_rate.present? && order.surcharge_percent.blank?
+        %tr
+          %th
+          %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
+          %td.price.tax-price= price_to_currency(order.tax)
+
+        %tr
+          %th
+          %td.total Total Due
           %td.price.total-price= price_to_currency(order.total)
