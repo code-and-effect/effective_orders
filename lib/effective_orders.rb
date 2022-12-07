@@ -188,6 +188,10 @@ module EffectiveOrders
     use_effective_qb_online && defined?(EffectiveQbOnline)
   end
 
+  def self.surcharge?
+    credit_card_surcharge_percent.to_f > 0.0
+  end
+
   def self.mailer_class
     mailer&.constantize || Effective::OrdersMailer
   end
