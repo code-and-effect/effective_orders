@@ -10,19 +10,11 @@ module Admin
     datatable do
       length 250
 
-      col :item
-      col :subtotal, as: :price
-      col :tax, as: :price
+      col :payment_provider
+
+      col :sales, as: :price
+      col :returns, as: :price
       col :total, as: :price
-
-      payment_providers.each do |provider|
-        col(provider, as: :price)
-      end
-
-      col :orders_count
-
-      col :orders
-      col :users
 
       col :start_date, as: :date, search: false, sort: false, visible: false do
         date_range.begin&.strftime('%F')
@@ -42,34 +34,17 @@ module Admin
       orders = Effective::Order.purchased.where(purchased_at: date_range).where('total != 0')
       order_items = Effective::OrderItem.where(order_id: orders).includes(:purchasable, order: :user)
 
-      items = order_items.group_by(&:to_s).map do |name, items|
-        row = [
-          name,
-          items.sum { |item| item.subtotal }.to_i,
-          items.sum { |item| item.tax }.to_i,
+      payment_providers.map do |provider|
+        items = order_items.select { |item| item.order.payment_provider == provider }
+
+        [
+          provider,
+          items.sum { |item| (item.total > 0 ? item.total : 0) }.to_i,
+          items.sum { |item| (item.total < 0 ? item.total : 0) }.to_i,
           items.sum { |item| item.total }.to_i,
-        ]
-
-        row += payment_providers.map do |payment_provider|
-          items.sum { |item| (item.order.payment_provider == payment_provider) ? item.total : 0 }.to_i
-        end
-
-        row += [
-          items.map(&:order_id).uniq.length,
-
-          items.map do |item|
-            content_tag(:div, link_to(item.order, effective_orders.admin_order_path(item.order)))
-          end.join.html_safe,
-
-          items.map do |item|
-            content_tag(:div, item.order.user) + ' '
-          end.join.html_safe,
-
           start_date,
           end_date
         ]
-
-        row
       end
     end
 
