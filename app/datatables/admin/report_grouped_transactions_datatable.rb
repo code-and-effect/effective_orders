@@ -56,15 +56,8 @@ module Admin
 
         row += [
           items.map(&:order_id).uniq.length,
-
-          items.map do |item|
-            content_tag(:div, link_to(item.order, effective_orders.admin_order_path(item.order)))
-          end.join.html_safe,
-
-          items.map do |item|
-            content_tag(:div, item.order.user) + ' '
-          end.join.html_safe,
-
+          items.map { |item| item.order },
+          items.map { |item| item.order.user },
           start_date,
           end_date
         ]
