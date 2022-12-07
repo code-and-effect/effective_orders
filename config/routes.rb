@@ -63,6 +63,15 @@ EffectiveOrders::Engine.routes.draw do
     post 'orders/:id', to: 'orders#update'
 
     resources :order_items, only: [:index]
+
+    resources :order_reports, only: [] do
+      collection do
+        get :transactions
+        get :grouped_transactions
+        get :payment_methods
+      end
+    end
+
   end
 end
 

@@ -1,5 +1,5 @@
 module Admin
-  class EffectiveOrdersDatatable < Effective::Datatable
+  class ReportPaymentMethodsDatatable < Effective::Datatable
     bulk_actions do
       bulk_action(
       'Send payment request email to selected orders',
