@@ -362,6 +362,14 @@ In addition to the above, the following permissions allow access to the `/admin`
 
 ```ruby
 can :admin, :effective_orders # Can access the admin screens
+
+can :index, :report_transactions
+can :index, :report_grouped_transactions
+can :index, :report_payment_providers
+
+can :index, Admin::ReportTransactionsDatatable
+can :index, Admin::ReportGroupedTransactionsDatatable
+can :index, Admin::ReportPaymentProvidersDatatable
 ```
 
 ## Whats Included
