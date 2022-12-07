@@ -59,6 +59,10 @@ module Effective
       (subtotal * order.tax_rate / 100.0).round(0).to_i
     end
 
+    def amount_owing
+      total
+    end
+
     def total
       return subtotal if tax_exempt?
       raise 'parent Effective::Order must have a tax_rate to compute order item total' unless order.try(:tax_rate).present?

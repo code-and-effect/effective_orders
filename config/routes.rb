@@ -68,7 +68,7 @@ EffectiveOrders::Engine.routes.draw do
       collection do
         get :transactions
         get :grouped_transactions
-        get :payment_methods
+        get :payment_providers
       end
     end
 

@@ -1,7 +1,7 @@
-# Revenue: Grouped Transactions
+# Revenue: Payment Providers
 
 module Admin
-  class ReportGroupedTransactionsDatatable < Effective::Datatable
+  class ReportPaymentProvidersDatatable < Effective::Datatable
     filters do
       filter :start_date, nil, as: :date
       filter :end_date, nil, as: :date

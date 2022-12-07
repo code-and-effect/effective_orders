@@ -35,11 +35,11 @@ module Admin
 
       col :total, as: :price
 
-      col :start_date, visible: false do
+      col :start_date, as: :date, search: false, sort: false, visible: false do
         date_range.begin&.strftime('%F')
       end
 
-      col :end_date, visible: false do
+      col :end_date, as: :date, search: false, sort: false, visible: false do
         date_range.end&.strftime('%F')
       end
 
@@ -49,7 +49,10 @@ module Admin
     end
 
     collection do
-      Effective::Order.purchased.where(purchased_at: date_range).includes(:user, [order_items: :purchasable])
+      Effective::Order.purchased
+        .where(purchased_at: date_range)
+        .where('total != 0')
+        .includes(:user, [order_items: :purchasable])
     end
 
     def date_range

@@ -23,11 +23,11 @@ module Admin
       render 'index'
     end
 
-    def payment_methods
-      @page_title = 'Revenue: Payment Methods'
-      @datatable = Admin::ReportPaymentMethodsDatatable.new
+    def payment_providers
+      @page_title = 'Revenue: Payment Providers'
+      @datatable = Admin::ReportPaymentProvidersDatatable.new
 
-      authorize! :index, :report_payment_methods
+      authorize! :index, :report_payment_providers
 
       render 'index'
     end
