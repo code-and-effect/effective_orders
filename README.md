@@ -10,13 +10,13 @@ Sends order receipt emails automatically.
 
 Has Order History, My Purchases, My Sales and Admin screens.
 
-## effective_orders 5.0
+## effective_orders 6.0
 
-This is the 5.0 series of effective_orders.
+This is the 6.0 series of effective_orders.
 
 This requires Twitter Bootstrap 4 and Rails 5.1+
 
-Please check out [Effective Orders 3.x](https://github.com/code-and-effect/effective_orders/tree/bootstrap3) for more information using this gem with Bootstrap 3.
+Please check out [Effective Orders 3.x](https://github.com/code-and-effect/effective_orders/tree/bootstrap3) for more information using this gem with Bootstrap 3. Deprecated and not maintained.
 
 ## Getting Started
 
@@ -614,6 +614,8 @@ We are also going to use ngrok to give us a public facing URL
 
 Visit https://esqa.moneris.com/mpg/ and login with: demouser / store1 / password
 
+Or for the prod environment https://www3.moneris.com/mpg
+
 - Select Admin -> Moneris Checkout Config from the menu
 - Click Create Profile
 
@@ -665,6 +667,15 @@ config.moneris_checkout = {
 
 [Testing a Solution](https://developer.moneris.com/en/More/Testing/Testing%20a%20Solution)
 
+### Create a Production Store
+
+Visit https://www3.moneris.com/mpg and follow the above instructions
+
+The Checkout Id, something like `chktJF76Btore1` is on the configuration page.
+
+The Store Id, something like `gwca12345` should match the login information
+
+To find the Api Token, click Admin -> Store Settings -> and copy the API key there
 
 
 ## Paying via Moneris (hosted pay page - old)
