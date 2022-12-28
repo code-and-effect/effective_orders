@@ -50,6 +50,17 @@ module Effective
         redirect_to declined_url.gsub(':id', @order.to_param.to_s)
       end
 
+      def order_not_processed(declined_url: nil)
+        # No change to the order
+
+        if flash[:danger].blank?
+          flash[:danger] = 'Payment was not processed. Please try again.'
+        end
+
+        declined_url = effective_orders.declined_order_path(':id') if declined_url.blank?
+        redirect_to declined_url.gsub(':id', @order.to_param.to_s)
+      end
+
     end
   end
 end

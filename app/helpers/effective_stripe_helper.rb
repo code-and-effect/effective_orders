@@ -60,17 +60,19 @@ module EffectiveStripeHelper
     customer.create_stripe_customer! # Only creates if customer not already present
 
     remember_card = EffectiveOrders.stripe[:remember_card]
+    token_required = customer.token_required?
 
     payment = {
       amount: order.total_with_surcharge,
       currency: EffectiveOrders.stripe[:currency],
       customer: customer.stripe_customer_id,
-      payment_method: (customer.payment_method_id.presence if remember_card),
       description: stripe_order_description(order),
       metadata: { order_id: order.id }
     }
 
-    token_required = customer.token_required?
+    if remember_card && customer.payment_method_id.present?
+      payment[:payment_method] = customer.payment_method_id
+    end
 
     # Always prompt them for a card unless remember card
     token_required = true unless remember_card
@@ -87,12 +89,17 @@ module EffectiveStripeHelper
     payload = {
       key: EffectiveOrders.stripe[:publishable_key],
       client_secret: intent.client_secret,
-      payment_method: intent.payment_method,
-
-      active_card: (customer.active_card if remember_card),
       email: customer.email,
       token_required: token_required
     }
+
+    if remember_card && customer.active_card.present? && intent.payment_method.present?
+      payload[:active_card] = customer.active_card
+    end
+
+    if intent.payment_method.present?
+      payload[:payment_method] = intent.payment_method
+    end
 
     payload
   end

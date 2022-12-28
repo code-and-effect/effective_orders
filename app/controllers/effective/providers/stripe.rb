@@ -11,7 +11,14 @@ module Effective
 
         EffectiveResources.authorize!(self, :update, @order)
 
-        payment = validate_stripe_payment(stripe_params[:payment_intent_id])
+        payment_intent_id = stripe_params[:payment_intent_id]
+
+        if payment_intent_id.blank?
+          flash[:danger] = 'Unable to process stripe order without payment. please try again.'
+          return order_not_processed(declined_url: stripe_params[:declined_url])
+        end
+
+        payment = validate_stripe_payment(payment_intent_id)
 
         if payment.blank?
           return order_declined(payment: payment, provider: 'stripe', declined_url: stripe_params[:declined_url])
@@ -37,6 +44,8 @@ module Effective
       end
 
       def validate_stripe_payment(payment_intent_id)
+        raise('expected stripe payment intent id to be present') if payment_intent_id.blank?
+
         intent = EffectiveOrders.with_stripe { ::Stripe::PaymentIntent.retrieve(payment_intent_id) }
         raise('expected stripe intent to be present') if intent.blank?
         return unless intent.status == 'succeeded'
