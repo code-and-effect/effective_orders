@@ -17,6 +17,7 @@ this.StripeForm ||= class StripeForm
     @card = @stripe.elements().create('card', @style())
 
     @mount()
+    @form.find('.stripe-submit-button').show()
     @form.addClass('initialized')
 
   style: ->
@@ -77,3 +78,4 @@ this.StripeForm ||= class StripeForm
 
 $ -> (new StripeForm()).initialize()
 $(document).on 'turbolinks:load', -> (new StripeForm()).initialize()
+$(document).on 'turbolinks:before-cache', -> $('form[data-stripe-form]').remove()
