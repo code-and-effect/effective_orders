@@ -17,7 +17,18 @@ this.StripeForm ||= class StripeForm
     @card = @stripe.elements().create('card', @style())
 
     @mount()
+    @form.find('.stripe-submit-button').show()
     @form.addClass('initialized')
+
+  destroy: ->
+    @form = $('form[data-stripe-form]').first()
+    return false unless @form.length > 0
+
+    @form.find("input[name$='[payment_intent_id]']").val('')
+    @form.find('#stripe-card-element').html('')
+
+    @form.find('.stripe-submit-button').hide()
+    @form.removeClass('initialized')
 
   style: ->
     style: {
@@ -73,7 +84,8 @@ this.StripeForm ||= class StripeForm
 
   errorPayment: (error) ->
     $('#stripe-card-errors').text(error.message)
-    EffectiveForm.invalidate(@form);
+    EffectiveForm.invalidate(@form)
 
 $ -> (new StripeForm()).initialize()
 $(document).on 'turbolinks:load', -> (new StripeForm()).initialize()
+$(document).on 'turbolinks:before-cache', -> (new StripeForm()).destroy()
