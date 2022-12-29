@@ -20,6 +20,16 @@ this.StripeForm ||= class StripeForm
     @form.find('.stripe-submit-button').show()
     @form.addClass('initialized')
 
+  destroy: ->
+    @form = $('form[data-stripe-form]').first()
+    return false unless @form.length > 0
+
+    @form.find("input[name$='[payment_intent_id]']").val('')
+    @form.find('#stripe-card-element').html('')
+
+    @form.find('.stripe-submit-button').hide()
+    @form.removeClass('initialized')
+
   style: ->
     style: {
       base: { color: '#32325d', fontSize: '16px', },
@@ -78,4 +88,4 @@ this.StripeForm ||= class StripeForm
 
 $ -> (new StripeForm()).initialize()
 $(document).on 'turbolinks:load', -> (new StripeForm()).initialize()
-$(document).on 'turbolinks:before-cache', -> $('form[data-stripe-form]').remove()
+$(document).on 'turbolinks:before-cache', -> (new StripeForm()).destroy()
