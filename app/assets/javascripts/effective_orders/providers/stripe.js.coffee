@@ -84,7 +84,7 @@ this.StripeForm ||= class StripeForm
 
   errorPayment: (error) ->
     $('#stripe-card-errors').text(error.message)
-    EffectiveForm.invalidate(@form);
+    EffectiveForm.invalidate(@form)
 
 $ -> (new StripeForm()).initialize()
 $(document).on 'turbolinks:load', -> (new StripeForm()).initialize()
