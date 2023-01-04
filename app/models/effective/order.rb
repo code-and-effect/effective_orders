@@ -17,6 +17,7 @@ module Effective
     end
 
     acts_as_addressable(billing: { singular: true }, shipping: { singular: true })
+    acts_as_reportable if respond_to?(:acts_as_reportable)
 
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
     attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
@@ -84,6 +85,11 @@ module Effective
 
     scope :refunds, -> { purchased.where('total < ?', 0) }
     scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
+
+    # effective_reports
+    def reportable_scopes
+      { purchased: nil, not_purchased: nil, deferred: nil, refunds: nil, pending_refunds: nil }
+    end
 
     before_validation do
       self.state ||= EffectiveOrders::PENDING
