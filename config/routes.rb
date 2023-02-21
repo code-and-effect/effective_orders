@@ -67,7 +67,8 @@ EffectiveOrders::Engine.routes.draw do
     resources :order_reports, only: [] do
       collection do
         get :transactions
-        get :grouped_transactions
+        get :transactions_grouped_by_name
+        get :transactions_grouped_by_qb_name
         get :payment_providers
       end
     end

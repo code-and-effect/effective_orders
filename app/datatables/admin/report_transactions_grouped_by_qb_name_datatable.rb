@@ -1,7 +1,7 @@
-# Revenue: Grouped Transactions
+# Revenue: Transactions Grouped By Name
 
 module Admin
-  class ReportGroupedTransactionsDatatable < Effective::Datatable
+  class ReportTransactionsGroupedByQbNameDatatable < Effective::Datatable
     filters do
       filter :start_date, nil, as: :date
       filter :end_date, nil, as: :date
@@ -10,7 +10,7 @@ module Admin
     datatable do
       length 250
 
-      col :item
+      col :qb_item_name
       col :subtotal, as: :price
       col :tax, as: :price
       col :total, as: :price
@@ -40,9 +40,9 @@ module Admin
       end_date = date_range.end&.strftime('%F')
 
       orders = Effective::Order.purchased.where(purchased_at: date_range).where('total != 0')
-      order_items = Effective::OrderItem.where(order_id: orders).includes(:purchasable, order: :user)
+      order_items = Effective::OrderItem.includes(:qb_order_item).where(order_id: orders).includes(:purchasable, order: :user)
 
-      items = order_items.group_by(&:to_s).map do |name, items|
+      items = order_items.group_by(&:qb_item_name).map do |name, items|
         row = [
           name,
           items.sum { |item| item.subtotal }.to_i,

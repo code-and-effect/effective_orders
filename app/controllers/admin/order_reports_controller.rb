@@ -14,11 +14,20 @@ module Admin
       render 'index'
     end
 
-    def grouped_transactions
-      @page_title = 'Revenue: Grouped Transactions'
-      @datatable = Admin::ReportGroupedTransactionsDatatable.new
+    def transactions_grouped_by_name
+      @page_title = 'Revenue: Transactions Grouped By Name'
+      @datatable = Admin::ReportTransactionsGroupedByNameDatatable.new
 
-      authorize! :index, :report_grouped_transactions
+      authorize! :index, :report_transactions_grouped_by_name
+
+      render 'index'
+    end
+
+    def transactions_grouped_by_qb_name
+      @page_title = 'Revenue: Transactions Grouped By Quickbooks Name'
+      @datatable = Admin::ReportTransactionsGroupedByQbNameDatatable.new
+
+      authorize! :index, :report_transactions_grouped_by_qb_name
 
       render 'index'
     end
