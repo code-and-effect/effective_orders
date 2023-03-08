@@ -4,8 +4,7 @@ module Admin
   class ReportTransactionsDatatable < Effective::Datatable
 
     filters do
-      filter :start_date, nil, as: :date
-      filter :end_date, nil, as: :date
+      filter_date_range :current_month
     end
 
     datatable do
@@ -35,11 +34,11 @@ module Admin
 
       col :total, as: :price
 
-      col :start_date, as: :date, search: false, sort: false, visible: false do
+      col :filtered_start_date, as: :date, search: false, sort: false, visible: false do
         date_range.begin&.strftime('%F')
       end
 
-      col :end_date, as: :date, search: false, sort: false, visible: false do
+      col :filtered_end_date, as: :date, search: false, sort: false, visible: false do
         date_range.end&.strftime('%F')
       end
 
@@ -54,10 +53,5 @@ module Admin
         .where('total != 0')
         .includes(:user, [order_items: :purchasable])
     end
-
-    def date_range
-      @date_range ||= (filters[:start_date].presence)..(filters[:end_date].presence)
-    end
-
   end
 end
