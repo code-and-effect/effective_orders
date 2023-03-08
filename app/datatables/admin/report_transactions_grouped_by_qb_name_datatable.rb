@@ -3,8 +3,7 @@
 module Admin
   class ReportTransactionsGroupedByQbNameDatatable < Effective::Datatable
     filters do
-      filter :start_date, nil, as: :date
-      filter :end_date, nil, as: :date
+      filter_date_range :current_month
     end
 
     datatable do
@@ -68,10 +67,6 @@ module Admin
 
     def payment_providers
       @payment_providers ||= EffectiveOrders.payment_providers - ['free', 'pretend']
-    end
-
-    def date_range
-      @date_range ||= (filters[:start_date].presence)..(filters[:end_date].presence)
     end
 
   end

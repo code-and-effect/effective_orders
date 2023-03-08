@@ -3,8 +3,7 @@
 module Admin
   class ReportPaymentProvidersDatatable < Effective::Datatable
     filters do
-      filter :start_date, nil, as: :date
-      filter :end_date, nil, as: :date
+      filter_date_range :current_month
     end
 
     datatable do
@@ -16,11 +15,11 @@ module Admin
       col :returns, as: :price
       col :total, as: :price
 
-      col :start_date, as: :date, search: false, sort: false, visible: false do
+      col :filtered_start_date, as: :date, search: false, sort: false, visible: false do
         date_range.begin&.strftime('%F')
       end
 
-      col :end_date, as: :date, search: false, sort: false, visible: false do
+      col :filtered_end_date, as: :date, search: false, sort: false, visible: false do
         date_range.end&.strftime('%F')
       end
 
