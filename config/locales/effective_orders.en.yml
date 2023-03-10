@@ -1,0 +1,10 @@
+en:
+  effective_orders:
+    name: 'Effective Orders'
+    acronym: 'Finance'
+
+  datatables:
+    admin/report_transactions_datatable: 'Individual Transactions'
+    admin/report_transactions_grouped_by_name_datatable: 'Transactions Grouped By Name'
+    admin/report_transactions_grouped_by_qb_name_datatable: 'Transactions Grouped By Quickbooks Name'
+    admin/report_payment_providers_datatable: 'Payment Providers'
