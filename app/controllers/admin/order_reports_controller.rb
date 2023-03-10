@@ -6,37 +6,37 @@ module Admin
     include Effective::CrudController
 
     def transactions
-      @page_title = 'Revenue: Individual Transactions'
       @datatable = Admin::ReportTransactionsDatatable.new
+      @page_title = @datatable.datatable_name
 
-      authorize! :index, :report_transactions
+      authorize! :index, @datatable
 
       render 'index'
     end
 
     def transactions_grouped_by_name
-      @page_title = 'Revenue: Transactions Grouped By Name'
       @datatable = Admin::ReportTransactionsGroupedByNameDatatable.new
+      @page_title = @datatable.datatable_name
 
-      authorize! :index, :report_transactions_grouped_by_name
+      authorize! :index, @datatable
 
       render 'index'
     end
 
     def transactions_grouped_by_qb_name
-      @page_title = 'Revenue: Transactions Grouped By Quickbooks Name'
       @datatable = Admin::ReportTransactionsGroupedByQbNameDatatable.new
+      @page_title = @datatable.datatable_name
 
-      authorize! :index, :report_transactions_grouped_by_qb_name
+      authorize! :index, @datatable
 
       render 'index'
     end
 
     def payment_providers
-      @page_title = 'Revenue: Payment Providers'
       @datatable = Admin::ReportPaymentProvidersDatatable.new
+      @page_title = @datatable.datatable_name
 
-      authorize! :index, :report_payment_providers
+      authorize! :index, @datatable
 
       render 'index'
     end

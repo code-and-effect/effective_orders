@@ -2,7 +2,6 @@
 
 module Admin
   class ReportTransactionsDatatable < Effective::Datatable
-
     filters do
       filter_date_range :current_month
     end

@@ -51,9 +51,5 @@ module Admin
       @payment_providers ||= EffectiveOrders.payment_providers - ['free', 'pretend']
     end
 
-    def date_range
-      @date_range ||= (filters[:start_date].presence)..(filters[:end_date].presence)
-    end
-
   end
 end
