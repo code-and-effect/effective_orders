@@ -5,4 +5,5 @@
   .resource-buttons
     = render_resource_buttons(@resource, checkout: false)
 
-  = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))
+  = card do
+    = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))
