@@ -3,8 +3,7 @@ module Effective
     self.table_name = EffectiveOrders.products_table_name.to_s
 
     acts_as_purchasable
-
-    has_many :order_items, as: :purchasable
+    log_changes if respond_to?(:log_changes)
 
     effective_resource do
       name          :string

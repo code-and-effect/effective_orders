@@ -87,7 +87,7 @@ module Admin
       col :note_to_buyer, visible: false
       col :note_internal, visible: false
 
-      actions_col partial: 'admin/orders/datatable_actions', partial_as: :order
+      actions_col
 
       unless attributes[:total] == false
         aggregate :total

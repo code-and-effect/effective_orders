@@ -38,7 +38,7 @@ module Admin
     # The show page posts to this action
     # See Effective::OrdersController checkout
     def checkout
-      @order = Effective::Order.not_purchased.find(params[:id])
+      @order = Effective::Order.was_not_purchased.find(params[:id])
 
       authorize_effective_order!
 
@@ -62,7 +62,7 @@ module Admin
     end
 
     def destroy
-      @order = Effective::Order.all.not_purchased.find(params[:id])
+      @order = Effective::Order.all.was_not_purchased.find(params[:id])
 
       authorize_effective_order!
 
@@ -76,7 +76,7 @@ module Admin
     end
 
     def send_payment_request
-      @order = Effective::Order.not_purchased.find(params[:id])
+      @order = Effective::Order.was_not_purchased.find(params[:id])
       authorize_effective_order!
 
       if @order.send_payment_request_to_buyer!
@@ -95,7 +95,7 @@ module Admin
     end
 
     def bulk_send_payment_request
-      @orders = Effective::Order.not_purchased.where(id: params[:ids])
+      @orders = Effective::Order.was_not_purchased.where(id: params[:ids])
 
       begin
         authorize_effective_order!

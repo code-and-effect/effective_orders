@@ -1,35 +1,16 @@
-= effective_form_with(model: [:admin, order], engine: true) do |f|
-  = f.hidden_field :user_type, value: (f.object.user || current_user).class.name
+= tabs do
+  = tab(order) do
+    - if order.custom_order? && order.in_progress?
+      - if order.persisted?
+        = collapse('show order') do
+          = render 'effective/orders/order', order: order, no_order_actions: true
 
-  - ajax_url = (@select2_ajax_path || effective_resources.users_admin_select2_ajax_index_path) unless Rails.env.test?
+      = render 'admin/orders/form_order', order: order
+    - else
+      - # Order was already purchased. Display same as show action.
+      = render 'effective/orders/order', order: order
+      = render 'admin/orders/form_note_internal', order: order
 
-  = f.select :user_id, current_user.class.all, label: 'Buyer', required: true,
-    ajax_url: ajax_url, hint: 'The user that should purchase this order.'
-
-  = f.email_cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
-
-  - if f.object.new_record?
-    = f.check_box :send_payment_request_to_buyer,
-      label: 'Yes, send a payment request email to the buyer and any cc.',
-      value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.send_payment_request_to_buyer : f.object.send_payment_request_to_buyer?)
-
-  %hr
-
-  %h2 Order Items
-  = f.has_many :order_items, remove: true do |fc|
-    = render 'order_item_fields', f: fc
-
-  %hr
-
-  .row
-    .col-md-6.effective-order-note-to-buyer
-      %h2 Note to Buyer
-      = f.text_area :note_to_buyer, disabled: f.object.purchased?, label: false,
-        hint: (f.object.purchased? ? 'This message was displayed to the buyer during checkout and appears on the receipt.' : 'This message will be displayed to the buyer during checkout and will appear on the receipt.')
-
-    .col-md-6.effective-order-internal-note
-      %h2 Internal Note
-      = f.text_area :note_internal, label: false,
-        hint: 'For internal admin use only. This note will never be displayed to the buyer.'
-
-  = render partial: '/admin/orders/order_actions', locals: { order: @order, form: f, f: f }
+  - if order.persisted? && order.respond_to?(:logs_datatable)
+    = tab 'Logs' do
+      .effective-order-admin-logs= render_inline_datatable(order.logs_datatable)

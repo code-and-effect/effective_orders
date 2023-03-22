@@ -1,0 +1,8 @@
+= tabs do
+  = tab(order) do
+    = render 'effective/orders/order', order: order
+    = render 'admin/orders/form_note_internal', order: order
+
+  - if order.persisted? && order.respond_to?(:logs_datatable)
+    = tab 'Logs' do
+      .effective-order-admin-logs= render_inline_datatable(order.logs_datatable)

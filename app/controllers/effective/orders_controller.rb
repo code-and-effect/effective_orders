@@ -69,13 +69,13 @@ module Effective
 
     # Always step1
     def edit
-      @order ||= Effective::Order.not_purchased.find(params[:id])
+      @order ||= Effective::Order.was_not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :edit, @order)
     end
 
     # Confirms the order from existing order
     def update
-      @order ||= Effective::Order.not_purchased.find(params[:id])
+      @order ||= Effective::Order.was_not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :update, @order)
 
       @order.assign_attributes(checkout_params)
@@ -86,12 +86,6 @@ module Effective
         flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
         render :edit
       end
-    end
-
-    # My Orders History
-    def index
-      @datatable = EffectiveOrdersDatatable.new(user_id: current_user.id)
-      EffectiveResources.authorize!(self, :index, Effective::Order.new(user: current_user))
     end
 
     # Thank you for Purchasing this Order. This is where a successfully purchased order ends up
@@ -108,25 +102,6 @@ module Effective
     def declined
       @order = Effective::Order.declined.find(params[:id])
       EffectiveResources.authorize!(self, :show, @order)
-    end
-
-    def send_buyer_receipt
-      @order = Effective::Order.purchased.find(params[:id])
-      EffectiveResources.authorize!(self, :show, @order)
-
-      if @order.send_order_receipt_to_buyer!
-        flash[:success] = "A receipt has been sent to #{@order.emails_send_to}"
-      else
-        flash[:danger] = "Unable to send receipt."
-      end
-
-      if respond_to?(:redirect_back)
-        redirect_back(fallback_location: effective_orders.order_path(@order))
-      elsif request.referrer.present?
-        redirect_to :back
-      else
-        redirect_to effective_orders.order_path(@order)
-      end
     end
 
     def bulk_send_buyer_receipt

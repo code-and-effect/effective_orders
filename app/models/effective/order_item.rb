@@ -7,6 +7,8 @@ module Effective
     belongs_to :purchasable, polymorphic: true
     accepts_nested_attributes_for :purchasable, allow_destroy: false
 
+    log_changes(to: :order) if respond_to?(:log_changes)
+
     if defined?(EffectiveQbSync)
       has_one :qb_order_item
     end
