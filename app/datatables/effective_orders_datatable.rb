@@ -1,4 +1,4 @@
-# This is a user specific EffectiveOrdersDatatable
+# Dashboard Orders
 
 class EffectiveOrdersDatatable < Effective::Datatable
   filters do
@@ -66,23 +66,10 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   collection do
-    user_klass = (attributes[:user_type].constantize if attributes[:user_type].present?)
-    user_klass ||= current_user.class
-
-    user = user_klass.find(attributes[:user_id])
-
-    scope = Effective::Order.all.deep.where(user: user)
+    scope = Effective::Order.all.deep.where(user: current_user)
 
     if EffectiveOrders.orders_collection_scope.respond_to?(:call)
       scope = EffectiveOrders.orders_collection_scope.call(scope)
-    end
-
-    if attributes[:not_purchased]
-      scope = scope.not_purchased
-    end
-
-    if attributes[:parent_id].present? && attributes[:parent_type].present?
-      scope = scope.where(parent_id: attributes[:parent_id], parent_type: attributes[:parent_type])
     end
 
     scope
