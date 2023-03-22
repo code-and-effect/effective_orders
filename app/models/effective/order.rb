@@ -18,6 +18,7 @@ module Effective
 
     acts_as_addressable(billing: { singular: true }, shipping: { singular: true })
     acts_as_reportable if respond_to?(:acts_as_reportable)
+    log_changes if respond_to?(:log_changes)
 
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
     attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
@@ -696,6 +697,7 @@ module Effective
     def send_order_receipt_to_buyer!
       EffectiveOrders.send_email(:order_receipt_to_buyer, self) if purchased?
     end
+    alias_method :send_buyer_receipt!, :send_order_receipt_to_buyer!
 
     def send_payment_request_to_buyer!
       EffectiveOrders.send_email(:payment_request_to_buyer, self) unless purchased?
