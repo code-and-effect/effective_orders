@@ -76,7 +76,8 @@ module Effective
 
     scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
     scope :purchased_by, lambda { |user| purchased.where(user: user) }
-    scope :not_purchased, -> { where.not(state: EffectiveOrders::PURCHASED) }
+    scope :not_purchased, -> { where.not(state: [EffectiveOrders::PURCHASED, EffectiveOrders::DEFERRED]) }
+    scope :was_not_purchased, -> { where.not(state: EffectiveOrders::PURCHASED) }
 
     scope :pending, -> { where(state: EffectiveOrders::PENDING) }
     scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
