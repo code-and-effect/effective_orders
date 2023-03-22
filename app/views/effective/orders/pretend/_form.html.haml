@@ -1,8 +1,12 @@
-= effective_form_with(scope: :pretend, url: effective_orders.pretend_order_path(order), method: :post) do |f|
-  = f.hidden_field :purchased_url, value: purchased_url
-  = f.hidden_field :declined_url, value: declined_url
+.card
+  .card-body
+    %h2 Pretend Checkout
 
-  - if EffectiveOrders.pretend_message.present?
-    %p.text-right= EffectiveOrders.pretend_message
+    = effective_form_with(scope: :pretend, url: effective_orders.pretend_order_path(order), method: :post) do |f|
+      = f.hidden_field :purchased_url, value: purchased_url
+      = f.hidden_field :declined_url, value: declined_url
 
-  = f.submit order_checkout_label(:pretend), border: false
+      - if EffectiveOrders.pretend_message.present?
+        %p= EffectiveOrders.pretend_message
+
+      = f.submit order_checkout_label(:pretend), border: false, center: true
