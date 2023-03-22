@@ -1,4 +1,8 @@
-= render 'layout' do
-  %h1.effective-admin-heading= @page_title
+- resource = (@_effective_resource || Effective::Resource.new(controller_path))
+- @resource = instance_variable_get('@' + resource.name) if resource.name
+
+- if @resource
+  .resource-buttons
+    = render_resource_buttons(@resource, checkout: false)
 
   = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))

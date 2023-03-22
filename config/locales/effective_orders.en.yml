@@ -3,6 +3,12 @@ en:
     name: 'Effective Orders'
     acronym: 'Finance'
 
+  activerecord:
+    actions:
+      effective/order:
+        send_buyer_receipt: 'E-mail receipt to buyer'
+        send_buyer_receipt_confirm: 'Send receipt to @resource.emails_send_to?'
+
   datatables:
     admin/report_transactions_datatable: 'Individual Transactions'
     admin/report_transactions_grouped_by_name_datatable: 'Transactions Grouped By Name'

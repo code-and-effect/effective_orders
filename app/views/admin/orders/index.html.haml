@@ -1,7 +1,0 @@
-= render 'layout' do
-  %h1.effective-admin-heading= @page_title
-
-  %p.text-right.effective-admin-actions
-    = link_to 'New Order', effective_orders.new_admin_order_path, class: 'btn btn-primary'
-
-  = render_datatable @datatable

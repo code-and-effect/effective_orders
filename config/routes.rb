@@ -49,10 +49,12 @@ EffectiveOrders::Engine.routes.draw do
     resources :orders do
       member do
         post :send_payment_request
+        post :send_buyer_receipt
 
-        get :checkout
+        # GET should be last here
         post :checkout
         patch :checkout
+        get :checkout
       end
 
       collection do

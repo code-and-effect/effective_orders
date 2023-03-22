@@ -1,25 +1,3 @@
 .effective-order-actions
   - if order.persisted?
-    = link_to 'Print', '#', class: 'btn btn-primary print-button', data: { role: 'print-button' }, onClick: 'window.print(); false;'
-
-  - if order.purchased?
-    = link_to 'E-mail Receipt', effective_orders.send_buyer_receipt_order_path(order),
-      class: 'btn btn-secondary',
-      data: { method: :post, confirm: "Send receipt to #{order.emails_send_to}?" }
-
-  - if controller_path.include?('admin/') && (EffectiveResources.authorized?(controller, :admin, :effective_orders) rescue false)
-    - if order.persisted? && order.in_progress?
-      - if params[:action] == 'show'
-        = link_to('Edit', effective_orders.edit_admin_order_path(order), class: 'btn btn-primary')
-
-      - if params[:action] == 'edit'
-        = link_to('Show', effective_orders.admin_order_path(order), class: 'btn btn-primary')
-
-      - unless order.refund?
-        = link_to 'Email request for payment to buyer', effective_orders.send_payment_request_admin_order_path(order),
-          class: 'btn btn-secondary',
-          data: { method: :post, confirm: "Send request for payment to #{order.emails_send_to}?" }
-
-      = link_to 'Delete', effective_orders.admin_order_path(order),
-        class: 'btn btn-danger',
-        data: { method: :delete, confirm: "Really delete #{order}?" }
+    = link_to icon('printer') + ' Print', '#', class: 'btn btn-sm btn-outline-primary print-button', data: { role: 'print-button' }, onClick: 'window.print(); false;'
