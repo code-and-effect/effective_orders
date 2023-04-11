@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module Effective
+  # An Order Item
   class OrderItem < ActiveRecord::Base
     self.table_name = EffectiveOrders.order_items_table_name.to_s
 
@@ -9,9 +12,7 @@ module Effective
 
     log_changes(to: :order) if respond_to?(:log_changes)
 
-    if defined?(EffectiveQbSync)
-      has_one :qb_order_item
-    end
+    has_one :qb_order_item if defined?(EffectiveQbSync)
 
     effective_resource do
       name                  :string

@@ -116,14 +116,11 @@ module Effective
 
     # Price validations
     validates :subtotal, presence: true
+    validates :total, presence: true, if: -> { EffectiveOrders.minimum_charge.to_i > 0 }
 
-    with_options(if: -> { EffectiveOrders.minimum_charge.to_i > 0 }) do
-      validates :total, presence: true
-
-      validate(unless: -> { (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }) do
-        if total.present? && total < EffectiveOrders.minimum_charge
-          errors.add(:total, "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items.")
-        end
+    validate(if: -> { total.present? && EffectiveOrders.minimum_charge.to_i > 0 }, unless: -> { purchased? || (free? && EffectiveOrders.free?) || (refund? && EffectiveOrders.refund?) }) do
+      if total < EffectiveOrders.minimum_charge
+        errors.add(:total, "must be $#{'%0.2f' % (EffectiveOrders.minimum_charge.to_i / 100.0)} or more. Please add additional items.")
       end
     end
 

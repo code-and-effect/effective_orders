@@ -80,7 +80,7 @@ module ActsAsPurchasable
     elsif value.blank?
       super
     else
-      raise 'expected price to be an Integer representing the number of cents.'
+      raise "expected price to be an Integer representing the number of cents. Got: #{value}"
     end
   end
 
