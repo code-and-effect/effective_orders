@@ -19,6 +19,8 @@ module Admin
       col :purchased_at
       col :user
       col :order_items
+      col :payment_provider, search: EffectiveOrders.payment_providers
+      col :payment_method
 
       col :subtotal, as: :price
       col :tax, as: :price
