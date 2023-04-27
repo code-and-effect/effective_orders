@@ -31,6 +31,9 @@ module ActsAsPurchasable
     has_many :purchased_orders, -> { where(state: EffectiveOrders::PURCHASED).order(:purchased_at) },
       through: :order_items, class_name: 'Effective::Order', source: :order
 
+    has_many :deferred_orders, -> { where(state: EffectiveOrders::DEFERRED).order(:created_at) },
+      through: :order_items, class_name: 'Effective::Order', source: :order
+
     # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
     validates :price, presence: true
     validates :price, numericality: { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
@@ -94,6 +97,10 @@ module ActsAsPurchasable
 
   def purchased?
     purchased_order_id.present?
+  end
+
+  def deferred?
+    deferred_orders.any? { |order| order.deferred? }
   end
 
   def purchased_at
