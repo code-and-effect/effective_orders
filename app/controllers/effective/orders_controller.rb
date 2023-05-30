@@ -104,6 +104,20 @@ module Effective
       EffectiveResources.authorize!(self, :show, @order)
     end
 
+    def send_buyer_receipt
+      @order = Effective::Order.purchased.find(params[:id])
+
+      EffectiveResources.authorize!(self, :show, @order)
+
+      if @order.send_order_receipt_to_buyer!
+        flash[:success] = "A receipt has been sent to #{@order.emails_send_to}"
+      else
+        flash[:danger] = "Unable to send receipt."
+      end
+
+      redirect_to effective_orders.order_path(@order)
+    end
+
     def bulk_send_buyer_receipt
       @orders = Effective::Order.purchased.where(id: params[:ids])
 
