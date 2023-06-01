@@ -23,6 +23,11 @@ EffectiveOrders.setup do |config|
   # Use effective_obfuscation gem to change order.id into a seemingly random 10-digit number
   config.obfuscate_order_ids = false
 
+  # Allow orders to be purchased by organization members
+  # This will fallback to EffectiveMemberships.Organization if you have that gem installed
+  # config.organization_enabled = false
+  # config.organization_class_name = 'Example::Organization'
+
   # Synchronize with Quickbooks
   config.use_effective_qb_sync = false
   config.use_effective_qb_online = false

@@ -1,10 +1,18 @@
 = effective_form_with(model: [:admin, order], engine: true) do |f|
-  = f.hidden_field :user_type, value: (f.object.user || current_user).class.name
+  -# User
+  - klass = (f.object.user || current_user).class
+  - ajax_url = (@select2_users_ajax_path || effective_resources.users_admin_select2_ajax_index_path) unless Rails.env.test?
 
-  - ajax_url = (@select2_ajax_path || effective_resources.users_admin_select2_ajax_index_path) unless Rails.env.test?
+  = f.hidden_field :user_type, value: klass.name
+  = f.select :user_id, klass.all, ajax_url: ajax_url
 
-  = f.select :user_id, current_user.class.all, label: 'Buyer', required: true,
-    ajax_url: ajax_url, hint: 'The user that should purchase this order.'
+  -# Organization
+  - if EffectiveOrders.organization_enabled?
+    - klass = (f.object.organization || EffectiveOrders.Organization.new).class
+    - ajax_url = (@select2_organizations_ajax_path || effective_resources.organizations_admin_select2_ajax_index_path) unless Rails.env.test?
+
+    = f.hidden_field :organization_type, value: klass.name
+    = f.select :organization_id, klass.all, ajax_url: ajax_url
 
   = f.email_cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
 
