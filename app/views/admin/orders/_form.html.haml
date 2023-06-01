@@ -13,4 +13,4 @@
 
   - if order.persisted? && order.respond_to?(:logs_datatable)
     = tab 'Logs' do
-      .effective-order-admin-logs= render_inline_datatable(order.logs_datatable)
+      .effective-order-admin-logs= render_inline_datatable(order.log_changes_datatable)
