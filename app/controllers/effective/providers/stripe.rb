@@ -7,7 +7,7 @@ module Effective
         raise('stripe provider is not available') unless EffectiveOrders.stripe?
 
         @order = Order.find(params[:id])
-        @customer = Effective::Customer.for_user(@order.user)
+        @customer = Effective::Customer.for_user(current_user)
 
         EffectiveResources.authorize!(self, :update, @order)
 
@@ -33,7 +33,8 @@ module Effective
           payment: payment,
           provider: 'stripe',
           card: payment[:card],
-          purchased_url: stripe_params[:purchased_url]
+          purchased_url: stripe_params[:purchased_url],
+          current_user: current_user
         )
       end
 

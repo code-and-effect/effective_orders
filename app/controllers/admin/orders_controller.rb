@@ -85,13 +85,7 @@ module Admin
         flash[:danger] = 'Unable to send payment request'
       end
 
-      if respond_to?(:redirect_back)
-        redirect_back(fallback_location: effective_orders.admin_order_path(@order))
-      elsif request.referrer.present?
-        redirect_to :back
-      else
-        redirect_to effective_orders.admin_order_path(@order)
-      end
+      redirect_back(fallback_location: effective_orders.admin_order_path(@order))
     end
 
     def bulk_send_payment_request

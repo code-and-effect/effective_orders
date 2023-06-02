@@ -590,7 +590,7 @@ module Effective
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false)
+    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false, current_user: nil)
       return true if purchased?
 
       # Assign attributes
@@ -604,6 +604,10 @@ module Effective
         payment_provider: (provider.presence || 'none'),
         payment_card: (card.presence || 'none')
       )
+
+      if current_user&.email.present?
+        assign_attributes(email: current_user.email)
+      end
 
       # Updates surcharge and total based on payment_provider
       assign_order_charges()
@@ -696,12 +700,12 @@ module Effective
 
     # These are all the emails we send all notifications to
     def emails
-      ([email] + Array(organization.try(:billing_emails)) + [cc]).map(&:presence).compact
+      ([email] + [user&.email] + Array(organization.try(:billing_emails))).map(&:presence).compact.uniq
     end
 
     # Doesn't control anything. Purely for the flash messaging
     def emails_send_to
-      emails.to_sentence
+      (emails + [cc.presence]).compact.uniq.to_sentence
     end
 
     def send_order_receipts!
@@ -797,13 +801,15 @@ module Effective
       order_items.reject { |oi| oi.marked_for_destruction? }
     end
 
+    # Organization first
     def assign_billing_name
-      self.billing_name = billing_address.try(:full_name).presence || orgaization.to_s.presence || user.to_s.presence
+      self.billing_name = billing_address.try(:full_name).presence || organization.to_s.presence || user.to_s.presence
     end
 
+    # User first
     def assign_billing_email
-      value = organization.try(:email).presence || user.try(:email).presence
-      self.email = value if value.present?
+      email = emails.first
+      assign_attributes(email: email) if email.present?
     end
 
     def assign_organization_address

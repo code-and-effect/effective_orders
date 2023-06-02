@@ -15,7 +15,7 @@
             = (order.purchased_at || order.created_at).strftime("%F %H:%M")
           %td= order_summary(order)
           %td
-            - if order.pending?
+            - if order.pending? || order.confirmed?
               = link_to_checkout(order: order)
             - else
               = link_to 'View', effective_orders.order_path(order)

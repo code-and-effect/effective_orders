@@ -14,7 +14,8 @@ module Effective
 
         @order ||= Effective::Order.find(params[:response_order_id])
 
-        (EffectiveResources.authorize!(self, :update, @order) rescue false)
+        # We do this even if we're not authorized
+        EffectiveResources.authorized?(self, :update, @order)
 
         # Delete the Purchased and Declined Redirect URLs
         purchased_url = params.delete(:rvar_purchased_url)
@@ -37,7 +38,7 @@ module Effective
           return order_declined(payment: payment, provider: 'moneris', card: params[:card], declined_url: declined_url)
         end
 
-        order_purchased(payment: payment, provider: 'moneris', card: params[:card], purchased_url: purchased_url)
+        order_purchased(payment: payment, provider: 'moneris', card: params[:card], purchased_url: purchased_url, current_user: current_user)
       end
 
       private

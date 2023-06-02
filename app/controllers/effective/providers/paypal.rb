@@ -14,13 +14,14 @@ module Effective
 
         @order ||= Effective::Order.where(id: (params[:invoice].to_i rescue 0)).first
 
-        (EffectiveResources.authorize!(self, :update, @order) rescue false)
+        # We do this even if we're not authorized
+        EffectiveResources.authorized?(self, :update, @order)
 
         if @order.present?
           if @order.purchased?
             order_purchased(payment: params, provider: 'paypal', card: params[:payment_type])
           elsif (params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret])
-            order_purchased(payment: params, provider: 'paypal', card: params[:payment_type])
+            order_purchased(payment: params, provider: 'paypal', card: params[:payment_type], current_user: current_user)
           else
             order_declined(payment: params, provider: 'paypal', card: params[:payment_type])
           end
