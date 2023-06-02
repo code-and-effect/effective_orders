@@ -108,8 +108,8 @@ module Effective
     end
 
     with_options(unless: -> { done? }) do
-      before_validation { assign_user_address }
       before_validation { assign_organization_address }
+      before_validation { assign_user_address }
       before_validation { assign_billing_name }
       before_validation { assign_billing_email }
       before_validation { assign_order_values }
@@ -694,9 +694,14 @@ module Effective
       true
     end
 
+    # These are all the emails we send all notifications to
+    def emails
+      ([email] + Array(organization.try(:billing_emails)) + [cc]).map(&:presence).compact
+    end
+
     # Doesn't control anything. Purely for the flash messaging
     def emails_send_to
-      [email, cc.presence].compact.to_sentence
+      emails.to_sentence
     end
 
     def send_order_receipts!
@@ -793,11 +798,12 @@ module Effective
     end
 
     def assign_billing_name
-      self.billing_name = billing_address.try(:full_name).presence || user.to_s.presence
+      self.billing_name = billing_address.try(:full_name).presence || orgaization.to_s.presence || user.to_s.presence
     end
 
     def assign_billing_email
-      self.email = user.email if user.try(:email).present?
+      value = organization.try(:email).presence || user.try(:email).presence
+      self.email = value if value.present?
     end
 
     def assign_organization_address
