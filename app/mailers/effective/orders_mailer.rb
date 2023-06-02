@@ -158,8 +158,8 @@ module Effective
 
       to ||= EffectiveOrders.mailer_admin
       from ||= EffectiveOrders.mailer_sender
-      subject ||= subject_for(__method__,"An error occurred with order: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
+      subject ||= subject_for(__method__,"An error occurred with order: ##{@order.to_param}", @order, opts)
+      headers = headers_for(@order, opts)
 
       mail(to: to, from: from, subject: subject, **headers) do |format|
         format.html { render(template) }
