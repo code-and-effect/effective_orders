@@ -14,7 +14,8 @@ module Effective
           payment: 'for pretend',
           provider: 'pretend',
           card: 'none',
-          purchased_url: pretend_params[:purchased_url]
+          purchased_url: pretend_params[:purchased_url],
+          current_user: current_user
         )
       end
 

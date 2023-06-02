@@ -7,7 +7,9 @@ module Effective
         raise('moneris_checkout provider is not available') unless EffectiveOrders.moneris_checkout?
 
         @order = Order.find(params[:id])
-        (EffectiveResources.authorize!(self, :update, @order) rescue false)
+
+        # We do this even if we're not authorized.
+        EffectiveResources.authorized?(self, :update, @order)
 
         payment = moneris_checkout_receipt_request(moneris_checkout_params[:ticket])
         purchased = (1..49).include?(payment['response_code'].to_i) # Must be > 0 and < 50 to be valid. Sometimes we get the string 'null'
@@ -24,7 +26,8 @@ module Effective
           payment: payment,
           provider: 'moneris_checkout',
           card: payment['card_type'],
-          purchased_url: moneris_checkout_params[:purchased_url]
+          purchased_url: moneris_checkout_params[:purchased_url],
+          current_user: current_user
         )
       end
 

@@ -19,7 +19,8 @@ module Effective
           card: mark_as_paid_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,
           skip_buyer_validations: true,
-          purchased_url: effective_orders.admin_order_path(@order)
+          purchased_url: effective_orders.admin_order_path(@order),
+          current_user: nil # Admin action, we don't want to assign current_user to the order
         )
       end
 

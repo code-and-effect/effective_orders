@@ -41,6 +41,9 @@ module EffectiveOrders
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
       :credit_card_surcharge_percent, :credit_card_surcharge_qb_item_name,
 
+      # Organization mode
+      :organization_enabled, :organization_class_name,
+
       # Mailer
       :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin, :mailer_subject,
 
@@ -68,6 +71,18 @@ module EffectiveOrders
       shipping_address: EffectiveAddresses.permitted_params,
       subscripter: [:stripe_plan_id, :stripe_token]
     ]
+  end
+
+  def self.organization_enabled?
+    organization_enabled == true
+  end
+
+  def self.Organization
+    klass = organization_class_name&.constantize
+    klass ||= (EffectiveMemberships.Organization if defined?(EffectiveMemberships))
+    raise('Please set the effective_orders config.organization_class_name') if klass.blank?
+
+    klass
   end
 
   def self.cheque?

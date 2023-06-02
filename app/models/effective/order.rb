@@ -31,8 +31,12 @@ module Effective
     # If we want to use orders in a has_many way
     belongs_to :parent, polymorphic: true, optional: true
 
-    belongs_to :user, polymorphic: true, validate: false  # This is the buyer/user of the order. We validate it below.
+    belongs_to :user, polymorphic: true, optional: true, validate: false  # This is the buyer of the order. We validate it below.
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
+
+    # When an organization is present, any user with role :billing in that organization can purchase this order
+    belongs_to :organization, polymorphic: true, optional: true, validate: false
+    accepts_nested_attributes_for :organization, allow_destroy: false, update_only: true
 
     has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
     accepts_nested_attributes_for :order_items, allow_destroy: true, reject_if: :all_blank
@@ -71,7 +75,7 @@ module Effective
 
     serialize :payment, Hash
 
-    scope :deep, -> { includes(:addresses, :user, order_items: :purchasable) }
+    scope :deep, -> { includes(:addresses, :user, :organization, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
@@ -98,21 +102,34 @@ module Effective
       self.state = EffectiveOrders::CONFIRMED if pending? && confirmed_checkout
     end
 
+    before_validation do
+      assign_attributes(user_type: nil) if user_type.present? && user_id.blank?
+      assign_attributes(organization_type: nil) if organization_type.present? && organization_id.blank?
+    end
+
     with_options(unless: -> { done? }) do
-      before_validation { assign_email }
+      before_validation { assign_organization_address }
       before_validation { assign_user_address }
       before_validation { assign_billing_name }
+      before_validation { assign_billing_email }
       before_validation { assign_order_values }
       before_validation { assign_order_charges }
     end
 
     # Order validations
-    validates :user_id, presence: true
-    validates :email, presence: true, email: true  # email and cc validators are from effective_resources
+    validates :email, presence: true, email: true, if: -> { user_id.present? }  # email and cc validators are from effective_resources
     validates :cc, email_cc: true
 
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
     validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
+
+    validate do
+      if EffectiveOrders.organization_enabled?
+        errors.add(:base, "must have a User or #{EffectiveOrders.organization_class_name || 'Organization'}") if user_id.blank? && organization_id.blank?
+      else
+        errors.add(:base, "must have a User") if user_id.blank?
+      end
+    end
 
     # Price validations
     validates :subtotal, presence: true
@@ -164,7 +181,7 @@ module Effective
       raise('cannot change subtotal of a purchased order') if changes[:subtotal].present?
 
       raise('cannot change tax of a purchased order') if changes[:tax].present?
-      raise('cannot change tax of a purchased order') if changes[:tax_rate].present?
+      raise('cannot change tax rate of a purchased order') if changes[:tax_rate].present?
 
       raise('cannot change surcharge of a purchased order') if changes[:surcharge].present?
       raise('cannot change surcharge percent of a purchased order') if changes[:surcharge_percent].present?
@@ -573,7 +590,7 @@ module Effective
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false)
+    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false, current_user: nil)
       return true if purchased?
 
       # Assign attributes
@@ -587,6 +604,10 @@ module Effective
         payment_provider: (provider.presence || 'none'),
         payment_card: (card.presence || 'none')
       )
+
+      if current_user&.email.present?
+        assign_attributes(email: current_user.email)
+      end
 
       # Updates surcharge and total based on payment_provider
       assign_order_charges()
@@ -677,9 +698,14 @@ module Effective
       true
     end
 
+    # These are all the emails we send all notifications to
+    def emails
+      ([email] + [user.try(:email)] + Array(organization.try(:billing_emails))).map(&:presence).compact.uniq
+    end
+
     # Doesn't control anything. Purely for the flash messaging
     def emails_send_to
-      [email, cc.presence].compact.to_sentence
+      (emails + [cc.presence]).compact.uniq.to_sentence
     end
 
     def send_order_receipts!
@@ -775,12 +801,29 @@ module Effective
       order_items.reject { |oi| oi.marked_for_destruction? }
     end
 
+    # Organization first
     def assign_billing_name
-      self.billing_name = billing_address.try(:full_name).presence || user.to_s.presence
+      self.billing_name = billing_address.try(:full_name).presence || organization.to_s.presence || user.to_s.presence
     end
 
-    def assign_email
-      self.email = user.email if user.try(:email).present?
+    # User first
+    def assign_billing_email
+      email = emails.first
+      assign_attributes(email: email) if email.present?
+    end
+
+    def assign_organization_address
+      return unless organization.present?
+
+      if EffectiveOrders.billing_address && billing_address.blank? && organization.try(:billing_address).present?
+        self.billing_address = organization.billing_address
+        self.billing_address.full_name ||= organization.to_s.presence
+      end
+
+      if EffectiveOrders.shipping_address && shipping_address.blank? && organization.try(:shipping_address).present?
+        self.shipping_address = organization.shipping_address
+        self.shipping_address.full_name ||= organization.to_s.presence
+      end
     end
 
     def assign_user_address

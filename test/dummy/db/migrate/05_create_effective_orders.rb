@@ -4,6 +4,9 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.integer   :user_id
       t.string    :user_type
 
+      t.integer   :organization_id
+      t.string    :organization_type
+
       t.integer   :parent_id
       t.string    :parent_type
 

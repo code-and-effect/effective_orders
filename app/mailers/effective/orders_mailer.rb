@@ -21,7 +21,7 @@ module Effective
       subject = subject_for(__method__, "Order Receipt: ##{@order.to_param}", resource, opts)
       headers = headers_for(resource, opts)
 
-      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
+      mail(to: @order.emails, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent when an admin creates a new order or /admin/orders/new
@@ -34,7 +34,7 @@ module Effective
       subject = subject_for(__method__, "Payment request - Order ##{@order.to_param}", resource, opts)
       headers = headers_for(resource, opts)
 
-      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
+      mail(to: @order.emails, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent when someone chooses to Pay by Cheque
@@ -45,7 +45,7 @@ module Effective
       subject = subject_for(__method__, "Pending Order: ##{@order.to_param}", resource, opts)
       headers = headers_for(resource, opts)
 
-      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
+      mail(to: @order.emails, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent to admin when someone Accepts Refund

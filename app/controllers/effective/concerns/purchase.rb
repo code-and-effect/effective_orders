@@ -5,10 +5,10 @@ module Effective
 
       protected
 
-      def order_purchased(payment:, provider:, card: 'none', email: true, skip_buyer_validations: false, purchased_url: nil)
-        @order.purchase!(payment: payment, provider: provider, card: card, email: email, skip_buyer_validations: skip_buyer_validations)
+      def order_purchased(payment:, provider:, card: 'none', email: true, skip_buyer_validations: false, purchased_url: nil, current_user: nil)
+        @order.purchase!(payment: payment, provider: provider, card: card, email: email, skip_buyer_validations: skip_buyer_validations, current_user: current_user)
 
-        Effective::Cart.where(user: @order.user).destroy_all
+        Effective::Cart.where(user: current_user).destroy_all if current_user.present?
 
         if flash[:success].blank?
           if email && @order.send_order_receipt_to_buyer?
@@ -25,7 +25,7 @@ module Effective
       def order_deferred(provider:, email: true, deferred_url: nil)
         @order.defer!(provider: provider, email: email)
 
-        Effective::Cart.where(user: @order.user).destroy_all
+        Effective::Cart.where(user: @order.user).destroy_all if @order.user.present?
 
         if flash[:success].blank?
           if email

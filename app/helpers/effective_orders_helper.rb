@@ -83,7 +83,8 @@ module EffectiveOrdersHelper
   end
 
   def render_checkout(order, namespace: nil, purchased_url: nil, declined_url: nil, deferred_url: nil)
-    raise 'unable to checkout an order without a user' unless order && order.user
+    raise 'expected an order' unless order.kind_of?(Effective::Order)
+    raise 'unable to checkout an order without a user or organization' if order && (order.user.blank? && order.organization.blank?)
 
     locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url, namespace: namespace }
 
