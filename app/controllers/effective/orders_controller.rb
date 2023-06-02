@@ -104,6 +104,7 @@ module Effective
       EffectiveResources.authorize!(self, :show, @order)
     end
 
+    # This is used by both the Admin and User
     def send_buyer_receipt
       @order = Effective::Order.purchased.find(params[:id])
 
@@ -115,7 +116,7 @@ module Effective
         flash[:danger] = "Unable to send receipt."
       end
 
-      redirect_to effective_orders.order_path(@order)
+      redirect_back(fallback_location: effective_orders.order_path(@order))
     end
 
     def bulk_send_buyer_receipt
