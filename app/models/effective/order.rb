@@ -700,7 +700,7 @@ module Effective
 
     # These are all the emails we send all notifications to
     def emails
-      ([email] + [user&.email] + Array(organization.try(:billing_emails))).map(&:presence).compact.uniq
+      ([email] + [user.try(:email)] + Array(organization.try(:billing_emails))).map(&:presence).compact.uniq
     end
 
     # Doesn't control anything. Purely for the flash messaging
