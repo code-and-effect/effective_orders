@@ -12,7 +12,7 @@ module Effective
 
         if flash[:success].blank?
           if email && @order.send_order_receipt_to_buyer?
-            flash[:success] = "Payment successful! A receipt has been sent to #{@order.emails_send_to}"
+            flash[:success] = "Payment successful! A receipt has been sent to #{@order.email}"
           else
             flash[:success] = "Payment successful! An email receipt has not been sent."
           end
