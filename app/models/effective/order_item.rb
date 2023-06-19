@@ -37,7 +37,17 @@ module Effective
 
     # This method is called in a before_validation in order.assign_order_values()
     def assign_purchasable_attributes
-      assign_attributes(name: purchasable.purchasable_name, price: purchasable.price, tax_exempt: purchasable.tax_exempt) if purchasable
+      return unless purchasable.present?
+
+      self.name ||= purchasable.purchasable_name
+      self.price ||= purchasable.price
+      self.tax_exempt = purchasable.tax_exempt if self.tax_exempt.nil?
+    end
+
+    def update_purchasable_attributes
+      if purchasable.present? && !marked_for_destruction?
+        assign_attributes(name: purchasable.purchasable_name, price: purchasable.price, tax_exempt: purchasable.tax_exempt)
+      end
     end
 
     def build_purchasable(atts = {})

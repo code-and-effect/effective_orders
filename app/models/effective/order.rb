@@ -583,6 +583,12 @@ module Effective
       false
     end
 
+    # Called by effective_memberships to update prices from purchasable fees
+    # Not called internally
+    def update_purchasable_attributes
+      present_order_items.each { |oi| oi.update_purchasable_attributes }
+    end
+
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
     # This is different than the Mark as Paid payment processor
