@@ -112,6 +112,7 @@ module Effective
       before_validation { assign_user_address }
       before_validation { assign_billing_name }
       before_validation { assign_billing_email }
+      before_validation { assign_order_item_values }
       before_validation { assign_order_values }
       before_validation { assign_order_charges }
     end
@@ -840,12 +841,14 @@ module Effective
       end
     end
 
-    # This overwrites the prices, taxes, surcharge, etc on every save.
+    # These two overwrites the prices, taxes, surcharge, etc on every save.
     # Does not get run from the before_validate on purchase.
-    def assign_order_values
+    def assign_order_item_values
       # Copies prices from purchasable into order items
       present_order_items.each { |oi| oi.assign_purchasable_attributes }
+    end
 
+    def assign_order_values
       # Calculated from each item
       self.subtotal = get_subtotal()
 
