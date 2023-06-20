@@ -9,4 +9,6 @@
       - if EffectiveOrders.pretend_message.present?
         %p= EffectiveOrders.pretend_message
 
-      = f.submit order_checkout_label(:pretend), border: false, center: true
+      = f.submit(border: false, center: true) do
+        = f.save order_checkout_label(:pretend)
+        = f.save order_checkout_label(:pretend).gsub('Purchase', 'Decline')
