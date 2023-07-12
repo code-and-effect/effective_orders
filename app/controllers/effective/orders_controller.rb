@@ -63,8 +63,7 @@ module Effective
     def show
       @order = Effective::Order.find(params[:id])
       EffectiveResources.authorize!(self, :show, @order)
-
-      @page_title ||= ((@order.user == current_user && !@order.purchased?) ? 'Checkout' : @order.to_s)
+      @page_title ||= view_context.order_page_title(@order)
     end
 
     # Always step1
