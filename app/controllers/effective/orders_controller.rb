@@ -62,13 +62,16 @@ module Effective
     # Might render step1 or step2
     def show
       @order = Effective::Order.find(params[:id])
-      EffectiveResources.authorize!(self, :show, @order)
       @page_title ||= view_context.order_page_title(@order)
+
+      EffectiveResources.authorize!(self, :show, @order)
     end
 
     # Always step1
     def edit
       @order ||= Effective::Order.was_not_purchased.find(params[:id])
+      @page_title ||= view_context.order_page_title(@order)
+
       EffectiveResources.authorize!(self, :edit, @order)
     end
 

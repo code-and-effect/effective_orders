@@ -1,13 +1,9 @@
 - form ||= local_assigns[:form] || local_assigns[:f]
 
-= render 'effective/orders/order_notes', order: form.object
-= render 'effective/orders/order_items', order: form.object
+-# = render 'effective/orders/order_notes', order: form.object
+-# = render 'effective/orders/order_items', order: form.object
 
 = form.hidden_field :confirmed_checkout, value: true
-
-- if current_cart.present?
-  .effective-order-change-items
-    = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow, class: 'btn btn-secondary'
 
 - num_addresses = [EffectiveOrders.billing_address, EffectiveOrders.shipping_address].count(true)
 

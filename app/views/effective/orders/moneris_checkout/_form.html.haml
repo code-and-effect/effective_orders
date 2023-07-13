@@ -4,9 +4,6 @@
 
 .card
   .card-body.bg-light
-    .mb-3.text-center
-      %h2 Checkout
-
     = effective_form_with(scope: :moneris_checkout, url: effective_orders.moneris_checkout_order_path(order), data: { 'moneris-checkout-form': moneris_checkout.to_json }) do |f|
       = f.hidden_field :purchased_url, value: purchased_url
       = f.hidden_field :declined_url, value: declined_url

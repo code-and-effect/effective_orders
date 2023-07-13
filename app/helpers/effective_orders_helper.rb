@@ -89,6 +89,8 @@ module EffectiveOrdersHelper
 
     if order.purchased? || order.declined?
       order.to_s
+    elsif authorized && (controller.action_name == 'edit')
+      'Order Review'
     elsif authorized && (order.confirmed? || order.deferred?) && order.errors.blank?
       'Checkout'
     elsif authorized && order.pending?
