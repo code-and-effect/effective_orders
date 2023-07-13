@@ -2,7 +2,7 @@
   .effective-order-change-items
     = link_to 'Change Items', effective_orders.cart_path, rel: :nofollow
 
-= render(order, no_order_actions: true)
+= render('/effective/orders/order', order: order, no_order_actions: true)
 
 = effective_form_with(model: order, url: checkout_step1_form_url(order, namespace)) do |f|
   = render('effective/orders/fields', order: order, form: f)
