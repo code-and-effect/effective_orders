@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'devise'
-  s.add_development_dependency 'haml-rails'
+  s.add_development_dependency 'haml'
   s.add_development_dependency 'pry-byebug'
+  s.add_development_dependency 'psych', '< 4'
 end
