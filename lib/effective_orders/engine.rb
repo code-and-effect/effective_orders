@@ -20,7 +20,7 @@ module EffectiveOrders
     end
 
     initializer 'effective_orders.assets' do |app|
-      app.config.assets.precompile += ['effective_orders_manifest.js', 'effective_orders/*']
+      app.config.assets.precompile += ['effective_orders_manifest.js', 'logo.png', 'stripe.png']
     end
 
     initializer 'effective_orders.refund', after: :load_config_initializers do
