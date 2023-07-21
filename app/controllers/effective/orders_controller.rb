@@ -19,8 +19,8 @@ module Effective
       layout(config.kind_of?(Hash) ? (config[:orders] || config[:application]) : config)
     end
 
-    before_action :authenticate_user!, except: [:ccbill_postback, :free, :paypal_postback, :moneris_postback, :pretend]
-    before_action :set_page_title, except: [:show]
+    before_action :authenticate_user!, except: [:free, :paypal_postback, :moneris_postback, :pretend]
+    before_action :set_page_title, except: [:show, :edit]
 
     # If you want to use the Add to Cart -> Checkout flow
     # Add one or more items however you do.
@@ -61,7 +61,7 @@ module Effective
     # This is the entry point for an existing order.
     # Might render step1 or step2
     def show
-      @order = Effective::Order.find(params[:id])
+      @order ||= Effective::Order.find(params[:id])
       @page_title ||= view_context.order_page_title(@order)
 
       EffectiveResources.authorize!(self, :show, @order)
