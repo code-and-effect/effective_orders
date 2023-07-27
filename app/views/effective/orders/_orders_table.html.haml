@@ -3,6 +3,7 @@
     %thead
       %tr
         %th Order
+        %th Buyer
         %th Date
         %th Description
         %th
@@ -11,9 +12,12 @@
         %tr
           %td ##{order.to_param}
           %td
+            = [order.organization, order.user].compact.join('<br>').html_safe
+          %td
             = (order.purchased? ? 'Purchased' : 'Created')
             = (order.purchased_at || order.created_at).strftime("%F %H:%M")
-          %td= order_summary(order)
+          %td
+            = order_summary(order)
           %td
             - if order.pending? || order.confirmed?
               = link_to_checkout(order: order)
