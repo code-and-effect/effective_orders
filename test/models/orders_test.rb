@@ -44,4 +44,15 @@ class OrdersTest < ActiveSupport::TestCase
     assert_email { order.pending! }
   end
 
+  test 'assigned purchased by when purchased' do
+    order = create_effective_order!()
+    user = order.user
+
+    assert order.purchased_by.blank?
+
+    order.purchase!(current_user: user)
+
+    assert_equal user, order.purchased_by
+  end
+
 end

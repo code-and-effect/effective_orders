@@ -21,8 +21,8 @@ module Effective
       subject = subject_for(__method__, "Order Receipt: ##{@order.to_param}", resource, opts)
       headers = headers_for(resource, opts)
 
-      # Just @order.email here. Not everyone.
-      mail(to: @order.email, cc: @order.cc.presence, subject: subject, **headers)
+      # Just to the purchaser. Not everyone.
+      mail(to: @order.emails.first, cc: @order.cc.presence, subject: subject, **headers)
     end
 
     # This is sent when an admin creates a new order or /admin/orders/new

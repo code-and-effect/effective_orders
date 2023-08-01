@@ -11,7 +11,10 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.string    :parent_type
 
       t.string    :state
+
       t.datetime  :purchased_at
+      t.integer   :purchased_by_id
+      t.string    :purchased_by_type
 
       t.text      :note
       t.text      :note_to_buyer

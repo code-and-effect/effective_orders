@@ -31,12 +31,16 @@ module Effective
     # If we want to use orders in a has_many way
     belongs_to :parent, polymorphic: true, optional: true
 
-    belongs_to :user, polymorphic: true, optional: true, validate: false  # This is the buyer of the order. We validate it below.
+    # This is user the order is for
+    belongs_to :user, polymorphic: true, optional: true, validate: false
     accepts_nested_attributes_for :user, allow_destroy: false, update_only: true
 
     # When an organization is present, any user with role :billing in that organization can purchase this order
     belongs_to :organization, polymorphic: true, optional: true, validate: false
     accepts_nested_attributes_for :organization, allow_destroy: false, update_only: true
+
+    # When purchased, this is the user that purchased it.
+    belongs_to :purchased_by, polymorphic: true, optional: true, validate: false
 
     has_many :order_items, -> { order(:id) }, inverse_of: :order, dependent: :delete_all
     accepts_nested_attributes_for :order_items, allow_destroy: true, reject_if: :all_blank
@@ -75,7 +79,7 @@ module Effective
 
     serialize :payment, Hash
 
-    scope :deep, -> { includes(:addresses, :user, :organization, order_items: :purchasable) }
+    scope :deep, -> { includes(:addresses, :user, :purchased_by, :organization, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
@@ -605,9 +609,10 @@ module Effective
         state: EffectiveOrders::PURCHASED,
         skip_buyer_validations: skip_buyer_validations,
 
-        payment: payment_to_h(payment.presence || 'none'),
         purchased_at: (purchased_at.presence || Time.zone.now),
+        purchased_by: (purchased_by.presence || current_user),
 
+        payment: payment_to_h(payment.presence || 'none'),
         payment_provider: (provider.presence || 'none'),
         payment_card: (card.presence || 'none')
       )
@@ -707,7 +712,7 @@ module Effective
 
     # These are all the emails we send all notifications to
     def emails
-      ([email] + [user.try(:email)] + Array(organization.try(:billing_emails))).map(&:presence).compact.uniq
+      ([purchased_by.try(:email)] + [email] + [user.try(:email)] + Array(organization.try(:billing_emails))).map(&:presence).compact.uniq
     end
 
     # Doesn't control anything. Purely for the flash messaging
