@@ -44,7 +44,7 @@ module Admin
         order.purchased_at&.strftime('%F %H:%M') || ('pending refund' if order.pending_refund?) || ("pending #{order.payment_provider}" if order.deferred?) || 'not purchased'
       end
 
-      col :purchased_by, search: :string
+      col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
 
       if attributes[:user_id].blank?
         col :user, search: :string

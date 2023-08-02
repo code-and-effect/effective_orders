@@ -29,7 +29,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
         order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
       end
 
-      col :purchased_by, search: :string
+      col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
     end
 
     if EffectiveOrders.billing_address

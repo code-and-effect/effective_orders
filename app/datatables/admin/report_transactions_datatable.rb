@@ -17,6 +17,12 @@ module Admin
       end
 
       col :purchased_at
+      col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
+
+      if EffectiveOrders.organization_enabled?
+        col :organization
+      end
+
       col :user
       col :order_items
       col :payment_provider, search: EffectiveOrders.payment_providers
@@ -49,10 +55,9 @@ module Admin
     end
 
     collection do
-      Effective::Order.purchased
+      Effective::Order.purchased.deep
         .where(purchased_at: date_range)
         .where('total != 0')
-        .includes(:user, [order_items: :purchasable])
     end
   end
 end
