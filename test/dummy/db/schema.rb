@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 5) do
+ActiveRecord::Schema.define(version: 6) do
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -176,6 +176,19 @@ ActiveRecord::Schema.define(version: 5) do
     t.index ["customer_id"], name: "index_subscriptions_on_customer_id"
     t.index ["subscribable_id"], name: "index_subscriptions_on_subscribable_id"
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
+  end
+
+  create_table "things", force: :cascade do |t|
+    t.integer "purchased_order_id"
+    t.integer "purchased_by_id"
+    t.string "purchased_by_type"
+    t.string "title"
+    t.integer "price"
+    t.boolean "tax_exempt", default: false
+    t.string "qb_item_name"
+    t.datetime "purchased_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "users", force: :cascade do |t|
