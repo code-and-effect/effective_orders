@@ -459,7 +459,7 @@ module Effective
     end
 
     def purchasables
-      present_order_items.map { |order_item| order_item.purchasable }
+      present_order_items.map { |order_item| order_item.purchasable }.compact
     end
 
     def subtotal
@@ -596,8 +596,8 @@ module Effective
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
     # This is different than the Mark as Paid payment processor
-    def mark_as_purchased!
-      purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true)
+    def mark_as_purchased!(current_user: nil)
+      purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true, current_user: current_user)
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
@@ -882,7 +882,18 @@ module Effective
     end
 
     def update_purchasables_purchased_order!
-      order_items.each { |oi| oi.purchasable&.update_column(:purchased_order_id, self.id) }
+      purchasables.each do |purchasable| 
+        columns = {
+          purchased_order_id: id,
+          purchased_at: (purchased_at if purchasable.respond_to?(:purchased_at=)),
+          purchased_by_id: (purchased_by_id if purchasable.respond_to?(:purchased_by_id=)),
+          purchased_by_type: (purchased_by_type if purchasable.respond_to?(:purchased_by_type=))
+        }.compact
+
+        purchasable.update_columns(columns)
+      end
+
+      true
     end
 
     def run_purchasable_callbacks(name)

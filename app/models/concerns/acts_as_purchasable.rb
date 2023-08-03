@@ -9,6 +9,8 @@
 # add_column :resources, :price, :integer
 # add_column :resources, :tax_exempt, :boolean, default: false
 # add_column :resources, :qb_item_name, :string
+#
+# You can also optionally add :purchased_at :datetime, and purchased_by_id and purchased_by_type
 
 module ActsAsPurchasable
   extend ActiveSupport::Concern
@@ -104,7 +106,7 @@ module ActsAsPurchasable
   end
 
   def purchased_at
-    purchased_order.try(:purchased_at)
+    self[:purchased_at] || purchased_order.try(:purchased_at)
   end
 
   def purchased_by?(user)

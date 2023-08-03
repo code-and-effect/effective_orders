@@ -1,4 +1,17 @@
 module EffectiveOrdersTestBuilder
+  def create_thing!
+    build_thing.tap { |thing| thing.save! }
+  end
+
+  def build_thing
+    thing = Thing.new(
+      title: 'Thing',
+      price: 100_00,
+      tax_exempt: false,
+      qb_item_name: 'Thing'
+    )
+  end
+
   def create_effective_order!
     build_effective_order.tap { |order| order.save! }
   end
