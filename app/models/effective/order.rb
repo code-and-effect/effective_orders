@@ -720,7 +720,7 @@ module Effective
     end
 
     def unvoid!
-      raise('unable to void a purchased order') if purchased?
+      raise('order must be voided to unvoid') unless voided?
       pending!
     end
 
