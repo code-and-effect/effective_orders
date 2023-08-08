@@ -430,7 +430,7 @@ module Effective
     end
 
     def done?
-      persisted? && (purchased? || declined? || voided?)
+      persisted? && (purchased? || declined? || voided? || abandoned?)
     end
 
     # A custom order is one that was created by an admin
@@ -599,6 +599,8 @@ module Effective
     def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false, current_user: nil)
       return true if purchased?
 
+      raise('unable to purchase voided order') if voided?
+
       # Assign attributes
       assign_attributes(
         skip_buyer_validations: skip_buyer_validations,
@@ -628,7 +630,7 @@ module Effective
 
           run_purchasable_callbacks(:after_purchase)
         end
-      rescue => e
+      rescue ActiveRecord::RecordInvalid => e
         Effective::Order.transaction do
           save!(validate: false)
           update_purchasables_purchased_order!
@@ -706,6 +708,16 @@ module Effective
       raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
       true
+    end
+
+    def void!
+      raise('unable to void a purchased order') if purchased?
+      voided!
+    end
+
+    def unvoid!
+      raise('unable to void a purchased order') if purchased?
+      pending!
     end
 
     # These are all the emails we send all notifications to

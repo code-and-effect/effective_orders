@@ -1,7 +1,7 @@
 = render 'layout' do
   %h1.effective-heading= @page_title
 
-  - if !@order.purchased? && EffectiveResources.authorized?(self, :update, @order)
+  - if EffectiveResources.authorized?(self, :checkout, @order)
     = render_checkout(@order)
   - else
     = render(@order)
