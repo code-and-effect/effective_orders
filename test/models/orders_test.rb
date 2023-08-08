@@ -5,6 +5,7 @@ class OrdersTest < ActiveSupport::TestCase
   test 'create a valid order' do
     order = create_effective_order!()
     assert order.valid?
+    assert order.pending?
 
     assert_equal 2, order.order_items.length
 
@@ -53,6 +54,25 @@ class OrdersTest < ActiveSupport::TestCase
     order.purchase!(current_user: user)
 
     assert_equal user, order.purchased_by
+  end
+
+  test 'voiding an order' do
+    order = create_effective_order!()
+    assert order.void!
+
+    assert_equal 'voided', order.status
+    assert order.voided?
+
+    assert order.unvoid!
+    assert_equal 'pending', order.status
+    refute order.voided?
+  end
+
+  test 'void order cannot be purchased' do
+    order = create_effective_order!()
+    assert order.void!
+
+    assert_raises(Exception) { order.purchase! }
   end
 
 end

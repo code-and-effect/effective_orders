@@ -46,8 +46,7 @@ module Admin
 
       if request.get?
         @order.assign_confirmed_if_valid!
-        render(:checkout)
-        return
+        return render(:checkout)
       end
 
       # Otherwise a post
@@ -96,7 +95,7 @@ module Admin
 
         @orders.each { |order| order.send_payment_request_to_buyer! }
         render json: { status: 200, message: "Successfully sent #{@orders.length} payment request emails"}
-      rescue => e
+      rescue Exception => e
         render json: { status: 500, message: "Bulk send payment request error: #{e.message}" }
       end
     end

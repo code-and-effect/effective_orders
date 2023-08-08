@@ -20,6 +20,7 @@ module Admin
         scope :purchased
 
         scope :deferred if EffectiveOrders.deferred_providers.present?
+        scope :voided
 
         scope :pending_refunds if EffectiveOrders.refund && !EffectiveOrders.buyer_purchases_refund?
         scope :refunds if EffectiveOrders.refund
@@ -39,6 +40,8 @@ module Admin
       col :id, label: 'Number' do |order|
         '#' + order.to_param
       end
+
+      col :status
 
       col :purchased_at do |order|
         order.purchased_at&.strftime('%F %H:%M') || ('pending refund' if order.pending_refund?) || ("pending #{order.payment_provider}" if order.deferred?) || 'not purchased'

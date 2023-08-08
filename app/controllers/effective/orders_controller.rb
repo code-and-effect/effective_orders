@@ -133,7 +133,7 @@ module Effective
         end
 
         render json: { status: 200, message: "Successfully sent #{@orders.length} receipt emails"}
-      rescue => e
+      rescue Exception => e
         render json: { status: 500, message: "Bulk send buyer receipt error: #{e.message}" }
       end
     end

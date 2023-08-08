@@ -1,5 +1,8 @@
 = dropdown(variation: :dropleft) do
-  = dropdown_link_to (order.purchased? ? 'View' : 'Checkout'), effective_orders.order_path(order)
+  - if EffectiveResources.authorized?(controller, :checkout, order)
+    = dropdown_link_to 'Checkout', effective_orders.order_path(order)
+  - else
+    = dropdown_link_to 'View', effective_orders.order_path(order)
 
   - if EffectiveResources.authorized?(controller, :send_buyer_receipt, order)
     = dropdown_link_to 'E-mail Receipt', effective_orders.send_buyer_receipt_order_path(order),

@@ -4,22 +4,6 @@ require 'effective_orders/engine'
 require 'effective_orders/version'
 
 module EffectiveOrders
-  # Order states
-  PENDING = 'pending'        # New orders are created in a pending state
-  CONFIRMED = 'confirmed'    # Once the order has passed checkout step 1
-  DEFERRED = 'deferred'      # Deferred providers. cheque, etransfer or phone was selected.
-  PURCHASED = 'purchased'    # Purchased by provider
-  DECLINED = 'declined'      # Declined by provider
-  ABANDONED = 'abandoned'    # Not set by this gem. Can be set outside it.
-
-  STATES = {
-    PENDING => PENDING,
-    CONFIRMED => CONFIRMED,
-    DEFERRED => DEFERRED,
-    PURCHASED => PURCHASED,
-    DECLINED => DECLINED,
-    ABANDONED => ABANDONED
-  }
 
   # Subscription statuses (as per stripe)
   ACTIVE = 'active'
@@ -238,7 +222,7 @@ module EffectiveOrders
 
       plans = begin
         Stripe::Plan.respond_to?(:all) ? Stripe::Plan.all : Stripe::Plan.list
-      rescue => e
+      rescue Exception => e
         raise e if Rails.env.production?
         Rails.logger.info "[STRIPE ERROR]: #{e.message}"
         Rails.logger.info "[STRIPE ERROR]: effective_orders continuing with empty stripe plans. This would fail loudly in Rails.env.production."
@@ -309,9 +293,5 @@ module EffectiveOrders
   end
 
   class SoldOutException < Exception; end
-
-  def self.gem_path
-    __dir__.chomp('/lib')
-  end
 
 end

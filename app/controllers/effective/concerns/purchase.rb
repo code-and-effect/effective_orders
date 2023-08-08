@@ -25,7 +25,7 @@ module Effective
       def order_deferred(provider:, email: true, deferred_url: nil)
         @order.defer!(provider: provider, email: email)
 
-        Effective::Cart.where(user: @order.user).destroy_all if @order.user.present?
+        Effective::Cart.where(user: current_user).destroy_all if current_user.present?
 
         if flash[:success].blank?
           if email

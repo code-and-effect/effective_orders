@@ -24,6 +24,8 @@ class EffectiveOrdersDatatable < Effective::Datatable
 
     col :parent, visible: false, search: :string
 
+    col :status
+
     unless attributes[:not_purchased]
       col :purchased_at do |order|
         order.purchased_at&.strftime('%F %H:%M') || 'not purchased'

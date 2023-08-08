@@ -5,3 +5,7 @@
     %h2 #{order.label} from Example Inc.
 
     %p.text-muted= order.to_s
+
+    - if order.voided?
+      %p 
+        %strong VOID
