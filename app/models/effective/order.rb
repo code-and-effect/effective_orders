@@ -198,6 +198,10 @@ module Effective
       end
     end
 
+    validate(if: -> { was_voided? }) do
+      errors.add(:status, "cannot update a voided order") unless (voided? || pending?)
+    end
+
     # Sanity check
     before_save(if: -> { status_was.to_s == 'purchased' }) do
       raise('cannot unpurchase an order') unless purchased?
