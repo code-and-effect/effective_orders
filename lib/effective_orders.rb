@@ -4,22 +4,6 @@ require 'effective_orders/engine'
 require 'effective_orders/version'
 
 module EffectiveOrders
-  # Order states
-  PENDING = 'pending'        # New orders are created in a pending state
-  CONFIRMED = 'confirmed'    # Once the order has passed checkout step 1
-  DEFERRED = 'deferred'      # Deferred providers. cheque, etransfer or phone was selected.
-  PURCHASED = 'purchased'    # Purchased by provider
-  DECLINED = 'declined'      # Declined by provider
-  ABANDONED = 'abandoned'    # Not set by this gem. Can be set outside it.
-
-  STATES = {
-    PENDING => PENDING,
-    CONFIRMED => CONFIRMED,
-    DEFERRED => DEFERRED,
-    PURCHASED => PURCHASED,
-    DECLINED => DECLINED,
-    ABANDONED => ABANDONED
-  }
 
   # Subscription statuses (as per stripe)
   ACTIVE = 'active'

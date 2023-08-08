@@ -30,10 +30,10 @@ module ActsAsPurchasable
     has_many :order_items, as: :purchasable, class_name: 'Effective::OrderItem'
     has_many :orders, -> { order(:id) }, through: :order_items, class_name: 'Effective::Order'
 
-    has_many :purchased_orders, -> { where(state: EffectiveOrders::PURCHASED).order(:purchased_at) },
+    has_many :purchased_orders, -> { where(status: :purchased).order(:purchased_at) },
       through: :order_items, class_name: 'Effective::Order', source: :order
 
-    has_many :deferred_orders, -> { where(state: EffectiveOrders::DEFERRED).order(:created_at) },
+    has_many :deferred_orders, -> { where(status: :deferred).order(:created_at) },
       through: :order_items, class_name: 'Effective::Order', source: :order
 
     # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
@@ -52,10 +52,8 @@ module ActsAsPurchasable
     scope :purchased, -> { where.not(purchased_order_id: nil) }
     scope :not_purchased, -> { where(purchased_order_id: nil) }
 
-    # scope :purchased, -> { joins(order_items: :order).where(orders: {state: EffectiveOrders::PURCHASED}).distinct }
-    # scope :not_purchased, -> { where('id NOT IN (?)', purchased.pluck(:id).presence || [0]) }
-    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: { user_id: user.try(:id), state: EffectiveOrders::PURCHASED }).distinct }
-    scope :not_purchased_by, lambda { |user| where('id NOT IN (?)', purchased_by(user).pluck(:id).presence || [0]) }
+    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: { purchased_by: user, status: :purchased }).distinct }
+    scope :not_purchased_by, lambda { |user| where.not(id: purchased_by(user)) }
   end
 
   module ClassMethods

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (6.6.2)
+    effective_orders (6.6.3)
       coffee-rails
       effective_addresses
       effective_bootstrap
@@ -105,7 +105,7 @@ GEM
       coffee-rails
       effective_resources
       rails (>= 3.2.0)
-    effective_bootstrap (1.14.11)
+    effective_bootstrap (1.14.12)
       bootstrap (< 5)
       coffee-rails
       effective_resources

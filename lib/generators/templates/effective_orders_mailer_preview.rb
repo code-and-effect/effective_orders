@@ -62,7 +62,7 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     order.user = preview_user
     preview_order_items.each { |atts| order.order_items.build(atts) }
 
-    order.state = 'purchased'
+    order.status = :purchased
     order.payment_card = 'visa'
     order.purchased_at = Time.zone.now
     order.payment = { 'f4l4' => '1234'}

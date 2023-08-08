@@ -1,24 +1,41 @@
-# When an Order is first initialized it is done in the pending state
-# - when it's in the pending state, none of the buyer entered information is required
+# When an Order is first initialized it is done in the pending status
+# - when it's in the pending status, none of the buyer entered information is required
 # - when a pending order is rendered:
 # - if the user has a billing address, go to step 2
 # - if the user has no billing address, go to step 1
 #
-# After Step1, we go to the confirmed state
-# After Step2, we are in the purchased or declined state
+# After Step1, we go to the confirmed status
+# After Step2, we are in the purchased or declined status
 
 module Effective
   class Order < ActiveRecord::Base
     self.table_name = EffectiveOrders.orders_table_name.to_s
 
+    # Effective Resources
+    acts_as_statused(
+      :pending,         # New orders are created in a pending state
+      :confirmed,       # Once the order has passed checkout step 1
+      :deferred,        # Deferred providers. cheque, etransfer or phone was selected.
+      :purchased,       # Purchased by provider
+      :declined,        # Declined by provider
+      :voided,          # Voided by admin
+      :abandoned,       # Not set by this gem. Can be set outside it.
+    )
+
+    # Effective Addresses
+    acts_as_addressable(billing: { singular: true }, shipping: { singular: true })
+
+    # Effective Logging
+    log_changes if respond_to?(:log_changes)
+
+    # Effective Obfuscation
     if EffectiveOrders.obfuscate_order_ids
       raise('unsupported obfuscation with tenant') if defined?(Tenant)
       acts_as_obfuscated format: '###-####-###'
     end
 
-    acts_as_addressable(billing: { singular: true }, shipping: { singular: true })
+    # Effective Reports
     acts_as_reportable if respond_to?(:acts_as_reportable)
-    log_changes if respond_to?(:log_changes)
 
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
     attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
@@ -47,7 +64,10 @@ module Effective
 
     # Attributes
     effective_resource do
-      state             :string
+      # Acts as Statused
+      status            :string
+      status_steps      :text
+
       purchased_at      :datetime
 
       note              :text   # From buyer to admin
@@ -82,16 +102,17 @@ module Effective
     scope :deep, -> { includes(:addresses, :user, :purchased_by, :organization, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
 
-    scope :purchased, -> { where(state: EffectiveOrders::PURCHASED) }
+    scope :purchased, -> { where(status: :purchased) }
     scope :purchased_by, lambda { |user| purchased.where(user: user) }
-    scope :not_purchased, -> { where.not(state: [EffectiveOrders::PURCHASED, EffectiveOrders::DEFERRED]) }
-    scope :was_not_purchased, -> { where.not(state: EffectiveOrders::PURCHASED) }
+    scope :not_purchased, -> { where.not(status: [:purchased, :deferred]) }
+    scope :was_not_purchased, -> { where.not(status: :purchased) }
 
-    scope :pending, -> { where(state: EffectiveOrders::PENDING) }
-    scope :confirmed, -> { where(state: EffectiveOrders::CONFIRMED) }
-    scope :deferred, -> { where(state: EffectiveOrders::DEFERRED) }
-    scope :declined, -> { where(state: EffectiveOrders::DECLINED) }
-    scope :abandoned, -> { where(state: EffectiveOrders::ABANDONED) }
+    scope :pending, -> { where(status: :pending) }
+    scope :confirmed, -> { where(status: :confirmed) }
+    scope :deferred, -> { where(status: :deferred) }
+    scope :declined, -> { where(status: :declined) }
+    scope :abandoned, -> { where(status: :abandoned) }
+    scope :voided, -> { where(status: :voided) }
 
     scope :refunds, -> { purchased.where('total < ?', 0) }
     scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
@@ -102,8 +123,7 @@ module Effective
     end
 
     before_validation do
-      self.state ||= EffectiveOrders::PENDING
-      self.state = EffectiveOrders::CONFIRMED if pending? && confirmed_checkout
+      assign_attributes(status: :confirmed) if pending? && confirmed_checkout
     end
 
     before_validation do
@@ -126,7 +146,6 @@ module Effective
     validates :cc, email_cc: true
 
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
-    validates :state, inclusion: { in: EffectiveOrders::STATES.keys }
 
     validate do
       if EffectiveOrders.organization_enabled?
@@ -180,7 +199,7 @@ module Effective
     end
 
     # Sanity check
-    before_save(if: -> { was_purchased? }) do
+    before_save(if: -> { status_was.to_s == 'purchased' }) do
       raise('cannot unpurchase an order') unless purchased?
 
       raise('cannot change subtotal of a purchased order') if changes[:subtotal].present?
@@ -204,7 +223,7 @@ module Effective
     # Effective::Order.new(items: Product.first, user: User.first, billing_address: Effective::Address.new, shipping_address: Effective::Address.new)
 
     def initialize(atts = nil, &block)
-      super(state: EffectiveOrders::PENDING) # Initialize with state: PENDING
+      super(status: :pending) # Initialize with status pending
 
       return self unless atts.present?
 
@@ -406,24 +425,12 @@ module Effective
       Array(billing_name.to_s.split(' ')[1..-1]).join(' ')
     end
 
-    def pending?
-      state == EffectiveOrders::PENDING
-    end
-
-    def confirmed?
-      state == EffectiveOrders::CONFIRMED
-    end
-
-    def deferred?
-      state == EffectiveOrders::DEFERRED
-    end
-
     def in_progress?
       pending? || confirmed? || deferred?
     end
 
     def done?
-      persisted? && (purchased? || declined?)
+      persisted? && (purchased? || declined? || voided?)
     end
 
     # A custom order is one that was created by an admin
@@ -433,13 +440,9 @@ module Effective
     end
 
     def purchased?(provider = nil)
-      return false if (state != EffectiveOrders::PURCHASED)
+      return false if (status.to_sym != :purchased)
       return true if provider.nil? || payment_provider == provider.to_s
       false
-    end
-
-    def was_purchased?
-      state_was == EffectiveOrders::PURCHASED
     end
 
     def purchased_with_credit_card?
@@ -448,14 +451,6 @@ module Effective
 
     def purchased_without_credit_card?
       purchased? && EffectiveOrders.credit_card_payment_providers.exclude?(payment_provider)
-    end
-
-    def declined?
-      state == EffectiveOrders::DECLINED
-    end
-
-    def abandoned?
-      state == EffectiveOrders::ABANDONED
     end
 
     def purchasables
@@ -558,7 +553,7 @@ module Effective
     def pending!
       return false if purchased?
 
-      self.state = EffectiveOrders::PENDING
+      assign_attributes(status: :pending)
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
 
@@ -572,18 +567,18 @@ module Effective
     # Used by admin checkout only
     def confirm!
       return false if purchased?
-      update!(state: EffectiveOrders::CONFIRMED)
+      confirmed!
     end
 
     # This lets us skip to the confirmed workflow for an admin...
     def assign_confirmed_if_valid!
       return unless pending?
 
-      self.state = EffectiveOrders::CONFIRMED
+      assign_attributes(status: :confirmed)
       return true if valid?
 
       self.errors.clear
-      self.state = EffectiveOrders::PENDING
+      assign_attributes(status: :pending)
       false
     end
 
@@ -606,9 +601,9 @@ module Effective
 
       # Assign attributes
       assign_attributes(
-        state: EffectiveOrders::PURCHASED,
         skip_buyer_validations: skip_buyer_validations,
 
+        status: :purchased,
         purchased_at: (purchased_at.presence || Time.zone.now),
         purchased_by: (purchased_by.presence || current_user),
 
@@ -668,8 +663,8 @@ module Effective
     def defer!(provider: 'none', email: true)
       return false if purchased?
 
-      assign_attributes(state: EffectiveOrders::DEFERRED, payment_provider: provider)
-      save!
+      assign_attributes(payment_provider: provider)
+      deferred!
 
       send_payment_request_to_buyer! if email
 
@@ -684,12 +679,15 @@ module Effective
       error = nil
 
       assign_attributes(
-        state: EffectiveOrders::DECLINED,
+        skip_buyer_validations: true,
+
+        status: :declined,
         purchased_at: nil,
+        purchased_by: nil,
+
         payment: payment_to_h(payment),
         payment_provider: provider,
-        payment_card: (card.presence || 'none'),
-        skip_buyer_validations: true
+        payment_card: (card.presence || 'none')
       )
 
       Effective::Order.transaction do
@@ -698,7 +696,7 @@ module Effective
           save!(validate: validate)
           run_purchasable_callbacks(:after_decline)
         rescue => e
-          self.state = state_was
+          self.status = status_was
 
           error = e.message
           raise ::ActiveRecord::Rollback

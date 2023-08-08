@@ -10,7 +10,8 @@ class CreateEffectiveOrders < ActiveRecord::Migration[4.2]
       t.integer   :parent_id
       t.string    :parent_type
 
-      t.string    :state
+      t.string    :status
+      t.text      :status_steps
 
       t.datetime  :purchased_at
 

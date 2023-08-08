@@ -353,7 +353,7 @@ The permissions you actually want to define for a regular user are as follows (u
 can [:manage], Effective::Cart, user_id: user.id
 
 can [:manage], Effective::Order, user_id: user.id # Orders cannot be deleted
-cannot [:edit, :update], Effective::Order, state: 'purchased'
+cannot [:edit, :update], Effective::Order, status: 'purchased'
 
 can [:manage], Effective::Subscription, user_id: user.id
 ```
