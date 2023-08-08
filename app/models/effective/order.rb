@@ -19,7 +19,7 @@ module Effective
       :purchased,       # Purchased by provider
       :declined,        # Declined by provider
       :voided,          # Voided by admin
-      :abandoned,       # Not set by this gem. Can be set outside it.
+      :abandoned        # Not set by this gem. Can be set outside it.
     )
 
     # Effective Addresses
