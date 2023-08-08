@@ -222,7 +222,7 @@ module EffectiveOrders
 
       plans = begin
         Stripe::Plan.respond_to?(:all) ? Stripe::Plan.all : Stripe::Plan.list
-      rescue => e
+      rescue Exception => e
         raise e if Rails.env.production?
         Rails.logger.info "[STRIPE ERROR]: #{e.message}"
         Rails.logger.info "[STRIPE ERROR]: effective_orders continuing with empty stripe plans. This would fail loudly in Rails.env.production."
@@ -293,9 +293,5 @@ module EffectiveOrders
   end
 
   class SoldOutException < Exception; end
-
-  def self.gem_path
-    __dir__.chomp('/lib')
-  end
 
 end

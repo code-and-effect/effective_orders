@@ -108,7 +108,7 @@ module ActsAsPurchasable
   end
 
   def purchased_by?(user)
-    purchased_orders.any? { |order| order.user_id == user.id }
+    purchased_orders.any? { |order| order.purchased_by_id == user.id }
   end
 
   def purchased_download_url # Override me if this is a digital purchase.
