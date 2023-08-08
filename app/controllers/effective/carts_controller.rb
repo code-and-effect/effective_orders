@@ -33,7 +33,7 @@ module Effective
     def add_to_cart
       @purchasable = (add_to_cart_params[:purchasable_type].constantize.find(add_to_cart_params[:purchasable_id].to_i) rescue nil)
 
-      EffectiveResources.authorize!(self, :update, current_cart)
+      EffectiveResources.authorize!(self, :add_to_cart, current_cart)
 
       begin
         raise "Please select a valid #{add_to_cart_params[:purchasable_type] || 'item' }." unless @purchasable
@@ -52,7 +52,7 @@ module Effective
     def remove_from_cart
       @cart_item = current_cart.cart_items.find(remove_from_cart_params[:id])
 
-      EffectiveResources.authorize!(self, :update, current_cart)
+      EffectiveResources.authorize!(self, :remove_from_cart, current_cart)
 
       if @cart_item.destroy
         flash[:success] = 'Successfully removed item from cart.'
