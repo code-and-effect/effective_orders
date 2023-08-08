@@ -50,7 +50,7 @@ module EffectiveStripeHelper
 
     begin
       stripe_payment_intent_payload(order, customer)
-    rescue => e
+    rescue Exception => e
       raise unless Rails.env.development?
       stripe_payment_intent_payload(order, Effective::Customer.new(user: order.user))
     end

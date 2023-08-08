@@ -42,7 +42,7 @@ module Effective
         flash[:success] = 'Successfully added item to cart.'
       rescue EffectiveOrders::SoldOutException
         flash[:warning] = 'This item is sold out.'
-      rescue => e
+      rescue Exception => e
         flash[:danger] = 'Unable to add item to cart: ' + e.message
       end
 

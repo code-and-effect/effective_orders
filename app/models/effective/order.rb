@@ -701,7 +701,7 @@ module Effective
           run_purchasable_callbacks(:before_decline)
           save!(validate: validate)
           run_purchasable_callbacks(:after_decline)
-        rescue => e
+        rescue ActiveRecord::RecordInvalid => e
           self.status = status_was
 
           error = e.message
