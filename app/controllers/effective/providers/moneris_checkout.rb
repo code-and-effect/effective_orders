@@ -22,6 +22,11 @@ module Effective
           )
         end
 
+        if payment['card_type'].present?
+          active_card = "**** **** **** #{payment['first6last4'].to_s.last(4)} #{payment['card_type']} #{payment['expiry_date'].to_s.first(2)}/#{payment['expiry_date'].to_s.last(2)}"
+          payment = payment.except('first6last4').merge('active_card' => active_card)
+        end
+
         order_purchased(
           payment: payment,
           provider: 'moneris_checkout',
