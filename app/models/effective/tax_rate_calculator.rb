@@ -30,14 +30,14 @@ module Effective
       country = country_code
       state = state_code
 
-      if order.present? && order.billing_address.present?
-        country ||= order.billing_address.country_code
-        state ||= order.billing_address.state_code
-      end
+      if order.present?
+        country ||= order.billing_address.try(:country_code)
+        country ||= order.organization.try(:billing_address).try(:country_code)
+        country ||= order.user.try(:billing_address).try(:country_code)
 
-      if order.present? && order.user.respond_to?(:billing_address) && order.user.billing_address.present?
-        country ||= order.user.billing_address.country_code
-        state ||= order.user.billing_address.state_code
+        state ||= order.billing_address.try(:state_code)
+        state ||= order.organization.try(:billing_address).try(:state_code)
+        state ||= order.user.try(:billing_address).try(:state_code)
       end
 
       rate = RATES[country]
