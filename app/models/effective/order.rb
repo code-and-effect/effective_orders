@@ -103,7 +103,10 @@ module Effective
     scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { where(status: :purchased) }
+    scope :purchased_or_deferred, -> { where(status: [:purchased, :deferred]) }
+
     scope :purchased_by, lambda { |user| purchased.where(user: user) }
+
     scope :not_purchased, -> { where.not(status: [:purchased, :deferred]) }
     scope :was_not_purchased, -> { where.not(status: :purchased) }
 

@@ -54,6 +54,9 @@ module ActsAsPurchasable
 
     scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: { purchased_by: user, status: :purchased }).distinct }
     scope :not_purchased_by, lambda { |user| where.not(id: purchased_by(user)) }
+
+    scope :purchased_or_deferred, -> { joins(order_items: :order).where(orders: { status: [:purchased, :deferred] }) }
+    scope :deferred, -> { joins(order_items: :order).where(orders: { status: :deferred }) }
   end
 
   module ClassMethods
