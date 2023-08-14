@@ -406,6 +406,10 @@ module Effective
         payment[:active_card][15,4]
       end
 
+      last4 ||= if payment['active_card'] && payment['active_card'].include?('**** **** ****')
+        payment['active_card'][15,4]
+      end
+
       # stripe, moneris, moneris_checkout
       last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
 
