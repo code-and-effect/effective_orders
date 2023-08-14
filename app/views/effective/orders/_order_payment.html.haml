@@ -9,5 +9,5 @@
       %tbody
         %tr
           %td= price_to_currency(order.total)
-          %td= order.purchased_at.strftime('%b %d, %Y')
+          %td= order.purchased_at.in_time_zone(Time.zone).strftime('%b %d, %Y')
           %td= order.payment_method

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (6.6.3)
+    effective_orders (6.7.1)
       coffee-rails
       effective_addresses
       effective_bootstrap
@@ -114,7 +114,7 @@ GEM
       jquery-rails
       rails (>= 4.0.0)
       sassc
-    effective_datatables (4.17.4)
+    effective_datatables (4.18.0)
       coffee-rails
       effective_bootstrap
       effective_resources

@@ -16,7 +16,7 @@ module EffectiveOrdersTestBuilder
     build_effective_order.tap { |order| order.save! }
   end
 
-  def build_effective_order(user: nil, items: nil, billing_address: nil, shipping_address: nil)
+  def build_effective_order(user: nil, organization: nil, items: nil, billing_address: nil, shipping_address: nil)
     user ||= create_user!
     items ||= [build_effective_product, build_effective_product]
     billing_address ||= build_effective_address(category: 'billing')
@@ -24,6 +24,7 @@ module EffectiveOrdersTestBuilder
 
     order = Effective::Order.new(
       user: user,
+      organization: organization,
       items: items,
       billing_address: billing_address,
       shipping_address: shipping_address
