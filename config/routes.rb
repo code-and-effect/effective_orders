@@ -51,7 +51,7 @@ EffectiveOrders::Engine.routes.draw do
         post :send_payment_request
         post :send_buyer_receipt
 
-        post :void
+        delete :void
         post :unvoid
 
         # GET should be last here
