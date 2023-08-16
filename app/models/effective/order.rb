@@ -201,13 +201,13 @@ module Effective
       end
     end
 
-    validate(if: -> { was_voided? }) do
-      errors.add(:status, "cannot update a voided order") unless (voided? || pending?)
+    validate(if: -> { was_voided? && status_changed? }) do
+      errors.add(:status, "cannot update status of a voided order") unless voided?
     end
 
     # Sanity check
     before_save(if: -> { status_was.to_s == 'purchased' }) do
-      raise('cannot unpurchase an order') unless purchased?
+      raise('cannot unpurchase an order. try voiding instead.') unless purchased? || voided?
 
       raise('cannot change subtotal of a purchased order') if changes[:subtotal].present?
 
@@ -722,13 +722,13 @@ module Effective
     end
 
     def void!
-      raise('unable to void a purchased order') if purchased?
-      voided!
+      raise('already voided') if voided?
+      voided!(skip_buyer_validations: true)
     end
 
     def unvoid!
       raise('order must be voided to unvoid') unless voided?
-      pending!
+      unvoided!(skip_buyer_validations: true)
     end
 
     # These are all the emails we send all notifications to
