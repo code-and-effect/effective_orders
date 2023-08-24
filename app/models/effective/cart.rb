@@ -1,6 +1,6 @@
 module Effective
   class Cart < ActiveRecord::Base
-    self.table_name = EffectiveOrders.carts_table_name.to_s
+    self.table_name = (EffectiveOrders.carts_table_name || :carts).to_s
 
     belongs_to :user, polymorphic: true, optional: true  # Optional. We want non-logged-in users to have carts too.
 

@@ -1,6 +1,6 @@
 module Effective
   class Customer < ActiveRecord::Base
-    self.table_name = EffectiveOrders.customers_table_name.to_s
+    self.table_name = (EffectiveOrders.customers_table_name || :customers).to_s
 
     attr_accessor :stripe_customer
 

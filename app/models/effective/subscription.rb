@@ -1,6 +1,6 @@
 module Effective
   class Subscription < ActiveRecord::Base
-    self.table_name = EffectiveOrders.subscriptions_table_name.to_s
+    self.table_name = (EffectiveOrders.subscriptions_table_name || :subscriptions).to_s
 
     attr_accessor :stripe_subscription
 

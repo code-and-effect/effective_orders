@@ -9,7 +9,7 @@
 
 module Effective
   class Order < ActiveRecord::Base
-    self.table_name = EffectiveOrders.orders_table_name.to_s
+    self.table_name = (EffectiveOrders.orders_table_name || :orders).to_s
 
     # Effective Resources
     acts_as_statused(

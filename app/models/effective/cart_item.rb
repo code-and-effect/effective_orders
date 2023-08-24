@@ -1,6 +1,6 @@
 module Effective
   class CartItem < ActiveRecord::Base
-    self.table_name = EffectiveOrders.cart_items_table_name.to_s
+    self.table_name = (EffectiveOrders.cart_items_table_name || :cart_items).to_s
 
     belongs_to :cart, counter_cache: true
     belongs_to :purchasable, polymorphic: true

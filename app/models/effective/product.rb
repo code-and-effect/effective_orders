@@ -1,6 +1,6 @@
 module Effective
   class Product < ActiveRecord::Base
-    self.table_name = EffectiveOrders.products_table_name.to_s
+    self.table_name = (EffectiveOrders.products_table_name || :products).to_s
 
     acts_as_purchasable
     log_changes if respond_to?(:log_changes)

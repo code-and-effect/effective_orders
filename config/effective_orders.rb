@@ -1,15 +1,6 @@
 # EffectiveOrders Rails Engine
 
 EffectiveOrders.setup do |config|
-  # Configure Database Tables
-  config.orders_table_name = :orders
-  config.order_items_table_name = :order_items
-  config.carts_table_name = :carts
-  config.cart_items_table_name = :cart_items
-  config.customers_table_name = :customers
-  config.subscriptions_table_name = :subscriptions
-  config.products_table_name = :products
-
   # Layout Settings
   # config.layout = { application: 'application', admin: 'admin' }
 

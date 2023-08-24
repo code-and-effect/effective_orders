@@ -3,7 +3,7 @@
 module Effective
   # An Order Item
   class OrderItem < ActiveRecord::Base
-    self.table_name = EffectiveOrders.order_items_table_name.to_s
+    self.table_name = (EffectiveOrders.order_items_table_name || :order_items).to_s
 
     belongs_to :order
 
