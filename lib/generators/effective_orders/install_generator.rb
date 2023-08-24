@@ -47,15 +47,7 @@ module EffectiveOrders
       end
 
       def create_migration_file
-        @orders_table_name = ':' + EffectiveOrders.orders_table_name.to_s
-        @order_items_table_name = ':' + EffectiveOrders.order_items_table_name.to_s
-        @carts_table_name = ':' + EffectiveOrders.carts_table_name.to_s
-        @cart_items_table_name = ':' + EffectiveOrders.cart_items_table_name.to_s
-        @customers_table_name = ':' + EffectiveOrders.customers_table_name.to_s
-        @subscriptions_table_name = ':' + EffectiveOrders.subscriptions_table_name.to_s
-        @products_table_name = ':' + EffectiveOrders.products_table_name.to_s
-
-        migration_template ('../' * 3) + 'db/migrate/01_create_effective_orders.rb.erb', 'db/migrate/create_effective_orders.rb'
+        migration_template ('../' * 3) + 'db/migrate/101_create_effective_orders.rb', 'db/migrate/create_effective_orders.rb'
       end
 
     end
