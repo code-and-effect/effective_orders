@@ -55,6 +55,10 @@ module Admin
         col :email, visible: false
       end
 
+      if attributes[:organization_id].blank?
+        col :organization
+      end
+
       col :parent, visible: false, search: :string
 
       col :cc, visible: false
@@ -111,8 +115,12 @@ module Admin
         user_klass = (attributes[:user_type].constantize if attributes[:user_type].present?)
         user_klass ||= current_user.class
 
-        user = user_klass.find(attributes[:user_id])
+        user = user_klass.where(id: attributes[:user_id]).first!
         scope = scope.where(user: user)
+      end
+
+      if attributes[:organization_id].present? && attributes[:organization_type].present?
+        scope = scope.where(organization_id: attributes[:organization_id], organization_type: attributes[:organization_type])
       end
 
       if attributes[:parent_id].present? && attributes[:parent_type].present?
