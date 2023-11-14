@@ -16,7 +16,7 @@ module EffectiveMonerisCheckoutHelper
       # Optional
       order_no: order.transaction_id, # Has to be unique. This is order number, billing name and Time.now
       cust_id: order.user_id,
-      language: 'en',
+      language: :en,
 
       contact_details: {
         first_name: moneris_checkout_scrub(order.billing_first_name),

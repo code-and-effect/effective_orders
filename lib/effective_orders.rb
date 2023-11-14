@@ -278,16 +278,16 @@ module EffectiveOrders
 
   def self.moneris_checkout_script_url
     case EffectiveOrders.moneris_checkout.fetch(:environment)
-    when 'prod' then 'https://gateway.moneris.com/chkt/js/chkt_v1.00.js'
-    when 'qa' then 'https://gatewayt.moneris.com/chkt/js/chkt_v1.00.js'
+    when 'prod' then 'https://gateway.moneris.com/chktv2/js/chkt_v2.00.js'
+    when 'qa' then 'https://gatewayt.moneris.com/chktv2/js/chkt_v2.00.js'
     else raise('unexpected EffectiveOrders.moneris_checkout :environment key. Please check your config/initializers/effective_orders.rb file')
     end
   end
 
   def self.moneris_request_url
     case EffectiveOrders.moneris_checkout.fetch(:environment)
-    when 'prod' then 'https://gateway.moneris.com/chkt/request/request.php'
-    when 'qa' then 'https://gatewayt.moneris.com/chkt/request/request.php'
+    when 'prod' then 'https://gateway.moneris.com/chktv2/request/request.php'
+    when 'qa' then 'https://gatewayt.moneris.com/chktv2/request/request.php'
     else raise('unexpected EffectiveOrders.moneris_checkout :environment key. Please check your config/initializers/effective_orders.rb file')
     end
   end

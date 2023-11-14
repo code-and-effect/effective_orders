@@ -15,15 +15,15 @@ this.MonerisCheckoutForm ||= class MonerisCheckoutForm
     @form.addClass('initialized')
 
   mount: ->
+    @moneris.setMode(@data.environment)
     @moneris.setCheckoutDiv('monerisCheckout')
 
     @moneris.setCallback('page_loaded', @pageLoaded)
     @moneris.setCallback('cancel_transaction', @cancelTransaction)
-    @moneris.setCallback('error_event', @errorEvent)
     @moneris.setCallback('payment_receipt', @paymentReceipt)
     @moneris.setCallback('payment_complete', @paymentComplete)
+    @moneris.setCallback('error_event', @errorEvent) # This one might be custom, no longer referenced in docs.
 
-    @moneris.setMode(@data.environment)
     @moneris.startCheckout(@data.ticket)
 
   success: (payload) ->
