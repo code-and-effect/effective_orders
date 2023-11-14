@@ -51,7 +51,11 @@ this.MonerisCheckoutForm ||= class MonerisCheckoutForm
       when '902'
         @error('3-D secure failed on response')
       when '2001'
-        @error('Invalid ticket/ticket re-use')
+        @error('Invalid ticket')
+      when '2002'
+        @error('Invalid ticket re-use')
+      when '2003'
+        @error('Invalid ticket expired')
       else
         @error('Unknown payment gateway preload status')
 
