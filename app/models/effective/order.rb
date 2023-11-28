@@ -97,7 +97,11 @@ module Effective
       timestamps
     end
 
-    serialize :payment, Hash
+    if EffectiveResources.serialize_with_coder?
+      serialize :payment, type: Hash, coder: YAML
+    else
+      serialize :payment, Hash
+    end
 
     scope :deep, -> { includes(:addresses, :user, :purchased_by, :organization, order_items: :purchasable) }
     scope :sorted, -> { order(:id) }
