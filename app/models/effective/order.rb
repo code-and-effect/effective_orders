@@ -512,6 +512,10 @@ module Effective
       get_total_without_surcharge()
     end
 
+    def payment
+      Hash(self[:payment])
+    end
+
     def free?
       total == 0
     end
@@ -941,13 +945,13 @@ module Effective
       true
     end
 
-    def payment_to_h(payment)
-      if payment.respond_to?(:to_unsafe_h)
-        payment.to_unsafe_h.to_h
-      elsif payment.respond_to?(:to_h)
-        payment.to_h
+    def payment_to_h(value)
+      if value.respond_to?(:to_unsafe_h)
+        value.to_unsafe_h.to_h
+      elsif value.respond_to?(:to_h)
+        value.to_h
       else
-        { details: (payment.to_s.presence || 'none') }
+        { details: (value.to_s.presence || 'none') }
       end
     end
 
