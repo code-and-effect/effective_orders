@@ -15,13 +15,13 @@ module Admin
       col :total, as: :price
 
       payment_providers.each do |provider|
-        col(provider, as: :price)
+        col("p - #{provider}", as: :price, visible: false)
       end
 
       col :orders_count
 
-      col :orders
-      col :users
+      col :orders, visible: false
+      col :users, visible: false
 
       col :start_date, as: :date, search: false, sort: false, visible: false do
         date_range.begin&.strftime('%F')

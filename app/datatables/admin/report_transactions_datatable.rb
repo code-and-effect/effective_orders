@@ -23,9 +23,9 @@ module Admin
         col :organization
       end
 
-      col :user
-      col :order_items
-      col :payment_provider, search: EffectiveOrders.payment_providers
+      col :user, visible: false
+      col :order_items, visible: false
+      col :payment_provider, search: EffectiveOrders.payment_providers, visible: false
       col :payment_method
 
       col :subtotal, as: :price
