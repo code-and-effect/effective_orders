@@ -6,7 +6,7 @@ module Effective
       def etransfer
         raise('etransfer provider is not available') unless EffectiveOrders.etransfer?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 

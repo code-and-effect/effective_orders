@@ -6,7 +6,7 @@ module Effective
       def free
         raise('free provider is not available') unless EffectiveOrders.free?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 

@@ -12,7 +12,7 @@ module Effective
     page_title 'Customer Settings'
 
     def resource
-      @customer = Effective::Customer.where(user: current_user).first!
+      @customer = Effective::Customer.deep.where(user: current_user).first!
       @subscripter ||= Effective::Subscripter.new(customer: @customer, current_user: current_user)
     end
 

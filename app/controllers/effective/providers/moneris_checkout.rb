@@ -6,7 +6,7 @@ module Effective
       def moneris_checkout
         raise('moneris_checkout provider is not available') unless EffectiveOrders.moneris_checkout?
 
-        @order = Order.find(params[:id])
+        @order = Order.deep.find(params[:id])
 
         # We do this even if we're not authorized.
         EffectiveResources.authorized?(self, :update, @order)

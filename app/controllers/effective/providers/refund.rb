@@ -7,7 +7,7 @@ module Effective
         raise('refund provider is not available') unless EffectiveOrders.refund?
         raise('refund provider is not configured for buyer purchase') unless EffectiveOrders.buyer_purchases_refund?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 

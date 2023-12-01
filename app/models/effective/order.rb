@@ -103,7 +103,10 @@ module Effective
       serialize :payment, Hash
     end
 
-    scope :deep, -> { includes(:addresses, :user, :purchased_by, :organization, order_items: :purchasable) }
+    scope :deep, -> { 
+      includes(:addresses, :user, :parent, :purchased_by, :organization, order_items: :purchasable) 
+    }
+
     scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { where(status: :purchased) }

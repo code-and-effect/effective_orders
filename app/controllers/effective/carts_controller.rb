@@ -10,7 +10,7 @@ module Effective
 
     def show
       @cart = current_cart
-      @pending_orders = Effective::Order.was_not_purchased.where(user: current_user) if current_user.present?
+      @pending_orders = Effective::Order.deep.was_not_purchased.where(user: current_user) if current_user.present?
 
       @page_title ||= 'My Cart'
       EffectiveResources.authorize!(self, :show, @cart)

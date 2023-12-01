@@ -29,7 +29,7 @@ module Effective
     # It displayes an order based on the cart
     # Always step1
     def new
-      @order ||= Effective::Order.new(view_context.current_cart)
+      @order ||= Effective::Order.deep.new(view_context.current_cart)
 
       EffectiveResources.authorize!(self, :new, @order)
 
@@ -42,7 +42,7 @@ module Effective
 
     # Confirms an order from the cart.
     def create
-      @order ||= Effective::Order.new(view_context.current_cart)
+      @order ||= Effective::Order.deep.new(view_context.current_cart)
       EffectiveResources.authorize!(self, :create, @order)
 
       @order.assign_attributes(checkout_params)
@@ -61,7 +61,7 @@ module Effective
     # This is the entry point for an existing order.
     # Might render step1 or step2
     def show
-      @order ||= Effective::Order.find(params[:id])
+      @order ||= Effective::Order.deep.find(params[:id])
       @page_title ||= view_context.order_page_title(@order)
 
       EffectiveResources.authorize!(self, :show, @order)
@@ -69,7 +69,7 @@ module Effective
 
     # Always step1
     def edit
-      @order ||= Effective::Order.was_not_purchased.find(params[:id])
+      @order ||= Effective::Order.deep.was_not_purchased.find(params[:id])
       @page_title ||= view_context.order_page_title(@order)
 
       EffectiveResources.authorize!(self, :edit, @order)
@@ -77,7 +77,7 @@ module Effective
 
     # Confirms the order from existing order
     def update
-      @order ||= Effective::Order.was_not_purchased.find(params[:id])
+      @order ||= Effective::Order.deep.was_not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :update, @order)
 
       @order.assign_attributes(checkout_params)
@@ -92,23 +92,23 @@ module Effective
 
     # Thank you for Purchasing this Order. This is where a successfully purchased order ends up
     def purchased # Thank You!
-      @order = Effective::Order.purchased.find(params[:id])
+      @order = Effective::Order.deep.purchased.find(params[:id])
       EffectiveResources.authorize!(self, :show, @order)
     end
 
     def deferred
-      @order = Effective::Order.deferred.find(params[:id])
+      @order = Effective::Order.deep.deferred.find(params[:id])
       EffectiveResources.authorize!(self, :show, @order)
     end
 
     def declined
-      @order = Effective::Order.declined.find(params[:id])
+      @order = Effective::Order.deep.declined.find(params[:id])
       EffectiveResources.authorize!(self, :show, @order)
     end
 
     # This is used by both the Admin and User
     def send_buyer_receipt
-      @order = Effective::Order.purchased.find(params[:id])
+      @order = Effective::Order.deep.purchased.find(params[:id])
 
       EffectiveResources.authorize!(self, :show, @order)
 
@@ -122,7 +122,7 @@ module Effective
     end
 
     def bulk_send_buyer_receipt
-      @orders = Effective::Order.purchased.where(id: params[:ids])
+      @orders = Effective::Order.deep.purchased.where(id: params[:ids])
 
       begin
         EffectiveResources.authorize!(self, :index, Effective::Order.new(user: current_user))

@@ -6,7 +6,7 @@ module Effective
       def mark_as_paid
         raise('mark_as_paid provider is not available') unless EffectiveOrders.mark_as_paid?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
         EffectiveResources.authorize!(self, :admin, :effective_orders)

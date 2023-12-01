@@ -6,7 +6,7 @@ module Effective
       def phone
         raise('phone provider is not available') unless EffectiveOrders.phone?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 

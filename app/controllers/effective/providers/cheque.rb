@@ -6,7 +6,7 @@ module Effective
       def cheque
         raise('cheque provider is not available') unless EffectiveOrders.cheque?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 

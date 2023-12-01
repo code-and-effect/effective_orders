@@ -12,7 +12,7 @@ module Effective
       def paypal_postback
         raise('paypal provider is not available') unless EffectiveOrders.paypal?
 
-        @order ||= Effective::Order.where(id: (params[:invoice].to_i rescue 0)).first
+        @order ||= Effective::Order.deep.where(id: (params[:invoice].to_i rescue 0)).first
 
         # We do this even if we're not authorized
         EffectiveResources.authorized?(self, :update, @order)

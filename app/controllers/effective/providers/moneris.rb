@@ -12,7 +12,7 @@ module Effective
       def moneris_postback
         raise('moneris provider is not available') unless EffectiveOrders.moneris?
 
-        @order ||= Effective::Order.find(params[:response_order_id])
+        @order ||= Effective::Order.deep.find(params[:response_order_id])
 
         # We do this even if we're not authorized
         EffectiveResources.authorized?(self, :update, @order)

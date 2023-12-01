@@ -6,7 +6,7 @@ module Effective
       def pretend
         raise('pretend provider is not available') unless EffectiveOrders.pretend?
 
-        @order ||= Order.find(params[:id])
+        @order ||= Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 

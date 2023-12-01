@@ -6,7 +6,7 @@ module Effective
       def stripe
         raise('stripe provider is not available') unless EffectiveOrders.stripe?
 
-        @order = Order.find(params[:id])
+        @order = Order.deep.find(params[:id])
         @customer = Effective::Customer.for_user(current_user)
 
         EffectiveResources.authorize!(self, :update, @order)
