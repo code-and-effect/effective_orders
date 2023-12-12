@@ -23,7 +23,7 @@ module Effective
             provider: 'pretend', 
             card: 'none', 
             purchased_url: pretend_params[:purchased_url],
-            current_user: current_user
+            current_user: (current_user unless admin_checkout?(pretend_params))
           )
         end
       end

@@ -5,8 +5,19 @@ module Effective
 
       protected
 
+      def admin_checkout?(payment_params)
+        payment_params[:purchased_url].to_s.include?('/admin/')
+      end
+
       def order_purchased(payment:, provider:, card: 'none', email: true, skip_buyer_validations: false, purchased_url: nil, current_user: nil)
-        @order.purchase!(payment: payment, provider: provider, card: card, email: email, skip_buyer_validations: skip_buyer_validations, current_user: current_user)
+        @order.purchase!(
+          payment: payment, 
+          provider: provider, 
+          card: card, 
+          email: email, 
+          skip_buyer_validations: skip_buyer_validations, 
+          current_user: current_user
+        )
 
         Effective::Cart.where(user: current_user).destroy_all if current_user.present?
 

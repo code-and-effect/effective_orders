@@ -46,7 +46,7 @@ module EffectiveStripeHelper
   end
 
   def stripe_payment_intent(order)
-    customer = Effective::Customer.for_user(order.user)
+    customer = Effective::Customer.for_user(order.user || current_user)
 
     begin
       stripe_payment_intent_payload(order, customer)
