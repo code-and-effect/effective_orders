@@ -9,22 +9,22 @@
     %tbody
       %tr
         %td
-          - if order.billing_address.blank? || order.billing_address.full_name.blank?
-            = order.billing_name
-            %br
+          %div= order.billing_name
 
-          - if order.billing_address.present?
-            = render partial: 'effective/addresses/address', locals: { address: order.billing_address }
-            %br
+          - if order.user.try(:membership).present?
+            %div= "##{order.user.membership.number}"
 
-          = mail_to(order.email)
+          %div= mail_to(order.email)
 
           - if order.cc.present?
-            %br
-            Cc:
-            - order.cc.split(',').each do |email|
-              = mail_to(email)
+            %div
+              Cc:
+              - order.cc.split(',').each do |email|
+                = mail_to(email)
+
+          - if order.billing_address.present?
+            = render('effective/addresses/address', address: order.billing_address)
 
         - if order.shipping_address.present?
           %td
-            = render partial: 'effective/addresses/address', locals: { address: order.shipping_address }
+            = render('effective/addresses/address', address: order.shipping_address)

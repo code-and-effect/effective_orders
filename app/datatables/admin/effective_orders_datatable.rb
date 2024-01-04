@@ -51,12 +51,22 @@ module Admin
 
       if attributes[:user_id].blank?
         col :user, search: :string
+
+        if defined?(EffectiveMemberships)
+          col(:member_number, label: 'Member #', sort: false) do |order|
+            order.user.try(:membership).try(:number)
+          end.search do |collection, term|
+            memberships = Effective::Membership.where(owner_type: current_user.class.name).where('number ILIKE ?', "%#{term}%")
+            collection.where(user_id: memberships.select('owner_id'))
+          end
+        end
+
         col :billing_name, visible: false
         col :email, visible: false
       end
 
       if attributes[:organization_id].blank?
-        col :organization
+        col :organization, visible: EffectiveOrders.organization_enabled?
       end
 
       col :parent, visible: false, search: :string
