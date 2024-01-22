@@ -30,7 +30,7 @@
     - if EffectiveOrders.stripe?
       = render partial: '/effective/orders/stripe/form', locals: provider_locals
 
-    - if EffectiveOrders.deferred? && order.user == current_user
+    - if EffectiveOrders.deferred? && order.user == current_user && !local_assigns[:skip_deferred]
       %p.my-4.text-center - or -
       = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
