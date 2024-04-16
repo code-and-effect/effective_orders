@@ -48,7 +48,7 @@ module Admin
     end
 
     def payment_providers
-      @payment_providers ||= EffectiveOrders.payment_providers - ['free', 'pretend']
+      @payment_providers ||= Effective::Order.purchased.group(:payment_provider).pluck(:payment_provider) - ['free', 'pretend', '', nil]
     end
 
   end
