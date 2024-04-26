@@ -50,24 +50,25 @@ module Admin
       col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
 
       if attributes[:user_id].blank?
-        col :user, search: :string
-
-        if defined?(EffectiveMemberships)
-          col(:member_number, label: 'Member #', sort: false) do |order|
-            order.user.try(:membership).try(:number)
-          end.search do |collection, term|
-            memberships = Effective::Membership.where(owner_type: current_user.class.name).where('number ILIKE ?', "%#{term}%")
-            collection.where(user_id: memberships.select('owner_id'))
-          end
-        end
-
-        col :billing_name, visible: false
-        col :email, visible: false
+        col :user, search: :string, visible: !EffectiveOrders.organization_enabled?
       end
 
       if attributes[:organization_id].blank?
         col :organization, visible: EffectiveOrders.organization_enabled?
       end
+
+      if defined?(EffectiveMemberships)
+        col(:member_number, label: 'Member #', sort: false, visible: false) do |order|
+          order.organization.try(:membership).try(:number) || order.user.try(:membership).try(:number)
+        end.search do |collection, term|
+          # TODO add organizations too
+          user_memberships = Effective::Membership.where(owner_type: current_user.class.name).where('number ILIKE ?', "%#{term}%")
+          collection.where(user_id: user_memberships.select('owner_id'))
+        end
+      end
+
+      col :billing_name, visible: false
+      col :email, visible: false
 
       col :parent, visible: false, search: :string
 
