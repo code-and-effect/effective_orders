@@ -23,6 +23,8 @@ class EffectiveOrdersDatatable < Effective::Datatable
     end
 
     col :parent, visible: false, search: :string
+    col :user, visible: false, search: :string
+    col :organization, search: :string, visible: false
 
     col :status
 
@@ -70,7 +72,11 @@ class EffectiveOrdersDatatable < Effective::Datatable
   end
 
   collection do
-    scope = Effective::Order.all.deep.where(user: current_user)
+    scope = Effective::Order.all.deep
+
+    if attributes[:user_id].blank? && attributes[:organization_id].blank?
+      scope = scope.for(current_user)
+    end
 
     if EffectiveOrders.orders_collection_scope.respond_to?(:call)
       scope = EffectiveOrders.orders_collection_scope.call(scope)

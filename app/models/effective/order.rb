@@ -107,6 +107,14 @@ module Effective
       includes(:addresses, :user, :parent, :purchased_by, :organization, order_items: :purchasable) 
     }
 
+    scope :for, -> (user) {
+      if user.respond_to?(:organizations)
+        where(user: user).or(where(organization: user.organizations))
+      else
+        where(user: user)
+      end
+    }
+
     scope :sorted, -> { order(:id) }
 
     scope :purchased, -> { where(status: :purchased) }

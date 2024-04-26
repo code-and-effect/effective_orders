@@ -54,7 +54,7 @@ module Admin
       end
 
       if attributes[:organization_id].blank?
-        col :organization, visible: EffectiveOrders.organization_enabled?
+        col :organization, search: :string, visible: EffectiveOrders.organization_enabled?
       end
 
       if defined?(EffectiveMemberships)
