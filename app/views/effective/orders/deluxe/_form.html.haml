@@ -1,0 +1,18 @@
+= javascript_include_tag(EffectiveOrders.deluxe_script_url)
+
+- jwt = deluxe_jwt(order)
+- options = deluxe_options(order)
+
+.card
+  .card-body.bg-light
+    = effective_form_with(scope: :deluxe, url: effective_orders.deluxe_order_path(order), data: { 'deluxe-checkout': jwt, 'deluxe-options': options }) do |f|
+      = f.hidden_field :purchased_url, value: purchased_url
+      = f.hidden_field :declined_url, value: declined_url
+
+      = render('effective/orders/deluxe/element')
+
+    .mt-3.text-center
+      %em
+        This checkout provided by
+        = succeed('.') do
+          = link_to('Deluxe', 'https://www.deluxe.com/', target: '_blank', class: 'btn-link')

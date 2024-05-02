@@ -122,6 +122,33 @@ EffectiveOrders.setup do |config|
   #   success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
   # }
 
+  # Deluxe
+  config.deluxe = false
+
+  # if Rails.env.production?
+  #   config.deluxe = {
+  #     environment: 'production',
+  #     client_id: '',
+  #     client_secret: '',
+  #     access_token: '',
+  #     currency: 'USD',
+  #     remember_card: true,
+  #     site_title: 'My Site',
+  #     site_image: 'logo.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+  #   }
+  # else
+  #   config.deluxe = {
+  #     environment: 'sandbox',
+  #     client_id: '',
+  #     client_secret: '',
+  #     access_token: '',
+  #     currency: 'USD',
+  #     remember_card: true,
+  #     site_title: 'My Site',
+  #     site_image: 'logo.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
+  #   }
+  # end
+
   # E-transfer
   # This is an deferred payment
   config.etransfer = false
