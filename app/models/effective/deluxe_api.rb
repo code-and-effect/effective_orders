@@ -1,60 +1,103 @@
 # https://developer.deluxe.com/s/article-api-reference
-
+#
 module Effective
   class DeluxeApi
 
-    def health_check
-      puts authenticate
-
-      binding.pry
-
-      endpoint = 'https://sandbox.api.deluxe.com/dpp/v1/gateway/'
-      response = get(endpoint, headers: { 'Authorization' => "Bearer #{@access_token}" })
-
-      binding.pry
-
-      #response = client.request(:get, '/', headers: { 'Authorization' => "Bearer #{@access_token}" })
-      JSON.parse(response.body)
-    end
-
-    def authenticate
-      @access_token ||= oauth2_client.client_credentials.get_token.token
-    end
-
+    # Effective::DeluxeApi.new.health_check
     # https://sandbox.api.deluxe.com/dpp/v1/gateway/
+    # {"timestamp"=>"2024-05-03T16:35:57-0500", "assetId"=>"dpp-gateway-exp", "assetVersion"=>"1.0.29", "appName"=>"dlx-dpp-gateway-exp-secsbxusw-1", "runtime"=>"4.4.0-20240408", "environment"=>"secsbxusw"}
+    def health_check
+      get('/')
+    end
 
-    # https://sandbox.api.deluxe.com/secservices/oauth2/v2/token
-
-    def oauth2_client
-      @client ||= OAuth2::Client.new(
-        EffectiveOrders.deluxe.fetch(:client_id),
-        EffectiveOrders.deluxe.fetch(:client_secret),
-        site: 'https://sandbox.api.deluxe.com',
-        token_url: '/secservices/oauth2/v2/token'
-      )
+    def authorize_payment(params)
+      post('/payments/authorize', params: params)
     end
 
     def get(endpoint, params: nil, headers: nil)
-      headers = { 'Content-Type': 'application/json' }.merge(headers || {})
+      headers = default_headers.merge(headers || {})
       query = ('?' + params.compact.map { |k, v| "$#{k}=#{v}" }.join('&')) if params.present?
 
-      uri = URI.parse(endpoint + query.to_s)
+      uri = URI.parse(api_url + endpoint + query.to_s)
 
       http = Net::HTTP.new(uri.host, uri.port)
       http.read_timeout = 10
-      http.use_ssl = true if endpoint.start_with?('https')
+      http.use_ssl = true
 
-      response = with_retries do
+      result = with_retries do
         puts "[GET] #{uri}" if Rails.env.development?
-        http.get(uri, headers)
+
+        response = http.get(uri, headers)
+        raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
+
+        response
       end
 
-      unless ['200', '204'].include?(response.code.to_s)
-        puts("Response code: #{response.code} #{response.body}")
-        return false
+      JSON.parse(result.body)
+    end
+
+    def post(endpoint, params:, headers: nil)
+      headers = default_headers.merge(headers || {})
+
+      uri = URI.parse(api_url + endpoint)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.read_timeout = 10
+      http.use_ssl = true
+
+      result = with_retries do
+        puts "[POST] #{uri} #{params}" if Rails.env.development?
+
+        response = http.post(uri.path, params.to_json, headers)
+        raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
+
+        response
       end
 
-      JSON.parse(response.body)
+      JSON.parse(result.body)
+    end
+
+    private
+
+    def default_headers
+      { "Content-Type": "application/json", "Authorization": "Bearer #{authorization_token}", "PartnerToken": partner_token }
+    end
+
+    def client
+      OAuth2::Client.new(
+        client_id, 
+        client_secret, 
+        site: client_url, 
+        token_url: '/secservices/oauth2/v2/token' # https://sandbox.api.deluxe.com/secservices/oauth2/v2/token
+      )
+    end
+
+    def authorization_token
+      @authorization_token ||= Rails.cache.fetch(client_id, expires_in: 60.minutes) do 
+        client.client_credentials.get_token.token
+      end
+    end
+
+    # https://sandbox.api.deluxe.com
+    def client_url
+      EffectiveOrders.deluxe_client_url
+    end
+
+    # https://sandbox.api.deluxe.com/dpp/v1/gateway/
+    def api_url
+      client_url + '/dpp/v1/gateway'
+    end
+
+    def client_id
+      EffectiveOrders.deluxe.fetch(:client_id)
+    end
+
+    def client_secret
+      EffectiveOrders.deluxe.fetch(:client_secret)
+    end
+
+    def partner_token
+      EffectiveOrders.deluxe.fetch(:access_token)
     end
 
     def with_retries(retries: 3, wait: 2, &block)
@@ -63,6 +106,10 @@ module Effective
       begin
         return yield
       rescue Exception => e
+        # Reset cache and query for a new authorization token on any error
+        Rails.cache.delete(client_id)
+        @authorization_token = nil
+
         if (retries -= 1) > 0
           sleep(wait); retry
         else

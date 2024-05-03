@@ -126,10 +126,11 @@ EffectiveOrders.setup do |config|
   config.deluxe = false
 
   # config.deluxe = {
+  #   environment: (Rails.env.production? ? 'production' : 'sandbox'),
   #   client_id: '',
   #   client_secret: '',
   #   access_token: '',
-  #   currency: 'USD',
+  #   currency: 'CAD',
   #   remember_card: true
   # }
 
