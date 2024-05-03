@@ -16,9 +16,12 @@ function initializeDeluxe() {
       $form = $('form[data-deluxe-checkout]').first();
       $form.find('input[name="deluxe[payment_intent]"]').val(value);
       $form.submit();
+
+      $('#deluxeCheckout').fadeOut('slow');
+      $('#deluxe-checkout-loading').text('Thank you! Processing payment information. Please wait...');
     },
   }).then((instance) => {
-    $('#deluxe-checkout-loading').remove();
+    $('#deluxe-checkout-loading').text('');
     instance.renderHpf();
   });
 

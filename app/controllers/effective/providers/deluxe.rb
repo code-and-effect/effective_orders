@@ -56,8 +56,6 @@ module Effective
       def process_deluxe_payment(payment_intent)
         raise('expected deluxe payment intent to be a Hash') unless payment_intent.kind_of?(Hash)
 
-        binding.pry
-
         # Validate success state
         return unless payment_intent['status'] == 'success'
 

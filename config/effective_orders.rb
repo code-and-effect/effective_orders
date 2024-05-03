@@ -125,29 +125,13 @@ EffectiveOrders.setup do |config|
   # Deluxe
   config.deluxe = false
 
-  # if Rails.env.production?
-  #   config.deluxe = {
-  #     environment: 'production',
-  #     client_id: '',
-  #     client_secret: '',
-  #     access_token: '',
-  #     currency: 'USD',
-  #     remember_card: true,
-  #     site_title: 'My Site',
-  #     site_image: 'logo.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
-  #   }
-  # else
-  #   config.deluxe = {
-  #     environment: 'sandbox',
-  #     client_id: '',
-  #     client_secret: '',
-  #     access_token: '',
-  #     currency: 'USD',
-  #     remember_card: true,
-  #     site_title: 'My Site',
-  #     site_image: 'logo.png' # A relative or absolute URL pointing to a square image of your brand or product. The recommended minimum size is 128x128px.
-  #   }
-  # end
+  # config.deluxe = {
+  #   client_id: '',
+  #   client_secret: '',
+  #   access_token: '',
+  #   currency: 'USD',
+  #   remember_card: true
+  # }
 
   # E-transfer
   # This is an deferred payment
