@@ -56,6 +56,10 @@ form.new_effective_order {
   height: 720px;
 }
 
+.effective-deluxe-checkout {
+  #deluxeCheckout { height: 280px; }
+}
+
 @media print {
   .effective-orders-page-content { display: none; }
 

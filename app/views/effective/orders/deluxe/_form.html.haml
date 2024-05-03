@@ -1,18 +1,33 @@
 = javascript_include_tag(EffectiveOrders.deluxe_script_url)
 
-- jwt = deluxe_jwt(order)
-- options = deluxe_options(order)
+- deluxe = deluxe_hosted_payment_form_options(order)
 
 .card
-  .card-body.bg-light
-    = effective_form_with(scope: :deluxe, url: effective_orders.deluxe_order_path(order), data: { 'deluxe-checkout': jwt, 'deluxe-options': options }) do |f|
+  .card-body
+    %h2 Checkout
+    %p
+      %em This checkout is powered by #{link_to('Deluxe', 'https://www.deluxe.com/', target: '_blank', class: 'btn-link')}
+
+    .my-4.text-center
+      = image_tag('effective_orders/deluxe.png', alt: 'Deluxe.com Logo', width: 200)
+
+    = effective_form_with(scope: :deluxe, url: effective_orders.deluxe_order_path(order), data: { 'deluxe-checkout': deluxe.to_json }) do |f|
       = f.hidden_field :purchased_url, value: purchased_url
       = f.hidden_field :declined_url, value: declined_url
 
+      -# This is set by the deluxe.js javascript on Submit
+      = f.hidden_field :payment_intent, required: true
+
       = render('effective/orders/deluxe/element')
 
-    .mt-3.text-center
-      %em
-        This checkout provided by
-        = succeed('.') do
-          = link_to('Deluxe', 'https://www.deluxe.com/', target: '_blank', class: 'btn-link')
+      -# - if deluxe[:token_required]
+      -#   %p Please enter your credit card information.
+      -#   = render('effective/orders/deluxe/element')
+      -# - else
+      -#   %p Your existing card <strong>#{deluxe[:active_card]}</strong> will be charged.
+
+        -# = collapse('Use this card instead...', class: 'update-deluxe-payment-method') do
+        -#   = render('effective/orders/deluxe/element')
+
+      -# .mt-4.deluxe-submit-button{style: 'display: none;'}
+      -#   = f.submit order_checkout_label(:deluxe), center: true, border: false

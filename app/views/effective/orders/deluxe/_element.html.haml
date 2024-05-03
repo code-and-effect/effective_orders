@@ -1,6 +1,9 @@
-.effective-deluxe
-  #deluxe-error.text-center.alert-danger
-  #deluxe-success.text-center
+.effective-deluxe-checkout
+  #deluxe-checkout-loading Loading...
+  #deluxe-checkout-errors.text-danger
 
-  -# This is required by embedded payments. This is where it renders.
-  #embeddedpayments
+  %style#deluxeCheckoutCss
+    -# Pass in custom CSS to the Deluxe hosted payment form iframe
+    = render('effective/orders/deluxe/css')
+
+  #deluxeCheckout

@@ -1,32 +1,28 @@
-// https://developer.deluxe.com/s/article-embedded-payments
+// https://developer.deluxe.com/s/article-hosted-payment-form
 
 function initializeDeluxe() {
-  let $deluxe = $('form:not(.initialized)[data-deluxe-checkout]');
+  let $deluxe = $('form[data-deluxe-checkout]:not(.initialized)');
   if($deluxe.length == 0) return;
 
-  let jwt = $deluxe.data('deluxe-checkout');
-  let options = $deluxe.data('deluxe-options') || {};
+  let options = $deluxe.data('deluxe-checkout');
 
-  EmbeddedPayments.init(jwt, options).then((instance) => {
-    instance
-      .setEventHandlers({
-        onTxnSuccess: (gateway, data) => {
-            console.log(`${gateway} Transaction Succeeded: ${JSON.stringify(data)}`);
-        },
-        onTxnFailed: (gateway, data) => {
-            console.log(`${gateway} Transaction Failed: ${JSON.stringify(data)}`);
-        },
-        onValidationError: (gateway, errors) => {
-            console.log(`Validation Error: ${JSON.stringify(errors)}`);
-        },
-        onCancel: (gateway) => {
-            console.log(`${gateway} transaction cancelled`);
-        }
-      })
-      .render(
-        { containerId: "embeddedpayments" }
-      );
+  HostedForm.init(options, {
+    onFailure: (data) => { $('#deluxe-checkout-errors').text(JSON.stringify(data)); },
+    onInvalid: (data) => { $('#deluxe-checkout-errors').text(JSON.stringify(data)); },
+
+    onSuccess: (data) => { 
+      let value = btoa(JSON.stringify(data)); // A base64 encoded JSON object
+
+      $form = $('form[data-deluxe-checkout]').first();
+      $form.find('input[name="deluxe[payment_intent]"]').val(value);
+      $form.submit();
+    },
+  }).then((instance) => {
+    $('#deluxe-checkout-loading').remove();
+    instance.renderHpf();
   });
+
+  $deluxe.addClass('initialized');
 };
 
 $(document).ready(function() { initializeDeluxe() });
