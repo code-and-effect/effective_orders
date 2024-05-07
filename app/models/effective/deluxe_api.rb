@@ -101,7 +101,7 @@ module Effective
           state: address.state_code,
           country: address.country_code,
           postalCode: address.postal_code
-        }
+        }.compact
       end
 
       shippingAddress = if (address = order.shipping_address).present?
@@ -112,7 +112,7 @@ module Effective
           state: address.state_code,
           country: address.country_code,
           postalCode: address.postal_code
-        }
+        }.compact
       end
 
       paymentMethod = {
