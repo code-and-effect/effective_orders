@@ -42,6 +42,8 @@ module EffectiveOrdersHelper
     case processor
     when :cheque
       'Pay by Cheque'
+    when :deluxe
+      'Pay Now'
     when :etransfer
       'Pay by E-transfer'
     when :free

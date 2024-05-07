@@ -122,6 +122,17 @@ EffectiveOrders.setup do |config|
   #   success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
   # }
 
+  # Deluxe
+  config.deluxe = false
+
+  # config.deluxe = {
+  #   environment: (Rails.env.production? ? 'production' : 'sandbox'),
+  #   client_id: '',
+  #   client_secret: '',
+  #   access_token: '',
+  #   currency: 'CAD'
+  # }
+
   # E-transfer
   # This is an deferred payment
   config.etransfer = false

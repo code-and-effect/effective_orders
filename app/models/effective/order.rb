@@ -515,6 +515,10 @@ module Effective
       self[:total] || get_total()
     end
 
+    def total_to_f
+      ((total || 0) / 100.0).to_f
+    end
+
     def total_with_surcharge
       get_total_with_surcharge()
     end

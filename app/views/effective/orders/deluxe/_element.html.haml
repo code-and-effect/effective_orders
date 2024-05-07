@@ -1,0 +1,9 @@
+.effective-deluxe-checkout
+  #deluxe-checkout-loading.text-center Loading...
+  #deluxe-checkout-errors.text-danger
+
+  %style#deluxeCheckoutCss
+    -# Pass in custom CSS to the Deluxe hosted payment form iframe
+    = render('effective/orders/deluxe/css')
+
+  #deluxeCheckout

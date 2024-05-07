@@ -8,6 +8,7 @@ EffectiveOrders::Engine.routes.draw do
         post :send_buyer_receipt
 
         post :cheque
+        post :deluxe
         post :etransfer
         post :free
         post :mark_as_paid

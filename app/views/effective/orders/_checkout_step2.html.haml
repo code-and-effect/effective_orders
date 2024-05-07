@@ -18,6 +18,9 @@
     - if EffectiveOrders.pretend?
       = render partial: '/effective/orders/pretend/form', locals: provider_locals
 
+    - if EffectiveOrders.deluxe?
+      = render partial: '/effective/orders/deluxe/form', locals: provider_locals
+
     - if EffectiveOrders.moneris?
       = render partial: '/effective/orders/moneris/form', locals: provider_locals
 

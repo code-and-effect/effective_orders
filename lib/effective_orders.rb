@@ -42,7 +42,7 @@ module EffectiveOrders
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message, :buyer_purchases_refund,
 
       # Payment processors. false or Hash
-      :cheque, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
+      :cheque, :deluxe, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
   end
 
@@ -79,6 +79,10 @@ module EffectiveOrders
 
   def self.free?
     free_enabled == true
+  end
+
+  def self.deluxe?
+    deluxe.kind_of?(Hash)
   end
 
   def self.deferred?
@@ -130,7 +134,7 @@ module EffectiveOrders
   end
 
   def self.single_payment_processor?
-    [moneris?, moneris_checkout?, paypal?, stripe?].select { |enabled| enabled }.length == 1
+    [deluxe?, moneris?, moneris_checkout?, paypal?, stripe?].select { |enabled| enabled }.length == 1
   end
 
   # The Effective::Order.payment_provider value must be in this collection
@@ -138,6 +142,7 @@ module EffectiveOrders
     [
       ('cheque' if cheque?),
       ('credit card' if mark_as_paid?),
+      ('deluxe' if deluxe?),
       ('etransfer' if etransfer?),
       ('free' if free?),
       ('moneris' if moneris?),
@@ -157,6 +162,7 @@ module EffectiveOrders
     [
       ('cheque' if mark_as_paid?),
       ('credit card' if mark_as_paid?),
+      ('deluxe' if deluxe?),
       ('etransfer' if etransfer?),
       #('free' if free?),
       ('moneris' if moneris?),
@@ -176,7 +182,7 @@ module EffectiveOrders
   end
 
   def self.credit_card_payment_providers
-    ['credit card', 'moneris', 'moneris_checkout', 'paypal', 'stripe']
+    ['credit card', 'deluxe', 'moneris', 'moneris_checkout', 'paypal', 'stripe']
   end
 
   def self.qb_sync?
@@ -274,6 +280,10 @@ module EffectiveOrders
 
   def self.stripe_plans_collection
     stripe_plans.map { |plan| [plan[:name], plan[:id]] }
+  end
+
+  def self.deluxe_script_url
+    "https://hostedform2.deluxe.com/V2/deluxe.js"
   end
 
   def self.moneris_checkout_script_url

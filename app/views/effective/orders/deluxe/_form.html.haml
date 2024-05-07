@@ -1,0 +1,19 @@
+- deluxe = deluxe_hosted_payment_form_options(order)
+
+.card
+  .card-body
+    %h2 Checkout
+    %p
+      %em This checkout is powered by #{link_to('Deluxe', 'https://www.deluxe.com/', target: '_blank', class: 'btn-link')}
+
+    .my-4.text-center
+      = image_tag('effective_orders/deluxe.png', alt: 'Deluxe.com Logo', width: 200)
+
+    = effective_form_with(scope: :deluxe, url: effective_orders.deluxe_order_path(order), data: { 'deluxe-checkout': deluxe.to_json }) do |f|
+      = f.hidden_field :purchased_url, value: purchased_url
+      = f.hidden_field :declined_url, value: declined_url
+
+      -# This is set by the deluxe.js javascript on Submit
+      = f.hidden_field :payment_intent, required: true
+
+      = render('effective/orders/deluxe/element')
