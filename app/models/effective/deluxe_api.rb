@@ -1,6 +1,7 @@
 # https://developer.deluxe.com/s/article-api-reference
 # We use Oauth2 client to get an authorization token. Then pass that token into a REST api.
 # We get a payment_intent from the front end HostedPaymentForm, then call authorize and complete on it.
+# Effective::DeluxeApi.new.health_check
 module Effective
   class DeluxeApi
     SCRUB = /[^\w\d#,\s]/
@@ -206,7 +207,7 @@ module Effective
     end
 
     def authorization_token
-      @authorization_token ||= Rails.cache.fetch("deluxe_api_#{client_id}", expires_in: 60.minutes) do 
+      @authorization_token ||= Rails.cache.fetch(authorization_cache_key, expires_in: 60.minutes) do 
         puts "[AUTH] Oauth2 Get Token" if Rails.env.development?
         client.client_credentials.get_token.token
       end
@@ -250,6 +251,10 @@ module Effective
       value.gsub(SCRUB, '').first(limit)
     end
 
+    def authorization_cache_key
+      "deluxe_api_#{client_id}"
+    end
+
     def with_retries(retries: (Rails.env.development? ? 0 : 3), wait: 2, &block)
       raise('expected a block') unless block_given?
 
@@ -257,7 +262,7 @@ module Effective
         return yield
       rescue Exception => e
         # Reset cache and query for a new authorization token on any error
-        Rails.cache.delete(client_id)
+        Rails.cache.delete(authorization_cache_key)
         @authorization_token = nil
 
         if (retries -= 1) > 0
@@ -270,5 +275,3 @@ module Effective
 
   end
 end
-
-# d = Effective::DeluxeApi.new.health_check

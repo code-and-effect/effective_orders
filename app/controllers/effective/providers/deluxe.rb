@@ -6,8 +6,7 @@ module Effective
       def deluxe
         raise('deluxe provider is not available') unless EffectiveOrders.deluxe?
 
-        @order = Order.deep.find(params[:id])
-        @customer = Effective::Customer.for_user(@order.user || current_user)
+        @order = Effective::Order.deep.find(params[:id])
 
         EffectiveResources.authorize!(self, :update, @order)
 
@@ -51,13 +50,7 @@ module Effective
           return order_declined(payment: payment, provider: 'deluxe', card: payment['card'], declined_url: deluxe_params[:declined_url])
         end
 
-        # Valid Purchased Order
-
-        # Update the customer payment fields
-        # if payment[:payment_method_id].present?
-        #   @customer.update!(payment.slice(:payment_method_id, :active_card))
-        # end
-
+        # Valid Authorized and Completed Payment
         order_purchased(
           payment: payment,
           provider: 'deluxe',
@@ -74,7 +67,7 @@ module Effective
       end
 
       def deluxe_api
-        @deluxe_api ||= DeluxeApi.new
+        @deluxe_api ||= Effective::DeluxeApi.new
       end
 
     end

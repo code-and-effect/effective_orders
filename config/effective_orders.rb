@@ -130,8 +130,7 @@ EffectiveOrders.setup do |config|
   #   client_id: '',
   #   client_secret: '',
   #   access_token: '',
-  #   currency: 'CAD',
-  #   remember_card: true
+  #   currency: 'CAD'
   # }
 
   # E-transfer

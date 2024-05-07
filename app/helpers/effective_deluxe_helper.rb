@@ -9,7 +9,7 @@ module EffectiveDeluxeHelper
       xrtype: "Generate Token",
       xpm: "1", # 0 = CC & ACH, 1 = CC, 2 = ACH
       xautoprompt: false,
-      xbtntext: order_checkout_label(:deluxe),
+      xbtntext: order_checkout_label(:deluxe)
     }
   end
 end

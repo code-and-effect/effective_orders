@@ -19,8 +19,7 @@ module Effective
     scope :deep, -> { includes(subscriptions: :subscribable) }
 
     validates :user, presence: true
-
-    #validates :stripe_customer_id, presence: true
+    validates :stripe_customer_id, presence: true
 
     def self.for_user(user)
       Effective::Customer.where(user: user).first_or_initialize
