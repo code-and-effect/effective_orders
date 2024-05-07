@@ -11,6 +11,9 @@ module Effective
 
         EffectiveResources.authorize!(self, :update, @order)
 
+        ## Process Payment Intent
+
+        # The payment_intent is set by the Deluxe HostedPaymentForm
         payment_intent = deluxe_params[:payment_intent]
 
         if payment_intent.blank?
@@ -21,16 +24,36 @@ module Effective
         # Decode the base64 encoded JSON object into a Hash
         payment_intent = (JSON.parse(Base64.decode64(payment_intent)) rescue nil)
         raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
+        raise('expected a token payment') unless payment_intent['type'] == 'Token'
 
-        # Process the payment intent
-        payment = process_deluxe_payment(payment_intent)
+        valid = payment_intent['status'] == 'success'
 
-        if payment.blank?
-          return order_declined(payment: payment, provider: 'deluxe', declined_url: deluxe_params[:declined_url])
+        if valid == false
+          card_info = deluxe_api.card_info(payment_intent)
+          return order_declined(payment: card_info, provider: 'deluxe', card: card_info['card'], declined_url: declined_url)
         end
 
-        # # Update the customer payment fields
-        # TODO
+        ## Process Authorization
+        authorization = deluxe_api.authorize_payment(@order, payment_intent)
+        valid = [0].include?(authorization['responseCode'])
+
+        if valid == false
+          flash[:danger] = "Payment was unsuccessful. The credit card authorization failed with message: #{Array(authorization['responseMessage']).to_sentence.presence || 'none'}. Please try again."
+          return order_declined(payment: authorization, provider: 'deluxe', card: authorization['card'], declined_url: deluxe_params[:declined_url])
+        end
+
+        ## Complete Payment
+        payment = deluxe_api.complete_payment(@order, authorization)
+        valid = [0].include?(payment['responseCode'])
+
+        if valid == false
+          flash[:danger] = "Payment was unsuccessful. The credit card payment failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}. Please try again."
+          return order_declined(payment: payment, provider: 'deluxe', card: payment['card'], declined_url: deluxe_params[:declined_url])
+        end
+
+        # Valid Purchased Order
+
+        # Update the customer payment fields
         # if payment[:payment_method_id].present?
         #   @customer.update!(payment.slice(:payment_method_id, :active_card))
         # end
@@ -38,7 +61,7 @@ module Effective
         order_purchased(
           payment: payment,
           provider: 'deluxe',
-          card: payment[:card],
+          card: payment['card'],
           purchased_url: deluxe_params[:purchased_url],
           current_user: (current_user unless admin_checkout?(deluxe_params))
         )
@@ -50,51 +73,8 @@ module Effective
         params.require(:deluxe).permit(:payment_intent, :purchased_url, :declined_url)
       end
 
-      # {"type"=>"Token", "status"=>"success", "data"=>{"token"=>"1983661243624242", "nameOnCard"=>"CardHolder", "expDate"=>"12/24", "maskedPan"=>"424242******4242", "cardType"=>"Visa"}}
-      def process_deluxe_payment(payment_intent)
-        raise('expected deluxe payment intent to be a Hash') unless payment_intent.kind_of?(Hash)
-
-        # Validate success state
-        return unless payment_intent['status'] == 'success'
-
-        # Validate type
-        payment_type = payment_intent['type']
-
-        case payment_type
-        when "Token" then process_deluxe_token_payment(payment_intent)
-        when "Vault" then process_deluxe_vault_payment(payment_intent)
-        else
-          raise("unsupported payment type: #{payment_type}")
-        end
-      end
-
-      def process_deluxe_token_payment(payment_intent)
-        token = payment_intent.dig('data', 'token') || raise('expected a token')
-
-        last4 = payment_intent.dig('data', 'maskedPan').to_s.last(4)
-        card = payment_intent.dig('data', 'cardType').to_s.downcase
-        date = payment_intent.dig('data', 'expDate').to_s
-
-        active_card = "**** **** **** #{last4} #{card} #{date}" if last4.present?
-
-        {
-          token: token,
-
-          active_card: active_card,
-          card: card,
-
-          nameOnCard: payment_intent.dig('data', 'nameOnCard'),
-          created: Time.zone.now,
-        }.compact
-
-        raise('todo')
-      end
-
-      def process_deluxe_vault_payment(payment_intent)
-        customer_id = payment_intent.dig('data', 'customerId') || raise('expected a customerID')
-        vault_id = payment_intent.dig('data', 'vaultId') || raise('expected a vaultID')
-
-        raise('todo')
+      def deluxe_api
+        @deluxe_api ||= DeluxeApi.new
       end
 
     end

@@ -286,14 +286,6 @@ module EffectiveOrders
     "https://hostedform2.deluxe.com/V2/deluxe.js"
   end
 
-  def self.deluxe_client_url
-    case EffectiveOrders.deluxe.fetch(:environment)
-    when 'production' then 'https://api.deluxe.com'
-    when 'sandbox' then 'https://sandbox.api.deluxe.com' # No trailing /
-    else raise('unexpected EffectiveOrders.deluxe :environment key. Please check your config/initializers/effective_orders.rb file')
-    end
-  end
-
   def self.moneris_checkout_script_url
     case EffectiveOrders.moneris_checkout.fetch(:environment)
     when 'prod' then 'https://gateway.moneris.com/chktv2/js/chkt_v2.00.js'
