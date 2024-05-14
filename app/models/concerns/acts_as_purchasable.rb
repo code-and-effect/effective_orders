@@ -62,12 +62,24 @@ module ActsAsPurchasable
   module ClassMethods
     def acts_as_purchasable?; true; end
 
+    def before_defer(&block)
+      send :define_method, :before_defer do |order, order_item| self.instance_exec(order, order_item, &block) end
+    end
+
+    def after_defer(&block)
+      send :define_method, :after_defer do |order, order_item| self.instance_exec(order, order_item, &block) end
+    end
+
     def before_purchase(&block)
       send :define_method, :before_purchase do |order, order_item| self.instance_exec(order, order_item, &block) end
     end
 
     def after_purchase(&block)
       send :define_method, :after_purchase do |order, order_item| self.instance_exec(order, order_item, &block) end
+    end
+
+    def before_decline(&block)
+      send :define_method, :before_decline do |order, order_item| self.instance_exec(order, order_item, &block) end
     end
 
     def after_decline(&block)
