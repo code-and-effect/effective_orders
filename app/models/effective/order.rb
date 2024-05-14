@@ -696,11 +696,41 @@ module Effective
       sync_quickbooks!(skip: true)
     end
 
-    def defer!(provider: 'none', email: true)
-      return false if purchased?
+    def defer!(provider: 'none', email: true, validate: true)
+      raise('order already purchased') if purchased?
 
-      assign_attributes(payment_provider: provider)
-      deferred!
+      # Assign attributes
+      assign_attributes(
+        payment_provider: provider,
+
+        status: :deferred,
+        purchased_at: nil,
+        purchased_by: nil,
+
+        deferred_at: (deferred_at.presence || Time.zone.now),
+        deferred_by: (deferred_by.presence || current_user)
+      )
+
+      if current_user&.email.present?
+        assign_attributes(email: current_user.email)
+      end
+
+      error = nil
+
+      begin
+        Effective::Order.transaction do
+          run_purchasable_callbacks(:before_defer)
+          save!(validate: validate)
+          run_purchasable_callbacks(:after_defer)
+        end
+      rescue ActiveRecord::RecordInvalid => e
+        self.status = status_was
+
+        error = e.message
+        raise ::ActiveRecord::Rollback
+      end
+
+      raise "Failed to defer order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
       send_payment_request_to_buyer! if email
 
@@ -709,10 +739,7 @@ module Effective
 
     def decline!(payment: 'none', provider: 'none', card: 'none', validate: true)
       return false if declined?
-
       raise('order already purchased') if purchased?
-
-      error = nil
 
       assign_attributes(
         skip_buyer_validations: true,
@@ -725,6 +752,12 @@ module Effective
         payment_provider: provider,
         payment_card: (card.presence || 'none')
       )
+
+      if current_user&.email.present?
+        assign_attributes(email: current_user.email)
+      end
+
+      error = nil
 
       Effective::Order.transaction do
         begin
