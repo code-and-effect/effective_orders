@@ -13,7 +13,7 @@ module Effective
     attr_accessor :access_token
     attr_accessor :currency
 
-    # attr_accessor :last_error
+    attr_accessor :purchase_response
 
     def initialize(environment: nil, client_id: nil, client_secret: nil, access_token: nil, currency: nil)
       self.environment = environment || EffectiveOrders.deluxe.fetch(:environment)
@@ -23,32 +23,40 @@ module Effective
       self.currency = currency || EffectiveOrders.deluxe.fetch(:currency)
     end
 
+    def payment
+      raise('expected purchase response to be present') unless purchase_response.kind_of?(Hash)
+      purchase_response
+    end
+
     # This calls Authorize Payment and Complete Payment
     # Returns true if all good.
-    # Returns false if there was an error and sets the attr_accessor :last_error
-    # def purchase!(order, payment_intent)
-    #   self.error = nil
+    # Returns false if there was an error.
+    # Always sets the @purchase_response which is api.payment
+    def purchase!(order, payment_intent)
+      payment_intent = decode_payment_intent_payload(payment_intent) if payment_intent.kind_of?(String)
+      raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
+      raise('expected a token payment') unless payment_intent['type'] == 'Token'
 
-    #   # Process Authorization
-    #   authorization = authorize_payment(order, payment_intent)
+      # Start a purchase. Which is an Authorization and a Completion
+      self.purchase_response = nil
 
-    #   valid = [0].include?(authorization['responseCode'])
+      # Process Authorization
+      authorization = authorize_payment(order, payment_intent)
+      self.purchase_response = authorization
 
-    #   if valid == false
-    #     self.error = "Payment was unsuccessful. The credit card authorization failed with message: #{Array(authorization['responseMessage']).to_sentence.presence || 'none'}. Please try again."
-    #     return false
-    #   end
+      valid = [0].include?(authorization['responseCode'])
+      return false unless valid
 
-    #     ## Complete Payment
-    #     payment = api.complete_payment(@order, authorization)
-    #     valid = [0].include?(payment['responseCode'])
+      ## Complete Payment
+      payment = complete_payment(order, authorization)
+      self.purchase_response = payment
 
-    #     if valid == false
-    #       flash[:danger] = "Payment was unsuccessful. The credit card payment failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}. Please try again."
-    #       return order_declined(payment: payment, provider: 'deluxe', card: payment['card'], declined_url: deluxe_params[:declined_url])
-    #     end
+      valid = [0].include?(payment['responseCode'])
+      return false unless valid
 
-    # end
+      # Valid purchase. This is authorized and completed.
+      true
+    end
 
     # Health Check
     def health_check

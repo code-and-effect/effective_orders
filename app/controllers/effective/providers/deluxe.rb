@@ -23,28 +23,21 @@ module Effective
 
         # Decode the base64 encoded JSON object into a Hash
         payment_intent = api.decode_payment_intent_payload(payment_intent_payload)
+        card_info = api.card_info(payment_intent)
 
-        valid = payment_intent['status'] == 'success'
+        valid = (payment_intent['status'] == 'success')
 
         if valid == false
-          card_info = api.card_info(payment_intent)
           return order_declined(payment: card_info, provider: 'deluxe', card: card_info['card'], declined_url: deluxe_params[:declined_url])
         end
 
-        ## Process Authorization
-        authorization = api.authorize_payment(@order, payment_intent)
-        valid = [0].include?(authorization['responseCode'])
+        ## Purchase Order right now
+        purchased = api.purchase!(@order, payment_intent)
 
-        if valid == false
-          flash[:danger] = "Payment was unsuccessful. The credit card authorization failed with message: #{Array(authorization['responseMessage']).to_sentence.presence || 'none'}. Please try again."
-          return order_declined(payment: authorization, provider: 'deluxe', card: authorization['card'], declined_url: deluxe_params[:declined_url])
-        end
+        payment = api.payment
+        raise('expected a payment Hash') unless payment.kind_of?(Hash)
 
-        ## Complete Payment
-        payment = api.complete_payment(@order, authorization)
-        valid = [0].include?(payment['responseCode'])
-
-        if valid == false
+        if purchased == false
           flash[:danger] = "Payment was unsuccessful. The credit card payment failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}. Please try again."
           return order_declined(payment: payment, provider: 'deluxe', card: payment['card'], declined_url: deluxe_params[:declined_url])
         end

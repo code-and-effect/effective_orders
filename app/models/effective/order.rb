@@ -95,9 +95,19 @@ module Effective
       total             :integer   # Subtotal + Tax + Surcharge + Surcharge Tax
 
       # For use with the Deluxe Delayed Payment feature
-      delayed_payment         :boolean    # Assigned to the order up front
-      delayed_payment_date    :date       # Assigned to the order up front
-      delayed_payment_intent  :text       # Assigned by deferred payment processor once captured
+
+      # When an order is created. These two attributes can be set to create a delayed? order
+      delayed_payment         :boolean
+      delayed_payment_date    :date
+
+      # When the order goes to checkout we require the delayed_payment_intent
+      # This stores the user's card information in a secure way
+      # This is required for the order to become deferred?
+      delayed_payment_intent  :text
+
+      # Set by the rake task that runs 1/day and processes any delayed orders before or on that day
+      delayed_payment_purchase_ran_at   :datetime
+      delayed_payment_purchase_result   :text
 
       timestamps
     end
@@ -173,7 +183,7 @@ module Effective
     # Delayed Payment Validations
     validates :delayed_payment_date, presence: true, if: -> { delayed_payment? }
     validates :delayed_payment_date, absence: true, unless: -> { delayed_payment? }
-    validates :delayed_payment_intent, presence: { message: 'please provide your card information' }, if: -> { (delayed? && deferred?) || delayed_payment_provider? }
+    validates :delayed_payment_intent, presence: { message: 'please provide your card information' }, if: -> { delayed? && deferred? }
 
     validate do
       if EffectiveOrders.organization_enabled?
@@ -402,46 +412,12 @@ module Effective
       purchased? ? 'Total Paid' : 'Total Due'
     end
 
-    # Visa - 1234
     def payment_method
-      return nil unless purchased?
+      payment_method_value if purchased?
+    end
 
-      provider = payment_provider if ['cheque', 'etransfer', 'phone', 'credit card'].include?(payment_provider)
-
-      # Normalize payment card
-      card = case payment_card.to_s.downcase.gsub(' ', '').strip
-        when '' then nil
-        when 'v', 'visa' then 'Visa'
-        when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
-        when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
-        when 'd', 'discover' then 'Discover'
-        else payment_card.to_s
-      end
-
-      # Try again
-      if card == 'none' && payment['card_type'].present?
-        card = case payment['card_type'].to_s.downcase.gsub(' ', '').strip
-          when '' then nil
-          when 'v', 'visa' then 'Visa'
-          when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
-          when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
-          when 'd', 'discover' then 'Discover'
-          else payment_card.to_s
-        end
-      end
-
-      last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
-        payment[:active_card][15,4]
-      end
-
-      last4 ||= if payment['active_card'] && payment['active_card'].include?('**** **** ****')
-        payment['active_card'][15,4]
-      end
-
-      # stripe, moneris, moneris_checkout
-      last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
-
-      [provider.presence, card.presence, last4.presence].compact.join(' - ')
+    def delayed_payment_method
+      payment_method_value if delayed?
     end
 
     def duplicate
@@ -552,30 +528,25 @@ module Effective
     # A new order is created.
     # If the delayed_payment and delayed_payment date are set, it's a delayed order
     # A delayed order is one in which we have to capture a payment intent for the amount of the order.
+    # Once it's delayed and deferred we can purchase it at anytime.
     def delayed?
       delayed_payment? && delayed_payment_date.present?
     end
 
-    # Once the order is saved through the deluxe_delayed payment provider, it's the same as a deferred order
-    # But there are a few extra validations
-    def delayed_payment_provider?
-      EffectiveOrders.delayed_providers.include?(payment_provider)
-    end
+    # def delayed_payment_date_future?
+    #   return false unless delay?
+    #   delayed_payment_date > Time.zone.now.to_date
+    # end
 
-    def delayed_payment_date_future?
-      return false unless delay?
-      delayed_payment_date > Time.zone.now.to_date
-    end
+    # def delayed_payment_date_today?
+    #   return false unless delay?
+    #   delayed_payment_date == Time.zone.now.to_date
+    # end
 
-    def delayed_payment_date_today?
-      return false unless delay?
-      delayed_payment_date == Time.zone.now.to_date
-    end
-
-    def delayed_payment_date_past?
-      return false unless delay?
-      delayed_payment_date < Time.zone.now.to_date
-    end
+    # def delayed_payment_date_past?
+    #   return false unless delay?
+    #   delayed_payment_date < Time.zone.now.to_date
+    # end
 
     def pending_refund?
       return false if EffectiveOrders.buyer_purchases_refund?
@@ -734,16 +705,17 @@ module Effective
       sync_quickbooks!(skip: true)
     end
 
-    # This was submitted via the deluxe_delayed provider
-    # It's a special case of deferred.
-    # We must capture the payment_intent
-    def delay!(payment_intent:, provider:, card:, email: false, validate: true)
+    # This was submitted via the deluxe_delayed provider checkout
+    # This is a special case of a deferred provider. We require the payment_intent and payment info
+    def delay!(payment:, payment_intent:, provider:, card:, email: false, validate: true)
       raise('expected payment intent to be a String') unless payment_intent.kind_of?(String)
       raise('expected a delayed payment provider') unless EffectiveOrders.delayed_providers.include?(provider)
       raise('expected a delayed payment order with a delayed_payment_date') unless delayed_payment? && delayed_payment_date.present?
 
       assign_attributes(
         delayed_payment_intent: payment_intent, 
+
+        payment: payment_to_h(payment),
         payment_card: (card.presence || 'none')
       )
 
@@ -932,6 +904,47 @@ module Effective
 
     def get_total_without_surcharge
       subtotal + tax
+    end
+
+    # Visa - 1234
+    def payment_method_value
+      provider = payment_provider if ['cheque', 'etransfer', 'phone', 'credit card'].include?(payment_provider)
+      provider = 'credit card' if ['deluxe_delayed'].include?(payment_provider)
+
+      # Normalize payment card
+      card = case payment_card.to_s.downcase.gsub(' ', '').strip
+        when '' then nil
+        when 'v', 'visa' then 'Visa'
+        when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
+        when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
+        when 'd', 'discover' then 'Discover'
+        else payment_card.to_s
+      end
+
+      # Try again
+      if card == 'none' && payment['card_type'].present?
+        card = case payment['card_type'].to_s.downcase.gsub(' ', '').strip
+          when '' then nil
+          when 'v', 'visa' then 'Visa'
+          when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
+          when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
+          when 'd', 'discover' then 'Discover'
+          else payment_card.to_s
+        end
+      end
+
+      last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
+        payment[:active_card][15,4]
+      end
+
+      last4 ||= if payment['active_card'] && payment['active_card'].include?('**** **** ****')
+        payment['active_card'][15,4]
+      end
+
+      # stripe, moneris, moneris_checkout
+      last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
+
+      [provider.presence, card.presence, last4.presence].compact.join(' - ')
     end
 
     private

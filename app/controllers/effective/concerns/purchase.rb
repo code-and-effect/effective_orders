@@ -50,8 +50,8 @@ module Effective
         redirect_to deferred_url.gsub(':id', @order.to_param.to_s)
       end
 
-      def order_delayed(payment_intent:, provider:, card: 'none', deferred_url: nil, email: false)
-        @order.delay!(payment_intent: payment_intent, provider: provider, card: card, email: email)
+      def order_delayed(payment:, payment_intent:, provider:, card: 'none', deferred_url: nil, email: false)
+        @order.delay!(payment: payment, payment_intent: payment_intent, provider: provider, card: card, email: email)
 
         Effective::Cart.where(user: current_user).destroy_all if current_user.present?
 
