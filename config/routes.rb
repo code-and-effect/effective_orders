@@ -9,6 +9,7 @@ EffectiveOrders::Engine.routes.draw do
 
         post :cheque
         post :deluxe
+        post :deluxe_delayed
         post :etransfer
         post :free
         post :mark_as_paid

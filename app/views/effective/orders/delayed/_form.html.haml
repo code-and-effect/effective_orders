@@ -1,0 +1,19 @@
+.card
+  .card-body
+    %h2 Save Payment Info
+
+    %p 
+      = succeed('.') do
+        The payment date for this order is in
+        = distance_of_time_in_words(Time.zone.now, order.delayed_payment_date)
+        on
+        = order.delayed_payment_date.strftime('%F')
+
+    %p
+      Instead of charging your card right away, the following action will securely save a token
+      representing your card information. The full amount will be charged on the payment date.
+
+    - provider_locals = { order: order, deferred_url: deferred_url, declined_url: declined_url }
+
+    - EffectiveOrders.delayed_providers.each do |provider|
+      = render partial: "/effective/orders/#{provider}/form", locals: provider_locals

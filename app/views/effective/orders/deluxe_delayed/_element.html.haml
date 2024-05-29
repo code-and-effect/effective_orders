@@ -1,0 +1,9 @@
+.effective-deluxe-delayed-checkout
+  #deluxe-delayed-checkout-loading.text-center Loading...
+  #deluxe-delayed-checkout-errors.text-danger
+
+  %style#deluxeDelayedCheckoutCss
+    -# Pass in custom CSS to the Deluxe Delayed hosted payment form iframe
+    = render('effective/orders/deluxe_delayed/css')
+
+  #deluxeDelayedCheckout

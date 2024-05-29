@@ -15,7 +15,7 @@ module Effective
     acts_as_statused(
       :pending,         # New orders are created in a pending state
       :confirmed,       # Once the order has passed checkout step 1
-      :deferred,        # Deferred providers. cheque, etransfer or phone was selected.
+      :deferred,        # Deferred providers. cheque, etransfer, phone or deluxe_delayed was selected.
       :purchased,       # Purchased by provider
       :declined,        # Declined by provider
       :voided,          # Voided by admin
@@ -94,6 +94,11 @@ module Effective
 
       total             :integer   # Subtotal + Tax + Surcharge + Surcharge Tax
 
+      # For use with the Deluxe Delayed Payment feature
+      delayed_payment         :boolean    # Assigned to the order up front
+      delayed_payment_date    :date       # Assigned to the order up front
+      delayed_payment_intent  :text       # Assigned by deferred payment processor once captured
+
       timestamps
     end
 
@@ -164,6 +169,11 @@ module Effective
     validates :cc, email_cc: true
 
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
+
+    # Delayed Payment Validations
+    validates :delayed_payment_date, presence: true, if: -> { delayed_payment? }
+    validates :delayed_payment_date, absence: true, unless: -> { delayed_payment? }
+    validates :delayed_payment_intent, presence: { message: 'please provide your card information' }, if: -> { (delayed? && deferred?) || delayed_payment_provider? }
 
     validate do
       if EffectiveOrders.organization_enabled?
@@ -538,6 +548,34 @@ module Effective
     def refund?
       total.to_i < 0
     end
+    
+    # A new order is created.
+    # If the delayed_payment and delayed_payment date are set, it's a delayed order
+    # A delayed order is one in which we have to capture a payment intent for the amount of the order.
+    def delayed?
+      delayed_payment? && delayed_payment_date.present?
+    end
+
+    # Once the order is saved through the deluxe_delayed payment provider, it's the same as a deferred order
+    # But there are a few extra validations
+    def delayed_payment_provider?
+      EffectiveOrders.delayed_providers.include?(payment_provider)
+    end
+
+    def delayed_payment_date_future?
+      return false unless delay?
+      delayed_payment_date > Time.zone.now.to_date
+    end
+
+    def delayed_payment_date_today?
+      return false unless delay?
+      delayed_payment_date == Time.zone.now.to_date
+    end
+
+    def delayed_payment_date_past?
+      return false unless delay?
+      delayed_payment_date < Time.zone.now.to_date
+    end
 
     def pending_refund?
       return false if EffectiveOrders.buyer_purchases_refund?
@@ -696,6 +734,22 @@ module Effective
       sync_quickbooks!(skip: true)
     end
 
+    # This was submitted via the deluxe_delayed provider
+    # It's a special case of deferred.
+    # We must capture the payment_intent
+    def delay!(payment_intent:, provider:, card:, email: false, validate: true)
+      raise('expected payment intent to be a String') unless payment_intent.kind_of?(String)
+      raise('expected a delayed payment provider') unless EffectiveOrders.delayed_providers.include?(provider)
+      raise('expected a delayed payment order with a delayed_payment_date') unless delayed_payment? && delayed_payment_date.present?
+
+      assign_attributes(
+        delayed_payment_intent: payment_intent, 
+        payment_card: (card.presence || 'none')
+      )
+
+      defer!(provider: provider, email: email, validate: validate)
+    end
+
     def defer!(provider: 'none', email: true, validate: true)
       raise('order already purchased') if purchased?
 
@@ -725,9 +779,7 @@ module Effective
         end
       rescue ActiveRecord::RecordInvalid => e
         self.status = status_was
-
         error = e.message
-        raise ::ActiveRecord::Rollback
       end
 
       raise "Failed to defer order: #{error || errors.full_messages.to_sentence}" unless error.nil?
@@ -766,9 +818,7 @@ module Effective
           run_purchasable_callbacks(:after_decline)
         rescue ActiveRecord::RecordInvalid => e
           self.status = status_was
-
           error = e.message
-          raise ::ActiveRecord::Rollback
         end
       end
 

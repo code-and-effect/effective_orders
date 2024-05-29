@@ -5,6 +5,7 @@ module Effective
 
     include Providers::Cheque
     include Providers::Deluxe
+    include Providers::DeluxeDelayed
     include Providers::Etransfer
     include Providers::Free
     include Providers::MarkAsPaid

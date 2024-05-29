@@ -44,6 +44,8 @@ module EffectiveOrdersHelper
       'Pay by Cheque'
     when :deluxe
       'Pay Now'
+    when :deluxe_delayed
+      'Save card info for later payment'
     when :etransfer
       'Pay by E-transfer'
     when :free

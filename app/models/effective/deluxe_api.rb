@@ -13,6 +13,8 @@ module Effective
     attr_accessor :access_token
     attr_accessor :currency
 
+    # attr_accessor :last_error
+
     def initialize(environment: nil, client_id: nil, client_secret: nil, access_token: nil, currency: nil)
       self.environment = environment || EffectiveOrders.deluxe.fetch(:environment)
       self.client_id = client_id || EffectiveOrders.deluxe.fetch(:client_id)
@@ -20,6 +22,33 @@ module Effective
       self.access_token = access_token || EffectiveOrders.deluxe.fetch(:access_token)
       self.currency = currency || EffectiveOrders.deluxe.fetch(:currency)
     end
+
+    # This calls Authorize Payment and Complete Payment
+    # Returns true if all good.
+    # Returns false if there was an error and sets the attr_accessor :last_error
+    # def purchase!(order, payment_intent)
+    #   self.error = nil
+
+    #   # Process Authorization
+    #   authorization = authorize_payment(order, payment_intent)
+
+    #   valid = [0].include?(authorization['responseCode'])
+
+    #   if valid == false
+    #     self.error = "Payment was unsuccessful. The credit card authorization failed with message: #{Array(authorization['responseMessage']).to_sentence.presence || 'none'}. Please try again."
+    #     return false
+    #   end
+
+    #     ## Complete Payment
+    #     payment = api.complete_payment(@order, authorization)
+    #     valid = [0].include?(payment['responseCode'])
+
+    #     if valid == false
+    #       flash[:danger] = "Payment was unsuccessful. The credit card payment failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}. Please try again."
+    #       return order_declined(payment: payment, provider: 'deluxe', card: payment['card'], declined_url: deluxe_params[:declined_url])
+    #     end
+
+    # end
 
     # Health Check
     def health_check
@@ -189,6 +218,18 @@ module Effective
       active_card = "**** **** **** #{last4} #{card} #{date}" if last4.present?
 
       { 'active_card' => active_card, 'card' => card, 'expDate' => date, 'cvv' => cvv }.compact
+    end
+
+    # Decode the base64 encoded JSON object into a Hash
+    def decode_payment_intent_payload(payload)
+      raise('expected a string') unless payload.kind_of?(String)
+
+      payment_intent = (JSON.parse(Base64.decode64(payload)) rescue nil)
+
+      raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
+      raise('expected a token payment') unless payment_intent['type'] == 'Token'
+
+      payment_intent
     end
 
     private

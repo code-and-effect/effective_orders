@@ -6,4 +6,8 @@
           %th Payment
       %tbody
         %tr
-          %td Waiting for payment by #{order.payment_provider}
+          %td
+            - if order.delayed?
+              Your card will be charged on #{order.delayed_payment_date.strftime('%F')} for the full amount
+            - else
+              Waiting for payment by #{order.payment_provider}
