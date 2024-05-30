@@ -101,9 +101,11 @@ module Admin
       col :total, as: :price
 
       if EffectiveOrders.delayed?
-        col :delayed_payment
+        col :delayed_payment, visible: false
         col :delayed_payment_date
-        col :delayed_payment_intent
+        col :delayed_payment_intent, visible: false
+        col :delayed_payment_purchase_ran_at, visible: false
+        col :delayed_payment_purchase_result, visible: false
       end
 
       if EffectiveOrders.collect_note
