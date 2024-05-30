@@ -1,13 +1,19 @@
 .card
   .card-body
-    %h2 Save Payment Info
+    %h2 Save Card Info
 
     %p 
       = succeed('.') do
-        The payment date for this order is in
-        = distance_of_time_in_words(Time.zone.now, order.delayed_payment_date)
-        on
-        = order.delayed_payment_date.strftime('%F')
+        - distance = distance_of_time_in_words(Time.zone.now, order.delayed_payment_date)
+
+        The payment date for this order
+
+        - if order.delayed_payment_date_future?
+          is in #{distance} from now on #{order.delayed_payment_date.strftime('%F')}
+        - elsif order.delayed_payment_date_today?
+          was today
+        - else
+          was #{distance} ago on #{order.delayed_payment_date.strftime('%F')}
 
     %p
       Instead of charging your card right away, the following action will securely save a token

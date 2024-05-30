@@ -150,6 +150,16 @@ module Effective
     scope :refunds, -> { purchased.where('total < ?', 0) }
     scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
 
+    scope :delayed, -> { where(delayed_payment: true).where.not(delayed_payment_date: nil) }
+    scope :delayed_payment_date_past, -> { delayed.where(arel_table[:delayed_payment_date].lteq(Time.zone.today)) }
+    scope :delayed_payment_date_upcoming, -> { delayed.where(arel_table[:delayed_payment_date].gt(Time.zone.today)) }
+
+    # Used by the rake effective_orders:purchase_delayed_orders task
+    scope :delayed_ready_to_purchase, -> { 
+      delayed.deferred.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
+    }
+
+
     # effective_reports
     def reportable_scopes
       { purchased: nil, not_purchased: nil, deferred: nil, refunds: nil, pending_refunds: nil }
@@ -533,20 +543,30 @@ module Effective
       delayed_payment? && delayed_payment_date.present?
     end
 
-    # def delayed_payment_date_future?
-    #   return false unless delay?
-    #   delayed_payment_date > Time.zone.now.to_date
-    # end
+    def delayed_ready_to_purchase?
+      return false unless delayed? 
+      return false unless deferred?
+      return false unless delayed_payment_intent.present?
+      return false if delayed_payment_date_future?
+      return false if delayed_payment_purchase_ran_at.present? # We ran before and probably failed
 
-    # def delayed_payment_date_today?
-    #   return false unless delay?
-    #   delayed_payment_date == Time.zone.now.to_date
-    # end
+      true
+    end
 
-    # def delayed_payment_date_past?
-    #   return false unless delay?
-    #   delayed_payment_date < Time.zone.now.to_date
-    # end
+    def delayed_payment_date_future?
+      return false unless delayed?
+      delayed_payment_date > Time.zone.now.to_date
+    end
+
+    def delayed_payment_date_today?
+      return false unless delayed?
+      delayed_payment_date == Time.zone.now.to_date
+    end
+
+    def delayed_payment_date_past?
+      return false unless delayed?
+      delayed_payment_date < Time.zone.now.to_date
+    end
 
     def pending_refund?
       return false if EffectiveOrders.buyer_purchases_refund?

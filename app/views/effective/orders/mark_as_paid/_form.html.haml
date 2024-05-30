@@ -4,6 +4,8 @@
       Admin:
       = order.refund? ? 'Complete Refund' : 'Mark as Paid'
 
+      - raise('unexpected purchased order') if order.purchased?
+
     = effective_form_with(model: order, url: effective_orders.mark_as_paid_order_path(order), method: :post) do |f|
       .row
         .col-6

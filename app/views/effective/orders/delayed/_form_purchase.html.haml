@@ -1,0 +1,30 @@
+.card
+  .card-body
+    %h2 Admin: Purchase Delayed Order
+
+    - raise('unexpected purchased order') if order.purchased?
+    - raise('expected a deferred delayed order') unless order.delayed? && order.deferred?
+    - raise('expecting a payment intent') unless order.delayed_payment_intent.present?
+    - raise('expecting a payment method') unless order.delayed_payment_method.present?
+
+    %p 
+      = succeed('.') do
+        - distance = distance_of_time_in_words(Time.zone.now, order.delayed_payment_date)
+
+        The payment date for this order
+
+        - if order.delayed_payment_date_future?
+          is in #{distance} from now on #{order.delayed_payment_date.strftime('%F')}
+        - elsif order.delayed_payment_date_today?
+          was today
+        - else
+          was #{distance} ago on #{order.delayed_payment_date.strftime('%F')}
+
+    %p The #{order.delayed_payment_method} on file will be charged automatically on the payment date.
+
+    %p You can also charge it right now.
+
+    - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url }
+
+    - EffectiveOrders.delayed_providers.each do |provider|
+      = render partial: "/effective/orders/#{provider}/form_purchase", locals: provider_locals

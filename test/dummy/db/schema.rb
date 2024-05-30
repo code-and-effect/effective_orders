@@ -146,6 +146,11 @@ ActiveRecord::Schema.define(version: 101) do
     t.integer "surcharge"
     t.integer "surcharge_tax"
     t.integer "total"
+    t.boolean "delayed_payment", default: false
+    t.date "delayed_payment_date"
+    t.text "delayed_payment_intent"
+    t.datetime "delayed_payment_purchase_ran_at"
+    t.text "delayed_payment_purchase_result"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_orders_on_user_id"

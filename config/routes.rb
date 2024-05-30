@@ -8,8 +8,10 @@ EffectiveOrders::Engine.routes.draw do
         post :send_buyer_receipt
 
         post :cheque
-        post :deluxe
-        post :deluxe_delayed
+        post :deluxe              # 1-off payment and purchase
+        post :deluxe_delayed      # 1-off payment_intent saving
+        post :deluxe_delayed_purchase # Admin action to purchase a delayed order
+
         post :etransfer
         post :free
         post :mark_as_paid

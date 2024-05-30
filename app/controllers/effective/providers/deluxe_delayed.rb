@@ -29,7 +29,7 @@ module Effective
         valid = payment_intent['status'] == 'success'
 
         if valid == false
-          return order_declined(payment: card_info, provider: 'deluxe', card: card_info['card'], declined_url: deluxe_delayed_params[:declined_url])
+          return order_declined(payment: card_info, provider: 'deluxe_delayed', card: card_info['card'], declined_url: deluxe_delayed_params[:declined_url])
         end
 
         flash[:success] = EffectiveOrders.deluxe_delayed[:success]

@@ -33,6 +33,8 @@ module Effective
     # Returns false if there was an error.
     # Always sets the @purchase_response which is api.payment
     def purchase!(order, payment_intent)
+      raise('expected a deluxe_delayed payment provider') unless order.payment_provider == 'deluxe_delayed'
+
       payment_intent = decode_payment_intent_payload(payment_intent) if payment_intent.kind_of?(String)
       raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
       raise('expected a token payment') unless payment_intent['type'] == 'Token'
@@ -61,6 +63,16 @@ module Effective
     # Health Check
     def health_check
       get('/')
+    end
+
+    def healthy?
+      response = health_check()
+
+      return false unless response.kind_of?(Hash)
+      return false unless response['timestamp'].to_s.start_with?(Time.zone.now.strftime('%Y-%m-%d'))
+      return false unless response['environment'].present?
+
+      true
     end
 
     # Authorize Payment
