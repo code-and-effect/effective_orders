@@ -159,7 +159,6 @@ module Effective
       delayed.deferred.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
     }
 
-
     # effective_reports
     def reportable_scopes
       { purchased: nil, not_purchased: nil, deferred: nil, refunds: nil, pending_refunds: nil }

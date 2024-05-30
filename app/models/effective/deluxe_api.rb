@@ -33,7 +33,7 @@ module Effective
     # Returns false if there was an error.
     # Always sets the @purchase_response which is api.payment
     def purchase!(order, payment_intent)
-      raise('expected a deluxe_delayed payment provider') unless order.payment_provider == 'deluxe_delayed'
+      raise('expected a deluxe payment provider') unless ['deluxe', 'deluxe_delayed'].include?(order.payment_provider)
 
       payment_intent = decode_payment_intent_payload(payment_intent) if payment_intent.kind_of?(String)
       raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
