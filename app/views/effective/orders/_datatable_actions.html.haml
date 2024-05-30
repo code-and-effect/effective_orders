@@ -1,6 +1,6 @@
 = dropdown(variation: :dropleft) do
   - if EffectiveResources.authorized?(controller, :checkout, order)
-    = dropdown_link_to 'Checkout', effective_orders.order_path(order)
+    = dropdown_link_to 'Checkout', effective_orders.order_path(order), 'data-turbolinks': false
   - else
     = dropdown_link_to 'View', effective_orders.order_path(order)
 

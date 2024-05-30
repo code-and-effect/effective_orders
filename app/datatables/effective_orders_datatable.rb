@@ -60,6 +60,12 @@ class EffectiveOrdersDatatable < Effective::Datatable
     col :surcharge, as: :price, visible: false
     col(:surcharge_percent, visible: false) { |order| rate_to_percentage(order.surcharge_percent) }
 
+    if EffectiveOrders.delayed?
+      col :delayed_payment
+      col :delayed_payment_date
+      col :delayed_payment_intent
+    end
+
     col :total, as: :price
 
     if EffectiveOrders.collect_note

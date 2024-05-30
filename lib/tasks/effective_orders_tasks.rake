@@ -66,4 +66,10 @@ namespace :effective_orders do
     end
   end
 
+  # rake effective_orders:purchase_delayed_orders
+  desc 'Purchases delayed orders on their delayed_payment_date for effective orders'
+  task purchase_delayed_orders: :environment do
+    puts 'Todo'
+  end
+
 end

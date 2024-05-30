@@ -15,7 +15,7 @@ module Effective
     acts_as_statused(
       :pending,         # New orders are created in a pending state
       :confirmed,       # Once the order has passed checkout step 1
-      :deferred,        # Deferred providers. cheque, etransfer or phone was selected.
+      :deferred,        # Deferred providers. cheque, etransfer, phone or deluxe_delayed was selected.
       :purchased,       # Purchased by provider
       :declined,        # Declined by provider
       :voided,          # Voided by admin
@@ -94,6 +94,21 @@ module Effective
 
       total             :integer   # Subtotal + Tax + Surcharge + Surcharge Tax
 
+      # For use with the Deluxe Delayed Payment feature
+
+      # When an order is created. These two attributes can be set to create a delayed? order
+      delayed_payment         :boolean
+      delayed_payment_date    :date
+
+      # When the order goes to checkout we require the delayed_payment_intent
+      # This stores the user's card information in a secure way
+      # This is required for the order to become deferred?
+      delayed_payment_intent  :text
+
+      # Set by the rake task that runs 1/day and processes any delayed orders before or on that day
+      delayed_payment_purchase_ran_at   :datetime
+      delayed_payment_purchase_result   :text
+
       timestamps
     end
 
@@ -135,6 +150,16 @@ module Effective
     scope :refunds, -> { purchased.where('total < ?', 0) }
     scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
 
+    scope :delayed, -> { where(delayed_payment: true).where.not(delayed_payment_date: nil) }
+    scope :delayed_payment_date_past, -> { delayed.where(arel_table[:delayed_payment_date].lteq(Time.zone.today)) }
+    scope :delayed_payment_date_upcoming, -> { delayed.where(arel_table[:delayed_payment_date].gt(Time.zone.today)) }
+
+    # Used by the rake effective_orders:purchase_delayed_orders task
+    scope :delayed_ready_to_purchase, -> { 
+      delayed.deferred.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
+    }
+
+
     # effective_reports
     def reportable_scopes
       { purchased: nil, not_purchased: nil, deferred: nil, refunds: nil, pending_refunds: nil }
@@ -164,6 +189,11 @@ module Effective
     validates :cc, email_cc: true
 
     validates :order_items, presence: { message: 'No items are present. Please add additional items.' }
+
+    # Delayed Payment Validations
+    validates :delayed_payment_date, presence: true, if: -> { delayed_payment? }
+    validates :delayed_payment_date, absence: true, unless: -> { delayed_payment? }
+    validates :delayed_payment_intent, presence: { message: 'please provide your card information' }, if: -> { delayed? && deferred? }
 
     validate do
       if EffectiveOrders.organization_enabled?
@@ -392,46 +422,12 @@ module Effective
       purchased? ? 'Total Paid' : 'Total Due'
     end
 
-    # Visa - 1234
     def payment_method
-      return nil unless purchased?
+      payment_method_value if purchased?
+    end
 
-      provider = payment_provider if ['cheque', 'etransfer', 'phone', 'credit card'].include?(payment_provider)
-
-      # Normalize payment card
-      card = case payment_card.to_s.downcase.gsub(' ', '').strip
-        when '' then nil
-        when 'v', 'visa' then 'Visa'
-        when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
-        when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
-        when 'd', 'discover' then 'Discover'
-        else payment_card.to_s
-      end
-
-      # Try again
-      if card == 'none' && payment['card_type'].present?
-        card = case payment['card_type'].to_s.downcase.gsub(' ', '').strip
-          when '' then nil
-          when 'v', 'visa' then 'Visa'
-          when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
-          when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
-          when 'd', 'discover' then 'Discover'
-          else payment_card.to_s
-        end
-      end
-
-      last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
-        payment[:active_card][15,4]
-      end
-
-      last4 ||= if payment['active_card'] && payment['active_card'].include?('**** **** ****')
-        payment['active_card'][15,4]
-      end
-
-      # stripe, moneris, moneris_checkout
-      last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
-
-      [provider.presence, card.presence, last4.presence].compact.join(' - ')
+    def delayed_payment_method
+      payment_method_value if delayed?
     end
 
     def duplicate
@@ -537,6 +533,39 @@ module Effective
 
     def refund?
       total.to_i < 0
+    end
+    
+    # A new order is created.
+    # If the delayed_payment and delayed_payment date are set, it's a delayed order
+    # A delayed order is one in which we have to capture a payment intent for the amount of the order.
+    # Once it's delayed and deferred we can purchase it at anytime.
+    def delayed?
+      delayed_payment? && delayed_payment_date.present?
+    end
+
+    def delayed_ready_to_purchase?
+      return false unless delayed? 
+      return false unless deferred?
+      return false unless delayed_payment_intent.present?
+      return false if delayed_payment_date_future?
+      return false if delayed_payment_purchase_ran_at.present? # We ran before and probably failed
+
+      true
+    end
+
+    def delayed_payment_date_future?
+      return false unless delayed?
+      delayed_payment_date > Time.zone.now.to_date
+    end
+
+    def delayed_payment_date_today?
+      return false unless delayed?
+      delayed_payment_date == Time.zone.now.to_date
+    end
+
+    def delayed_payment_date_past?
+      return false unless delayed?
+      delayed_payment_date < Time.zone.now.to_date
     end
 
     def pending_refund?
@@ -696,6 +725,23 @@ module Effective
       sync_quickbooks!(skip: true)
     end
 
+    # This was submitted via the deluxe_delayed provider checkout
+    # This is a special case of a deferred provider. We require the payment_intent and payment info
+    def delay!(payment:, payment_intent:, provider:, card:, email: false, validate: true)
+      raise('expected payment intent to be a String') unless payment_intent.kind_of?(String)
+      raise('expected a delayed payment provider') unless EffectiveOrders.delayed_providers.include?(provider)
+      raise('expected a delayed payment order with a delayed_payment_date') unless delayed_payment? && delayed_payment_date.present?
+
+      assign_attributes(
+        delayed_payment_intent: payment_intent, 
+
+        payment: payment_to_h(payment),
+        payment_card: (card.presence || 'none')
+      )
+
+      defer!(provider: provider, email: email, validate: validate)
+    end
+
     def defer!(provider: 'none', email: true, validate: true)
       raise('order already purchased') if purchased?
 
@@ -725,9 +771,7 @@ module Effective
         end
       rescue ActiveRecord::RecordInvalid => e
         self.status = status_was
-
         error = e.message
-        raise ::ActiveRecord::Rollback
       end
 
       raise "Failed to defer order: #{error || errors.full_messages.to_sentence}" unless error.nil?
@@ -766,9 +810,7 @@ module Effective
           run_purchasable_callbacks(:after_decline)
         rescue ActiveRecord::RecordInvalid => e
           self.status = status_was
-
           error = e.message
-          raise ::ActiveRecord::Rollback
         end
       end
 
@@ -882,6 +924,47 @@ module Effective
 
     def get_total_without_surcharge
       subtotal + tax
+    end
+
+    # Visa - 1234
+    def payment_method_value
+      provider = payment_provider if ['cheque', 'etransfer', 'phone', 'credit card'].include?(payment_provider)
+      provider = 'credit card' if ['deluxe_delayed'].include?(payment_provider)
+
+      # Normalize payment card
+      card = case payment_card.to_s.downcase.gsub(' ', '').strip
+        when '' then nil
+        when 'v', 'visa' then 'Visa'
+        when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
+        when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
+        when 'd', 'discover' then 'Discover'
+        else payment_card.to_s
+      end
+
+      # Try again
+      if card == 'none' && payment['card_type'].present?
+        card = case payment['card_type'].to_s.downcase.gsub(' ', '').strip
+          when '' then nil
+          when 'v', 'visa' then 'Visa'
+          when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
+          when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
+          when 'd', 'discover' then 'Discover'
+          else payment_card.to_s
+        end
+      end
+
+      last4 = if payment[:active_card] && payment[:active_card].include?('**** **** ****')
+        payment[:active_card][15,4]
+      end
+
+      last4 ||= if payment['active_card'] && payment['active_card'].include?('**** **** ****')
+        payment['active_card'][15,4]
+      end
+
+      # stripe, moneris, moneris_checkout
+      last4 ||= (payment['f4l4'] || payment['first6last4']).to_s.last(4)
+
+      [provider.presence, card.presence, last4.presence].compact.join(' - ')
     end
 
     private

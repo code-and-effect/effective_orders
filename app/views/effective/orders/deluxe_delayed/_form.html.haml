@@ -1,0 +1,10 @@
+- deluxe_delayed = deluxe_delayed_hosted_payment_form_options(order)
+
+= effective_form_with(scope: :deluxe_delayed, url: effective_orders.deluxe_delayed_order_path(order), data: { 'deluxe-delayed-checkout': deluxe_delayed.to_json }) do |f|
+  = f.hidden_field :declined_url, value: declined_url
+  = f.hidden_field :deferred_url, value: deferred_url
+
+  -# This is set by the deluxe.js javascript on Submit
+  = f.hidden_field :payment_intent, required: true
+
+  = render('effective/orders/deluxe_delayed/element')

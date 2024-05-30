@@ -40,6 +40,12 @@ class CreateEffectiveOrders < ActiveRecord::Migration[6.0]
       t.integer   :surcharge_tax
       t.integer   :total
 
+      t.boolean   :delayed_payment, default: false
+      t.date      :delayed_payment_date
+      t.text      :delayed_payment_intent
+      t.datetime  :delayed_payment_purchase_ran_at
+      t.text      :delayed_payment_purchase_result
+
       t.timestamps
     end
 

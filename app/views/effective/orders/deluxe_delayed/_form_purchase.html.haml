@@ -1,0 +1,18 @@
+= effective_form_with(model: order, url: effective_orders.deluxe_delayed_purchase_order_path(order), method: :post) do |f|
+  = f.hidden_field :id
+
+  = f.hidden_field :purchased_url, value: purchased_url
+  = f.hidden_field :declined_url, value: declined_url
+
+  = f.check_box :send_mark_as_paid_email_to_buyer,
+    label: 'Yes, send a receipt email to the buyer.',
+    input_html: { checked: (f.object.send_mark_as_paid_email_to_buyer.nil? ? EffectiveOrders.send_order_receipts_when_mark_as_paid : f.object.send_mark_as_paid_email_to_buyer?) }
+
+  .row
+    .col
+      = f.text_area :note_to_buyer, hint: 'This message will be displayed to the buyer on the receipt.'
+    .col
+      = f.text_area :note_internal, hint: 'For or internal admin use only. This note will never be displayed to the buyer.'
+
+  = f.submit(center: true) do
+    = f.save 'Purchase Order from Saved Card'

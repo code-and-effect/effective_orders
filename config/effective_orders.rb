@@ -133,6 +133,15 @@ EffectiveOrders.setup do |config|
   #   currency: 'CAD'
   # }
 
+  # Deluxe Delayed
+  # This is a deferred payment
+  config.deluxe_delayed = false
+
+  # config.deluxe_delayed = {
+  #   confirm: 'Save card info for later payment',
+  #   success: 'Thank you! You have indicated that this order will be purchased by credit card at a later date. We will save your card information securely and process the payment when the order is ready'
+  # }
+
   # E-transfer
   # This is an deferred payment
   config.etransfer = false

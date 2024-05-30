@@ -14,6 +14,9 @@
   - elsif EffectiveOrders.refund? && order.refund?
     = render partial: '/effective/orders/refund/form', locals: provider_locals
 
+  - elsif EffectiveOrders.delayed? && order.delayed?
+    = render partial: '/effective/orders/delayed/form', locals: provider_locals
+
   - else
     - if EffectiveOrders.pretend?
       = render partial: '/effective/orders/pretend/form', locals: provider_locals
@@ -38,6 +41,10 @@
       = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
   - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && order.user != current_user
+    - if EffectiveOrders.delayed? && order.delayed? && order.deferred?
+      .effective-order-admin-purchase-actions
+        = render partial: '/effective/orders/delayed/form_purchase', locals: provider_locals
+
     - if EffectiveOrders.mark_as_paid?
       .effective-order-admin-purchase-actions
         = render partial: '/effective/orders/mark_as_paid/form', locals: provider_locals

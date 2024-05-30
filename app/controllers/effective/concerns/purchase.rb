@@ -50,6 +50,23 @@ module Effective
         redirect_to deferred_url.gsub(':id', @order.to_param.to_s)
       end
 
+      def order_delayed(payment:, payment_intent:, provider:, card: 'none', deferred_url: nil, email: false)
+        @order.delay!(payment: payment, payment_intent: payment_intent, provider: provider, card: card, email: email)
+
+        Effective::Cart.where(user: current_user).destroy_all if current_user.present?
+
+        if flash[:success].blank?
+          if email
+            flash[:success] = "Delayed payment created! An email has been sent to #{@order.emails_send_to}"
+          else
+            flash[:success] = "Delayed payment created!"
+          end
+        end
+
+        deferred_url = effective_orders.deferred_order_path(':id') if deferred_url.blank?
+        redirect_to deferred_url.gsub(':id', @order.to_param.to_s)
+      end
+
       def order_declined(payment:, provider:, card: 'none', declined_url: nil)
         @order.decline!(payment: payment, provider: provider, card: card)
 

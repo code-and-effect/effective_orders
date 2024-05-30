@@ -42,7 +42,7 @@ module EffectiveOrders
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message, :buyer_purchases_refund,
 
       # Payment processors. false or Hash
-      :cheque, :deluxe, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
+      :cheque, :deluxe, :deluxe_delayed, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
   end
 
@@ -85,8 +85,16 @@ module EffectiveOrders
     deluxe.kind_of?(Hash)
   end
 
+  def self.deluxe_delayed?
+    deluxe_delayed.kind_of?(Hash)
+  end
+
   def self.deferred?
     deferred_providers.present?
+  end
+
+  def self.delayed?
+    delayed_providers.present?
   end
 
   def self.mark_as_paid?
@@ -178,7 +186,11 @@ module EffectiveOrders
   end
 
   def self.deferred_providers
-    [('cheque' if cheque?), ('etransfer' if etransfer?), ('phone' if phone?)].compact
+    [('cheque' if cheque?), ('deluxe_delayed' if deluxe_delayed?), ('etransfer' if etransfer?), ('phone' if phone?)].compact
+  end
+
+  def self.delayed_providers
+    [('deluxe_delayed' if deluxe_delayed?)].compact
   end
 
   def self.credit_card_payment_providers
