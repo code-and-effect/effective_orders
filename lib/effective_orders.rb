@@ -185,8 +185,9 @@ module EffectiveOrders
     ].compact
   end
 
+  # Should not include delayed providers
   def self.deferred_providers
-    [('cheque' if cheque?), ('deluxe_delayed' if deluxe_delayed?), ('etransfer' if etransfer?), ('phone' if phone?)].compact
+    [('cheque' if cheque?), ('etransfer' if etransfer?), ('phone' if phone?)].compact
   end
 
   def self.delayed_providers

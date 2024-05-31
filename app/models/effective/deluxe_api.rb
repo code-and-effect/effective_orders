@@ -23,15 +23,51 @@ module Effective
       self.currency = currency || EffectiveOrders.deluxe.fetch(:currency)
     end
 
-    def payment
-      raise('expected purchase response to be present') unless purchase_response.kind_of?(Hash)
-      purchase_response
+    def health_check
+      get('/')
     end
 
+    def healthy?
+      response = health_check()
+
+      return false unless response.kind_of?(Hash)
+      return false unless response['appName'].present?
+      return false unless response['environment'].present?
+
+      true
+    end
+
+    # Decode the base64 encoded JSON object into a Hash
+    def decode_payment_intent_payload(payload)
+      raise('expected a string') unless payload.kind_of?(String)
+
+      payment_intent = (JSON.parse(Base64.decode64(payload)) rescue nil)
+
+      raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
+      raise('expected a token payment') unless payment_intent['type'] == 'Token'
+
+      payment_intent
+    end
+
+    # Takes a payment_intent and returns the card info we can store
+    def card_info(payment_intent)
+      token = extract_token(payment_intent)
+
+      # Return the authorization params merged with the card info
+      last4 = token['maskedPan'].to_s.last(4)
+      card = token['cardType'].to_s.downcase
+      date = token['expDate']
+      cvv = token['cvv']
+
+      active_card = "**** **** **** #{last4} #{card} #{date}" if last4.present?
+
+      { 'active_card' => active_card, 'card' => card, 'expDate' => date, 'cvv' => cvv }.compact
+    end
+
+    # After we store a payment intent we can call purchase! immediately or wait till later.
     # This calls Authorize Payment and Complete Payment
-    # Returns true if all good.
-    # Returns false if there was an error.
-    # Always sets the @purchase_response which is api.payment
+    # Returns true when purchased. Returns false when declined.
+    # The response is stored in api.payment() after this is run
     def purchase!(order, payment_intent)
       payment_intent = decode_payment_intent_payload(payment_intent) if payment_intent.kind_of?(String)
       raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
@@ -58,20 +94,55 @@ module Effective
       true
     end
 
-    # Health Check
-    def health_check
-      get('/')
+    def payment
+      raise('expected purchase response to be present') unless purchase_response.kind_of?(Hash)
+      purchase_response
     end
 
-    def healthy?
-      response = health_check()
+    def purchase_delayed_orders!(orders)
+      now = Time.zone.now
 
-      return false unless response.kind_of?(Hash)
-      return false unless response['timestamp'].to_s.start_with?(Time.zone.now.strftime('%Y-%m-%d'))
-      return false unless response['environment'].present?
+      Array(orders).each do |order|
+        puts "Trying order #{order.id}"
+
+        begin
+          raise('expected a delayed order') unless order.delayed?
+          raise('expected a deferred order') unless order.deferred?
+          raise('expected delayed payment intent') unless order.delayed_payment_intent.present?
+
+          order.update_columns(delayed_payment_purchase_ran_at: now, delayed_payment_purchase_result: nil)
+
+          purchased = purchase!(order, order.delayed_payment_intent)
+          provider = order.payment_provider
+          payment = self.payment()
+          card = payment["card"]
+
+          if purchased
+            order.assign_attributes(delayed_payment_purchase_result: "success")
+            order.purchase!(payment: payment, provider: provider, card: card, email: true, skip_buyer_validations: true)
+
+            puts "Successfully purchased order #{order.id}"
+          else
+            order.assign_attributes(delayed_payment_purchase_result: "failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}.")
+            order.decline!(payment: payment, provider: provider, card: card)
+
+            puts "Failed to purchase order #{order.id} #{order.delayed_payment_purchase_result}"
+          end
+
+        rescue => e
+          order.update_columns(delayed_payment_purchase_ran_at: now, delayed_payment_purchase_result: "error: #{e.message}")
+
+          EffectiveLogger.error(e.message, associated: order) if defined?(EffectiveLogger)
+          ExceptionNotifier.notify_exception(e, data: { order_id: order.id }) if defined?(ExceptionNotifier)
+
+          puts "Error purchasing #{order.id}: #{e.message}"
+        end
+      end
 
       true
     end
+
+    protected
 
     # Authorize Payment
     def authorize_payment(order, payment_intent)
@@ -115,19 +186,6 @@ module Effective
 
       # Return the complete params merged with the authorization params
       response.reverse_merge(authorization)
-    end
-
-    def complete_payment_params(order, payment_intent)
-      raise('expected an Effective::Order') unless order.kind_of?(Effective::Order)
-
-      payment_id = extract_payment_id(payment_intent)
-      amount = { amount: order.total_to_f, currency: currency }
-
-      # Params passed into Complete Payment
-      { 
-        paymentId: payment_id, 
-        amount: amount
-      }
     end
 
     def authorize_payment_params(order, payment_intent)
@@ -183,6 +241,19 @@ module Effective
       }.compact
     end
 
+    def complete_payment_params(order, payment_intent)
+      raise('expected an Effective::Order') unless order.kind_of?(Effective::Order)
+
+      payment_id = extract_payment_id(payment_intent)
+      amount = { amount: order.total_to_f, currency: currency }
+
+      # Params passed into Complete Payment
+      { 
+        paymentId: payment_id, 
+        amount: amount
+      }
+    end
+
     def get(endpoint, params: nil)
       query = ('?' + params.compact.map { |k, v| "$#{k}=#{v}" }.join('&')) if params.present?
 
@@ -221,33 +292,6 @@ module Effective
       end
 
       JSON.parse(result.body)
-    end
-
-    # Takes a payment_intent and returns the card info we can store
-    def card_info(payment_intent)
-      token = extract_token(payment_intent)
-
-      # Return the authorization params merged with the card info
-      last4 = token['maskedPan'].to_s.last(4)
-      card = token['cardType'].to_s.downcase
-      date = token['expDate']
-      cvv = token['cvv']
-
-      active_card = "**** **** **** #{last4} #{card} #{date}" if last4.present?
-
-      { 'active_card' => active_card, 'card' => card, 'expDate' => date, 'cvv' => cvv }.compact
-    end
-
-    # Decode the base64 encoded JSON object into a Hash
-    def decode_payment_intent_payload(payload)
-      raise('expected a string') unless payload.kind_of?(String)
-
-      payment_intent = (JSON.parse(Base64.decode64(payload)) rescue nil)
-
-      raise('expected payment_intent to be a Hash') unless payment_intent.kind_of?(Hash)
-      raise('expected a token payment') unless payment_intent['type'] == 'Token'
-
-      payment_intent
     end
 
     private

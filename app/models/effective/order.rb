@@ -241,7 +241,9 @@ module Effective
       validates :payment_provider, presence: true
 
       validate do
-        errors.add(:payment_provider, "unknown deferred payment provider") unless EffectiveOrders.deferred_providers.include?(payment_provider)
+        unless EffectiveOrders.deferred_providers.include?(payment_provider) || EffectiveOrders.delayed_providers.include?(payment_provider)
+          errors.add(:payment_provider, "unknown deferred payment provider") 
+        end
       end
     end
 
@@ -673,7 +675,9 @@ module Effective
 
         payment: payment_to_h(payment.presence || 'none'),
         payment_provider: (provider.presence || 'none'),
-        payment_card: (card.presence || 'none')
+        payment_card: (card.presence || 'none'),
+
+        delayed_payment_intent: nil # Do not store the delayed payment intent any longer
       )
 
       if current_user&.email.present?

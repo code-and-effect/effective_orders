@@ -6,7 +6,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
       scope :all
       scope :purchased
 
-      scope :deferred if EffectiveOrders.deferred_providers.present?
+      scope :deferred if EffectiveOrders.deferred? || EffectiveOrders.delayed?
       scope :refunds if EffectiveOrders.refund
       scope :not_purchased
     end

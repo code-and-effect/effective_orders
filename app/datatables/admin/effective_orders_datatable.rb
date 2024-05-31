@@ -19,7 +19,7 @@ module Admin
         scope :all
         scope :purchased
 
-        scope :deferred if EffectiveOrders.deferred_providers.present?
+        scope :deferred if EffectiveOrders.deferred? || EffectiveOrders.delayed?
         scope :voided
 
         scope :pending_refunds if EffectiveOrders.refund && !EffectiveOrders.buyer_purchases_refund?
