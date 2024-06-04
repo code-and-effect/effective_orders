@@ -39,8 +39,19 @@ module ActsAsPurchasableParent
   end
 
   included do
-    has_many :orders, -> { order(:id) }, as: :parent, class_name: 'Effective::Order', dependent: :nullify
+    has_many :orders, -> { order(:id) }, as: :parent, class_name: 'Effective::Order'
+
     accepts_nested_attributes_for :orders
+
+    before_destroy do
+      orders.each do |order|
+        raise('unable to destroy a purchasable_parent with purchased orders') if order.purchased?
+        order.voided? ? order.save! : order.void!
+      end
+
+      true
+    end
+
   end
 
 end
