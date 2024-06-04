@@ -8,18 +8,24 @@
 
         The payment date for this order
 
-        - if order.delayed_payment_date_future?
+        - if order.delayed_payment_date_upcoming?
           is in #{distance} from now on #{order.delayed_payment_date.strftime('%F')}
         - elsif order.delayed_payment_date_today?
           was today
         - else
           was #{distance} ago on #{order.delayed_payment_date.strftime('%F')}
-
-    %p
-      Instead of charging your card right away, the following action will securely save a token
-      representing your card information. The full amount will be charged on the payment date.
-
+    
     - provider_locals = { order: order, deferred_url: deferred_url, declined_url: declined_url }
 
-    - EffectiveOrders.delayed_providers.each do |provider|
-      = render partial: "/effective/orders/#{provider}/form", locals: provider_locals
+    - if order.deferred? && order.delayed?
+      %p Your existing #{order.delayed_payment_method} will be charged on the payment date.
+
+      = collapse('Change my card info') do
+        - EffectiveOrders.delayed_providers.each do |provider|
+          = render partial: "/effective/orders/#{provider}/form", locals: provider_locals
+    - else
+      %p
+        Please enter your card information so it can be charged on the payment date.
+
+      - EffectiveOrders.delayed_providers.each do |provider|
+        = render partial: "/effective/orders/#{provider}/form", locals: provider_locals
