@@ -548,13 +548,20 @@ module Effective
       return false unless delayed? 
       return false unless deferred?
       return false unless delayed_payment_intent.present?
-      return false if delayed_payment_date_future?
+      return false if delayed_payment_date_upcoming?
       return false if delayed_payment_purchase_ran_at.present? # We ran before and probably failed
 
       true
     end
 
-    def delayed_payment_date_future?
+    def delayed_payment_info
+      return unless delayed? && deferred?
+      return unless delayed_payment_date_upcoming?
+
+      "Your #{delayed_payment_method} will be charged on #{delayed_payment_date.strftime('%F')} for the full amount of $#{'%0.2f' % total_to_f}"
+    end
+
+    def delayed_payment_date_upcoming?
       return false unless delayed?
       delayed_payment_date > Time.zone.now.to_date
     end
@@ -830,6 +837,15 @@ module Effective
     def unvoid!
       raise('order must be voided to unvoid') unless voided?
       unvoided!(skip_buyer_validations: true)
+    end
+
+    def deluxe_delayed_purchase!
+      raise('expected a delayed order') unless delayed?
+      raise('expected a deferred order') unless deferred?
+      raise('expected delayed payment intent') unless delayed_payment_intent.present?
+      raise('expected a deluxe_delayed payment provider') unless payment_provider == 'deluxe_delayed'
+
+      Effective::DeluxeApi.new().purchase_delayed_orders!(self)
     end
 
     # These are all the emails we send all notifications to

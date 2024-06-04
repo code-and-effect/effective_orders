@@ -13,7 +13,7 @@
 
         The payment date for this order
 
-        - if order.delayed_payment_date_future?
+        - if order.delayed_payment_date_upcoming?
           is in #{distance} from now on #{order.delayed_payment_date.strftime('%F')}
         - elsif order.delayed_payment_date_today?
           was today
