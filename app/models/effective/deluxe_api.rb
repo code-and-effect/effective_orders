@@ -65,7 +65,7 @@ module Effective
     end
 
     # After we store a payment intent we can call purchase! immediately or wait till later.
-    # This calls Authorize Payment and Complete Payment
+    # This calls the /payments Create Payment endpoint
     # Returns true when purchased. Returns false when declined.
     # The response is stored in api.payment() after this is run
     def purchase!(order, payment_intent)
@@ -75,18 +75,10 @@ module Effective
 
       # Start a purchase. Which is an Authorization and a Completion
       self.purchase_response = nil
-
-      # Process Authorization
-      authorization = authorize_payment(order, payment_intent)
-      self.purchase_response = authorization
-
-      valid = [0].include?(authorization['responseCode'])
-      return false unless valid
-
-      ## Complete Payment
-      payment = complete_payment(order, authorization)
+      payment = create_payment(order, payment_intent)
       self.purchase_response = payment
 
+      # Validate
       valid = [0].include?(payment['responseCode'])
       return false unless valid
 
@@ -94,11 +86,35 @@ module Effective
       true
     end
 
+    # Create Payment
+    def create_payment(order, payment_intent)
+      response = post('/payments', params: create_payment_params(order, payment_intent))
+
+      # Sanity check response
+      raise('expected responseCode') unless response.kind_of?(Hash) && response['responseCode'].present?
+
+      # Sanity check response approved vs authorized
+      valid = [0].include?(response['responseCode'])
+
+      # We might be approved for an amount less than the order total. Not sure what to do here
+      if valid && (amountApproved = response['amountApproved']) != (amountAuthorized = order.total_to_f)
+        raise("expected complete payment amountApproved #{amountApproved} to be the same as the amountAuthorized #{amountAuthorized} but it was not")
+      end
+
+      # Generate the card info we can store
+      card = card_info(payment_intent)
+
+      # Return the response merged with the card info
+      response.reverse_merge(card)
+    end
+
+    # The response from last create payment request
     def payment
       raise('expected purchase response to be present') unless purchase_response.kind_of?(Hash)
       purchase_response
     end
 
+    # Called by rake task
     def purchase_delayed_orders!(orders)
       now = Time.zone.now
 
@@ -144,51 +160,7 @@ module Effective
 
     protected
 
-    # Authorize Payment
-    def authorize_payment(order, payment_intent)
-      response = post('/payments/authorize', params: authorize_payment_params(order, payment_intent))
-
-      # Sanity check response
-      raise('expected responseCode') unless response.kind_of?(Hash) && response['responseCode'].present?
-
-      # Sanity check response approved vs authorized
-      valid = [0].include?(response['responseCode'])
-
-      # We might be approved for an amount less than the order total. Not sure what to do here
-      if valid && (amountApproved = response['amountApproved']) != (amountAuthorized = order.total_to_f)
-        raise("expected authorize payment amountApproved #{amountApproved} to be the same as the amountAuthorized #{amountAuthorized} but it was not")
-      end
-
-      # Generate the card info we can store
-      card = card_info(payment_intent)
-
-      # Return the authorization params merged with the card info
-      response.reverse_merge(card)
-    end
-
-    # Complete Payment
-    def complete_payment(order, authorization)
-      response = post('/payments/complete', params: complete_payment_params(order, authorization))
-
-      # Sanity check response
-      raise('expected responseCode') unless response.kind_of?(Hash) && response['responseCode'].present?
-
-      # Sanity check response approved vs authorized
-      valid = [0].include?(response['responseCode'])
-
-      # We might be approved for an amount less than the order total. Not sure what to do here
-      if valid && (amountApproved = response['amountApproved']) != (amountAuthorized = order.total_to_f)
-        raise("expected complete payment amountApproved #{amountApproved} to be the same as the amountAuthorized #{amountAuthorized} but it was not")
-      end
-
-      # The authorization information
-      authorization = { 'paymentId' => authorization } if authorization.kind_of?(String)
-
-      # Return the complete params merged with the authorization params
-      response.reverse_merge(authorization)
-    end
-
-    def authorize_payment_params(order, payment_intent)
+    def create_payment_params(order, payment_intent)
       raise('expected an Effective::Order') unless order.kind_of?(Effective::Order)
 
       token = extract_token(payment_intent)
@@ -232,26 +204,22 @@ module Effective
         ({ name: 'organization_id', value: order.organization_id.to_s } if order.organization_id.present?)
       ].compact
 
-      # Params passed into Authorize Payment
-      {
+      orderData = {
+        autoGenerateOrderId: true,
+        orderID: order.to_param,
+        orderIdIsUnique: true
+      }
+
+      # Params passed into Create Payment
+      params = {
+        paymentType: "Sale",
         amount: amount, 
         paymentMethod: paymentMethod,
         shippingAddress: shippingAddress,
         customData: customData,
+        merchantCategory: "E-Commerce",
+        orderData: orderData
       }.compact
-    end
-
-    def complete_payment_params(order, payment_intent)
-      raise('expected an Effective::Order') unless order.kind_of?(Effective::Order)
-
-      payment_id = extract_payment_id(payment_intent)
-      amount = { amount: order.total_to_f, currency: currency }
-
-      # Params passed into Complete Payment
-      { 
-        paymentId: payment_id, 
-        amount: amount
-      }
     end
 
     def get(endpoint, params: nil)
