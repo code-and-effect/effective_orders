@@ -104,6 +104,7 @@ module Admin
         col :delayed_payment, visible: false
         col :delayed_payment_date
         col :delayed_payment_intent, visible: false
+        col :delayed_payment_total, as: :price, visible: false
         col :delayed_payment_purchase_ran_at, visible: false
         col :delayed_payment_purchase_result, visible: false
       end

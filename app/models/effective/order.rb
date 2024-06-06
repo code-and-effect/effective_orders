@@ -100,10 +100,11 @@ module Effective
       delayed_payment         :boolean
       delayed_payment_date    :date
 
-      # When the order goes to checkout we require the delayed_payment_intent
-      # This stores the user's card information in a secure way
+      # When the order goes to checkout we require the delayed_payment_intent and total
+      # This stores the user's card information
       # This is required for the order to become deferred?
       delayed_payment_intent  :text
+      delayed_payment_total   :integer  # Only for reference, not really used. This is the order total we showed them when they last save card info'd
 
       # Set by the rake task that runs 1/day and processes any delayed orders before or on that day
       delayed_payment_purchase_ran_at   :datetime
@@ -192,7 +193,11 @@ module Effective
     # Delayed Payment Validations
     validates :delayed_payment_date, presence: true, if: -> { delayed_payment? }
     validates :delayed_payment_date, absence: true, unless: -> { delayed_payment? }
-    validates :delayed_payment_intent, presence: { message: 'please provide your card information' }, if: -> { delayed? && deferred? }
+
+    with_options(if: -> { delayed? && deferred? }) do
+      validates :delayed_payment_intent, presence: { message: 'please provide your card information' }
+      validates :delayed_payment_total, presence: true
+    end
 
     validate do
       if EffectiveOrders.organization_enabled?
@@ -744,6 +749,7 @@ module Effective
 
       assign_attributes(
         delayed_payment_intent: payment_intent, 
+        delayed_payment_total: total(),
 
         payment: payment_to_h(payment),
         payment_card: (card.presence || 'none')

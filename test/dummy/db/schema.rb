@@ -149,6 +149,7 @@ ActiveRecord::Schema.define(version: 101) do
     t.boolean "delayed_payment", default: false
     t.date "delayed_payment_date"
     t.text "delayed_payment_intent"
+    t.integer "delayed_payment_total"
     t.datetime "delayed_payment_purchase_ran_at"
     t.text "delayed_payment_purchase_result"
     t.datetime "created_at", precision: 6, null: false

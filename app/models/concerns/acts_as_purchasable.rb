@@ -110,6 +110,15 @@ module ActsAsPurchasable
     self[:tax_exempt] || false
   end
 
+  def purchased_or_deferred?
+    purchased_order_id.present? || orders.any? { |order| order.purchased? || order.deferred? }
+  end
+
+  def purchased_or_deferred_at
+    order = orders.find { |order| order.purchased? } || orders.find { |order| order.deferred? } 
+    order&.purchased_at || order&.deferred_at
+  end
+
   def purchased?
     purchased_order_id.present?
   end
