@@ -131,6 +131,10 @@ module ActsAsPurchasable
     self[:purchased_at] || purchased_order.try(:purchased_at)
   end
 
+  def deferred_at
+    self[:deferred_at] || orders.find { |order| order.deferred? }.try(:deferred_at)
+  end
+
   def purchased_by?(user)
     purchased_orders.any? { |order| order.purchased_by_id == user.id }
   end
