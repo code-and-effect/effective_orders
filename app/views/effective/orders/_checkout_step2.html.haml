@@ -3,19 +3,20 @@
   .effective-order-change-items
     = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow
 
-= render('/effective/orders/order', order: order, no_order_actions: true)
+- unless local_assigns[:skip_order]
+  = render('/effective/orders/order', order: order, no_order_actions: true) 
 
 .effective-order-purchase-actions
   - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url }
 
-  - if EffectiveOrders.free? && order.free?
+  - if EffectiveOrders.delayed? && order.delayed?
+    = render partial: '/effective/orders/delayed/form', locals: provider_locals
+
+  - elsif EffectiveOrders.free? && order.free?
     = render partial: '/effective/orders/free/form', locals: provider_locals
 
   - elsif EffectiveOrders.refund? && order.refund?
     = render partial: '/effective/orders/refund/form', locals: provider_locals
-
-  - elsif EffectiveOrders.delayed? && order.delayed?
-    = render partial: '/effective/orders/delayed/form', locals: provider_locals
 
   - else
     - if EffectiveOrders.pretend?
