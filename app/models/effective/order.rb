@@ -563,7 +563,7 @@ module Effective
       return unless delayed? && deferred?
       return unless delayed_payment_date_upcoming?
 
-      "Your #{delayed_payment_method} will be charged on #{delayed_payment_date.strftime('%F')} for the full amount of $#{'%0.2f' % total_to_f}"
+      "Your #{delayed_payment_method} will be charged $#{'%0.2f' % total_to_f} on #{delayed_payment_date.strftime('%F')}"
     end
 
     def delayed_payment_date_upcoming?
