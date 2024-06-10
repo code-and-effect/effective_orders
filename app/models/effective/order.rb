@@ -664,6 +664,12 @@ module Effective
       present_order_items.each { |oi| oi.update_purchasable_attributes }
     end
 
+    def update_purchasable_attributes!
+      raise('cannot update purchasable attributes of a purchased order') if purchased?
+      update_purchasable_attributes
+      save!
+    end
+
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
     # This is different than the Mark as Paid payment processor
