@@ -35,4 +35,25 @@ class ActsAsPurchasableTest < ActiveSupport::TestCase
     assert thing.purchased_by?(user)
   end
 
+  test 'before and after callbacks' do
+    thing = create_thing!
+    assert thing.valid?
+    refute thing.purchased?
+
+    assert thing.before_defer_value.nil?
+    assert thing.after_defer_value.nil?
+    assert thing.before_purchase_value.nil?
+    assert thing.after_purchase_value.nil?
+
+    order = build_effective_order(items: thing)
+
+    order.defer!(provider: 'cheque')
+    assert thing.before_defer_value
+    assert thing.after_defer_value
+
+    order.mark_as_purchased!
+    assert thing.before_purchase_value
+    assert thing.after_purchase_value
+  end
+
 end

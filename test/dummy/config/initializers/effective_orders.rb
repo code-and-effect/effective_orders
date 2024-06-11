@@ -116,12 +116,12 @@ EffectiveOrders.setup do |config|
 
   # Cheque
   # This is an deferred payment
-  config.cheque = false
+  # config.cheque = false
 
-  # config.cheque = {
-  #   confirm: 'Proceed with pay by cheque?',
-  #   success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
-  # }
+  config.cheque = {
+    confirm: 'Proceed with pay by cheque?',
+    success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
+  }
 
   # E-Transfer
   # This is an deferred payment
