@@ -86,6 +86,17 @@ module Effective
       true
     end
 
+    def purchase_free!(order)
+      raise('expected a free order') unless order.free?
+
+      self.purchase_response = nil
+      payment = { card: "none", details: "free order. no payment required."}
+      self.purchase_response = payment
+
+      # Free is always valid
+      true
+    end
+
     # Create Payment
     def create_payment(order, payment_intent)
       response = post('/payments', params: create_payment_params(order, payment_intent))
@@ -128,10 +139,17 @@ module Effective
 
           order.update_columns(delayed_payment_purchase_ran_at: now, delayed_payment_purchase_result: nil)
 
-          purchased = purchase!(order, order.delayed_payment_intent)
-          provider = order.payment_provider
+          purchased = if order.total.to_i > 0
+            purchase!(order, order.delayed_payment_intent)
+          elsif order.free?
+            purchase_free!(order)
+          else
+            raise("Unexpected order amount: #{order.total}")
+          end
+
+          provider = (order.free? ? 'free' : order.payment_provider)
           payment = self.payment()
-          card = payment["card"]
+          card = payment["card"] || payment[:card]
 
           if purchased
             order.assign_attributes(delayed_payment_purchase_result: "success")
@@ -152,6 +170,8 @@ module Effective
           ExceptionNotifier.notify_exception(e, data: { order_id: order.id }) if defined?(ExceptionNotifier)
 
           puts "Error purchasing #{order.id}: #{e.message}"
+
+          raise(e) if Rails.env.development? || Rails.env.test?
         end
       end
 
