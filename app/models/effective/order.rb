@@ -602,6 +602,16 @@ module Effective
       EffectiveOrders.send_order_receipt_to_buyer
     end
 
+    def send_order_declined_to_admin?
+      return false if free? && !EffectiveOrders.send_order_receipts_when_free
+      EffectiveOrders.send_order_declined_to_admin
+    end
+
+    def send_order_declined_to_buyer?
+      return false if free? && !EffectiveOrders.send_order_receipts_when_free
+      EffectiveOrders.send_order_declined_to_buyer
+    end
+
     def send_payment_request_to_buyer?
       return false if free? && !EffectiveOrders.send_order_receipts_when_free
       return false if refund?
@@ -803,7 +813,8 @@ module Effective
       true
     end
 
-    def decline!(payment: 'none', provider: 'none', card: 'none', validate: true)
+    # We only turn on the email when done by a delayed payment or from a rake script.
+    def decline!(payment: 'none', provider: 'none', card: 'none', validate: true, email: false)
       return false if declined?
       raise('order already purchased') if purchased?
 
@@ -838,7 +849,15 @@ module Effective
 
       raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
+      send_declined_notifications! if email
+
       true
+    end
+
+    def declined_reason
+      return unless declined?
+
+      delayed_payment_purchase_result.presence || 'credit card declined'
     end
 
     def void!
@@ -874,6 +893,19 @@ module Effective
       send_order_receipt_to_admin! if send_order_receipt_to_admin?
       send_order_receipt_to_buyer! if send_order_receipt_to_buyer?
       send_refund_notification! if send_refund_notification_to_admin?
+    end
+
+    def send_declined_notifications!
+      send_order_declined_to_admin! if send_order_declined_to_admin?
+      send_order_declined_to_buyer! if send_order_declined_to_buyer?
+    end
+
+    def send_order_declined_to_admin!
+      EffectiveOrders.send_email(:order_declined_to_admin, self) if declined?
+    end
+
+    def send_order_declined_to_buyer!
+      EffectiveOrders.send_email(:order_declined_to_buyer, self) if declined?
     end
 
     def send_order_receipt_to_admin!

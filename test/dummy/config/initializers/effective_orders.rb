@@ -96,6 +96,8 @@ EffectiveOrders.setup do |config|
   # Email settings
   config.send_order_receipt_to_admin = true
   config.send_order_receipt_to_buyer = true
+  config.send_order_declined_to_admin = true
+  config.send_order_declined_to_buyer = true
   config.send_payment_request_to_buyer = true
   config.send_pending_order_invoice_to_buyer = true
 

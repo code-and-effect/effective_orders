@@ -11,6 +11,14 @@ class EffectiveOrdersMailerPreview < ActionMailer::Preview
     EffectiveOrders.mailer_klass.order_receipt_to_buyer(build_preview_order)
   end
 
+  def order_declined_to_admin
+    Effective::OrdersMailer.order_declined_to_admin(build_preview_order)
+  end
+
+  def order_declined_to_buyer
+    Effective::OrdersMailer.order_declined_to_buyer(build_preview_order)
+  end
+
   def payment_request_to_buyer
     EffectiveOrders.mailer_klass.payment_request_to_buyer(build_preview_order)
   end

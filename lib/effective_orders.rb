@@ -32,7 +32,9 @@ module EffectiveOrders
       :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin, :mailer_subject,
 
       # Emails
-      :send_order_receipt_to_admin, :send_order_receipt_to_buyer, :send_payment_request_to_buyer, :send_pending_order_invoice_to_buyer,
+      :send_order_receipt_to_admin, :send_order_receipt_to_buyer, 
+      :send_order_declined_to_admin, :send_order_declined_to_buyer, 
+      :send_payment_request_to_buyer, :send_pending_order_invoice_to_buyer,
       :send_order_receipts_when_mark_as_paid, :send_order_receipts_when_free,
       :send_subscription_events,
       :send_subscription_trialing, :send_subscription_trial_expired,

@@ -23,6 +23,7 @@ module Effective
         end
 
         # Decode the base64 encoded JSON object into a Hash
+        # {"type"=>"Token", "status"=>"success", "data"=>{"token"=>"1983661243624242", "nameOnCard"=>"CardHolder", "expDate"=>"12/24", "maskedPan"=>"424242******4242", "cardType"=>"Visa"}}
         payment_intent = api.decode_payment_intent_payload(payment_intent_payload)
         card_info = api.card_info(payment_intent)
 
