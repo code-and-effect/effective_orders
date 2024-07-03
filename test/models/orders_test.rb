@@ -36,6 +36,15 @@ class OrdersTest < ActiveSupport::TestCase
     assert_email(count: 2) { order.purchase! }
   end
 
+  test 'sends an email when declined' do
+    order = create_effective_order!()
+
+    assert order.send_order_declined_to_buyer?
+    assert order.send_order_declined_to_admin?
+
+    assert_email(count: 2) { order.decline!(email: true) }
+  end
+
   test 'sends a payment request when pending' do
     order = create_effective_order!()
     order.send_payment_request_to_buyer = true

@@ -136,6 +136,7 @@ module Effective
           raise('expected a delayed order') unless order.delayed?
           raise('expected a deferred order') unless order.deferred?
           raise('expected delayed payment intent') unless order.delayed_payment_intent.present?
+          raise('expected a delayed_ready_to_purchase? order') unless order.delayed_ready_to_purchase?
 
           order.update_columns(delayed_payment_purchase_ran_at: now, delayed_payment_purchase_result: nil)
 
@@ -157,8 +158,8 @@ module Effective
 
             puts "Successfully purchased order #{order.id}"
           else
-            order.assign_attributes(delayed_payment_purchase_result: "failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}.")
-            order.decline!(payment: payment, provider: provider, card: card)
+            order.assign_attributes(delayed_payment_purchase_result: "failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}")
+            order.decline!(payment: payment, provider: provider, card: card, email: true)
 
             puts "Failed to purchase order #{order.id} #{order.delayed_payment_purchase_result}"
           end
@@ -176,6 +177,27 @@ module Effective
       end
 
       true
+    end
+
+    # This is only used for testing
+    def generate_payment_intent(card: nil, expiry: nil, cvv: nil, encode: false)
+      card ||= '4242 4242 4242 4242'
+      expiry ||= "12/#{Time.zone.now.year - 1998}"
+      cvv ||= '123'
+
+      card_info = { expiry: expiry, cvv: cvv }
+      params = { paymentMethod: { card: { card: card.gsub(" ", '') }.merge(card_info) } }
+
+      response = post('/paymentmethods/token', params: params)
+
+      # Like the delayed_purchase form gives us
+      retval = {
+        type: "Token",
+        status: "success",
+        data: { expDate: card_info[:expiry], cardType: 'Visa', token: response.fetch('token') }
+      }
+
+      encode ? Base64.encode64(retval.to_json) : retval
     end
 
     protected

@@ -25,6 +25,27 @@ module Effective
       mail(to: @order.emails.first, cc: @order.cc.presence, subject: subject, **headers)
     end
 
+    def order_declined_to_admin(resource, opts = {})
+      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
+
+      @order = resource
+      subject = subject_for(__method__, "Declined Order: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
+
+      mail(to: mailer_admin, subject: subject, **headers)
+    end
+
+    def order_declined_to_buyer(resource, opts = {})
+      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
+
+      @order = resource
+      subject = subject_for(__method__, "Declined Order: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
+
+      # Just to the purchaser. Not everyone.
+      mail(to: @order.emails.first, cc: @order.cc.presence, subject: subject, **headers)
+    end
+
     # This is sent when an admin creates a new order or /admin/orders/new
     # Or when Pay by Cheque or Pay by Phone (deferred payments)
     # Or uses the order action Send Payment Request
