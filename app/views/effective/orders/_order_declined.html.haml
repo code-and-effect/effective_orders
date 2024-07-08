@@ -1,0 +1,10 @@
+- if order.declined?
+  .effective-order-declined
+    %table.table
+      %thead
+        %tr
+          %th Payment Declined
+      %tbody
+        %tr
+          %td
+            Your card was declined by the payment processor: #{order.declined_reason}
