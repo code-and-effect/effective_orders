@@ -9,7 +9,7 @@
 .effective-order-purchase-actions
   - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url }
 
-  - if EffectiveOrders.delayed? && order.delayed?
+  - if EffectiveOrders.delayed? && order.delayed_payment_date_upcoming?
     = render partial: '/effective/orders/delayed/form', locals: provider_locals
 
   - elsif EffectiveOrders.free? && order.free?

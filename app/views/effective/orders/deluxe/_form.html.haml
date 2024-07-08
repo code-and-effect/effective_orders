@@ -13,4 +13,10 @@
       -# This is set by the deluxe.js javascript on Submit
       = f.hidden_field :payment_intent, required: true
 
+      - if EffectiveOrders.deluxe[:environment] == 'sandbox'
+        .alert.alert-info.mb-4
+          This is the #{Rails.env.upcase} SERVER.
+          %br
+          Use credit card number 4242 4242 4242 4242 with any future expiry and any CVC.
+
       = render('effective/orders/deluxe/element')

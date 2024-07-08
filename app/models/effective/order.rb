@@ -566,6 +566,12 @@ module Effective
       "Your #{delayed_payment_method} will be charged $#{'%0.2f' % total_to_f} on #{delayed_payment_date.strftime('%F')}"
     end
 
+    def delayed_payment_date_past?
+      return false unless delayed?
+      delayed_payment_date <= Time.zone.now.to_date
+    end
+
+    # This is checked by an effective_orders view helper. When upcoming we only collect card info.
     def delayed_payment_date_upcoming?
       return false unless delayed?
       delayed_payment_date > Time.zone.now.to_date
@@ -574,11 +580,6 @@ module Effective
     def delayed_payment_date_today?
       return false unless delayed?
       delayed_payment_date == Time.zone.now.to_date
-    end
-
-    def delayed_payment_date_past?
-      return false unless delayed?
-      delayed_payment_date < Time.zone.now.to_date
     end
 
     def pending_refund?
