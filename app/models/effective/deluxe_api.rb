@@ -181,7 +181,7 @@ module Effective
 
     # This is only used for testing
     def generate_payment_intent(card: nil, expiry: nil, cvv: nil, encode: false)
-      card ||= '4242 4242 4242 4242'
+      card ||= '5555 5555 5555 4444'
       expiry ||= "12/#{Time.zone.now.year - 1998}"
       cvv ||= '123'
 
