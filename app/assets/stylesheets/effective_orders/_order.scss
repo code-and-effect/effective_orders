@@ -57,11 +57,11 @@ form.new_effective_order {
 }
 
 .effective-deluxe-checkout {
-  #deluxeCheckout { height: 280px; }
+  #deluxeCheckout { height: 280px; overflow: hidden; }
 }
 
 .effective-deluxe-delayed-checkout {
-  #deluxeDelayedCheckout { height: 280px; }
+  #deluxeDelayedCheckout { height: 280px; overflow: hidden; }
 }
 
 @media print {
