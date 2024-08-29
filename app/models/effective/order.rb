@@ -725,7 +725,7 @@ module Effective
 
           run_purchasable_callbacks(:after_purchase)
         end
-      rescue ActiveRecord::RecordInvalid => e
+      rescue => e
         Effective::Order.transaction do
           save!(validate: false)
           update_purchasables_purchased_order!
@@ -802,7 +802,7 @@ module Effective
           save!(validate: validate)
           run_purchasable_callbacks(:after_defer)
         end
-      rescue ActiveRecord::RecordInvalid => e
+      rescue => e
         self.status = status_was
         error = e.message
       end
@@ -842,7 +842,7 @@ module Effective
           run_purchasable_callbacks(:before_decline)
           save!(validate: validate)
           run_purchasable_callbacks(:after_decline)
-        rescue ActiveRecord::RecordInvalid => e
+        rescue => e
           self.status = status_was
           error = e.message
         end
