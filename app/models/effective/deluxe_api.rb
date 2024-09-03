@@ -200,6 +200,18 @@ module Effective
       encode ? Base64.encode64(retval.to_json) : retval
     end
 
+    def webhook_subscribe(params)
+      post('/events/subscribe', params: params)
+    end
+
+    def webhook_unsubscribe(params)
+      post('/events/unsubscribe', params: params)
+    end
+
+    def webhook_test(params)
+      post('/events/test', params: params)
+    end
+
     protected
 
     def create_payment_params(order, payment_intent)
