@@ -10,7 +10,7 @@ en:
         send_buyer_receipt_confirm: 'Send receipt to @resource.emails_send_to?'
 
   datatables:
-    admin/report_transactions_datatable: 'Individual Transactions'
-    admin/report_transactions_grouped_by_name_datatable: 'Transactions Grouped By Name'
-    admin/report_transactions_grouped_by_qb_name_datatable: 'Transactions Grouped By Quickbooks Name'
-    admin/report_payment_providers_datatable: 'Payment Providers'
+    admin/report_transactions_datatable: 'Report: Individual Transactions'
+    admin/report_transactions_grouped_by_name_datatable: 'Report: Transactions By Name'
+    admin/report_transactions_grouped_by_qb_name_datatable: 'Report: Transactions By Quickbooks Name'
+    admin/report_payment_providers_datatable: 'Report: Payment Providers'

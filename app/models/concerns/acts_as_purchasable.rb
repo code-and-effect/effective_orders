@@ -139,6 +139,20 @@ module ActsAsPurchasable
     purchased_orders.any? { |order| order.purchased_by_id == user.id }
   end
 
+  def purchased_before?(date)
+    return false unless purchased?
+    return false unless purchased_at.present?
+
+    purchased_at < date
+  end
+
+  def purchased_after?(date)
+    return false unless purchased?
+    return false unless purchased_at.present?
+
+    purchased_at >= date
+  end
+
   def purchased_download_url # Override me if this is a digital purchase.
     false
   end
