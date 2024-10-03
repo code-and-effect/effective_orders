@@ -8,6 +8,7 @@ module Effective
         raise('deluxe_delayed provider is not available') unless EffectiveOrders.deluxe_delayed?
 
         @order = Effective::Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(deluxe_delayed_params)
 
         EffectiveResources.authorize!(self, :update, @order)
 
@@ -30,12 +31,23 @@ module Effective
         valid = payment_intent['status'] == 'success'
 
         if valid == false
-          return order_declined(payment: card_info, provider: 'deluxe_delayed', card: card_info['card'], declined_url: deluxe_delayed_params[:declined_url])
+          return order_declined(
+            payment: card_info, 
+            provider: 'deluxe_delayed', 
+            card: card_info['card'], 
+            declined_url: deluxe_delayed_params[:declined_url]
+          )
         end
 
         flash[:success] = EffectiveOrders.deluxe_delayed[:success]
 
-        order_delayed(payment: card_info, payment_intent: payment_intent_payload, provider: 'deluxe_delayed', card: card_info['card'], deferred_url: deluxe_delayed_params[:deferred_url])
+        order_delayed(
+          payment: card_info, 
+          payment_intent: payment_intent_payload, 
+          provider: 'deluxe_delayed', 
+          card: card_info['card'], 
+          deferred_url: deluxe_delayed_params[:deferred_url]
+        )
       end
 
       private

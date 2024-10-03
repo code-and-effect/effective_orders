@@ -60,7 +60,8 @@ class OrdersTest < ActiveSupport::TestCase
 
     assert order.purchased_by.blank?
 
-    order.purchase!(current_user: user)
+    order.current_user = user
+    order.purchase!
 
     assert_equal user, order.purchased_by
   end

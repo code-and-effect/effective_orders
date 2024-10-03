@@ -7,6 +7,7 @@ module Effective
         raise('deluxe provider is not available') unless EffectiveOrders.deluxe?
 
         @order = Effective::Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(deluxe_params)
 
         EffectiveResources.authorize!(self, :update, @order)
 
@@ -39,7 +40,12 @@ module Effective
 
         if purchased == false
           flash[:danger] = "Payment was unsuccessful. The credit card payment failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}. Please try again."
-          return order_declined(payment: payment, provider: 'deluxe', card: payment['card'], declined_url: deluxe_params[:declined_url])
+          return order_declined(
+            payment: payment, 
+            provider: 'deluxe', 
+            card: payment['card'], 
+            declined_url: deluxe_params[:declined_url]
+          )
         end
 
         # Valid Authorized and Completed Payment
@@ -47,8 +53,7 @@ module Effective
           payment: payment,
           provider: 'deluxe',
           card: payment['card'],
-          purchased_url: deluxe_params[:purchased_url],
-          current_user: (current_user unless admin_checkout?(deluxe_params))
+          purchased_url: deluxe_params[:purchased_url]
         )
       end
 

@@ -7,6 +7,7 @@ module Effective
         raise('moneris_checkout provider is not available') unless EffectiveOrders.moneris_checkout?
 
         @order = Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(moneris_checkout_params)
 
         # We do this even if we're not authorized.
         EffectiveResources.authorized?(self, :update, @order)
@@ -31,8 +32,7 @@ module Effective
           payment: payment,
           provider: 'moneris_checkout',
           card: payment['card_type'],
-          purchased_url: moneris_checkout_params[:purchased_url],
-          current_user: current_user
+          purchased_url: moneris_checkout_params[:purchased_url]
         )
       end
 

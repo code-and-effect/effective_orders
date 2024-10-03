@@ -13,6 +13,7 @@ module Effective
         raise('paypal provider is not available') unless EffectiveOrders.paypal?
 
         @order ||= Effective::Order.deep.where(id: (params[:invoice].to_i rescue 0)).first
+        @order.current_user = current_user unless admin_checkout?(paypal_params)
 
         # We do this even if we're not authorized
         EffectiveResources.authorized?(self, :update, @order)
@@ -21,13 +22,17 @@ module Effective
           if @order.purchased?
             order_purchased(payment: params, provider: 'paypal', card: params[:payment_type])
           elsif (params[:payment_status] == 'Completed' && params[:custom] == EffectiveOrders.paypal[:secret])
-            order_purchased(payment: params, provider: 'paypal', card: params[:payment_type], current_user: current_user)
+            order_purchased(payment: params, provider: 'paypal', card: params[:payment_type])
           else
             order_declined(payment: params, provider: 'paypal', card: params[:payment_type])
           end
         end
 
         head(:ok)
+      end
+
+      def paypal_params
+        {}
       end
 
     end

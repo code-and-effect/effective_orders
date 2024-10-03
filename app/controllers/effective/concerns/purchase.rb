@@ -6,20 +6,19 @@ module Effective
       protected
 
       def admin_checkout?(payment_params)
-        payment_params[:purchased_url].to_s.include?('/admin/')
+        (payment_params[:purchased_url] || payment_params[:deferred_url]).to_s.include?('/admin/')
       end
 
-      def order_purchased(payment:, provider:, card: 'none', email: true, skip_buyer_validations: false, purchased_url: nil, current_user: nil)
+      def order_purchased(payment:, provider:, card: 'none', email: true, skip_buyer_validations: false, purchased_url: nil)
         @order.purchase!(
           payment: payment, 
           provider: provider, 
           card: card, 
           email: email, 
-          skip_buyer_validations: skip_buyer_validations, 
-          current_user: current_user
+          skip_buyer_validations: skip_buyer_validations
         )
 
-        Effective::Cart.where(user: current_user).destroy_all if current_user.present?
+        Effective::Cart.where(user: @order.current_user).destroy_all if @order.current_user.present?
 
         if flash[:success].blank?
           if email && @order.send_order_receipt_to_buyer?
@@ -36,7 +35,7 @@ module Effective
       def order_deferred(provider:, email: true, deferred_url: nil)
         @order.defer!(provider: provider, email: email)
 
-        Effective::Cart.where(user: current_user).destroy_all if current_user.present?
+        Effective::Cart.where(user: @order.current_user).destroy_all if @order.current_user.present?
 
         if flash[:success].blank?
           if email
@@ -50,10 +49,10 @@ module Effective
         redirect_to deferred_url.gsub(':id', @order.to_param.to_s)
       end
 
-      def order_delayed(payment:, payment_intent:, provider:, card: 'none', deferred_url: nil, email: false)
+      def order_delayed(payment:, payment_intent:, provider:, card: 'none', email: false, deferred_url: nil)
         @order.delay!(payment: payment, payment_intent: payment_intent, provider: provider, card: card, email: email)
 
-        Effective::Cart.where(user: current_user).destroy_all if current_user.present?
+        Effective::Cart.where(user: @order.current_user).destroy_all if @order.current_user.present?
 
         if flash[:success].blank?
           if email

@@ -7,6 +7,8 @@ module Effective
         raise('stripe provider is not available') unless EffectiveOrders.stripe?
 
         @order = Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(stripe_params)
+
         @customer = Effective::Customer.for_user(@order.user || current_user)
 
         EffectiveResources.authorize!(self, :update, @order)
@@ -21,7 +23,11 @@ module Effective
         payment = validate_stripe_payment(payment_intent_id)
 
         if payment.blank?
-          return order_declined(payment: payment, provider: 'stripe', declined_url: stripe_params[:declined_url])
+          return order_declined(
+            payment: payment, 
+            provider: 'stripe', 
+            declined_url: stripe_params[:declined_url]
+          )
         end
 
         # Update the customer payment fields
@@ -33,8 +39,7 @@ module Effective
           payment: payment,
           provider: 'stripe',
           card: payment[:card],
-          purchased_url: stripe_params[:purchased_url],
-          current_user: (current_user unless admin_checkout?(stripe_params))
+          purchased_url: stripe_params[:purchased_url]
         )
       end
 

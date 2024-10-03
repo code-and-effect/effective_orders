@@ -7,6 +7,7 @@ module Effective
         raise('mark_as_paid provider is not available') unless EffectiveOrders.mark_as_paid?
 
         @order ||= Order.deep.find(params[:id])
+        @order.current_user = nil # Admin action, we don't want to assign current_user to the order
 
         EffectiveResources.authorize!(self, :update, @order)
         EffectiveResources.authorize!(self, :admin, :effective_orders)
@@ -19,8 +20,7 @@ module Effective
           card: mark_as_paid_params[:payment_card],
           email: @order.send_mark_as_paid_email_to_buyer?,
           skip_buyer_validations: true,
-          purchased_url: effective_orders.admin_order_path(@order),
-          current_user: nil # Admin action, we don't want to assign current_user to the order
+          purchased_url: effective_orders.admin_order_path(@order)
         )
       end
 
