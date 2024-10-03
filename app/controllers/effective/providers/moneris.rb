@@ -13,6 +13,7 @@ module Effective
         raise('moneris provider is not available') unless EffectiveOrders.moneris?
 
         @order ||= Effective::Order.deep.find(params[:response_order_id])
+        @order.current_user = current_user unless admin_checkout?(moneris_params)
 
         # We do this even if we're not authorized
         EffectiveResources.authorized?(self, :update, @order)
@@ -35,13 +36,27 @@ module Effective
         valid = (1..49).include?(payment[:response_code].to_i)  # Must be > 0 and < 50 to be valid. Sometimes we get the string 'null'
 
         if valid == false
-          return order_declined(payment: payment, provider: 'moneris', card: params[:card], declined_url: declined_url)
+          return order_declined(
+            payment: payment, 
+            provider: 'moneris', 
+            card: params[:card], 
+            declined_url: declined_url
+          )
         end
 
-        order_purchased(payment: payment, provider: 'moneris', card: params[:card], purchased_url: purchased_url, current_user: current_user)
+        order_purchased(
+          payment: payment, 
+          provider: 'moneris', 
+          card: params[:card], 
+          purchased_url: purchased_url
+        )
       end
 
       private
+
+      def moneris_params
+        { purchased_url: params[:rvar_purchased_url] }
+      end
 
       def verify_moneris_transaction(transactionKey)
         # Send a verification POST request

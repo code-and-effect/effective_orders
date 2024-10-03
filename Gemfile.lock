@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (6.14.3)
+    effective_orders (6.14.6)
       coffee-rails
       effective_addresses
       effective_bootstrap
@@ -121,7 +121,7 @@ GEM
       effective_resources
       rails (>= 3.2.0)
       sassc
-    effective_resources (2.25.13)
+    effective_resources (2.25.14)
       rails
       sprockets-rails
     erubi (1.10.0)

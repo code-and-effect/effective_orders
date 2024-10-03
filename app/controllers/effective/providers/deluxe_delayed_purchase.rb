@@ -8,6 +8,7 @@ module Effective
         raise('deluxe_delayed_purchase provider is not available') unless EffectiveOrders.deluxe_delayed?
 
         @order ||= Order.deep.find(params[:id])
+        @order.current_user = nil # Admin action, we don't want to assign current_user to the order
 
         EffectiveResources.authorize!(self, :update, @order)
         EffectiveResources.authorize!(self, :admin, :effective_orders)
@@ -22,7 +23,13 @@ module Effective
 
         if purchased == false
           flash[:danger] = "Payment was unsuccessful. The credit card payment failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}. Please try again."
-          return order_declined(payment: payment, provider: 'deluxe_delayed', card: payment['card'], declined_url: deluxe_delayed_purchase_params[:declined_url])
+
+          return order_declined(
+            payment: payment, 
+            provider: 'deluxe_delayed', 
+            card: payment['card'], 
+            declined_url: deluxe_delayed_purchase_params[:declined_url]
+          )
         end
 
         @order.assign_attributes(deluxe_delayed_purchase_params.except(:purchased_url, :declined_url, :id))
@@ -33,8 +40,7 @@ module Effective
           card: payment['card'],
           email: @order.send_mark_as_paid_email_to_buyer?,
           skip_buyer_validations: true,
-          purchased_url: effective_orders.admin_order_path(@order),
-          current_user: nil # Admin action, we don't want to assign current_user to the order
+          purchased_url: effective_orders.admin_order_path(@order)
         )
       end
 

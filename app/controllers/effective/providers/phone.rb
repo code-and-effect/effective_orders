@@ -7,6 +7,7 @@ module Effective
         raise('phone provider is not available') unless EffectiveOrders.phone?
 
         @order ||= Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(phone_params)
 
         EffectiveResources.authorize!(self, :update, @order)
 

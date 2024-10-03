@@ -7,6 +7,7 @@ module Effective
         raise('pretend provider is not available') unless EffectiveOrders.pretend?
 
         @order ||= Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(pretend_params)
 
         EffectiveResources.authorize!(self, :update, @order)
 
@@ -22,8 +23,7 @@ module Effective
             payment: 'for pretend', 
             provider: 'pretend', 
             card: 'none', 
-            purchased_url: pretend_params[:purchased_url],
-            current_user: (current_user unless admin_checkout?(pretend_params))
+            purchased_url: pretend_params[:purchased_url]
           )
         end
       end

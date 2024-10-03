@@ -7,6 +7,7 @@ module Effective
         raise('free provider is not available') unless EffectiveOrders.free?
 
         @order ||= Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(free_params)
 
         EffectiveResources.authorize!(self, :update, @order)
 
@@ -20,8 +21,7 @@ module Effective
           payment: 'free order. no payment required.',
           provider: 'free',
           card: 'none',
-          purchased_url: free_params[:purchased_url],
-          current_user: current_user
+          purchased_url: free_params[:purchased_url]
         )
       end
 

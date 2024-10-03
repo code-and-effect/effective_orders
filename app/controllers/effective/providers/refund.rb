@@ -8,6 +8,7 @@ module Effective
         raise('refund provider is not configured for buyer purchase') unless EffectiveOrders.buyer_purchases_refund?
 
         @order ||= Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(refund_params)
 
         EffectiveResources.authorize!(self, :update, @order)
 

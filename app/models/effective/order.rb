@@ -37,6 +37,8 @@ module Effective
     # Effective Reports
     acts_as_reportable if respond_to?(:acts_as_reportable)
 
+    attr_accessor :current_user # Set by the checkout controller for non-admin users
+
     attr_accessor :terms_and_conditions # Yes, I agree to the terms and conditions
     attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
 
@@ -684,12 +686,12 @@ module Effective
     # Call this as a way to skip over non consequential orders
     # And mark some purchasables purchased
     # This is different than the Mark as Paid payment processor
-    def mark_as_purchased!(current_user: nil)
-      purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true, current_user: current_user)
+    def mark_as_purchased!
+      purchase!(skip_buyer_validations: true, email: false, skip_quickbooks: true)
     end
 
     # Effective::Order.new(items: Product.first, user: User.first).purchase!(email: false)
-    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false, current_user: nil)
+    def purchase!(payment: nil, provider: nil, card: nil, email: true, skip_buyer_validations: false, skip_quickbooks: false)
       return true if purchased?
 
       raise('unable to purchase voided order') if voided?

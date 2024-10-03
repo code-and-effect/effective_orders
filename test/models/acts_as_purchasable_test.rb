@@ -25,7 +25,9 @@ class ActsAsPurchasableTest < ActiveSupport::TestCase
 
     order = build_effective_order(items: [thing, product])
     user = order.user
-    order.mark_as_purchased!(current_user: user)
+
+    order.current_user = order.user
+    order.mark_as_purchased!
 
     assert_equal order.purchased_at, thing.purchased_at
     assert_equal user, thing.purchased_by
