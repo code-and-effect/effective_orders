@@ -1,7 +1,7 @@
 = effective_form_with(model: [:admin, order], engine: true) do |f|
   -# User
   - klass = (f.object.user || current_user).class
-  - ajax_url = (@select2_users_ajax_path || effective_resources.users_admin_select2_ajax_index_path) unless Rails.env.test?
+  - ajax_url = (effective_resources.users_effective_ajax_index_path unless Rails.env.test?)
 
   = f.hidden_field :user_type, value: klass.name
   = f.select :user_id, klass.all, ajax_url: ajax_url
@@ -9,7 +9,7 @@
   -# Organization
   - if EffectiveOrders.organization_enabled?
     - klass = (f.object.organization || EffectiveOrders.Organization.new).class
-    - ajax_url = (@select2_organizations_ajax_path || effective_resources.organizations_admin_select2_ajax_index_path) unless Rails.env.test?
+    - ajax_url = (effective_resources.organizations_effective_ajax_index_path unless Rails.env.test?)
 
     = f.hidden_field :organization_type, value: klass.name
     = f.select :organization_id, klass.all, ajax_url: ajax_url
