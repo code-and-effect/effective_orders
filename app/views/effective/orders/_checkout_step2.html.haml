@@ -41,7 +41,7 @@
       %p.my-4.text-center - or -
       = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
-  - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && order.user != current_user
+  - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && controller_path.include?('admin/') && order.user != current_user
     - if EffectiveOrders.delayed? && order.delayed? && order.deferred?
       .effective-order-admin-purchase-actions
         = render partial: '/effective/orders/delayed/form_purchase', locals: provider_locals
