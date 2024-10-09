@@ -298,7 +298,7 @@ module EffectiveOrders
   end
 
   def self.deluxe_script_url
-    "https://hostedform2.deluxe.com/V2/deluxe.js"
+    "https://hostedpaymentform.deluxe.com/v2/deluxe.js"
   end
 
   def self.moneris_checkout_script_url
