@@ -271,7 +271,7 @@ module Effective
         paymentMethod: paymentMethod,
         shippingAddress: shippingAddress,
         customData: customData,
-        merchantCategory: "E-Commerce",
+        merchantCategory: "MOTO",
         orderData: orderData
       }.compact
     end
