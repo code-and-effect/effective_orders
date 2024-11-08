@@ -49,14 +49,47 @@ module ActsAsPurchasable
       validates_with Effective::SoldOutValidator, on: :create
     end
 
-    scope :purchased, -> { where.not(purchased_order_id: nil) }
-    scope :not_purchased, -> { where(purchased_order_id: nil) }
+    scope :purchased, -> { 
+      if respond_to?(:unarchived)
+        unarchived.where.not(purchased_order_id: nil) 
+      else
+        where.not(purchased_order_id: nil) 
+      end
+    }
 
-    scope :purchased_by, lambda { |user| joins(order_items: :order).where(orders: { purchased_by: user, status: :purchased }).distinct }
-    scope :not_purchased_by, lambda { |user| where.not(id: purchased_by(user)) }
+    scope :not_purchased, -> { 
+      if respond_to?(:unarchived)
+        unarchived.where(purchased_order_id: nil) 
+      else
+        where(purchased_order_id: nil) 
+      end
+    }
 
-    scope :purchased_or_deferred, -> { joins(order_items: :order).where(orders: { status: [:purchased, :deferred] }) }
-    scope :deferred, -> { joins(order_items: :order).where(orders: { status: :deferred }) }
+    scope :purchased_or_deferred, -> { 
+      if respond_to?(:unarchived)
+        unarchived.joins(order_items: :order).where(orders: { status: [:purchased, :deferred] }) 
+      else
+        joins(order_items: :order).where(orders: { status: [:purchased, :deferred] }) 
+      end
+    }
+
+    scope :deferred, -> { 
+      if respond_to?(:unarchived)
+        unarchived.joins(order_items: :order).where(orders: { status: :deferred })
+      else
+        joins(order_items: :order).where(orders: { status: :deferred })
+      end
+    }
+
+    scope :purchased_by, -> (user) { 
+      if respond_to?(:unarchived)
+        unarchived.joins(order_items: :order).where(orders: { purchased_by: user, status: :purchased }).distinct 
+      else
+        joins(order_items: :order).where(orders: { purchased_by: user, status: :purchased }).distinct 
+      end
+    }
+
+    scope :not_purchased_by, -> (user) { where.not(id: purchased_by(user)) }
   end
 
   module ClassMethods
