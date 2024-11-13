@@ -4,7 +4,7 @@
     = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow
 
 - unless local_assigns[:skip_order]
-  = render('/effective/orders/order', order: order, no_order_actions: true) 
+  = render('/effective/orders/order', order: order)
 
 .effective-order-purchase-actions
   - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url }
