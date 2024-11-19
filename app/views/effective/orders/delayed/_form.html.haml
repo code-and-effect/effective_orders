@@ -4,7 +4,7 @@
 
     %p 
       = succeed('.') do
-        - distance = distance_of_time_in_words(Time.zone.now, order.delayed_payment_date)
+        - distance = distance_of_time_in_words(Time.zone.now, order.delayed_payment_date.beginning_of_day)
 
         The payment date for this order
 
