@@ -935,7 +935,13 @@ module Effective
     protected
 
     def get_subtotal
-      present_order_items.map { |oi| oi.subtotal }.sum
+      subtotal = present_order_items.map { |oi| oi.subtotal }.sum
+
+      if subtotal.to_i < 0 && EffectiveOrders.no_refund?
+        return 0 
+      end
+
+      subtotal
     end
 
     def get_tax_rate
@@ -950,7 +956,14 @@ module Effective
 
     def get_tax
       return 0 unless tax_rate.present?
-      present_order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+
+      tax = present_order_items.reject { |oi| oi.tax_exempt? }.map { |oi| (oi.subtotal * (tax_rate / 100.0)).round(0).to_i }.sum
+
+      if tax.to_i < 0 && EffectiveOrders.no_refund?
+        return 0 
+      end
+
+      tax
     end
 
     def get_amount_owing

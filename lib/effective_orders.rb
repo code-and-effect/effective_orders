@@ -127,6 +127,10 @@ module EffectiveOrders
     refund.kind_of?(Hash)
   end
 
+  def self.no_refund?
+    !refund?
+  end
+
   def self.buyer_purchases_refund?
     buyer_purchases_refund == true
   end

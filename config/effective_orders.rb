@@ -242,6 +242,8 @@ EffectiveOrders.setup do |config|
   # config.buyer_purchases_refund = false
   # config.send_refund_notification_to_admin = false
   #
+  # If you set config.refund = false, Negative order price is set to $0. Can checkout free.
+  #
   # You can call order.send_refund_notification! directly or implement a better one in your app
   config.refund = false
 

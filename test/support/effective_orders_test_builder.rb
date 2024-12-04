@@ -33,6 +33,25 @@ module EffectiveOrdersTestBuilder
     order
   end
 
+  def build_effective_refund_order(user: nil, organization: nil, items: nil, billing_address: nil, shipping_address: nil)
+    user ||= create_user!
+    items ||= [build_effective_product, build_effective_product]
+    billing_address ||= build_effective_address(category: 'billing')
+    shipping_address ||= build_effective_address(category: 'shipping')
+
+    items.each { |item| item.price = -item.price}
+
+    order = Effective::Order.new(
+      user: user,
+      organization: organization,
+      items: items,
+      billing_address: billing_address,
+      shipping_address: shipping_address
+    )
+
+    order
+  end
+
   def create_effective_product!
     build_effective_product.tap { |product| product.save! }
   end
