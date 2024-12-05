@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (6.14.6)
+    effective_orders (6.17.2)
       coffee-rails
       effective_addresses
       effective_bootstrap
