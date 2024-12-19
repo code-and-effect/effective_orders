@@ -59,7 +59,8 @@ module Effective
       mail(to: @order.emails, cc: @order.cc.presence, subject: subject, **headers)
     end
 
-    # This is sent when someone chooses to Pay by Cheque
+    # This is sent when someone chooses to Pay by Cheque or Pay by E-transfer
+    # This is not automatically sent for a delayed purchase
     def pending_order_invoice_to_buyer(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
@@ -67,7 +68,9 @@ module Effective
       subject = subject_for(__method__, "Pending Order: ##{@order.to_param}", resource, opts)
       headers = headers_for(resource, opts)
 
-      mail(to: @order.emails, cc: @order.cc.presence, subject: subject, **headers)
+      cc = (@order.cc.to_s.split(',') + [mailer_admin] - [nil, '', ' ']).compact.presence
+
+      mail(to: @order.emails, cc: cc, subject: subject, **headers)
     end
 
     # This is sent to admin when someone Accepts Refund

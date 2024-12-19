@@ -811,7 +811,7 @@ module Effective
 
       raise "Failed to defer order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
-      send_payment_request_to_buyer! if email
+      send_pending_order_invoice_to_buyer! if email
 
       true
     end
