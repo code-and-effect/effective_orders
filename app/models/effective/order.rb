@@ -475,6 +475,10 @@ module Effective
       false
     end
 
+    def purchased_or_deferred?
+      purchased? || deferred?
+    end
+
     def purchased_with_credit_card?
       purchased? && EffectiveOrders.credit_card_payment_providers.include?(payment_provider)
     end
