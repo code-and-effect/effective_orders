@@ -154,12 +154,13 @@ module Effective
     scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
 
     scope :delayed, -> { where(delayed_payment: true).where.not(delayed_payment_date: nil) }
+    scope :delayed_payment_provider, -> { where(payment_provider: EffectiveOrders.delayed_providers) }
     scope :delayed_payment_date_past, -> { delayed.where(arel_table[:delayed_payment_date].lteq(Time.zone.today)) }
     scope :delayed_payment_date_upcoming, -> { delayed.where(arel_table[:delayed_payment_date].gt(Time.zone.today)) }
 
     # Used by the rake effective_orders:purchase_delayed_orders task
     scope :delayed_ready_to_purchase, -> { 
-      delayed.deferred.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
+      delayed.deferred.delayed_payment_provider.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
     }
 
     # effective_reports
@@ -567,6 +568,7 @@ module Effective
     def delayed_ready_to_purchase?
       return false unless delayed? 
       return false unless deferred?
+      return false unless delayed_payment_provider?
       return false unless delayed_payment_intent.present?
       return false if delayed_payment_date_upcoming?
       return false if delayed_payment_purchase_ran_at.present? # We ran before and probably failed
