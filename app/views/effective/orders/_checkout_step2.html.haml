@@ -12,6 +12,10 @@
   - if EffectiveOrders.delayed? && order.delayed_payment_date_upcoming?
     = render partial: '/effective/orders/delayed/form', locals: provider_locals
 
+    - if EffectiveOrders.deferred? && !controller_path.include?('admin/') && !local_assigns[:skip_deferred]
+      %p.my-4.text-center - or -
+      = render partial: '/effective/orders/deferred/form', locals: provider_locals
+
   - elsif EffectiveOrders.free? && order.free?
     = render partial: '/effective/orders/free/form', locals: provider_locals
 
@@ -41,8 +45,8 @@
       %p.my-4.text-center - or -
       = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
-  - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && controller_path.include?('admin/') && order.user != current_user
-    - if EffectiveOrders.delayed? && order.delayed? && order.deferred?
+  - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && controller_path.include?('admin/')
+    - if EffectiveOrders.delayed? && order.delayed? && order.deferred? && order.delayed_payment_provider?
       .effective-order-admin-purchase-actions
         = render partial: '/effective/orders/delayed/form_purchase', locals: provider_locals
 

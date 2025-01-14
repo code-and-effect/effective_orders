@@ -17,7 +17,7 @@
     
     - provider_locals = { order: order, deferred_url: deferred_url, declined_url: declined_url }
 
-    - if order.deferred? && order.delayed?
+    - if order.deferred? && order.delayed? && order.delayed_payment_provider?
       %p Your existing #{order.delayed_payment_method} will be charged on the payment date.
 
       = collapse('Change my card info') do
