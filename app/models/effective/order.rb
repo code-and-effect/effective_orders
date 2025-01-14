@@ -154,12 +154,13 @@ module Effective
     scope :pending_refunds, -> { not_purchased.where('total < ?', 0) }
 
     scope :delayed, -> { where(delayed_payment: true).where.not(delayed_payment_date: nil) }
+    scope :delayed_payment_provider, -> { where(payment_provider: EffectiveOrders.delayed_providers) }
     scope :delayed_payment_date_past, -> { delayed.where(arel_table[:delayed_payment_date].lteq(Time.zone.today)) }
     scope :delayed_payment_date_upcoming, -> { delayed.where(arel_table[:delayed_payment_date].gt(Time.zone.today)) }
 
     # Used by the rake effective_orders:purchase_delayed_orders task
     scope :delayed_ready_to_purchase, -> { 
-      delayed.deferred.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
+      delayed.deferred.delayed_payment_provider.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
     }
 
     # effective_reports
@@ -196,7 +197,8 @@ module Effective
     validates :delayed_payment_date, presence: true, if: -> { delayed_payment? }
     validates :delayed_payment_date, absence: true, unless: -> { delayed_payment? }
 
-    with_options(if: -> { delayed? && deferred? }) do
+    # deluxe_delayed
+    with_options(if: -> { delayed? && deferred? && delayed_payment_provider? }) do
       validates :delayed_payment_intent, presence: { message: 'please provide your card information' }
       validates :delayed_payment_total, presence: true
     end
@@ -248,7 +250,7 @@ module Effective
       validates :payment_provider, presence: true
 
       validate do
-        unless EffectiveOrders.deferred_providers.include?(payment_provider) || EffectiveOrders.delayed_providers.include?(payment_provider)
+        unless deferred_payment_provider? || delayed_payment_provider?
           errors.add(:payment_provider, "unknown deferred payment provider") 
         end
       end
@@ -546,6 +548,14 @@ module Effective
     def refund?
       total.to_i < 0
     end
+
+    def delayed_payment_provider?
+      payment_provider.present? && EffectiveOrders.delayed_providers.include?(payment_provider)
+    end
+
+    def deferred_payment_provider?
+      payment_provider.present? && EffectiveOrders.deferred_providers.include?(payment_provider)
+    end
     
     # A new order is created.
     # If the delayed_payment and delayed_payment date are set, it's a delayed order
@@ -558,6 +568,7 @@ module Effective
     def delayed_ready_to_purchase?
       return false unless delayed? 
       return false unless deferred?
+      return false unless delayed_payment_provider?
       return false unless delayed_payment_intent.present?
       return false if delayed_payment_date_upcoming?
       return false if delayed_payment_purchase_ran_at.present? # We ran before and probably failed
@@ -566,7 +577,7 @@ module Effective
     end
 
     def delayed_payment_info
-      return unless delayed? && deferred?
+      return unless delayed? && deferred? && delayed_payment_provider?
       return unless delayed_payment_date_upcoming?
 
       "Your #{delayed_payment_method} will be charged $#{'%0.2f' % total_to_f} on #{delayed_payment_date.strftime('%F')}"
