@@ -160,7 +160,8 @@ module Effective
 
     # Used by the rake effective_orders:purchase_delayed_orders task
     scope :delayed_ready_to_purchase, -> { 
-      delayed.deferred.delayed_payment_provider.delayed_payment_date_past.where(delayed_payment_purchase_ran_at: nil)
+      delayed.deferred.delayed_payment_provider.delayed_payment_date_past
+        .where(delayed_payment_purchase_ran_at: nil).where.not(delayed_payment_intent: nil)
     }
 
     # effective_reports
@@ -806,6 +807,11 @@ module Effective
         deferred_at: (deferred_at.presence || Time.zone.now),
         deferred_by: (deferred_by.presence || current_user)
       )
+
+      # Went from delayed to cheque
+      if delayed_payment? && !delayed_payment_provider?
+        assign_attributes(delayed_payment: false, delayed_payment_date: nil, delayed_payment_intent: nil, delayed_payment_total: nil)
+      end
 
       if current_user&.email.present?
         assign_attributes(email: current_user.email)
