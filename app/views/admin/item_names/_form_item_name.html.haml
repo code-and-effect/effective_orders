@@ -1,0 +1,4 @@
+= effective_form_with(model: [:admin, item_name], engine: true) do |f|
+  = f.text_field :name
+  = f.check_box :archived, label: "Yes, this #{etd(f.object)} is archived. It will not be displayed."
+  = effective_submit(f)
