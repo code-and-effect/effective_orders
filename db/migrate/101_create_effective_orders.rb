@@ -110,6 +110,16 @@ class CreateEffectiveOrders < ActiveRecord::Migration[6.0]
 
     add_index :customers, :user_id
 
+    create_table :item_names do |t|
+      t.string :name
+      t.boolean :archived, default: false
+
+      t.datetime :updated_at
+      t.datetime :created_at
+    end
+
+    add_index :item_names, [:name, :archived]
+
     create_table :subscriptions do |t|
       t.integer   :customer_id
 
