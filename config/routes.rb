@@ -1,4 +1,6 @@
 EffectiveOrders::Engine.routes.draw do
+  acts_as_archived
+
   scope module: 'effective' do
     resources :orders, except: [:destroy] do
       member do
@@ -49,6 +51,7 @@ EffectiveOrders::Engine.routes.draw do
 
   namespace :admin do
     resources :customers, only: [:index, :show]
+    resources :item_names, except: [:show, :destroy], concerns: :acts_as_archived
 
     resources :orders do
       member do

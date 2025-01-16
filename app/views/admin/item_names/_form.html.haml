@@ -1,0 +1,7 @@
+= tabs do
+  = tab(item_name) do
+    = render '/admin/item_names/form_item_name', item_name: item_name
+
+  - if item_name.persisted?
+    = tab('Logs') do
+      = render_datatable(item_name.log_changes_datatable, inline: true, namespace: :admin)

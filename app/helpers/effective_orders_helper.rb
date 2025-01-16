@@ -71,11 +71,6 @@ module EffectiveOrdersHelper
     end
   end
 
-  # This is called on the My Sales Page and is intended to be overridden in the app if needed
-  def acts_as_purchasable_path(purchasable, action = :show)
-    polymorphic_path(purchasable)
-  end
-
   def order_payment_to_html(order)
     content_tag(:pre) do
       raw JSON.pretty_generate(order.payment).html_safe.gsub('\"', '').gsub("[\n\n    ]", '[]').gsub("{\n    }", '{}')

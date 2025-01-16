@@ -13,7 +13,7 @@
 
     .col= pf.price_field :price
 
-    - if EffectiveOrders.qb_sync? || EffectiveOrders.qb_online?
-      .col= pf.text_field :qb_item_name, label: 'Quickbooks Item'
+    .col
+      .mt-4= qb_item_name_field(pf)
 
     .col= pf.check_box :tax_exempt, label: "Tax&nbsp;Exempt", title: 'When checked, tax will not be applied to this item'

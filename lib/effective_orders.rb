@@ -16,7 +16,7 @@ module EffectiveOrders
   def self.config_keys
     [
       :orders_table_name, :order_items_table_name, :carts_table_name, :cart_items_table_name,
-      :customers_table_name, :subscriptions_table_name, :products_table_name,
+      :customers_table_name, :subscriptions_table_name, :products_table_name, :item_names_table_name,
       :layout,
       :orders_collection_scope, :order_tax_rate_method,
       :obfuscate_order_ids, :use_effective_qb_sync, :use_effective_qb_online,
@@ -210,6 +210,10 @@ module EffectiveOrders
 
   def self.qb_online?
     use_effective_qb_online && defined?(EffectiveQbOnline)
+  end
+
+  def self.quickbooks?
+    use_effective_qb_sync || use_effective_qb_online
   end
 
   def self.surcharge?
