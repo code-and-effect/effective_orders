@@ -810,7 +810,7 @@ module Effective
 
       # Went from delayed to cheque
       if delayed_payment? && !delayed_payment_provider?
-        assign_attributes(delayed_payment: false, delayed_payment_date: nil, delayed_payment_intent: nil, delayed_payment_total: nil)
+        assign_attributes(delayed_payment_intent: nil, delayed_payment_total: nil)
       end
 
       if current_user&.email.present?

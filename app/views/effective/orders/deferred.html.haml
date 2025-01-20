@@ -2,9 +2,26 @@
   %h1.effective-heading= @page_title
 
   %p.effective-orders-page-content
-    You have indicated that this order will be paid by #{@order.payment_provider}.
-    Your order will not be considered purchased until we receive your payment.
-    Please contact us at your earliest convenience.
+    - if @order.delayed? && @order.deferred? && @order.delayed_payment_provider?
+      %p 
+        = succeed('.') do
+          - distance = distance_of_time_in_words(Time.zone.now, @order.delayed_payment_date.beginning_of_day)
+
+          The payment date for this order
+
+          - if @order.delayed_payment_date_upcoming?
+            is in #{distance} from now on #{@order.delayed_payment_date.strftime('%F')}
+          - elsif @order.delayed_payment_date_today?
+            was today
+          - else
+            was #{distance} ago on #{@order.delayed_payment_date.strftime('%F')}
+
+      %p Your existing #{@order.delayed_payment_method} will be charged on the payment date.
+
+    - elsif @order.deferred?
+      You have indicated that this order will be paid by #{@order.payment_provider}.
+      Your order will not be considered purchased until we receive your payment.
+      Please contact us at your earliest convenience.
 
   = render @order
 
