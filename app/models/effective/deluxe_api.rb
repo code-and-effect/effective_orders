@@ -282,7 +282,7 @@ module Effective
       uri = URI.parse(api_url + endpoint + query.to_s)
 
       http = Net::HTTP.new(uri.host, uri.port)
-      http.read_timeout = 10
+      http.read_timeout = 20
       http.use_ssl = true
 
       result = with_retries do
@@ -301,7 +301,7 @@ module Effective
       uri = URI.parse(api_url + endpoint)
 
       http = Net::HTTP.new(uri.host, uri.port)
-      http.read_timeout = 10
+      http.read_timeout = 20
       http.use_ssl = true
 
       result = with_retries do
