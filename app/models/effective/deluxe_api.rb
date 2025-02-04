@@ -14,6 +14,7 @@ module Effective
     attr_accessor :currency
 
     attr_accessor :purchase_response
+    attr_accessor :read_timeout
 
     def initialize(environment: nil, client_id: nil, client_secret: nil, access_token: nil, currency: nil)
       self.environment = environment || EffectiveOrders.deluxe.fetch(:environment)
@@ -125,52 +126,133 @@ module Effective
       purchase_response
     end
 
+    def payment_approved?(order)
+      payment = search_payment(order)
+      return false if payment.blank?
+
+      payment.dig('payment', 'responseCode').present? && payment.dig('payment', 'authResponse').to_s.downcase.include?('approved')
+    end
+
+    # Search for an existing Payment
+    def search_payment(order)
+      date = (order.delayed_payment_purchase_ran_at || order.purchased_at || order.created_at || Time.zone.now)
+      response = post('/payments/search', params: { orderId: order.to_param, startDate: date.strftime('%m/%d/%Y'), endDate: (date + 1.day).strftime('%m/%d/%Y') })
+
+      # Sanity check response
+      raise('expected valid search') unless response.kind_of?(Hash) && response['isSuccess'] == true
+
+      # Find the payment for this order
+      payment = Array(response.dig('data', 'payments')).find { |payment| payment.dig('payment', 'orderId') == order.to_param }
+      return unless payment.present?
+
+      # Return the payment hash
+      payment
+    end
+
+    def purchase_delayed_order!(order)
+      raise('expected a delayed order') unless order.delayed?
+      raise('expected a deferred order') unless order.deferred?
+      raise('expected delayed payment intent') unless order.delayed_payment_intent.present?
+      raise('expected a delayed_ready_to_purchase? order') unless order.delayed_ready_to_purchase?
+
+      order.update_columns(delayed_payment_purchase_ran_at: Time.zone.now, delayed_payment_purchase_result: nil)
+
+      purchased = if order.total.to_i > 0
+        purchase!(order, order.delayed_payment_intent)
+      elsif order.free?
+        purchase_free!(order)
+      else
+        raise("Unexpected order amount: #{order.total}")
+      end
+
+      provider = (order.free? ? 'free' : order.payment_provider)
+      payment = self.payment()
+      card = payment["card"] || payment[:card]
+
+      if purchased
+        order.assign_attributes(delayed_payment_purchase_result: "success")
+        order.purchase!(payment: payment, provider: provider, card: card, email: true, skip_buyer_validations: true)
+
+        puts "Successfully purchased order #{order.id}"
+      else
+        order.assign_attributes(delayed_payment_purchase_result: "failed: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}")
+        order.decline!(payment: payment, provider: provider, card: card, email: true)
+
+        puts "Failed to purchase order #{order.id} #{order.delayed_payment_purchase_result}"
+      end
+
+      purchased
+    end
+
+    def retry_purchase_delayed_order!(order)
+      raise('expected a delayed order') unless order.delayed?
+      raise('expected a deferred order') unless order.deferred?
+      raise('expected delayed payment intent') unless order.delayed_payment_intent.present?
+      raise('expected an order with a positive total') unless order.total.to_i > 0
+
+      order.update_columns(delayed_payment_purchase_ran_at: Time.zone.now, delayed_payment_purchase_result: nil)
+
+      # Look up the existing payment on Deluxe API
+      existing_payment = search_payment(order)
+      existing_purchased = existing_payment.present? && existing_payment.dig('payment', 'responseCode').present? && existing_payment.dig('payment', 'authResponse').to_s.downcase.include?('approved')
+
+      # If it doesn't exist, purchase it now
+      purchased = (existing_purchased || purchase!(order, order.delayed_payment_intent))
+
+      # Payment
+      provider = order.payment_provider
+      payment = (existing_payment if existing_purchased) || self.payment()
+      card = payment.dig('payment', 'card', 'cardType') || payment.dig('payment', 'card') || payment['card'] || payment[:card]
+
+      if purchased
+        order.assign_attributes(delayed_payment_purchase_result: "success")
+        order.purchase!(payment: payment, provider: provider, card: card, email: true, skip_buyer_validations: true)
+
+        puts "Successfully purchased order #{order.id}"
+      else
+        order.assign_attributes(delayed_payment_purchase_result: "failed: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}")
+        order.decline!(payment: payment, provider: provider, card: card, email: true)
+
+        puts "Failed to purchase order #{order.id} #{order.delayed_payment_purchase_result}"
+      end
+
+      purchased
+    end
+
     # Called by rake task
     def purchase_delayed_orders!(orders)
-      now = Time.zone.now
+      # Orders that failed to purchase and need to be retried
+      retry_orders = []
 
+      # First pass over all the orders
       Array(orders).each do |order|
         puts "Trying order #{order.id}"
 
         begin
-          raise('expected a delayed order') unless order.delayed?
-          raise('expected a deferred order') unless order.deferred?
-          raise('expected delayed payment intent') unless order.delayed_payment_intent.present?
-          raise('expected a delayed_ready_to_purchase? order') unless order.delayed_ready_to_purchase?
-
-          order.update_columns(delayed_payment_purchase_ran_at: now, delayed_payment_purchase_result: nil)
-
-          purchased = if order.total.to_i > 0
-            purchase!(order, order.delayed_payment_intent)
-          elsif order.free?
-            purchase_free!(order)
-          else
-            raise("Unexpected order amount: #{order.total}")
-          end
-
-          provider = (order.free? ? 'free' : order.payment_provider)
-          payment = self.payment()
-          card = payment["card"] || payment[:card]
-
-          if purchased
-            order.assign_attributes(delayed_payment_purchase_result: "success")
-            order.purchase!(payment: payment, provider: provider, card: card, email: true, skip_buyer_validations: true)
-
-            puts "Successfully purchased order #{order.id}"
-          else
-            order.assign_attributes(delayed_payment_purchase_result: "failed with message: #{Array(payment['responseMessage']).to_sentence.presence || 'none'}")
-            order.decline!(payment: payment, provider: provider, card: card, email: true)
-
-            puts "Failed to purchase order #{order.id} #{order.delayed_payment_purchase_result}"
-          end
-
+          purchase_delayed_order!(order)
         rescue => e
-          order.update_columns(delayed_payment_purchase_ran_at: now, delayed_payment_purchase_result: "error: #{e.message}")
+          order.update_columns(delayed_payment_purchase_ran_at: Time.zone.now, delayed_payment_purchase_result: "error: #{e.message}")
+          retry_orders << order
+
+          puts "Error purchasing #{order.id}: #{e.message}"
+        end
+      end
+
+      # Second pass over all the orders that raised an error on call to purchase
+      orders = Effective::Order.where(id: retry_orders.map(&:id))
+
+      Array(orders).each do |order|
+        puts "Retrying order #{order.id}"
+
+        begin
+          retry_purchase_delayed_order!(order)
+        rescue => e
+          order.update_columns(delayed_payment_purchase_ran_at: Time.zone.now, delayed_payment_purchase_result: "error: #{e.message}")
 
           EffectiveLogger.error(e.message, associated: order) if defined?(EffectiveLogger)
           ExceptionNotifier.notify_exception(e, data: { order_id: order.id }) if defined?(ExceptionNotifier)
 
-          puts "Error purchasing #{order.id}: #{e.message}"
+          puts "Error retry purchasing #{order.id}: #{e.message}"
 
           raise(e) if Rails.env.development? || Rails.env.test?
         end
@@ -260,7 +342,7 @@ module Effective
 
       orderData = {
         autoGenerateOrderId: true,
-        orderID: order.to_param,
+        orderId: order.to_param,
         orderIdIsUnique: true
       }
 
@@ -282,7 +364,7 @@ module Effective
       uri = URI.parse(api_url + endpoint + query.to_s)
 
       http = Net::HTTP.new(uri.host, uri.port)
-      http.read_timeout = 20
+      http.read_timeout = (read_timeout || 30)
       http.use_ssl = true
 
       result = with_retries do
@@ -301,19 +383,15 @@ module Effective
       uri = URI.parse(api_url + endpoint)
 
       http = Net::HTTP.new(uri.host, uri.port)
-      http.read_timeout = 20
+      http.read_timeout = (read_timeout || 30)
       http.use_ssl = true
 
-      result = with_retries do
-        puts "[POST] #{uri} #{params}" if Rails.env.development?
+      puts "[POST] #{uri} #{params}" if Rails.env.development?
 
-        response = http.post(uri.path, params.to_json, headers)
-        raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
+      response = http.post(uri.path, params.to_json, headers)
+      raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
 
-        response
-      end
-
-      JSON.parse(result.body)
+      JSON.parse(response.body)
     end
 
     private
