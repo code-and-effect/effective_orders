@@ -139,7 +139,7 @@ module Effective
       response = post('/payments/search', params: { orderId: order.to_param, startDate: date.strftime('%m/%d/%Y'), endDate: (date + 1.day).strftime('%m/%d/%Y') })
 
       # Sanity check response
-      raise('expected responseCode') unless response.kind_of?(Hash) && response['isSuccess'] == true
+      raise('expected valid search') unless response.kind_of?(Hash) && response['isSuccess'] == true
 
       # Find the payment for this order
       payment = Array(response.dig('data', 'payments')).find { |payment| payment.dig('payment', 'orderId') == order.to_param }
