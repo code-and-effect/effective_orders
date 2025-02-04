@@ -100,7 +100,7 @@ module Effective
 
     # Create Payment
     def create_payment(order, payment_intent)
-      response = post('/payments', params: create_payment_params(order, payment_intent))
+      response = post_once('/payments', params: create_payment_params(order, payment_intent))
 
       # Sanity check response
       raise('expected responseCode') unless response.kind_of?(Hash) && response['responseCode'].present?
@@ -380,6 +380,25 @@ module Effective
     end
 
     def post(endpoint, params:)
+      uri = URI.parse(api_url + endpoint)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.read_timeout = (read_timeout || 30)
+      http.use_ssl = true
+
+      result = with_retries do
+        puts "[POST] #{uri} #{params}" if Rails.env.development?
+
+        response = http.post(uri.path, params.to_json, headers)
+        raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
+
+        response
+      end
+
+      JSON.parse(result.body)
+    end
+
+    def post_once(endpoint, params:)
       uri = URI.parse(api_url + endpoint)
 
       http = Net::HTTP.new(uri.host, uri.port)
