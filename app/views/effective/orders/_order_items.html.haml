@@ -32,7 +32,7 @@
       - elsif order.tax_rate.present? && order.surcharge_percent.to_f > 0.0
         %tr
           %th
-          %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
+          %td.tax #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
 
         %tr.single-line
@@ -52,7 +52,7 @@
 
         %tr
           %th
-          %td.surcharge-tax Tax (#{rate_to_percentage(order.tax_rate)}) on Credit Card Processing Fee
+          %td.surcharge-tax #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)}) on Credit Card Processing Fee
           %td.price.surcharge-tax-price= price_to_currency(order.surcharge_tax)
 
         %tr.double-line
@@ -63,7 +63,7 @@
       - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0)
         %tr
           %th
-          %td.tax Tax (#{rate_to_percentage(order.tax_rate)})
+          %td.tax #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
 
         %tr.single-line
