@@ -1,3 +1,6 @@
 = form.price_field :price
-= qb_item_name_field(form)
+
+- if EffectiveOrders.use_item_names?
+  = qb_item_name_field(form)
+
 = form.check_box :tax_exempt, label: "Yes, this #{etd(form.object)} is tax exempt"

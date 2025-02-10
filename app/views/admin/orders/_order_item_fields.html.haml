@@ -13,7 +13,8 @@
 
     .col= pf.price_field :price
 
-    .col
-      .mt-4= qb_item_name_field(pf)
+    - if EffectiveOrders.use_item_names?
+      .col
+        .mt-4= qb_item_name_field(pf)
 
     .col= pf.check_box :tax_exempt, label: "Tax&nbsp;Exempt", title: 'When checked, tax will not be applied to this item'

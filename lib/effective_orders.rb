@@ -19,7 +19,7 @@ module EffectiveOrders
       :customers_table_name, :subscriptions_table_name, :products_table_name, :item_names_table_name,
       :layout,
       :orders_collection_scope, :order_tax_rate_method,
-      :obfuscate_order_ids, :use_effective_qb_sync, :use_effective_qb_online,
+      :obfuscate_order_ids, :use_effective_qb_sync, :use_effective_qb_online, :use_item_names,
       :billing_address, :shipping_address,
       :collect_note, :collect_note_required, :collect_note_message,
       :terms_and_conditions, :terms_and_conditions_label, :minimum_charge,
@@ -210,6 +210,10 @@ module EffectiveOrders
 
   def self.qb_online?
     use_effective_qb_online && defined?(EffectiveQbOnline)
+  end
+
+  def self.use_item_names?
+    use_item_names != false
   end
 
   def self.quickbooks?

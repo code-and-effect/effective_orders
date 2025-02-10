@@ -23,6 +23,9 @@ EffectiveOrders.setup do |config|
   config.use_effective_qb_sync = false
   config.use_effective_qb_online = false
 
+  # Display the item name field on the orders#new screen
+  config.use_item_names = true
+
   # If set, the orders#new screen will render effective/orders/_order_note_fields to capture any Note info
   config.collect_note = false
   config.collect_note_required = false
