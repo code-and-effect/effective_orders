@@ -1,0 +1,10 @@
+%hr
+
+-# %p{style: "text-align: center;"}
+-#   - if @event.delayed_payment? && @order.delayed? && @order.deferred?
+-#     = link_to('View or modify your registration', effective_events.event_event_registration_url(@event, @event_registration))
+-#   - else
+-#     = link_to('View your registration', effective_events.event_event_registration_url(@event, @event_registration))
+
+%p{style: "text-align: center;"}
+  = link_to('View your order', effective_orders.order_url(order))

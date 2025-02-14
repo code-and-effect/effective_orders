@@ -4,6 +4,48 @@ module Effective
 
     helper EffectiveOrdersHelper
 
+    # This is the new order email
+    # It's sent from like 15 different places in 15 different ways
+    # Has to be aware of events and registrations, applicants, renewals, etc
+    # Has to be aware of deferred payments, delayed payments, requests for payment, purchased, declined etc
+    def order_email(resource, opts = {})
+      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
+
+      @order = resource
+      @order_email = Effective::OrderEmail.new(resource)
+
+      subject = subject_for(__method__, @order_email.subject, @order, opts)
+      headers = headers_for(@order, opts)
+
+      mail(to: @order_email.to, cc: @order_email.cc, subject: subject, **headers)
+    end
+
+    # Same as above but sent to admin
+    def order_email_to_admin(resource, opts = {})
+      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
+
+      @order = resource
+      @order_email = Effective::OrderEmail.new(resource)
+
+      subject = subject_for(__method__, @order_email.subject, @order, opts)
+      headers = headers_for(@order, opts)
+
+      mail(to: mailer_admin, subject: subject, **headers)
+    end
+
+    # This is sent to admin when someone Accepts Refund
+    def refund_notification_to_admin(resource, opts = {})
+      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
+
+      @order = resource
+      subject = subject_for(__method__, "New Refund: ##{@order.to_param}", resource, opts)
+      headers = headers_for(resource, opts)
+
+      mail(to: mailer_admin, subject: subject, **headers)
+    end
+
+    #### OLD EMAILS ####
+
     def order_receipt_to_admin(resource, opts = {})
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
@@ -73,16 +115,6 @@ module Effective
       mail(to: @order.emails, cc: cc, subject: subject, **headers)
     end
 
-    # This is sent to admin when someone Accepts Refund
-    def refund_notification_to_admin(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "New Refund: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      mail(to: mailer_admin, subject: subject, **headers)
-    end
 
     # Sent by the invoice.payment_succeeded webhook event
     def subscription_payment_succeeded(resource, opts = {})
