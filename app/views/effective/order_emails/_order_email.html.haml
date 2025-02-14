@@ -1,0 +1,6 @@
+- # This is the order email
+= render('effective/order_emails/header', order_email: order_email, order: order)
+= render('effective/order_emails/info', order_email: order_email, order: order)
+= render('effective/order_emails/items', order_email: order_email, order: order)
+= render('effective/order_emails/signature', order_email: order_email, order: order)
+
