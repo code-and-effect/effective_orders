@@ -895,11 +895,13 @@ module Effective
       end
     end
 
+    # Admin datatable action
     def send_payment_request_to_buyer!
       EffectiveOrders.send_email(:order_email, self, payment_request: true) unless (purchased? || refund?)
     end
 
-    def send_buyer_receipt!
+    # Admin datatable action
+    def send_order_email_to_buyer!
       EffectiveOrders.send_email(:order_email, self) if purchased_or_deferred?
     end
 
