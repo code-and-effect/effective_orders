@@ -3,6 +3,7 @@ module Effective
     include EffectiveMailer
 
     helper EffectiveOrdersHelper
+    helper EffectiveEventsHelper if defined?(EffectiveEventsHelper)
 
     # This is the new order email
     # It's sent from like 15 different places in 15 different ways
@@ -12,7 +13,7 @@ module Effective
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @order_email = Effective::OrderEmail.new(resource)
+      @order_email = Effective::OrderEmail.new(resource, opts)
 
       subject = subject_for(__method__, @order_email.subject, @order, opts)
       headers = headers_for(@order, opts)
@@ -45,76 +46,6 @@ module Effective
     end
 
     #### OLD EMAILS ####
-
-    def order_receipt_to_admin(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "Order Receipt: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      mail(to: mailer_admin, subject: subject, **headers)
-    end
-
-    def order_receipt_to_buyer(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "Order Receipt: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      # Just to the purchaser. Not everyone.
-      mail(to: @order.emails.first, cc: @order.cc.presence, subject: subject, **headers)
-    end
-
-    def order_declined_to_admin(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "Declined Order: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      mail(to: mailer_admin, subject: subject, **headers)
-    end
-
-    def order_declined_to_buyer(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "Declined Order: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      # Just to the purchaser. Not everyone.
-      mail(to: @order.emails.first, cc: @order.cc.presence, subject: subject, **headers)
-    end
-
-    # This is sent when an admin creates a new order or /admin/orders/new
-    # Or when Pay by Cheque or Pay by Phone (deferred payments)
-    # Or uses the order action Send Payment Request
-    def payment_request_to_buyer(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "Payment request - Order ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      mail(to: @order.emails, cc: @order.cc.presence, subject: subject, **headers)
-    end
-
-    # This is sent when someone chooses to Pay by Cheque or Pay by E-transfer
-    # This is not automatically sent for a delayed purchase
-    def pending_order_invoice_to_buyer(resource, opts = {})
-      raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
-
-      @order = resource
-      subject = subject_for(__method__, "Pending Order: ##{@order.to_param}", resource, opts)
-      headers = headers_for(resource, opts)
-
-      cc = (@order.cc.to_s.split(',') + [mailer_admin] - [nil, '', ' ']).compact.presence
-
-      mail(to: @order.emails, cc: cc, subject: subject, **headers)
-    end
-
 
     # Sent by the invoice.payment_succeeded webhook event
     def subscription_payment_succeeded(resource, opts = {})

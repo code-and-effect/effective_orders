@@ -9,11 +9,11 @@
         The payment date for this order
 
         - if order.delayed_payment_date_upcoming?
-          is in #{distance} from now on #{order.delayed_payment_date.strftime('%F')}
+          is in #{distance} from now on #{order.delayed_payment_date.strftime("%A, %B %d, %Y")}
         - elsif order.delayed_payment_date_today?
           was today
         - else
-          was #{distance} ago on #{order.delayed_payment_date.strftime('%F')}
+          was #{distance} ago on #{order.delayed_payment_date.strftime("%A, %B %d, %Y")}
     
     - provider_locals = { order: order, deferred_url: deferred_url, declined_url: declined_url }
 

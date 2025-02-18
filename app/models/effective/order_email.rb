@@ -4,14 +4,19 @@
 module Effective
   class OrderEmail
     attr_accessor :order
+    attr_accessor :opts
 
-    def initialize(order)
+    def initialize(order, opts = {})
       raise('expected an Effective::Order') unless order.kind_of?(Effective::Order)
+      raise('expected a Hash of options') unless opts.kind_of?(Hash)
+
       @order = order
+      @opts = opts
     end
 
     # Just to the purchaser. Not everyone.
     def to
+      return order.emails if payment_request?
       order.emails.first
     end
 
@@ -19,54 +24,57 @@ module Effective
       order.cc.presence
     end
 
-    def category
-      return :pending if order.pending? || order.confirmed?
-      return :declined if order.declined?
-      return :voided if order.voided?
-
-      if event.present? && (order.purchased? || order.deferred?)
-        return :event_confirmation 
+    # The very first line of the email body
+    def header
+      if event.present? && order.purchased_or_deferred?
+        return "Your tickets have been confirmed" if event_none_waitlisted?
+        return "Some of your tickets have been confirmed, but some are on the waitlist" if event_some_waitlisted?
+        return "Your tickets are on the waitlist" if event_all_waitlisted?
       end
 
-      if order.deferred?
-        return :deferred_cheque if order.payment_provider == 'cheque'
-        return :deferred_credit_card if order.payment_provider == 'deluxe_delayed'
-        return :deferred_phone if order.payment_provider == 'phone'
-        return :deferred_etransfer if order.payment_provider == 'etransfer'
-      end
+      return "Request for Payment" if payment_request?
+      return "Pending order created" if order.deferred?
+      return "Your order has been successfully purchased" if order.purchased?
+      return "Your order was declined by the payment processor" if order.declined?
 
-      if order.purchased?
-        return :refund if order.refund?
-        return :purchased
-      end
+      # Fallback
+      "Order: ##{order.to_param}"
     end
 
     def subject
-      case category
-        when :pending then return("Order Receipt: ##{order.to_param}")
-        when :declined then return("Order Declined: ##{order.to_param}")
-      end
-
       if event.present? && order.purchased_or_deferred?
         return "Confirmation - #{event}" if event_none_waitlisted?
         return "Confirmation + Waitlist - #{event}" if event_some_waitlisted?
         return "Waitlist - #{event}" if event_all_waitlisted?
       end
 
+      return "Payment Request - Order: ##{order.to_param}" if payment_request?
+      return "Pending Order: ##{order.to_param}" if order.deferred?
+      return "Declined Order: ##{order.to_param}" if order.declined?
+      return "Order Receipt: ##{order.to_param}" if order.purchased?
+
       # Fallback
       "Order: ##{order.to_param}"
     end
 
+    def payment_request?
+      opts[:payment_request] == true
+    end
+
     def event
-      order.purchasables.find { |purchasable| purchasable.kind_of?(Effective::EventRegistrant) }.try(:event)
+      order.purchasables.find { |purchasable| purchasable.class.name == "Effective::EventRegistrant" }.try(:event)
+    end
+
+    def event_registration
+      order.purchasables.find { |purchasable| purchasable.class.name == "Effective::EventRegistrant" }.try(:event_registration)
     end
 
     def event_registrants
-      order.purchasables.select { |purchasable| purchasable.kind_of?(Effective::EventRegistrant) }
+      order.purchasables.select { |purchasable| purchasable.class.name == "Effective::EventRegistrant" }
     end
 
     def event_addons
-      order.purchasables.select { |purchasable| purchasable.kind_of?(Effective::EventAddon) }
+      order.purchasables.select { |purchasable| purchasable.class.name == "Effective::EventAddon" }
     end
 
     def event_none_waitlisted?

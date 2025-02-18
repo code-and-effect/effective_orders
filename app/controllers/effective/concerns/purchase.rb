@@ -21,7 +21,7 @@ module Effective
         Effective::Cart.where(user: @order.current_user).destroy_all if @order.current_user.present?
 
         if flash[:success].blank?
-          if email && @order.send_order_receipt_to_buyer?
+          if email && EffectiveOrders.send_order_receipt_to_buyer
             flash[:success] = "Payment successful! A receipt has been sent to #{@order.email}"
           else
             flash[:success] = "Payment successful! An email receipt has not been sent."
@@ -49,7 +49,7 @@ module Effective
         redirect_to deferred_url.gsub(':id', @order.to_param.to_s)
       end
 
-      def order_delayed(payment:, payment_intent:, provider:, card: 'none', email: false, deferred_url: nil)
+      def order_delayed(payment:, payment_intent:, provider:, card: 'none', email: true, deferred_url: nil)
         @order.delay!(payment: payment, payment_intent: payment_intent, provider: provider, card: card, email: email)
 
         Effective::Cart.where(user: @order.current_user).destroy_all if @order.current_user.present?

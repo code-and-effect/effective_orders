@@ -46,6 +46,7 @@ module Effective
     attr_accessor :send_payment_request_to_buyer # Set by Admin::Orders#new. Should the payment request email be sent after creating an order?
     attr_accessor :send_mark_as_paid_email_to_buyer  # Set by Admin::Orders#mark_as_paid
     attr_accessor :skip_buyer_validations # Set by Admin::Orders#create
+    attr_accessor :mailer_preview # Set by the mailer preview. Disabled delayed payment validations
 
     # If we want to use orders in a has_many way
     belongs_to :parent, polymorphic: true, optional: true
@@ -251,7 +252,7 @@ module Effective
       validates :payment_provider, presence: true
 
       validate do
-        unless deferred_payment_provider? || delayed_payment_provider?
+        unless deferred_payment_provider? || delayed_payment_provider? || mailer_preview
           errors.add(:payment_provider, "unknown deferred payment provider") 
         end
       end
@@ -611,41 +612,6 @@ module Effective
       present_order_items.map { |oi| oi.quantity }.sum
     end
 
-    def send_order_receipt_to_admin?
-      return false if free? && !EffectiveOrders.send_order_receipts_when_free
-      EffectiveOrders.send_order_receipt_to_admin
-    end
-
-    def send_order_receipt_to_buyer?
-      return false if free? && !EffectiveOrders.send_order_receipts_when_free
-      EffectiveOrders.send_order_receipt_to_buyer
-    end
-
-    def send_order_declined_to_admin?
-      return false if free? && !EffectiveOrders.send_order_receipts_when_free
-      EffectiveOrders.send_order_declined_to_admin
-    end
-
-    def send_order_declined_to_buyer?
-      return false if free? && !EffectiveOrders.send_order_receipts_when_free
-      EffectiveOrders.send_order_declined_to_buyer
-    end
-
-    def send_payment_request_to_buyer?
-      return false if free? && !EffectiveOrders.send_order_receipts_when_free
-      return false if refund?
-
-      EffectiveResources.truthy?(send_payment_request_to_buyer)
-    end
-
-    def send_refund_notification_to_admin?
-      return false unless refund?
-      EffectiveOrders.send_refund_notification_to_admin
-    end
-
-    def send_mark_as_paid_email_to_buyer?
-      EffectiveResources.truthy?(send_mark_as_paid_email_to_buyer)
-    end
 
     def skip_buyer_validations?
       EffectiveResources.truthy?(skip_buyer_validations)
@@ -662,7 +628,7 @@ module Effective
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
 
-      if send_payment_request_to_buyer?
+      if EffectiveResources.truthy?(send_payment_request_to_buyer)
         after_commit { send_payment_request_to_buyer! }
       end
 
@@ -752,7 +718,7 @@ module Effective
         raise(e)
       end
 
-      send_order_receipts! if email
+      send_order_emails! if email
       after_commit { sync_quickbooks!(skip: skip_quickbooks) }
 
       true
@@ -777,9 +743,9 @@ module Effective
 
     # This was submitted via the deluxe_delayed provider checkout
     # This is a special case of a deferred provider. We require the payment_intent and payment info
-    def delay!(payment:, payment_intent:, provider:, card:, email: false, validate: true)
+    def delay!(payment:, payment_intent:, provider:, card:, email: true, validate: true)
       raise('expected payment intent to be a String') unless payment_intent.kind_of?(String)
-      raise('expected a delayed payment provider') unless EffectiveOrders.delayed_providers.include?(provider)
+      raise('expected a delayed payment provider') unless EffectiveOrders.delayed_providers.include?(provider) || mailer_preview
       raise('expected a delayed payment order with a delayed_payment_date') unless delayed_payment? && delayed_payment_date.present?
 
       assign_attributes(
@@ -832,7 +798,7 @@ module Effective
 
       raise "Failed to defer order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
-      send_pending_order_invoice_to_buyer! if email
+      send_order_emails! if email
 
       true
     end
@@ -873,7 +839,7 @@ module Effective
 
       raise "Failed to decline order: #{error || errors.full_messages.to_sentence}" unless error.nil?
 
-      send_declined_notifications! if email
+      send_order_emails! if email
 
       true
     end
@@ -913,44 +879,28 @@ module Effective
       (emails + [cc.presence]).compact.uniq.to_sentence
     end
 
-    def send_order_receipts!
-      send_order_receipt_to_admin! if send_order_receipt_to_admin?
-      send_order_receipt_to_buyer! if send_order_receipt_to_buyer?
-      send_refund_notification! if send_refund_notification_to_admin?
-    end
+    def send_order_emails!
+      if purchased_or_deferred? && (!free? || EffectiveOrders.send_order_receipts_when_free)
+        EffectiveOrders.send_email(:order_email, self) if EffectiveOrders.send_order_receipt_to_buyer
+        EffectiveOrders.send_email(:order_email_to_admin, self) if EffectiveOrders.send_order_receipt_to_admin
+      end
 
-    def send_declined_notifications!
-      send_order_declined_to_admin! if send_order_declined_to_admin?
-      send_order_declined_to_buyer! if send_order_declined_to_buyer?
-    end
+      if declined?
+        EffectiveOrders.send_email(:order_email, self) if EffectiveOrders.send_order_declined_to_buyer
+        EffectiveOrders.send_email(:order_email_to_admin, self) if EffectiveOrders.send_order_declined_to_admin
+      end
 
-    def send_order_declined_to_admin!
-      EffectiveOrders.send_email(:order_declined_to_admin, self) if declined?
+      if refund?
+        EffectiveOrders.send_email(:refund_notification_to_admin, self) if EffectiveOrders.send_refund_notification_to_admin
+      end
     end
-
-    def send_order_declined_to_buyer!
-      EffectiveOrders.send_email(:order_declined_to_buyer, self) if declined?
-    end
-
-    def send_order_receipt_to_admin!
-      EffectiveOrders.send_email(:order_receipt_to_admin, self) if purchased?
-    end
-
-    def send_order_receipt_to_buyer!
-      EffectiveOrders.send_email(:order_receipt_to_buyer, self) if purchased?
-    end
-    alias_method :send_buyer_receipt!, :send_order_receipt_to_buyer!
 
     def send_payment_request_to_buyer!
-      EffectiveOrders.send_email(:payment_request_to_buyer, self) unless purchased?
+      EffectiveOrders.send_email(:order_email, self, payment_request: true) unless (purchased? || refund?)
     end
 
-    def send_pending_order_invoice_to_buyer!
-      EffectiveOrders.send_email(:pending_order_invoice_to_buyer, self) unless purchased?
-    end
-
-    def send_refund_notification!
-      EffectiveOrders.send_email(:refund_notification_to_admin, self) if refund?
+    def send_buyer_receipt!
+      EffectiveOrders.send_email(:order_email, self) if purchased_or_deferred?
     end
 
     protected
