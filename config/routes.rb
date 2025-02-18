@@ -7,7 +7,7 @@ EffectiveOrders::Engine.routes.draw do
         get :purchased
         get :deferred
         get :declined
-        post :send_buyer_receipt
+        post :send_order_email_to_buyer
 
         post :cheque
         post :deluxe              # 1-off payment and purchase
@@ -25,7 +25,7 @@ EffectiveOrders::Engine.routes.draw do
       end
 
       collection do
-        post :bulk_send_buyer_receipt
+        post :bulk_send_order_email_to_buyer
 
         post :moneris_postback
         post :paypal_postback
@@ -56,7 +56,7 @@ EffectiveOrders::Engine.routes.draw do
     resources :orders do
       member do
         post :send_payment_request
-        post :send_buyer_receipt
+        post :send_order_email_to_buyer
 
         delete :void
         post :unvoid

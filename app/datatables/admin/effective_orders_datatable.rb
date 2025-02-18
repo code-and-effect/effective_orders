@@ -8,9 +8,9 @@ module Admin
       )
 
       bulk_action(
-      'Send receipt email to selected purchased orders',
-        effective_orders.bulk_send_buyer_receipt_orders_path,
-        data: { confirm: 'Send receipt emails?' }
+        'Send invoice email to selected purchased orders',
+        effective_orders.bulk_send_order_email_to_buyer_orders_path,
+        data: { confirm: 'Send invoice emails?' }
       )
     end
 

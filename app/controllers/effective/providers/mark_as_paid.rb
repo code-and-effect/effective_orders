@@ -18,7 +18,7 @@ module Effective
           payment: 'mark as paid',
           provider: mark_as_paid_params[:payment_provider],
           card: mark_as_paid_params[:payment_card],
-          email: @order.send_mark_as_paid_email_to_buyer?,
+          email: EffectiveResources.truthy?(mark_as_paid_params[:send_mark_as_paid_email_to_buyer]),
           skip_buyer_validations: true,
           purchased_url: effective_orders.admin_order_path(@order)
         )

@@ -1,0 +1,12 @@
+%hr
+
+- event = order_email.event
+- event_registration = order_email.event_registration
+
+%p{style: "text-align: center;"}
+  - if event.present? && event_registration.present? && order.delayed_payment_date_upcoming? && order.deferred?
+    = link_to('View or modify your registration', effective_events.event_event_registration_url(event, event_registration))
+  - elsif event.present? && event_registration.present?
+    = link_to('View your registration', effective_events.event_event_registration_url(event, event_registration))
+  - else
+    = link_to('View your order', effective_orders.order_url(order))

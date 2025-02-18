@@ -1,0 +1,70 @@
+- if order.delayed? && order.deferred? && order.delayed_payment_date_upcoming? 
+  %hr
+  %p{style: "margin-bottom: 4px; font-weight: bold;"} Please note:
+
+  - if order.payment_provider == 'deluxe_delayed'
+    %ul{style: "margin-top: 0;"}
+      %li Your credit card will be charged on <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>.
+      %li Changes and cancellations must be made before this date.
+      %li A receipt will be sent after the transaction is completed.
+  - elsif order.payment_provider == 'cheque'
+    %ul{style: "margin-top: 0;"}
+      %li Please submit a cheque at your earliest convience.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li A receipt will be sent after payment has been received.
+  - elsif order.payment_provider == 'phone'
+    %ul{style: "margin-top: 0;"}
+      %li Please phone us at your earliest convience.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li A receipt will be sent after payment has been received.
+  - elsif order.payment_provider == 'etransfer'
+    %ul{style: "margin-top: 0;"}
+      %li Please submit an etransfer at your earliest convience.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li A receipt will be sent after payment has been received.
+  - else
+    - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
+    %ul{style: "margin-top: 0;"}
+      - if providers.present?
+        %li When we receive your #{providers} we will mark your order paid.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li A receipt will be sent after payment has been received.
+
+- elsif order.deferred?
+  %hr
+  %p{style: "margin-bottom: 4px; font-weight: bold;"} Please remit payment at your earliest convenience.
+
+  - if order.payment_provider == 'deluxe_delayed'
+    %ul{style: "margin-top: 0;"}
+      %li Your credit card will be automatically charged.
+      %li A receipt will be sent after the transaction is completed.
+  - elsif order.payment_provider == 'cheque'
+    %ul{style: "margin-top: 0;"}
+      %li Please submit a cheque at your earliest convience.
+      %li A receipt will be sent after payment has been received.
+  - elsif order.payment_provider == 'phone'
+    %ul{style: "margin-top: 0;"}
+      %li Please phone us at your earliest convience.
+      %li A receipt will be sent after payment has been received.
+  - elsif order.payment_provider == 'etransfer'
+    %ul{style: "margin-top: 0;"}
+      %li Please submit an etransfer at your earliest convience.
+      %li A receipt will be sent after payment has been received.
+  - else
+    - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
+    %ul{style: "margin-top: 0;"}
+      - if providers.present?
+        %li When we receive your #{providers} we will mark your order paid.
+      %li A receipt will be sent after payment has been received.
+
+- elsif order_email.payment_request?
+  %hr
+  %p{style: "margin-bottom: 4px; font-weight: bold;"} An order has been created on your behalf for the following items.
+  %p{style: "margin-bottom: 4px; font-weight: bold;"} Please remit payment at your earliest convenience.
+
+  - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
+  %ul{style: "margin-top: 0;"}
+    %li #{link_to('Click here', effective_orders.order_url(@order))} to review your order and pay online with a credit card.
+    - if providers.present?
+      %li We also accept #{providers}.
+    %li A receipt will be sent after payment has been received.

@@ -30,8 +30,8 @@ class OrdersTest < ActiveSupport::TestCase
   test 'sends an email when purchased' do
     order = create_effective_order!()
 
-    assert order.send_order_receipt_to_buyer?
-    assert order.send_order_receipt_to_admin?
+    assert EffectiveOrders.send_order_receipt_to_buyer
+    assert EffectiveOrders.send_order_receipt_to_admin
 
     assert_email(count: 2) { order.purchase! }
   end
@@ -39,8 +39,8 @@ class OrdersTest < ActiveSupport::TestCase
   test 'sends an email when declined' do
     order = create_effective_order!()
 
-    assert order.send_order_declined_to_buyer?
-    assert order.send_order_declined_to_admin?
+    assert EffectiveOrders.send_order_declined_to_buyer
+    assert EffectiveOrders.send_order_declined_to_admin
 
     assert_email(count: 2) { order.decline!(email: true) }
   end
@@ -48,8 +48,6 @@ class OrdersTest < ActiveSupport::TestCase
   test 'sends a payment request when pending' do
     order = create_effective_order!()
     order.send_payment_request_to_buyer = true
-
-    assert order.send_payment_request_to_buyer?
 
     assert_email { order.pending! }
   end

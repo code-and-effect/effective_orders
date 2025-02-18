@@ -1,5 +1,5 @@
 .effective-order-items
-  %table.table
+  %table.table{style: "margin-bottom: 20px;"}
     %thead
       %tr
         %th.quantity Qty
@@ -14,16 +14,20 @@
           %td.item
             = item.name.html_safe
 
+            - if item.purchasable.class.name == 'Effective::EventRegistrant'
+              = item.purchasable.try(:responses) || item.purchasable.try(:notes)
+
             - if order.purchased? && item.purchased_download_url.present?
               = link_to 'Download', item.purchased_download_url
 
           %td.price= price_to_currency(item.subtotal)
 
-  %table.table
     %tfoot
       %tr
-        %th
-        %td.subtotal Subtotal
+        %td{colspan: 3}= "&nbsp;".html_safe
+
+      %tr
+        %th.subtotal{colspan: 2} Subtotal
         %td.price.subtotal-price= price_to_currency(order.subtotal)
 
       - if order.tax_rate.blank?
@@ -31,42 +35,30 @@
 
       - elsif order.tax_rate.present? && order.surcharge_percent.to_f > 0.0
         %tr
-          %th
-          %td.tax #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
+          %th.tax{colspan: 2} #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
 
         %tr.single-line
-          %th
-          %td.amount-owing Amount owing before Credit Card Processing Fee
+          %th.amount-owing{colspan: 2} Amount owing before Credit Card Processing Fee
           %td.price.amount-owing-price= price_to_currency(order.amount_owing)
 
         %tr
-          %th
-          %td
-          %td
-
-        %tr
-          %th
-          %td.surcharge Credit Card Processing Fee (#{rate_to_percentage(order.surcharge_percent)}) on #{price_to_currency(order.amount_owing)}
+          %th.surcharge{colspan: 2} Credit Card Processing Fee (#{rate_to_percentage(order.surcharge_percent)}) on #{price_to_currency(order.amount_owing)}
           %td.price.surcharge-price= price_to_currency(order.surcharge)
 
         %tr
-          %th
-          %td.surcharge-tax #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)}) on Credit Card Processing Fee
+          %th.surcharge-tax{colspan: 2} #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)}) on Credit Card Processing Fee
           %td.price.surcharge-tax-price= price_to_currency(order.surcharge_tax)
 
         %tr.double-line
-          %th
-          %td.total Total amount charged to credit card
+          %th.total{colspan: 2} Total amount charged to credit card
           %td.price.total-price= price_to_currency(order.total)
 
       - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0)
         %tr
-          %th
-          %td.tax #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
+          %th.tax{colspan: 2} #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
 
         %tr.single-line
-          %th
-          %td.total= order.total_label
+          %th.total{colspan: 2}= order.total_label
           %td.price.total-price= price_to_currency(order.total)

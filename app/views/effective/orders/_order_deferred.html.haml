@@ -8,7 +8,7 @@
         %tr
           %td
             - if order.delayed? && order.delayed_payment_provider?
-              %p Your #{order.delayed_payment_method} will be charged on #{order.delayed_payment_date.strftime('%F')}
+              %p Your #{order.delayed_payment_method} will be charged on #{order.delayed_payment_date.strftime("%A, %B %d, %Y")}
             - else
               %p Waiting for payment by #{order.payment_provider}.
 

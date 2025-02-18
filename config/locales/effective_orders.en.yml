@@ -6,8 +6,8 @@ en:
   activerecord:
     actions:
       effective/order:
-        send_buyer_receipt: 'E-mail receipt to buyer'
-        send_buyer_receipt_confirm: 'Send receipt to @resource.emails_send_to?'
+        send_order_email_to_buyer: 'Send order email'
+        send_order_email_to_buyer_confirm: 'Send order email to @resource.emails_send_to?'
 
   datatables:
     admin/report_transactions_datatable: 'Report: Individual Transactions'
