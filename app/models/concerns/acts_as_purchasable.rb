@@ -65,6 +65,10 @@ module ActsAsPurchasable
       end
     }
 
+    scope :not_purchased_or_deferred, -> { 
+      where(purchased_order_id: nil).where.not(id: purchased_or_deferred)
+    }
+
     scope :purchased_or_deferred, -> { 
       if respond_to?(:unarchived)
         unarchived.joins(order_items: :order).where(orders: { status: [:purchased, :deferred] }) 
