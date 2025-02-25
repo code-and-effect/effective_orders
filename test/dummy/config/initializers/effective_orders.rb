@@ -122,7 +122,7 @@ EffectiveOrders.setup do |config|
 
   config.cheque = {
     confirm: 'Proceed with pay by cheque?',
-    success: 'Thank you! You have indicated that this order will be purchased by cheque. Please send us a cheque and a copy of this invoice at your earliest convenience.'
+    success: 'Please send us a cheque and a copy of this invoice at your earliest convenience.'
   }
 
   # E-Transfer

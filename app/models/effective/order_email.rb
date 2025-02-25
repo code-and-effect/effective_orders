@@ -27,14 +27,14 @@ module Effective
     # The very first line of the email body
     def header
       if event.present? && order.purchased_or_deferred?
-        return "Your tickets have been confirmed" if event_none_waitlisted?
+        return "Your tickets have been confirmed!" if event_none_waitlisted?
         return "Some of your tickets have been confirmed, but some are on the waitlist" if event_some_waitlisted?
-        return "Your tickets are on the waitlist" if event_all_waitlisted?
+        return "Your tickets are on the waitlist!" if event_all_waitlisted?
       end
 
-      return "Request for Payment" if payment_request?
-      return "Pending order created" if order.deferred?
-      return "Your order has been successfully purchased" if order.purchased?
+      return "Request for payment" if payment_request?
+      return "Order waiting on payment" if order.deferred?
+      return "Your order has been purchased!" if order.purchased?
       return "Your order was declined by the payment processor" if order.declined?
 
       # Fallback
@@ -44,17 +44,17 @@ module Effective
     def subject
       if event.present? && order.purchased_or_deferred?
         return "Confirmation - #{event}" if event_none_waitlisted?
-        return "Confirmation + Waitlist - #{event}" if event_some_waitlisted?
+        return "Confirmation & Waitlist - #{event}" if event_some_waitlisted?
         return "Waitlist - #{event}" if event_all_waitlisted?
       end
 
-      return "Payment Request - Order: ##{order.to_param}" if payment_request?
-      return "Pending Order: ##{order.to_param}" if order.deferred?
-      return "Declined Order: ##{order.to_param}" if order.declined?
-      return "Order Receipt: ##{order.to_param}" if order.purchased?
+      return "Payment request - Order ##{order.to_param}" if payment_request?
+      return "Waiting on payment - Order ##{order.to_param}" if order.deferred?
+      return "Declined payment - Order ##{order.to_param}" if order.declined?
+      return "Receipt - Order ##{order.to_param}" if order.purchased?
 
       # Fallback
-      "Order: ##{order.to_param}"
+      "Order ##{order.to_param}"
     end
 
     def payment_request?
