@@ -48,6 +48,10 @@ module Effective
         return "Waitlist - #{event}" if event_all_waitlisted?
       end
 
+      if event.present? && order.declined?
+        return "Declined payment - #{event} - Order ##{order.to_param}" if order.declined?
+      end
+
       return "Payment request - Order ##{order.to_param}" if payment_request?
       return "Waiting on payment - Order ##{order.to_param}" if order.deferred?
       return "Declined payment - Order ##{order.to_param}" if order.declined?

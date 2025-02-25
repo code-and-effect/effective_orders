@@ -122,7 +122,7 @@ EffectiveOrders.setup do |config|
 
   config.cheque = {
     confirm: 'Proceed with pay by cheque?',
-    success: 'Please send us a cheque and a copy of this invoice at your earliest convenience.'
+    success: 'Please submit your cheque payment within 30 days of the invoice date.'
   }
 
   # E-Transfer
@@ -131,7 +131,7 @@ EffectiveOrders.setup do |config|
 
   # config.etransfer = {
   #   confirm: 'Proceed with pay by etransfer?',
-  #   success: 'Thank you! You have indicated that this order will be purchased by etransfer. Please send us a etransfer at your earliest convenience.'
+  #   success: 'Thank you! You have indicated that this order will be purchased by etransfer. Please submit your etransfer payment within 30 days of the invoice date.'
   # }
 
   # Moneris

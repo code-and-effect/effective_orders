@@ -2,9 +2,18 @@
   %hr
 
   %p
-    %strong Important:
+    %strong Important
 
-  - if order.payment_provider == 'deluxe_delayed'
+  - if order_email.event_all_waitlisted?
+    %p
+      Your tickets are currently on the waitlist. Should your registration request be accepted, you will receive an event confirmation email letting you know you should plan to attend, along with your payment details. Thank you for your interest – we look forward to seeing you at an event soon!
+
+  - elsif order_email.event_some_waitlisted?
+    %p
+      Some of your tickets are currently on the waitlist. Should your waitlisted tickets be accepted, you will receive a new event confirmation email letting you know you of the update, along with your payment details. Thank you for your interest – we look forward to seeing you at an event soon!
+
+
+  - elsif order.payment_provider == 'deluxe_delayed'
     %ul
       %li Your credit card will be charged on <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>.
       %li Changes and cancellations must be made before this date.
@@ -12,19 +21,19 @@
 
   - elsif order.payment_provider == 'cheque'
     %ul
-      %li Please submit a cheque at your earliest convience.
+      %li Please submit your cheque payment within 30 days of the invoice date.
       %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
   - elsif order.payment_provider == 'phone'
     %ul
-      %li Please phone us at your earliest convience.
+      %li Please phone us to submit payment by credit card within 30 days of the invoice date.
       %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
   - elsif order.payment_provider == 'etransfer'
     %ul
-      %li Please submit an etransfer at your earliest convience.
+      %li Please submit your etransfer payment within 30 days of the invoice date.
       %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
@@ -36,11 +45,12 @@
       %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
+
 - elsif order.deferred?
   %hr
 
   %p
-    %strong Important:
+    %strong Important
 
   - if order.payment_provider == 'deluxe_delayed'
     %ul
@@ -48,15 +58,15 @@
       %li A receipt will be sent after the transaction is completed.
   - elsif order.payment_provider == 'cheque'
     %ul
-      %li Please submit a cheque at your earliest convience.
+      %li Please submit your cheque within 30 days of the invoice date.
       %li A receipt will be sent after payment has been received.
   - elsif order.payment_provider == 'phone'
     %ul
-      %li Please phone us at your earliest convience.
+      %li Please phone us to submit payment within 30 days of the invoice date.
       %li A receipt will be sent after payment has been received.
   - elsif order.payment_provider == 'etransfer'
     %ul
-      %li Please submit an etransfer at your earliest convience.
+      %li Please submit your etransfer within 30 days of the invoice date.
       %li A receipt will be sent after payment has been received.
   - else
     - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')
@@ -65,11 +75,12 @@
         %li When we receive your #{providers} we will mark your order paid.
       %li A receipt will be sent after payment has been received.
 
+
 - elsif order_email.payment_request?
   %hr
 
   %p
-    %strong Important:
+    %strong Important
 
   - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', and', two_words_connector: ', and ')
   %ul
