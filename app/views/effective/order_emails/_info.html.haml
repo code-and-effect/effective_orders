@@ -12,7 +12,6 @@
     %p
       Some of your tickets are currently on the waitlist. Should your waitlisted tickets be accepted, you will receive a new event confirmation email letting you know you of the update, along with your payment details. Thank you for your interest – we look forward to seeing you at an event soon!
 
-
   - elsif order.payment_provider == 'deluxe_delayed'
     %ul
       %li Your credit card will be charged on <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>.
