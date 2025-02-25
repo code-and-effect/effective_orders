@@ -1,11 +1,11 @@
 .order-emails-header
   %h1= order_email.header
 
-  - if order.purchased?
-    %p
-      %strong Thank you!
+  -#- if order.purchased?
+  -#  %p
+  -#    %strong Thank you!
 
-  - elsif order.declined?
+  - if order.declined?
     %p
       Please
       = link_to('checkout your order again', effective_orders.order_url(order))
