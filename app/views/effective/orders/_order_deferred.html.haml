@@ -11,7 +11,7 @@
               Your total due is $0. Should your order total change, you will receive a new invoice, along with your payment details.
 
             - elsif order.delayed? && order.payment_provider == "deluxe_delayed"
-              Your #{order.delayed_payment_method} will automatically be charged on #{order.delayed_payment_date.strftime("%A, %B %d, %Y")}.
+              Your #{order.delayed_payment_method} will automatically be charged on #{order.delayed_payment_date.strftime("%A, %B %e, %Y")}.
 
             - else
               Waiting for payment by #{order.payment_provider}.

@@ -14,26 +14,26 @@
 
   - elsif order.payment_provider == 'deluxe_delayed'
     %ul
-      %li Your credit card will be charged on <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>.
+      %li Your credit card will be charged on <strong>#{order.delayed_payment_date.strftime("%A, %B %e, %Y")}</strong>.
       %li Changes and cancellations must be made before this date.
       %li A receipt will be sent after the transaction is completed.
 
   - elsif order.payment_provider == 'cheque'
     %ul
       %li Please submit your cheque payment within 30 days of the invoice date.
-      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %e, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
   - elsif order.payment_provider == 'phone'
     %ul
       %li Please phone us to submit payment by credit card within 30 days of the invoice date.
-      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %e, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
   - elsif order.payment_provider == 'etransfer'
     %ul
       %li Please submit your etransfer payment within 30 days of the invoice date.
-      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %e, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
   - else
@@ -41,7 +41,7 @@
     %ul
       - if providers.present?
         %li When we receive your #{providers} we will mark your order paid.
-      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %d, %Y")}</strong>, whichever is first, to make changes and cancellations.
+      %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %e, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
 
