@@ -3,21 +3,25 @@
     %table.table
       %thead
         %tr
-          %th Payment
+          %th Payment method
       %tbody
         %tr
           %td
-            - if order.delayed? && order.delayed_payment_provider?
-              %p Your #{order.delayed_payment_method} will be charged on #{order.delayed_payment_date.strftime("%A, %B %d, %Y")}
+            - if order.total == 0
+              Your total due is $0. Should your order total change, you will receive a new invoice, along with your payment details.
+
+            - elsif order.delayed? && order.payment_provider == "deluxe_delayed"
+              Your #{order.delayed_payment_method} will automatically be charged on #{order.delayed_payment_date.strftime("%A, %B %d, %Y")}.
+
             - else
-              %p Waiting for payment by #{order.payment_provider}.
+              Waiting for payment by #{order.payment_provider}.
 
               - if order.payment_provider == "etransfer" && (EffectiveOrders.etransfer[:success] rescue false).present?
-                %p= EffectiveOrders.etransfer[:success].html_safe
+                = EffectiveOrders.etransfer[:success].html_safe
 
               - if order.payment_provider == "cheque" && (EffectiveOrders.cheque[:success] rescue false).present?
-                %p= EffectiveOrders.cheque[:success].html_safe
+                = EffectiveOrders.cheque[:success].html_safe
 
               - if order.payment_provider == "phone" && (EffectiveOrders.phone[:success] rescue false).present?
-                %p= EffectiveOrders.phone[:success].html_safe
+                = EffectiveOrders.phone[:success].html_safe
 

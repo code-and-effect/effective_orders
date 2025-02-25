@@ -422,16 +422,16 @@ module Effective
       elsif purchased?
         'Receipt'
       elsif refund? && (pending? || confirmed?)
-        'Pending Refund'
+        'Pending refund'
       elsif (pending? || confirmed?)
-        'Pending Order'
+        'Pending order'
       else
         'Order'
       end
     end
 
     def total_label
-      purchased? ? 'Total Paid' : 'Total Due'
+      purchased? ? 'Total paid' : 'Total due'
     end
 
     def payment_method

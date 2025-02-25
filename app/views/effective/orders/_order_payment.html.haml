@@ -3,11 +3,7 @@
     %table.table
       %thead
         %tr
-          %th Amount Paid
-          %th Date Paid
-          %th Payment Method
+          %th Payment method
       %tbody
         %tr
-          %td= price_to_currency(order.total)
-          %td= order.purchased_at.in_time_zone(Time.zone).strftime('%b %d, %Y')
           %td= order.payment_method

@@ -1,16 +1,20 @@
-%h1{style: "text-align: center"}= order_email.header
+.order-emails-header
+  %h1= order_email.header
 
-- if order.purchased?
-  %p{style: "margin-bottom: 14px; font-weight: bold; text-align: center;"} Thank you!
-- elsif order.declined?
-  %p{style: "margin-bottom: 14px; font-weight: bold; text-align: center;"}= order.declined_reason
+  - if order.purchased?
+    %p
+      %strong Thank you!
 
-- if (event = order_email.event).present?
-  %p{style: "text-align: center"}
-    %strong{style: "font-size: 18px"}= event.title
-    %br
-    #{effective_events_event_schedule(event)}
+  - elsif order.declined?
+    %p
+      Please
+      = link_to('checkout your order again', effective_orders.order_url(order))
+      or contact us if the problem persists.
 
-  - if event.rich_text_confirmation_email.present?
-    %hr
-    = event.rich_text_confirmation_email.to_s.html_safe
+  - if (event = order_email.event).present?
+    %h2= event.title
+    %p= effective_events_event_schedule(event)
+
+    - if event.rich_text_confirmation_email.present?
+      %hr
+      .event-rich-text= event.rich_text_confirmation_email.to_s.html_safe
