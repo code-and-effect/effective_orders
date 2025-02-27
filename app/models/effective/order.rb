@@ -905,6 +905,10 @@ module Effective
       EffectiveOrders.send_email(:order_email, self) if purchased_or_deferred?
     end
 
+    def log_changes_formatted_value(attribute, value)
+      "#{value.to_s.first(8)}...#{value.to_s.last(4)}" if attribute == :delayed_payment_intent && value.present?
+    end
+
     protected
 
     def get_subtotal
