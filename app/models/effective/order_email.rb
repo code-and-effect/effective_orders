@@ -43,6 +43,7 @@ module Effective
 
     def subject
       if event.present? && order.purchased_or_deferred?
+        return "Receipt - Order ##{order.to_param}" if order.purchased? && order.delayed_payment_date_past?
         return "Confirmation - #{event}" if event_none_waitlisted?
         return "Confirmation & Waitlist - #{event}" if event_some_waitlisted?
         return "Waitlist - #{event}" if event_all_waitlisted?

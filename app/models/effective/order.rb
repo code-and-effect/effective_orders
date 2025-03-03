@@ -612,7 +612,6 @@ module Effective
       present_order_items.map { |oi| oi.quantity }.sum
     end
 
-
     def skip_buyer_validations?
       EffectiveResources.truthy?(skip_buyer_validations)
     end
@@ -628,7 +627,9 @@ module Effective
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
 
-      after_commit { send_payment_request_to_buyer! } if send_payment_request_to_buyer?
+      if send_payment_request_to_buyer?
+        after_commit { send_payment_request_to_buyer! }
+      end
 
       true
     end
@@ -877,8 +878,16 @@ module Effective
       (emails + [cc.presence]).compact.uniq.to_sentence
     end
 
+    def skip_order_emails?
+      return true if purchased? && free? && !EffectiveOrders.send_order_receipts_when_free
+      return true if purchased? && free? && OrderEmail.new(self).event_all_waitlisted?
+      false
+    end
+
     def send_order_emails!
-      if purchased_or_deferred? && (!free? || EffectiveOrders.send_order_receipts_when_free)
+      return false if skip_order_emails?
+
+      if purchased_or_deferred?
         EffectiveOrders.send_email(:order_email, self) if EffectiveOrders.send_order_receipt_to_buyer
         EffectiveOrders.send_email(:order_email_to_admin, self) if EffectiveOrders.send_order_receipt_to_admin
       end
