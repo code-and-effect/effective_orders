@@ -628,9 +628,7 @@ module Effective
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
 
-      if EffectiveResources.truthy?(send_payment_request_to_buyer)
-        after_commit { send_payment_request_to_buyer! }
-      end
+      after_commit { send_payment_request_to_buyer! } if send_payment_request_to_buyer?
 
       true
     end
@@ -893,6 +891,10 @@ module Effective
       if refund?
         EffectiveOrders.send_email(:refund_notification_to_admin, self) if EffectiveOrders.send_refund_notification_to_admin
       end
+    end
+
+    def send_payment_request_to_buyer?
+      EffectiveResources.truthy?(send_payment_request_to_buyer)
     end
 
     # Admin datatable action
