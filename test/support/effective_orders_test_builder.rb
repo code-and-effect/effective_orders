@@ -63,7 +63,8 @@ module EffectiveOrdersTestBuilder
     product = Effective::Product.new(
       name: "Item #{@product_index}",
       price: (100 * @product_index),
-      tax_exempt: false
+      tax_exempt: false,
+      qb_item_name: "Item #{@product_index}"
     )
 
     product

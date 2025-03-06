@@ -49,6 +49,10 @@ module ActsAsPurchasable
       validates_with Effective::SoldOutValidator, on: :create
     end
 
+    with_options(if: -> { EffectiveOrders.require_item_names? }) do
+      validates :qb_item_name, presence: true
+    end
+
     scope :purchased, -> { 
       if respond_to?(:unarchived)
         unarchived.where.not(purchased_order_id: nil) 
