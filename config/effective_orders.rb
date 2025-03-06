@@ -27,7 +27,7 @@ EffectiveOrders.setup do |config|
   config.use_item_names = true
 
   # Require item names throughout
-  config.require_item_names = true
+  config.require_item_names = false
 
   # If set, the orders#new screen will render effective/orders/_order_note_fields to capture any Note info
   config.collect_note = false

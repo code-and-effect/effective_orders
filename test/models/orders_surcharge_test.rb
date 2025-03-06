@@ -5,7 +5,7 @@ class OrdersPriceTest < ActiveSupport::TestCase
   # Purchase with credit card provider
   test 'purchase with credit card surcharge' do
     user = build_user_with_address()
-    item = Effective::Product.new(name: 'One', price: 100_00)
+    item = Effective::Product.new(name: 'One', price: 100_00, qb_item_name: 'Item 1')
 
     order = Effective::Order.new(user: user, items: item)
     assert order.save!
@@ -27,7 +27,7 @@ class OrdersPriceTest < ActiveSupport::TestCase
 
   test 'purchase without credit card surcharge' do
     user = build_user_with_address()
-    item = Effective::Product.new(name: 'One', price: 100_00)
+    item = Effective::Product.new(name: 'One', price: 100_00, qb_item_name: 'Item 1')
 
     order = Effective::Order.new(user: user, items: item)
     assert order.save!

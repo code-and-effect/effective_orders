@@ -5,8 +5,8 @@ class OrdersPriceTest < ActiveSupport::TestCase
   # An order of $100.00 has $5.00 tax (100 * 1.05) and a $2.52 surcharge (105*1.024) and $0.13 surcharge tax ($2.51*0.05) and totals $107.65 (order + tax + surcharge + surcharge tax)
   test 'one hundred dollar order' do
     user = build_user_with_address()
-    item1 = Effective::Product.new(name: 'One', price: 50_00)
-    item2 = Effective::Product.new(name: 'Two', price: 50_00)
+    item1 = Effective::Product.new(name: 'One', price: 50_00, qb_item_name: 'Item 1')
+    item2 = Effective::Product.new(name: 'Two', price: 50_00, qb_item_name: 'Item 2')
 
     order = Effective::Order.new(user: user, items: [item1, item2])
     assert order.save!
@@ -35,8 +35,8 @@ class OrdersPriceTest < ActiveSupport::TestCase
   # An order of $100.00 has $5.00 tax (100 * 1.05) and a $1.58 surcharge (105*1.024) and $0.08 surcharge tax ($2.51*0.05) and totals $106.66 (order + tax + surcharge + surcharge tax)
   test 'one hundred dollar order with 1.5 percent processing fee (telus example)' do
     user = build_user_with_address()
-    item1 = Effective::Product.new(name: 'One', price: 50_00)
-    item2 = Effective::Product.new(name: 'Two', price: 50_00)
+    item1 = Effective::Product.new(name: 'One', price: 50_00, qb_item_name: 'Item 1')
+    item2 = Effective::Product.new(name: 'Two', price: 50_00, qb_item_name: 'Item 2')
 
     order = Effective::Order.new(user: user, items: [item1, item2])
     with_surcharge_percent(1.5) { assert order.save! }
@@ -65,7 +65,7 @@ class OrdersPriceTest < ActiveSupport::TestCase
   # An order of $325.00 has $16.25 tax (325 * 0.05) and a $8.19 surcharge (341.25 * 0.024) and $0.41 surcharge tax (8.19 * 0.05) and totals $349.85 (order + tax + surcharge + surcharge tax)
   test 'three hundred twenty five dollar order' do
     user = build_user_with_address()
-    item1 = Effective::Product.new(name: 'One', price: 325_00)
+    item1 = Effective::Product.new(name: 'One', price: 325_00, qb_item_name: 'Item 1')
 
     order = Effective::Order.new(user: user, items: item1)
     assert order.save!
