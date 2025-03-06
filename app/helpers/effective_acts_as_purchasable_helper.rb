@@ -12,10 +12,19 @@ module EffectiveActsAsPurchasableHelper
 
     options = options.reverse_merge(
       label: (EffectiveOrders.quickbooks? ? "Quickbooks #{etd(Effective::ItemName)}" : et(Effective::ItemName)),
-      hint: "Can't find the #{etd(Effective::ItemName)} you need? #{link_to('Click here to add one', effective_orders.admin_item_names_path, target: '_blank')}"
+      hint: "Can't find the #{etd(Effective::ItemName)} you need? #{link_to('Click here to add one', effective_orders.admin_item_names_path, target: '_blank')}",
+      required: EffectiveOrders.require_item_names?
     )
     
     form.select :qb_item_name, collection, options
+  end
+
+  def qb_item_name_label
+    EffectiveOrders.quickbooks? ? "Quickbooks #{etd(Effective::ItemName)}" : et(Effective::ItemName)
+  end
+
+  def qb_item_names_label
+    EffectiveOrders.quickbooks? ? "Quickbooks #{etsd(Effective::ItemName)}" : ets(Effective::ItemName)
   end
 
   # This is called on the My Sales Page and is intended to be overridden in the app if needed
