@@ -99,5 +99,9 @@ module Effective
       event_registrants.all? { |er| er.waitlisted_not_promoted? }
     end
 
+    def event_all_waitlisted_or_archived?
+      return false unless event_registrants.present?
+      event_registrants.all? { |er| er.waitlisted_not_promoted? || er.archived? }
+    end
   end
 end

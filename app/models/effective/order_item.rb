@@ -93,5 +93,9 @@ module Effective
       (qb_order_item || build_qb_order_item(name: purchasable.try(:qb_item_name))).name
     end
 
+    def archived?
+      purchasable.try(:archived?) == true && price.to_i == 0
+    end
+
   end
 end

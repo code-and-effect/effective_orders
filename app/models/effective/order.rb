@@ -880,7 +880,7 @@ module Effective
 
     def skip_order_emails?
       return true if purchased? && free? && !EffectiveOrders.send_order_receipts_when_free
-      return true if purchased? && free? && OrderEmail.new(self).event_all_waitlisted?
+      return true if purchased? && free? && OrderEmail.new(self).event_all_waitlisted_or_archived?
       false
     end
 

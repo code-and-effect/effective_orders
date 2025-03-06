@@ -1,13 +1,15 @@
 .effective-order-items
+  - present_order_items = order.order_items.reject(&:archived?)
+
   %table.table{style: "margin-bottom: 20px;"}
     %thead
       %tr
         %th.quantity Qty
-        %th.item= order.order_items.length > 1 ? 'Items' : 'Item'
+        %th.item= present_order_items.length > 1 ? 'Items' : 'Item'
         %th.price Price
 
     %tbody
-      - order.order_items.each do |item|
+      - present_order_items.each do |item|
         %tr
           %td.quantity= item.quantity
 
