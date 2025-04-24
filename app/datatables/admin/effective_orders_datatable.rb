@@ -47,14 +47,14 @@ module Admin
         order.purchased_at&.strftime('%F %H:%M') || ('pending refund' if order.pending_refund?) || ("pending #{order.payment_provider}" if order.deferred?) || 'not purchased'
       end
 
-      col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
+      col :purchased_by, visible: EffectiveOrders.organization_enabled?
 
       if attributes[:user_id].blank?
-        col :user, search: :string, visible: !EffectiveOrders.organization_enabled?
+        col :user, visible: !EffectiveOrders.organization_enabled?
       end
 
       if attributes[:organization_id].blank?
-        col :organization, search: :string, visible: EffectiveOrders.organization_enabled?
+        col :organization, visible: EffectiveOrders.organization_enabled?
       end
 
       if defined?(EffectiveMemberships)
@@ -70,7 +70,7 @@ module Admin
       col :billing_name, visible: false
       col :email, visible: false
 
-      col :parent, visible: false, search: :string
+      col :parent, visible: false
 
       col :cc, visible: false
 
@@ -82,7 +82,7 @@ module Admin
         col :shipping_address, visible: false
       end
 
-      col(:order_items, search: :string).search do |collection, term|
+      col(:order_items).search do |collection, term|
         collection.where(id: Effective::OrderItem.where('name ILIKE ?', "%#{term}%").select('order_id'))
       end
 

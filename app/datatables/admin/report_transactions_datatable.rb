@@ -17,7 +17,7 @@ module Admin
       end
 
       col :purchased_at
-      col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
+      col :purchased_by, visible: EffectiveOrders.organization_enabled?
 
       if EffectiveOrders.organization_enabled?
         col :organization

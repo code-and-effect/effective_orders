@@ -22,9 +22,9 @@ class EffectiveOrdersDatatable < Effective::Datatable
       '#' + order.to_param
     end
 
-    col :parent, visible: false, search: :string
-    col :user, visible: false, search: :string
-    col :organization, search: :string, visible: false
+    col :parent, visible: false
+    col :user, visible: false
+    col :organization, visible: false
 
     col :status
 
@@ -33,7 +33,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
         order.purchased_at&.strftime('%F %H:%M') || 'not purchased'
       end
 
-      col :purchased_by, search: :string, visible: EffectiveOrders.organization_enabled?
+      col :purchased_by, visible: EffectiveOrders.organization_enabled?
     end
 
     if EffectiveOrders.billing_address
@@ -44,7 +44,7 @@ class EffectiveOrdersDatatable < Effective::Datatable
       col :shipping_address, visible: false
     end
 
-    col(:order_items, search: :string).search do |collection, term|
+    col(:order_items).search do |collection, term|
       collection.where(id: Effective::OrderItem.where('name ILIKE ?', "%#{term}%").select('order_id'))
     end
 

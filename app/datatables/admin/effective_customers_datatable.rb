@@ -4,7 +4,7 @@ module Admin
 
       col :id, visible: false
 
-      col :user, search: :string
+      col :user
 
       col :email do |customer|
         customer.user.email
