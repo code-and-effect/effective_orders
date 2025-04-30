@@ -20,7 +20,14 @@ module Admin
 
       col :orders_count
 
-      col :orders, visible: false
+      val(:details, visible: false) do |_, orders|
+        orders.map do |order|
+          content_tag(:div, class: 'col-resource_item') do
+            link_to(order.full_to_s, effective_orders.admin_order_path(order), title: order.full_to_s)
+          end
+        end.join.html_safe
+      end
+
       col :users, visible: false
 
       col :start_date, as: :date, search: false, sort: false, visible: false do
@@ -53,10 +60,12 @@ module Admin
           items.sum { |item| (item.order.payment_provider == payment_provider) ? item.total : 0 }.to_i
         end
 
+        orders = items.map { |item| item.order }.uniq.sort
+
         row += [
-          items.map(&:order_id).uniq.length,
-          items.map { |item| item.order },
-          items.map { |item| item.order.user },
+          orders.length,
+          orders,
+          orders.map(&:user),
           start_date,
           end_date
         ]
