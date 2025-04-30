@@ -416,6 +416,10 @@ module Effective
       [label, ' #', to_param].join
     end
 
+    def full_to_s
+      [to_s, billing_name.presence, email.presence, total_to_s].compact.join(' - ')
+    end
+
     def label
       if refund? && purchased?
         'Refund'
@@ -432,6 +436,10 @@ module Effective
 
     def total_label
       purchased? ? 'Total paid' : 'Total due'
+    end
+
+    def total_to_s
+      "$#{'%0.2f' % total_to_f}"
     end
 
     def payment_method
@@ -582,7 +590,7 @@ module Effective
       return unless delayed? && deferred? && delayed_payment_provider?
       return unless delayed_payment_date_upcoming?
 
-      "Your #{delayed_payment_method} will be charged $#{'%0.2f' % total_to_f} on #{delayed_payment_date.strftime('%A, %B %e, %Y')}."
+      "Your #{delayed_payment_method} will be charged #{total_to_s} on #{delayed_payment_date.strftime('%A, %B %e, %Y')}."
     end
 
     def delayed_payment_date_past?
