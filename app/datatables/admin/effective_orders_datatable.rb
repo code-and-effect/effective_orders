@@ -1,17 +1,19 @@
 module Admin
   class EffectiveOrdersDatatable < Effective::Datatable
     bulk_actions do
-      bulk_action(
-      'Send payment request email to selected orders',
-        effective_orders.bulk_send_payment_request_admin_orders_path,
-        data: { confirm: 'Send payment request emails?' }
-      )
+      unless attributes[:skip_bulk_actions]
+        bulk_action(
+        'Send payment request email to selected orders',
+          effective_orders.bulk_send_payment_request_admin_orders_path,
+          data: { confirm: 'Send payment request emails?' }
+        )
 
-      bulk_action(
-        'Send invoice email to selected purchased orders',
-        effective_orders.bulk_send_order_email_to_buyer_orders_path,
-        data: { confirm: 'Send invoice emails?' }
-      )
+        bulk_action(
+          'Send invoice email to selected purchased orders',
+          effective_orders.bulk_send_order_email_to_buyer_orders_path,
+          data: { confirm: 'Send invoice emails?' }
+        )
+      end
     end
 
     filters do
@@ -32,7 +34,9 @@ module Admin
     datatable do
       order :updated_at
 
-      bulk_actions_col
+      unless attributes[:skip_bulk_actions]
+        bulk_actions_col
+      end
 
       col :created_at, visible: false
       col :updated_at, visible: false
@@ -116,7 +120,9 @@ module Admin
       col :note_to_buyer, visible: false
       col :note_internal, visible: false
 
-      actions_col
+      unless attributes[:skip_actions]
+        actions_col
+      end
 
       unless attributes[:total] == false
         aggregate :total
@@ -145,6 +151,10 @@ module Admin
 
       if attributes[:parent_id].present? && attributes[:parent_type].present?
         scope = scope.where(parent_id: attributes[:parent_id], parent_type: attributes[:parent_type])
+      end
+
+      if attributes[:ids].present?
+        scope = scope.where(id: attributes[:ids])
       end
 
       scope

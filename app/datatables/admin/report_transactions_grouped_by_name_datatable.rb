@@ -18,14 +18,16 @@ module Admin
         col("p - #{provider}", as: :price, visible: false)
       end
 
-      col :orders_count
+      col :orders_count, visible: false
 
-      val(:details, visible: false) do |_, orders|
-        orders.map do |order|
-          content_tag(:div, class: 'col-resource_item') do
-            link_to(order.full_to_s, effective_orders.admin_order_path(order), title: order.full_to_s)
-          end
-        end.join.html_safe
+      col(:orders, col_class: 'col-actions') do |orders|
+        if orders.present?
+          title = pluralize(orders.length, 'orders')
+          order_ids = orders.map(&:id).join("|")
+
+          path = effective_orders.nested_orders_admin_order_reports_path(ids: order_ids)
+          nested_datatable_link_to(title, path)
+        end
       end
 
       col :users, visible: false

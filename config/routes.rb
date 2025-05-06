@@ -78,6 +78,7 @@ EffectiveOrders::Engine.routes.draw do
 
     resources :order_reports, only: [] do
       collection do
+        get :nested_orders
         get :transactions
         get :transactions_grouped_by_name
         get :transactions_grouped_by_qb_name

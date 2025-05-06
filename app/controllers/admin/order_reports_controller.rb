@@ -32,6 +32,14 @@ module Admin
       render 'index'
     end
 
+    # This is used by the transactions_grouped_by_name and transactions_grouped_by_qb_name datatables
+    # To display a nested datatable of the orders
+    def nested_orders
+      ids = params[:ids].to_s.split("|")
+      @datatable = Admin::EffectiveOrdersDatatable.new(ids: ids, skip_filters: true, skip_bulk_actions: true)
+      nested_datatable_action
+    end
+
     def payment_providers
       @datatable = Admin::ReportPaymentProvidersDatatable.new
       @page_title = @datatable.datatable_name
