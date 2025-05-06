@@ -15,6 +15,20 @@ module Admin
       col :returns, as: :price
       col :total, as: :price
 
+      col :orders_count, visible: false
+
+      col(:orders, col_class: 'col-actions') do |orders|
+        if orders.present?
+          title = pluralize(orders.length, 'orders')
+          order_ids = orders.map(&:id).join("|")
+
+          path = effective_orders.nested_orders_admin_order_reports_path(ids: order_ids)
+          nested_datatable_link_to(title, path)
+        end
+      end
+
+      col :users, visible: false
+
       col :filtered_start_date, as: :date, search: false, sort: false, visible: false do
         date_range.begin&.strftime('%F')
       end
@@ -34,6 +48,7 @@ module Admin
       order_items = Effective::OrderItem.where(order_id: orders).includes(:purchasable, order: :user)
 
       payment_providers.map do |provider|
+        provider_orders = orders.select { |order| order.payment_provider == provider }
         items = order_items.select { |item| item.order.payment_provider == provider }
 
         [
@@ -41,6 +56,9 @@ module Admin
           items.sum { |item| (item.total > 0 ? item.total : 0) }.to_i,
           items.sum { |item| (item.total < 0 ? item.total : 0) }.to_i,
           items.sum { |item| item.total }.to_i,
+          provider_orders.length,
+          provider_orders,
+          provider_orders.map(&:user),
           start_date,
           end_date
         ]
