@@ -20,15 +20,6 @@ module Admin
 
       col :orders_count, visible: false
 
-      col(:orders, col_class: 'col-actions') do |orders|
-        if orders.present?
-          title = pluralize(orders.length, 'orders')
-          order_ids = orders.map(&:id).join("|")
-
-          path = effective_orders.nested_orders_admin_order_reports_path(ids: order_ids)
-          nested_datatable_link_to(title, path)
-        end
-      end
 
       col :users, visible: false
 
@@ -38,6 +29,16 @@ module Admin
 
       col :filtered_end_date, as: :date, search: false, sort: false, visible: false do
         date_range.end&.strftime('%F')
+      end
+
+      col(:orders, col_class: 'col-actions', search: false, sort: false) do |orders, row|
+        if orders.present?
+          title = pluralize(orders.length, 'orders')
+          order_ids = orders.map(&:id).join("|")
+
+          path = effective_orders.nested_orders_admin_order_reports_path(ids: order_ids)
+          nested_datatable_link_to(title, path, title: row.first)
+        end
       end
 
       aggregate :total
@@ -66,10 +67,10 @@ module Admin
 
         row += [
           orders.length,
-          orders,
           orders.map(&:user),
           start_date,
-          end_date
+          end_date,
+          orders
         ]
 
         row
