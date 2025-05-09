@@ -4,6 +4,6 @@
   - else
     = dropdown_link_to 'View', effective_orders.order_path(order)
 
-  - if EffectiveResources.authorized?(controller, :send_buyer_receipt, order)
-    = dropdown_link_to 'E-mail Receipt', effective_orders.send_buyer_receipt_order_path(order),
+  - if EffectiveResources.authorized?(controller, :send_order_email_to_buyer, order)
+    = dropdown_link_to 'E-mail Receipt', effective_orders.send_order_email_to_buyer_order_path(order),
       data: { method: :post, confirm: "Send receipt to #{order.emails.first}?" }
