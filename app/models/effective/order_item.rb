@@ -90,7 +90,12 @@ module Effective
     # first or build
     def qb_item_name
       raise('expected Effective Quickbooks gem') unless defined?(EffectiveQbSync) || defined?(EffectiveQbOnline)
-      (qb_order_item || build_qb_order_item(name: purchasable.try(:qb_item_name))).name
+
+      if defined?(EffectiveQbSync)
+        (qb_order_item || build_qb_order_item(name: purchasable.try(:qb_item_name))).name
+      else
+        purchasable.try(:qb_item_name)
+      end
     end
 
     def archived?
