@@ -143,6 +143,7 @@ module Effective
 
       @order = order
       @error = error.to_s
+      opts = {}
 
       to ||= EffectiveOrders.mailer_admin
       from ||= EffectiveOrders.mailer_sender

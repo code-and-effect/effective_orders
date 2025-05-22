@@ -42,6 +42,9 @@ module EffectiveOrders
       :send_subscription_trialing, :send_subscription_trial_expired,
       :send_refund_notification_to_admin,
 
+      # Quickbooks Online Sync Errors
+      :qb_online_sync_error_recipients,
+
       # Features
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message, :buyer_purchases_refund,
 

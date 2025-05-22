@@ -119,6 +119,10 @@ EffectiveOrders.setup do |config|
   config.send_subscription_trialing = true
   config.send_subscription_trial_expired = true
 
+  # Quickbooks Online Sync Errors
+  # Effective Quickbooks Online sync errors will be sent to mailer_admin or the following recipients:
+  # config.qb_online_sync_error_recipients = ['"Info" <info@example.com>', '"Admin" <admin@example.com>']
+
   #######################################
   ## Payment Provider specific options ##
   #######################################
