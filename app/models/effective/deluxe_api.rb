@@ -308,6 +308,8 @@ module Effective
 
       billingAddress = if (address = order.billing_address).present?
         {
+          firstName: order.billing_first_name,
+          lastName: order.billing_last_name,
           email: order.email,
           address: scrub(address.address1, limit: 250),
           address2: scrub(address.address2),
@@ -320,6 +322,8 @@ module Effective
 
       shippingAddress = if (address = order.shipping_address).present?
         {
+          firstName: order.shipping_first_name,
+          lastName: order.shipping_last_name,
           address: scrub(address.address1, limit: 250),
           address2: scrub(address.address2),
           city: scrub(address.city, limit: 50),
