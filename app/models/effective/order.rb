@@ -642,9 +642,10 @@ module Effective
       true
     end
 
-    # Used by admin checkout only
+    # Used to indicate the order has a billing address and is ready for checkout
     def confirm!
       return false if purchased?
+      return save! if deferred?
       confirmed!
     end
 
