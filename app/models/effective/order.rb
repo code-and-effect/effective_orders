@@ -43,7 +43,7 @@ module Effective
     attr_accessor :confirmed_checkout   # Set on the Checkout Step 1
 
     # Settings in the /admin action forms
-    attr_accessor :send_payment_request_to_buyer # Set by Admin::Orders#new. Should the payment request email be sent after creating an order?
+    attr_accessor :send_payment_request # Set by Admin::Orders#new. Should the payment request email be sent after creating an order?
     attr_accessor :send_mark_as_paid_email_to_buyer  # Set by Admin::Orders#mark_as_paid
     attr_accessor :skip_buyer_validations # Set by Admin::Orders#create
     attr_accessor :mailer_preview # Set by the mailer preview. Disabled delayed payment validations
@@ -635,8 +635,8 @@ module Effective
       self.addresses.clear if addresses.any? { |address| address.valid? == false }
       save!
 
-      if send_payment_request_to_buyer?
-        after_commit { send_payment_request_to_buyer! }
+      if send_payment_request?
+        after_commit { send_payment_request! }
       end
 
       true
@@ -893,6 +893,7 @@ module Effective
       false
     end
 
+    # Used internally to send emails to the buyer or admin depending on order status
     def send_order_emails!
       return false if skip_order_emails?
 
@@ -911,18 +912,24 @@ module Effective
       end
     end
 
-    def send_payment_request_to_buyer?
-      EffectiveResources.truthy?(send_payment_request_to_buyer)
+    def send_payment_request?
+      EffectiveResources.truthy?(send_payment_request)
     end
 
     # Admin datatable action
-    def send_payment_request_to_buyer!
-      EffectiveOrders.send_email(:order_email, self, payment_request: true) unless (purchased? || refund?)
+    def send_payment_request!
+      return false if (purchased_or_deferred? || refund?)
+
+      EffectiveOrders.send_email(:order_email, self, payment_request: true)
+      EffectiveOrders.send_email(:order_email_to_admin, self, payment_request: true) if EffectiveOrders.send_payment_request_to_admin
     end
 
     # Admin datatable action
-    def send_order_email_to_buyer!
-      EffectiveOrders.send_email(:order_email, self) if purchased_or_deferred?
+    def send_order_email!
+      return unless purchased_or_deferred?
+
+      EffectiveOrders.send_email(:order_email, self)
+      EffectiveOrders.send_email(:order_email_to_admin, self) if EffectiveOrders.send_order_receipt_to_admin
     end
 
     def log_changes_formatted_value(attribute, value)

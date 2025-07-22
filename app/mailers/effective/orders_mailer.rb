@@ -26,7 +26,7 @@ module Effective
       raise('expected an Effective::Order') unless resource.kind_of?(Effective::Order)
 
       @order = resource
-      @order_email = Effective::OrderEmail.new(resource)
+      @order_email = Effective::OrderEmail.new(resource, opts)
 
       subject = subject_for(__method__, @order_email.subject, @order, opts)
       headers = headers_for(@order, opts)

@@ -106,9 +106,9 @@ EffectiveOrders.setup do |config|
   config.send_order_declined_to_admin = false
   config.send_order_declined_to_buyer = false
   config.send_payment_request_to_buyer = true
-  config.send_pending_order_invoice_to_buyer = true
-  config.send_refund_notification_to_admin = true
+  config.send_payment_request_to_admin = true
 
+  config.send_refund_notification_to_admin = true
   config.send_order_receipts_when_mark_as_paid = true
   config.send_order_receipts_when_free = true
 
