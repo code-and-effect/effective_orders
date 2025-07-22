@@ -47,7 +47,7 @@ class OrdersTest < ActiveSupport::TestCase
 
   test 'sends a payment request when pending' do
     order = create_effective_order!()
-    order.send_payment_request_to_buyer = true
+    order.send_payment_request = true
 
     assert_email { order.pending! }
   end

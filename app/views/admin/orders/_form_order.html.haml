@@ -17,9 +17,9 @@
   = f.email_cc_field :cc, hint: "Cc the above on any emailed receipts or payment requests."
 
   - if f.object.new_record?
-    = f.check_box :send_payment_request_to_buyer,
+    = f.check_box :send_payment_request,
       label: 'Yes, send a payment request email to the buyer and any cc.',
-      value: (f.object.send_payment_request_to_buyer.nil? ? EffectiveOrders.send_payment_request_to_buyer : f.object.send_payment_request_to_buyer?)
+      value: (f.object.send_payment_request.nil? ? EffectiveOrders.send_payment_request_to_buyer : f.object.send_payment_request?)
 
   %hr
 

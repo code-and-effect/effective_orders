@@ -16,7 +16,7 @@ module Admin
 
     submit :save, 'Save', success: -> {
       message = flash_success(resource, params[:action])
-      message << ". A request for payment has been sent to #{resource.emails_send_to}" if resource.send_payment_request_to_buyer?
+      message << ". A request for payment has been sent to #{resource.emails_send_to}" if resource.send_payment_request?
       message
     }
 
@@ -78,7 +78,7 @@ module Admin
       @order = Effective::Order.deep.was_not_purchased.find(params[:id])
       authorize_effective_order!
 
-      if @order.send_payment_request_to_buyer!
+      if @order.send_payment_request!
         flash[:success] = "A request for payment has been sent to #{@order.emails_send_to}"
       else
         flash[:danger] = 'Unable to send payment request'
@@ -93,7 +93,7 @@ module Admin
       begin
         authorize_effective_order!
 
-        @orders.each { |order| order.send_payment_request_to_buyer! }
+        @orders.each { |order| order.send_payment_request! }
         render json: { status: 200, message: "Successfully sent #{@orders.length} payment request emails"}
       rescue Exception => e
         render json: { status: 500, message: "Bulk send payment request error: #{e.message}" }

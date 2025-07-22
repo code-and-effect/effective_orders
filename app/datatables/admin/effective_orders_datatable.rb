@@ -10,7 +10,7 @@ module Admin
 
         bulk_action(
           'Send invoice email to selected purchased orders',
-          effective_orders.bulk_send_order_email_to_buyer_orders_path,
+          effective_orders.bulk_send_order_email_orders_path,
           data: { confirm: 'Send invoice emails?' }
         )
       end
