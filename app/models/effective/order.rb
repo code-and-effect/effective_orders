@@ -918,7 +918,7 @@ module Effective
 
     # Admin datatable action
     def send_payment_request!
-      return false if (purchased_or_deferred? || refund?)
+      return if (purchased_or_deferred? || refund?)
 
       EffectiveOrders.send_email(:order_email, self, payment_request: true)
       EffectiveOrders.send_email(:order_email_to_admin, self, payment_request: true) if EffectiveOrders.send_payment_request_to_admin
