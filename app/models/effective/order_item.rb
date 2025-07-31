@@ -58,8 +58,16 @@ module Effective
       purchasable&.purchased_download_url
     end
 
+    def price_to_f
+      ((price|| 0) / 100.0).to_f
+    end
+
     def subtotal
       price * quantity
+    end
+
+    def subtotal_to_f
+      ((subtotal || 0) / 100.0).to_f
     end
 
     def quantity
@@ -70,6 +78,10 @@ module Effective
       return 0 if tax_exempt?
       raise 'parent Effective::Order must have a tax_rate to compute order item tax' unless order.try(:tax_rate).present?
       (subtotal * order.tax_rate / 100.0).round(0).to_i
+    end
+
+    def tax_to_f
+      ((tax || 0) / 100.0).to_f
     end
 
     def amount_owing

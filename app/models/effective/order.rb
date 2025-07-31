@@ -539,6 +539,10 @@ module Effective
       ((total || 0) / 100.0).to_f
     end
 
+    def tax_to_f
+      ((tax || 0) / 100.0).to_f
+    end
+
     def total_with_surcharge
       get_total_with_surcharge()
     end

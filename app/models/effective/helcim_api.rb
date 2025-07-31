@@ -6,13 +6,15 @@ module Effective
     attr_accessor :environment
     attr_accessor :api_token
     attr_accessor :currency
+    attr_accessor :brand_color
 
     attr_accessor :read_timeout
 
-    def initialize(environment: nil, api_token: nil, currency: nil)
+    def initialize(environment: nil, api_token: nil, currency: nil, brand_color: nil)
       self.environment = environment || EffectiveOrders.helcim.fetch(:environment)
       self.api_token = api_token || EffectiveOrders.helcim.fetch(:api_token)
       self.currency = currency || EffectiveOrders.helcim.fetch(:currency)
+      self.brand_color = brand_color || EffectiveOrders.helcim.fetch(:brand_color)
     end
 
     def health_check
@@ -23,31 +25,81 @@ module Effective
       get("/card-transactions/#{id}")
     end
 
+
     # Make the Preload Request
+    # https://devdocs.helcim.com/reference/checkout-init
     def initialize_request(order)
       params = {
-        paymentType: 'purchase',   # purchase, preauth, verify
-        amount: ('%.2f' % (order.total_with_surcharge / 100.0)),
-        currency: 'CAD',
+        amount: ('%.2f' % order.total_to_f),
+        currency: currency,
         paymentMethod: 'cc',
+        paymentType: 'purchase',   # purchase, preauth, verify
         allowPartial: 0,
         hasConvenienceFee: 0,
-        taxAmount: ('%.2f' % (order.tax / 100.0)),
+        taxAmount: ('%.2f' % order.tax_to_f if order.tax.to_i > 0),
         hideExistingPaymentDetails: 0,
         setAsDefaultPaymentMethod: 1,
         confirmationScreen: false,
         displayContactFields: 0,
         customStyling: {
-          appearance: 'light',
-          cornerRadius: 'rectangular'
+          brandColor: (brand_color || '815AF0')
+        },
+        invoiceRequest: {
+          invoiceNumber: '#' + order.to_param
+        },
+        customerRequest: {
+          contactName: order.billing_name,
+          businessName: order.organization.to_s.presence,
+        }.compact,
+      }.compact
+
+      params[:invoiceRequest][:lineItems] = order.order_items.map do |item|
+        {
+          description: item.name,
+          quantity: item.quantity,
+          price: ('%.2f' % item.price_to_f),
+          total: ('%.2f' % item.subtotal_to_f),
+          taxAmount: ('%.2f' % item.tax_to_f),
         }
-      }
+      end
+
+      address = order.billing_address
+      country = helcim_country(address&.country_code)
+
+      if address.present? && country.to_s.length == 3
+        params[:customerRequest][:billingAddress] = {
+          name: order.billing_name,
+          street1: address.address1,
+          street2: address.address2,
+          city: address.city,
+          province: address.state_code,
+          country: country,
+          postalCode: address.postal_code,
+          email: order.email,
+        }
+      end
+
+      address = order.shipping_address
+      country = helcim_country(address&.country_code)
+
+      if address.present? && country.to_s.length == 3
+        params[:customerRequest][:shippingAddress] = {
+          name: order.billing_name,
+          street1: address.address1,
+          street2: address.address2,
+          city: address.city,
+          province: address.state_code,
+          country: country,
+          postalCode: address.postal_code,
+          email: order.email,
+        }
+      end
 
       response = post('/helcim-pay/initialize', params: params)
       raise("expected response to be a Hash") unless response.kind_of?(Hash)
 
       token = response['checkoutToken']
-      raise("expected resposne to include a checkoutToken") unless token.present?
+      raise("expected response to include a checkoutToken") unless token.present?
 
       # Return the token to the front end form
       token
@@ -69,50 +121,13 @@ module Effective
       payment
     end
 
-    # [1] pry(#<Effective::HelcimApi>)> payment
-    # => {"transactionId"=>"37587289",
-    #  "dateCreated"=>"2025-07-30 15:24:33",
-    #  "cardBatchId"=>"4593525",
-    #  "status"=>"APPROVED",
-    #  "type"=>"purchase",
-    #  "amount"=>"140",
-    #  "currency"=>"1",
-    #  "avsResponse"=>"X",
-    #  "cvvResponse"=>"",
-    #  "approvalCode"=>"T3E3ST",
-    #  "cardToken"=>"a38hU2p8RV66UJDzJgxIyQ",
-    #  "cardNumber"=>"4242424242",
-    #  "cardHolderName"=>"Matt Arr",
-    #  "customerCode"=>"CST1012",
-    #  "invoiceNumber"=>"INV001012",
-    #  "warning"=>""}
-    # [2] pry(#<Effective::HelcimApi>)> transaction
-    # => {"transactionId"=>37587289,
-    #  "dateCreated"=>"2025-07-30 15:24:33",
-    #  "cardBatchId"=>5140370,
-    #  "status"=>"APPROVED",
-    #  "user"=>"Helcim System",
-    #  "type"=>"purchase",
-    #  "amount"=>140,
-    #  "currency"=>"CAD",
-    #  "avsResponse"=>"X",
-    #  "cvvResponse"=>"",
-    #  "cardType"=>"VI",
-    #  "approvalCode"=>"T3E3ST",
-    #  "cardToken"=>"",
-    #  "cardNumber"=>"4242424242",
-    #  "cardHolderName"=>"Matt Arr",
-    #  "customerCode"=>"CST1012",
-    #  "invoiceNumber"=>"INV001012",
-    #  "warning"=>""}
-
     def purchased?(payment)
       raise('expected a payment Hash') unless payment.kind_of?(Hash)
       (payment['status'] == 'APPROVED' && payment['type'] == 'purchase')
     end
 
-    def verify_payment(payment_payload)
-      raise('expected a payment_payload Hash') unless payload.kind_of?(Hash)
+    def verify_payment(order, payment_payload)
+      raise('expected a payment_payload Hash') unless payment_payload.kind_of?(Hash)
 
       transaction_id = payment_payload['transactionId']
       raise('expected a payment_payload with a transactionId') unless transaction_id.present?
@@ -125,8 +140,13 @@ module Effective
         raise('expected the payment and payment_payload to have the same transactionId')
       end
 
+      # Validate order ids
+      if payment['invoiceNumber'].to_s != '#' + order.to_param
+        raise("expected card-transaction invoiceNumber to be the same as the order to_param")
+      end
+
       # Validate amounts if purchased
-      if purchased?(payment) && (amount = response['amount'].to_i) != (amountAuthorized = order.total)
+      if purchased?(payment) && (amount = payment['amount'].to_f) != (amountAuthorized = order.total_to_f)
         raise("expected card-transaction amount #{amount} to be the same as the amountAuthorized #{amountAuthorized} but it was not")
       end
 
@@ -183,6 +203,46 @@ module Effective
       JSON.parse(response.body)
     end
 
+    # Effective::HelcimApi.new.set_logo!
+    # Put your file in the apps/tenant/app/assets/images/tenant/helcim-logo.png
+    # Run this once to set the logo
+    def set_logo!(path: nil)
+      path ||= Rails.root.join("apps/#{Tenant.current}/app/assets/images/#{Tenant.current}/helcim-logo.png")
+      raise("Expected #{path} to exist") unless File.exist?(path)
+
+      url = URI.parse(api_url + '/branding/logo')
+      boundary = "AaB03x"
+
+      # Build multipart form data
+      body = [
+        "--#{boundary}",
+        "Content-Disposition: form-data; name=\"logo\"; filename=\"#{File.basename(path)}\"",
+        "Content-Type: image/#{File.extname(path).downcase.delete('.')}",
+        "",
+        File.binread(path),
+        "--#{boundary}--"
+      ].join("\r\n")
+
+      # Set up HTTP request
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+      
+      # Create POST request
+      request = Net::HTTP::Post.new(url.path)
+      request.body = body
+
+      request.initialize_http_header(headers.merge({
+        'Content-Type' => "multipart/form-data; boundary=#{boundary}",
+        'Content-Length' => request.body.length.to_s,
+      }))
+
+      # Send request
+      response = http.request(request)
+      raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
+
+      JSON.parse(response.body)
+    end
+
     private
 
     def headers
@@ -191,6 +251,12 @@ module Effective
 
     def api_url
       'https://api.helcim.com/v2' # No trailing /
+    end
+
+    def helcim_country(country_code)
+      return 'CAN' if country_code == 'CA' || country_code == 'CAD'
+      return 'USA' if country_code == 'US'
+      country_code
     end
 
     def with_retries(retries: (Rails.env.development? ? 0 : 3), wait: 2, &block)

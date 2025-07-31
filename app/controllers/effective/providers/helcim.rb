@@ -23,7 +23,9 @@ module Effective
         end
 
         # Verify the payment
-        payment = api.verify_payment(payment_payload)
+        payment = api.verify_payment(@order, payment_payload)
+
+        # If it's purchased
         purchased = api.purchased?(payment)
 
         if purchased == false

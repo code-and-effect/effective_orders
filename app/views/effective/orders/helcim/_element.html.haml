@@ -1,3 +1,5 @@
-.effective-helcim-checkout
-  #helcim-checkout-loading.text-center Loading...
+.effective-helcim-checkout.text-center
+  #helcim-checkout-loading.text-center
+
   #helcimCheckout
+    = link_to(order_checkout_label(:helcim), '#', id: 'helcim-checkout-button', class: 'btn btn-primary', 'data-disable-with' => 'Loading...')
