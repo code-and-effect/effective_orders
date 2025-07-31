@@ -25,7 +25,6 @@ module Effective
       get("/card-transactions/#{id}")
     end
 
-
     # Make the Preload Request
     # https://devdocs.helcim.com/reference/checkout-init
     def initialize_request(order)
@@ -126,6 +125,7 @@ module Effective
       (payment['status'] == 'APPROVED' && payment['type'] == 'purchase')
     end
 
+    # Considers the insecure payment_payload, requests the real transaction from Helcim and verifies it vs the order
     def verify_payment(order, payment_payload)
       raise('expected a payment_payload Hash') unless payment_payload.kind_of?(Hash)
 
