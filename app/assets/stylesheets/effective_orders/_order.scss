@@ -64,6 +64,11 @@ form.new_effective_order {
   #deluxeDelayedCheckout { height: 280px; overflow: hidden; }
 }
 
+.effective-helcim-checkout {
+  #helcimCheckout { height: 855px; overflow: hidden; }
+  iframe { margin-top: -380px; }
+}
+
 @media print {
   .effective-orders-page-content { display: none; }
 
