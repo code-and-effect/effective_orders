@@ -29,6 +29,9 @@
     - if EffectiveOrders.deluxe?
       = render partial: '/effective/orders/deluxe/form', locals: provider_locals
 
+    - if EffectiveOrders.helcim?
+      = render partial: '/effective/orders/helcim/form', locals: provider_locals
+
     - if EffectiveOrders.moneris?
       = render partial: '/effective/orders/moneris/form', locals: provider_locals
 

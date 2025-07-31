@@ -1,0 +1,22 @@
+- token = helcim_initialize_request(order)
+
+.card
+  .card-body
+    %h2 Checkout
+
+    .mt-4
+
+    = effective_form_with(scope: :helcim, url: effective_orders.helcim_order_path(order), data: { 'helcim-checkout': token }) do |f|
+      = f.hidden_field :purchased_url, value: purchased_url
+      = f.hidden_field :declined_url, value: declined_url
+
+      -# This is set by the helcim.js javascript
+      = f.hidden_field :payment
+
+      - if EffectiveOrders.helcim[:environment] == 'sandbox'
+        .alert.alert-info.mb-4
+          This is the #{Rails.env.upcase} SERVER.
+          %br
+          Use credit card number 4242 4242 4242 4242 with any future expiry and any CVC.
+
+      = render('effective/orders/helcim/element')

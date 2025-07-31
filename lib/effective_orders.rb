@@ -49,7 +49,7 @@ module EffectiveOrders
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message, :buyer_purchases_refund,
 
       # Payment processors. false or Hash
-      :cheque, :deluxe, :deluxe_delayed, :etransfer, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
+      :cheque, :deluxe, :deluxe_delayed, :etransfer, :helcim, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
   end
 
@@ -102,6 +102,10 @@ module EffectiveOrders
 
   def self.delayed?
     delayed_providers.present?
+  end
+
+  def self.helcim?
+    helcim.kind_of?(Hash)
   end
 
   def self.mark_as_paid?
@@ -164,6 +168,7 @@ module EffectiveOrders
       ('deluxe' if deluxe?),
       ('etransfer' if etransfer?),
       ('free' if free?),
+      ('helcim' if helcim?),
       ('moneris' if moneris?),
       ('moneris_checkout' if moneris_checkout?),
       ('paypal' if paypal?),
@@ -183,6 +188,7 @@ module EffectiveOrders
       ('credit card' if mark_as_paid?),
       ('deluxe' if deluxe?),
       ('etransfer' if etransfer?),
+      ('helcim' if helcim?),
       #('free' if free?),
       ('moneris' if moneris?),
       ('moneris_checkout' if moneris_checkout?),
@@ -206,7 +212,7 @@ module EffectiveOrders
   end
 
   def self.credit_card_payment_providers
-    ['credit card', 'deluxe', 'moneris', 'moneris_checkout', 'paypal', 'stripe']
+    ['credit card', 'deluxe', 'helcim', 'moneris', 'moneris_checkout', 'paypal', 'stripe']
   end
 
   def self.qb_sync?
@@ -330,6 +336,10 @@ module EffectiveOrders
     end
   end
 
+  def self.helcim_script_url
+    "https://secure.helcim.app/helcim-pay/services/start.js"
+  end
+
   def self.moneris_checkout_script_url
     case EffectiveOrders.moneris_checkout.fetch(:environment)
     when 'prod' then 'https://gateway.moneris.com/chktv2/js/chkt_v2.00.js'
@@ -344,6 +354,10 @@ module EffectiveOrders
     when 'qa' then 'https://gatewayt.moneris.com/chktv2/request/request.php'
     else raise('unexpected EffectiveOrders.moneris_checkout :environment key. Please check your config/initializers/effective_orders.rb file')
     end
+  end
+
+  def self.stripe_script_url
+    "https://js.stripe.com/v3/"
   end
 
   class SoldOutException < Exception; end

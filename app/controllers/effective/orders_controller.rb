@@ -9,6 +9,7 @@ module Effective
     include Providers::DeluxeDelayedPurchase
     include Providers::Etransfer
     include Providers::Free
+    include Providers::Helcim
     include Providers::MarkAsPaid
     include Providers::Moneris
     include Providers::MonerisCheckout

@@ -16,6 +16,7 @@ EffectiveOrders::Engine.routes.draw do
 
         post :etransfer
         post :free
+        post :helcim
         post :mark_as_paid
         post :moneris_checkout
         post :phone
