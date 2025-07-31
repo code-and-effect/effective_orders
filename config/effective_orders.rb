@@ -166,6 +166,16 @@ EffectiveOrders.setup do |config|
   #   success: 'Thank you! You have indicated that this order will be purchased by e-transfer. Please send us an e-transfer to "payments@example.com" with password "example" at your earliest convenience'
   # }
 
+  # Helcim
+  config.helcim = false
+
+  # config.helcim = {
+  #   environment: (Rails.env.production? ? 'production' : 'sandbox'),
+  #   api_token: '',
+  #   currency: 'CAD',
+  #   brand_color: '815AF0'  # 6-digit hex color without any # sign
+  # }
+
   # Moneris
   config.moneris = false
 

@@ -539,6 +539,10 @@ module Effective
       ((total || 0) / 100.0).to_f
     end
 
+    def tax_to_f
+      ((tax || 0) / 100.0).to_f
+    end
+
     def total_with_surcharge
       get_total_with_surcharge()
     end
@@ -1017,7 +1021,7 @@ module Effective
       # Normalize payment card
       card = case payment_card.to_s.downcase.gsub(' ', '').strip
         when '' then nil
-        when 'v', 'visa' then 'Visa'
+        when 'v', 'visa', 'vi' then 'Visa'
         when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
         when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
         when 'd', 'discover' then 'Discover'
@@ -1028,7 +1032,7 @@ module Effective
       if card == 'none' && payment['card_type'].present?
         card = case payment['card_type'].to_s.downcase.gsub(' ', '').strip
           when '' then nil
-          when 'v', 'visa' then 'Visa'
+          when 'v', 'visa', 'vi' then 'Visa'
           when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
           when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
           when 'd', 'discover' then 'Discover'

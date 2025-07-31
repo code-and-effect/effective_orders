@@ -50,6 +50,8 @@ module EffectiveOrdersHelper
       'Pay by E-transfer'
     when :free
       'Checkout Free'
+    when :helcim
+      'Pay by Credit Card'
     when :mark_as_paid
       'Admin: Mark as Paid'
     when :moneris
