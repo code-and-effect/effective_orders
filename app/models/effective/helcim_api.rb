@@ -5,16 +5,21 @@ module Effective
     # All required
     attr_accessor :environment
     attr_accessor :api_token
+    attr_accessor :partner_token
     attr_accessor :currency
     attr_accessor :brand_color
+    attr_accessor :fee_saver
 
     attr_accessor :read_timeout
+    attr_accessor :last_response
 
-    def initialize(environment: nil, api_token: nil, currency: nil, brand_color: nil)
-      self.environment = environment || EffectiveOrders.helcim.fetch(:environment)
-      self.api_token = api_token || EffectiveOrders.helcim.fetch(:api_token)
-      self.currency = currency || EffectiveOrders.helcim.fetch(:currency)
-      self.brand_color = brand_color || EffectiveOrders.helcim.fetch(:brand_color)
+    def initialize(environment: nil)
+      self.environment = EffectiveOrders.helcim.fetch(:environment)
+      self.api_token = EffectiveOrders.helcim.fetch(:api_token)
+      self.partner_token = EffectiveOrders.helcim.fetch(:partner_token)
+      self.currency = EffectiveOrders.helcim.fetch(:currency)
+      self.brand_color = EffectiveOrders.helcim.fetch(:brand_color)
+      self.fee_saver = EffectiveOrders.helcim.fetch(:fee_saver)
     end
 
     def health_check
@@ -31,10 +36,10 @@ module Effective
       params = {
         amount: ('%.2f' % order.total_to_f),
         currency: currency,
-        paymentMethod: 'cc',
         paymentType: 'purchase',   # purchase, preauth, verify
+        paymentMethod: (fee_saver ? 'cc-ach' : 'cc'),
+        hasConvenienceFee: (fee_saver ? 1 : 0),
         allowPartial: 0,
-        hasConvenienceFee: 0,
         taxAmount: ('%.2f' % order.tax_to_f if order.tax.to_i > 0),
         hideExistingPaymentDetails: 0,
         setAsDefaultPaymentMethod: 1,
@@ -176,6 +181,8 @@ module Effective
       http.read_timeout = (read_timeout || 30)
       http.use_ssl = true
 
+      self.last_response = nil
+
       result = with_retries do
         puts "[GET] #{uri}" if Rails.env.development?
 
@@ -184,6 +191,8 @@ module Effective
 
         response
       end
+
+      self.last_response = result
 
       JSON.parse(result.body)
     end
@@ -195,10 +204,14 @@ module Effective
       http.read_timeout = (read_timeout || 30)
       http.use_ssl = true
 
+      self.last_response = nil
+
       puts "[POST] #{uri} #{params}" if Rails.env.development?
 
       response = http.post(uri.path, params.to_json, headers)
       raise Exception.new("#{response.code} #{response.body}") unless response.code == '200'
+
+      self.last_response = response
 
       JSON.parse(response.body)
     end
@@ -246,7 +259,13 @@ module Effective
     private
 
     def headers
-      { "Accept": "application/json", "Content-Type": "application/json", 'api-token': api_token }
+      { 
+        "Accept": "application/json", 
+        "Content-Type": 
+        "application/json", 
+        'api-token': api_token,
+        'partner-token': partner_token.presence,
+      }.compact
     end
 
     def api_url

@@ -172,8 +172,10 @@ EffectiveOrders.setup do |config|
   # config.helcim = {
   #   environment: (Rails.env.production? ? 'production' : 'sandbox'),
   #   api_token: '',
+  #   partner_token: '',
   #   currency: 'CAD',
-  #   brand_color: '815AF0'  # 6-digit hex color without any # sign
+  #   brand_color: '815AF0',  # 6-digit hex color without any # sign
+  #   fee_saver: false
   # }
 
   # Moneris
