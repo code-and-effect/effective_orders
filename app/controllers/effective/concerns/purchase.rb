@@ -6,7 +6,10 @@ module Effective
       protected
 
       def admin_checkout?(payment_params)
-        (payment_params[:purchased_url] || payment_params[:deferred_url]).to_s.include?('/admin/')
+        return true if payment_params[:purchased_url].to_s.include?('/admin/')
+        return true if payment_params[:deferred_url].to_s.include?('/admin/')
+        return true if payment_params[:declined_url].to_s.include?('/admin/')
+        false
       end
 
       def order_purchased(payment:, provider:, card: 'none', email: true, skip_buyer_validations: false, purchased_url: nil)

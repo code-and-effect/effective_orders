@@ -6,4 +6,5 @@
     = render_resource_buttons(@resource, checkout: false)
 
   = card do
-    = render_checkout(@order, namespace: :admin, purchased_url: effective_orders.admin_order_path(@order), declined_url: effective_orders.admin_order_path(@order))
+    - url = effective_orders.admin_order_path(@order)
+    = render_checkout(@order, namespace: :admin, purchased_url: url, deferred_url: url, declined_url: url)
