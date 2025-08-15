@@ -464,8 +464,12 @@ module Effective
     end
 
     # For moneris and moneris_checkout. Just a unique value. Must be 50 characters or fewer or will raise moneris error.
-    def transaction_id
-      [to_param, billing_name.to_s.parameterize.first(20).presence, Time.zone.now.to_i, rand(1000..9999)].compact.join('-')
+    def transaction_id(short: false)
+      if short
+        [to_param, Time.zone.now.to_i].compact.join('-')
+      else
+        [to_param, billing_name.to_s.parameterize.first(20).presence, Time.zone.now.to_i, rand(1000..9999)].compact.join('-')
+      end
     end
 
     def billing_first_name
@@ -1038,6 +1042,7 @@ module Effective
         when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
         when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
         when 'd', 'discover' then 'Discover'
+        when 'ach' then 'ACH Payment'
         else payment_card.to_s
       end
 

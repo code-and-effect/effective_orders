@@ -64,15 +64,15 @@
           %td.price.tax-price= price_to_currency(order.tax)
 
         %tr.single-line
-          %th.amount-owing{colspan: 2} Amount owing before Credit Card Processing Fee
+          %th.amount-owing{colspan: 2} Total
           %td.price.amount-owing-price= price_to_currency(order.amount_owing)
 
         %tr
-          %th.surcharge{colspan: 2} Credit Card Processing Fee on #{price_to_currency(order.amount_owing)}
+          %th.surcharge{colspan: 2} Credit card surcharge
           %td.price.surcharge-price= price_to_currency(order.surcharge)
 
         %tr.double-line
-          %th.total{colspan: 2} Total amount charged to credit card
+          %th.total{colspan: 2} Credit card sale
           %td.price.total-price= price_to_currency(order.total)
 
       - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0)

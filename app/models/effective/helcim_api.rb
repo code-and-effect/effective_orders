@@ -49,7 +49,7 @@ module Effective
           brandColor: (brand_color || '815AF0')
         },
         invoiceRequest: {
-          invoiceNumber: '#' + order.to_param
+          invoiceNumber: '#' + order.transaction_id(short: true)
         },
         customerRequest: {
           contactName: order.billing_name,
@@ -143,7 +143,11 @@ module Effective
 
     def purchased?(payment)
       raise('expected a payment Hash') unless payment.kind_of?(Hash)
-      (payment['status'] == 'APPROVED' && payment['type'] == 'purchase')
+
+      return true if (payment['status'] == 'APPROVED' && payment['type'] == 'purchase') # CC
+      return true if (payment['bankToken'].present? && payment['type'] == 'WITHDRAWAL') # ACH
+
+      false
     end
 
     # Considers the insecure payment_payload, requests the real transaction from Helcim and verifies it vs the order
@@ -178,7 +182,7 @@ module Effective
       amount = payment['amount'].to_f
       amountAuthorized = order.total_to_f
 
-      surcharge = ((amount - amountAuthorized) * 100).to_i
+      surcharge = ((amount - amountAuthorized) * 100.0).round(0)
       raise('expected surcharge to be a positive number') if surcharge < 0
 
       order.update!(surcharge: surcharge)
@@ -186,7 +190,7 @@ module Effective
 
     def verify_payment!(order, payment)
       # Validate order ids
-      if payment['invoiceNumber'].to_s != '#' + order.to_param
+      unless payment['invoiceNumber'].to_s.start_with?('#' + order.to_param)
         raise("expected card-transaction invoiceNumber to be the same as the order to_param")
       end
 
@@ -203,6 +207,8 @@ module Effective
       # Return the authorization params merged with the card info
       last4 = payment['cardNumber'].to_s.last(4)
       card = payment['cardType'].to_s.downcase
+
+      card = 'ACH' if card.blank? && payment['bankToken'].present?
 
       active_card = "**** **** **** #{last4} #{card}" if last4.present?
 
