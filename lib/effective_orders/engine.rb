@@ -50,6 +50,5 @@ module EffectiveOrders
         end
       end
     end
-
   end
 end

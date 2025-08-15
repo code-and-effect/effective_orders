@@ -22,8 +22,14 @@ module Effective
           return order_not_processed(declined_url: helcim_params[:declined_url])
         end
 
-        # Verify the payment
-        payment = api.verify_payment(@order, payment_payload)
+        # Get the trust payment from Helcim
+        payment = api.get_payment(@order, payment_payload)
+
+        # If fee_saver? we assign any surcharge to the order
+        api.assign_order_charges!(@order, payment)
+
+        # Verify the payment. This will raise a 500 error if the payment is not valid
+        api.verify_payment!(@order, payment)
 
         # If it's purchased
         purchased = api.purchased?(payment)

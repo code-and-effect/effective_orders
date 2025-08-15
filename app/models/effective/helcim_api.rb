@@ -110,6 +110,22 @@ module Effective
     end
 
     # Decode the base64 encoded JSON object that was given from the form into a Hash
+    # {"transactionId"=>"38142732",
+    # "dateCreated"=>"2025-08-15 10:10:32",
+    # "cardBatchId"=>"4656307",
+    # "status"=>"APPROVED",
+    # "type"=>"purchase",
+    # "amount"=>"10.97",
+    # "currency"=>"CAD",
+    # "avsResponse"=>"X",
+    # "cvvResponse"=>"",
+    # "approvalCode"=>"T5E3ST",
+    # "cardToken"=>"gv5J-lJAQNqVjZ_HkXyisQ",
+    # "cardNumber"=>"4242424242",
+    # "cardHolderName"=>"Test User",
+    # "customerCode"=>"CST1022",
+    # "invoiceNumber"=>"#30",
+    # "warning"=>""}
     def decode_payment_payload(payload)
       return if payload.blank?
 
@@ -131,7 +147,7 @@ module Effective
     end
 
     # Considers the insecure payment_payload, requests the real transaction from Helcim and verifies it vs the order
-    def verify_payment(order, payment_payload)
+    def get_payment(order, payment_payload)
       raise('expected a payment_payload Hash') unless payment_payload.kind_of?(Hash)
 
       transaction_id = payment_payload['transactionId']
@@ -145,6 +161,30 @@ module Effective
         raise('expected the payment and payment_payload to have the same transactionId')
       end
 
+      # Normalize the card info and scrub out the card number
+      payment = payment.merge(card_info(payment)).except('cardNumber')
+
+      payment
+    end
+
+    # Adds the order.surcharge if this is a fee saver order
+    def assign_order_charges!(order, payment)
+      raise('expected an order') unless order.kind_of?(Effective::Order)
+      raise('expected a payment Hash') unless payment.kind_of?(Hash)
+
+      return unless EffectiveOrders.fee_saver?
+
+      # Validate amounts if purchased
+      amount = payment['amount'].to_f
+      amountAuthorized = order.total_to_f
+
+      surcharge = ((amount - amountAuthorized) * 100).to_i
+      raise('expected surcharge to be a positive number') if surcharge < 0
+
+      order.update!(surcharge: surcharge)
+    end
+
+    def verify_payment!(order, payment)
       # Validate order ids
       if payment['invoiceNumber'].to_s != '#' + order.to_param
         raise("expected card-transaction invoiceNumber to be the same as the order to_param")
@@ -154,9 +194,6 @@ module Effective
       if purchased?(payment) && (amount = payment['amount'].to_f) != (amountAuthorized = order.total_to_f)
         raise("expected card-transaction amount #{amount} to be the same as the amountAuthorized #{amountAuthorized} but it was not")
       end
-
-      # Normalize the card info and scrub out the card number
-      payment = payment.merge(card_info(payment)).except('cardNumber')
 
       payment
     end

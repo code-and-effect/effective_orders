@@ -243,6 +243,10 @@ module EffectiveOrders
     credit_card_surcharge_percent.to_f > 0.0
   end
 
+  def self.fee_saver?
+    helcim? && helcim[:fee_saver] == true
+  end
+
   def self.mailer_class
     mailer&.constantize || Effective::OrdersMailer
   end

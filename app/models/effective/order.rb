@@ -205,6 +205,13 @@ module Effective
       validates :delayed_payment_total, presence: true
     end
 
+    # helcim fee saver and our own surcharge cannot co-exist
+    validate do
+      if EffectiveOrders.fee_saver? && EffectiveOrders.surcharge?
+        errors.add(:base, "cannot use fee saver and surcharge at the same time")
+      end
+    end
+
     validate do
       if EffectiveOrders.organization_enabled?
         errors.add(:base, "must have a User or #{EffectiveOrders.organization_class_name || 'Organization'}") if user_id.blank? && organization_id.blank?
@@ -214,6 +221,8 @@ module Effective
     end
 
     # Price validations
+    validates :surcharge, numericality: { greater_than_or_equal_to: 0, allow_blank: true }, unless: -> { refund? }
+
     validates :subtotal, presence: true
     validates :total, presence: true, if: -> { EffectiveOrders.minimum_charge.to_i > 0 }
 
@@ -337,7 +346,7 @@ module Effective
       removed.each { |order_item| order_item.mark_for_destruction }
 
       # Make sure to reset stored aggregates
-      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, amount_owing: nil, surcharge_percent: nil, surcharge: nil, total: nil)
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, amount_owing: nil, surcharge_percent: nil, surcharge: nil, surcharge_tax: nil, total: nil)
 
       removed.length == 1 ? removed.first : removed
     end
@@ -381,7 +390,7 @@ module Effective
       end.compact
 
       # Make sure to reset stored aggregates
-      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, amount_owing: nil, surcharge_percent: nil, surcharge: nil, total: nil)
+      assign_attributes(subtotal: nil, tax_rate: nil, tax: nil, amount_owing: nil, surcharge_percent: nil, surcharge: nil, surcharge_tax: nil, total: nil)
 
       retval = cart_items.map do |item|
         order_items.build(
@@ -979,10 +988,10 @@ module Effective
     end
 
     def get_surcharge_percent
-      percent = EffectiveOrders.credit_card_surcharge_percent.to_f
-      return nil unless percent > 0.0
+      return nil unless EffectiveOrders.surcharge?
+      return nil if purchased_without_credit_card?
 
-      return 0.0 if purchased_without_credit_card?
+      percent = EffectiveOrders.credit_card_surcharge_percent.to_f
 
       if (percent > 10.0 || percent < 0.5)
         raise "expected EffectiveOrders.credit_card_surcharge to return a value between 10.0 (10%) and 0.5 (0.5%) or nil. Received #{percent}. Please return 2.5 for 2.5% surcharge."
@@ -992,21 +1001,25 @@ module Effective
     end
 
     def get_surcharge
-      return 0 unless surcharge_percent.present?
+      return nil unless EffectiveOrders.surcharge?
+      return nil unless surcharge_percent.present?
+
       ((subtotal + tax) * (surcharge_percent / 100.0)).round(0).to_i
     end
 
     def get_surcharge_tax
-      return 0 unless tax_rate.present?
-      (surcharge * (tax_rate / 100.0)).round(0).to_i
+      return nil unless EffectiveOrders.surcharge?
+      return nil unless tax_rate.present?
+
+      (surcharge.to_i * (tax_rate / 100.0)).round(0).to_i
     end
 
     def get_total
-      subtotal + tax + surcharge + surcharge_tax
+      subtotal + tax + surcharge.to_i + surcharge_tax.to_i
     end
 
     def get_total_with_surcharge
-      subtotal + tax + surcharge + surcharge_tax
+      subtotal + tax + surcharge.to_i + surcharge_tax.to_i
     end
 
     def get_total_without_surcharge
@@ -1119,10 +1132,15 @@ module Effective
     end
 
     def assign_order_charges
+      # We are assigning credit card surcharges ourselves
       # We only apply surcharge for credit card orders. But we have to display and calculate for non purchased orders
-      self.surcharge_percent = get_surcharge_percent()
-      self.surcharge = get_surcharge()
-      self.surcharge_tax = get_surcharge_tax()
+      if EffectiveOrders.surcharge?
+        raise('surcharge is not supported with fee saver') if EffectiveOrders.fee_saver?
+
+        self.surcharge_percent = get_surcharge_percent()
+        self.surcharge = get_surcharge()
+        self.surcharge_tax = get_surcharge_tax()
+      end
 
       # Subtotal + Tax + Surcharge + Surcharge Tax
       self.total = get_total()

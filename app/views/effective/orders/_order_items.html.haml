@@ -36,6 +36,7 @@
         -# Nothing to do. We can't display Tax, Total or Credit Card Surcharge (which is taxed) yet.
 
       - elsif order.tax_rate.present? && order.surcharge_percent.to_f > 0.0
+        - # We're adding the surcharge. EffectiveOrders.surcharge? mode
         %tr
           %th.tax{colspan: 2} #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
@@ -56,7 +57,26 @@
           %th.total{colspan: 2} Total amount charged to credit card
           %td.price.total-price= price_to_currency(order.total)
 
+      - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0) && order.surcharge.to_i > 0
+        - # The surcharge is being added by the payment processor. EffectiveOrders.fee_saver? mode
+        %tr
+          %th.tax{colspan: 2} #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
+          %td.price.tax-price= price_to_currency(order.tax)
+
+        %tr.single-line
+          %th.amount-owing{colspan: 2} Amount owing before Credit Card Processing Fee
+          %td.price.amount-owing-price= price_to_currency(order.amount_owing)
+
+        %tr
+          %th.surcharge{colspan: 2} Credit Card Processing Fee on #{price_to_currency(order.amount_owing)}
+          %td.price.surcharge-price= price_to_currency(order.surcharge)
+
+        %tr.double-line
+          %th.total{colspan: 2} Total amount charged to credit card
+          %td.price.total-price= price_to_currency(order.total)
+
       - elsif order.tax_rate.present? && !(order.surcharge_percent.to_f > 0.0)
+        - # No surcharges
         %tr
           %th.tax{colspan: 2} #{EffectiveOrders.tax_label} (#{rate_to_percentage(order.tax_rate)})
           %td.price.tax-price= price_to_currency(order.tax)
