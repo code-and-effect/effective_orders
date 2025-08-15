@@ -22,7 +22,7 @@ module Effective
           return order_not_processed(declined_url: helcim_params[:declined_url])
         end
 
-        # Get the trust payment from Helcim
+        # Get the trusted payment Hash from Helcim
         payment = api.get_payment(@order, payment_payload)
 
         # If fee_saver? we assign any surcharge to the order

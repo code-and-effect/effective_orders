@@ -32,7 +32,7 @@
 
   - elsif order.payment_provider == 'etransfer'
     %ul
-      %li Please submit your etransfer payment within 30 days of the invoice date.
+      %li Please submit your e-transfer payment within 30 days of the invoice date.
       %li You have until payment is received or until <strong>#{order.delayed_payment_date.strftime("%A, %B %e, %Y")}</strong>, whichever is first, to make changes and cancellations.
       %li A receipt will be sent after payment has been received.
 
@@ -65,7 +65,7 @@
       %li A receipt will be sent after payment has been received.
   - elsif order.payment_provider == 'etransfer'
     %ul
-      %li Please submit your etransfer within 30 days of the invoice date.
+      %li Please submit your e-transfer within 30 days of the invoice date.
       %li A receipt will be sent after payment has been received.
   - else
     - providers = EffectiveOrders.deferred_providers.to_sentence(last_word_connector: ', or', two_words_connector: ' or ')

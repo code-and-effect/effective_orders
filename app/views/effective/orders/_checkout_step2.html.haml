@@ -23,6 +23,11 @@
     = render partial: '/effective/orders/refund/form', locals: provider_locals
 
   - else
+    - if EffectiveOrders.fee_saver?
+      .alert.alert-info.mb-4
+        All credit card transations are subject to a surcharge.
+        To avoid this fee you can pay by #{['ACH', ('cheque' if EffectiveOrders.cheque?), ('e-transfer' if EffectiveOrders.etransfer?)].compact.to_sentence(last_word_connector: ' or ')}.
+
     - if EffectiveOrders.pretend?
       = render partial: '/effective/orders/pretend/form', locals: provider_locals
 
