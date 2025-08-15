@@ -125,7 +125,7 @@ GEM
       sprockets-rails
     erubi (1.10.0)
     execjs (2.10.0)
-    ffi (1.17.2-arm64-darwin)
+    ffi (1.17.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     haml (5.2.1)
