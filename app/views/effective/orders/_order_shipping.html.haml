@@ -11,7 +11,7 @@
         %td
           %div= order.billing_name
 
-          - if order.user.try(:membership).present?
+          - if order.user.try(:membership).try(:number).present?
             %div= "##{order.user.membership.number}"
 
           %div= mail_to(order.email)

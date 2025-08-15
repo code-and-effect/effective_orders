@@ -51,7 +51,7 @@ module EffectiveOrdersHelper
     when :free
       'Checkout Free'
     when :helcim
-      'Pay by Credit Card'
+      EffectiveOrders.fee_saver? ? 'Pay by Credit Card or ACH Payment' : 'Pay by Credit Card'
     when :mark_as_paid
       'Admin: Mark as Paid'
     when :moneris

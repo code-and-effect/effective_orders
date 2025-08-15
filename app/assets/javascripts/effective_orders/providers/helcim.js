@@ -20,14 +20,17 @@ function initializeHelcim() {
 
 function helcimPayIframeEvent(event) {
   if(event.data.eventName.startsWith('helcim-pay-js')) {
-    window.removeEventListener('message', helcimPayIframeEvent, false);
 
     if(event.data.eventStatus == 'HIDE') {
+      window.removeEventListener('message', helcimPayIframeEvent, false);
+
       let button = $('.effective-helcim-checkout').find('#helcim-checkout-button').get(0);
       Rails.enableElement(button)
     }
 
     if(event.data.eventStatus == 'SUCCESS') {
+      window.removeEventListener('message', helcimPayIframeEvent, false);
+
       let payment = btoa(event.data.eventMessage);
   
       let $form = $('form[data-helcim-checkout]').first();

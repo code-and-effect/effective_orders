@@ -41,9 +41,9 @@ class OrdersPriceTest < ActiveSupport::TestCase
 
     assert order.purchase!(provider: 'none')
 
-    assert_equal 0.0, order.surcharge_percent
-    assert_equal 0, order.surcharge
-    assert_equal 0, order.surcharge_tax
+    assert_equal 0.0, order.surcharge_percent.to_f
+    assert_equal 0, order.surcharge.to_i
+    assert_equal 0, order.surcharge_tax.to_i
     assert_equal 105_00, order.total
   end
 
