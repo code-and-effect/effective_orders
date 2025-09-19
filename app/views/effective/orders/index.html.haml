@@ -1,4 +1,7 @@
 = render 'layout' do
   %h1.effective-heading= @page_title
 
-  = render_datatable(@datatable)
+  - if @datatable.present?(self)
+    = render_simple_datatable(@datatable)
+  - else
+    %p You have no past orders. When you do, we'll show them here.
