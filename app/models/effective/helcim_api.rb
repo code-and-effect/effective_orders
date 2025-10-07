@@ -59,7 +59,7 @@ module Effective
 
       params[:invoiceRequest][:lineItems] = order.order_items.map do |item|
         {
-          description: item.name,
+          description: scrub(item.name),
           quantity: item.quantity,
           price: ('%.2f' % item.price_to_f),
           total: ('%.2f' % item.subtotal_to_f),
@@ -300,6 +300,13 @@ module Effective
     end
 
     private
+
+    def scrub(value)
+      return value unless value.kind_of?(String)
+
+      value = value.gsub("<br>", " ")
+      ActionController::Base.helpers.strip_tags(value)
+    end
 
     def headers
       { 
