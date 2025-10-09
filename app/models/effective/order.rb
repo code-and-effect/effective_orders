@@ -949,6 +949,10 @@ module Effective
       EffectiveOrders.send_email(:order_email_to_admin, self) if EffectiveOrders.send_order_receipt_to_admin
     end
 
+    def send_event_registrants_cancelled_email!
+      EffectiveOrders.send_email(:order_email, self, event_registrants_cancelled: true)
+    end
+
     def log_changes_formatted_value(attribute, value)
       "#{value.to_s.first(8)}...#{value.to_s.last(4)}" if attribute == :delayed_payment_intent && value.present?
     end

@@ -27,6 +27,7 @@ module Effective
     # The very first line of the email body
     def header
       if event.present? && order.purchased_or_deferred?
+        return "Your tickets have been cancelled" if event_registrants_cancelled?
         return "Your tickets have been confirmed!" if event_none_waitlisted?
         return "Some of your tickets have been confirmed, but some are on the waitlist" if event_some_waitlisted?
         return "Your tickets are on the waitlist!" if event_all_waitlisted?
@@ -43,6 +44,7 @@ module Effective
 
     def subject
       if event.present? && order.purchased_or_deferred?
+        return "Tickets cancelled - #{event}" if event_registrants_cancelled?
         return "Receipt - Order ##{order.to_param}" if order.purchased? && order.delayed_payment_date_past?
         return "Confirmation - #{event}" if event_none_waitlisted?
         return "Confirmation & Waitlist - #{event}" if event_some_waitlisted?
@@ -103,5 +105,10 @@ module Effective
       return false unless event_registrants.present?
       event_registrants.all? { |er| er.waitlisted_not_promoted? || er.archived? }
     end
+
+    def event_registrants_cancelled?
+      opts[:event_registrants_cancelled] == true
+    end
+
   end
 end

@@ -1,0 +1,9 @@
+.effective-order-items
+  - present_order_items = order.order_items.select(&:archived?)
+
+  %p
+    %strong Cancelled tickets
+
+  %ul
+    - present_order_items.each do |item|
+      %li= item.name.html_safe

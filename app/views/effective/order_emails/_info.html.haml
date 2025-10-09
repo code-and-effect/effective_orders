@@ -1,4 +1,14 @@
-- if order.delayed? && order.deferred? && order.delayed_payment_date_upcoming? 
+- if order_email.event_registrants_cancelled?
+  %hr
+
+  %p
+    %strong Important
+
+  %ul
+    %li No payments will be made for these tickets.
+    %li If payment has already been made, we will issue a refund.
+
+- elsif order.delayed? && order.deferred? && order.delayed_payment_date_upcoming? 
   %hr
 
   %p
