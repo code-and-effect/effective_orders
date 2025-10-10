@@ -1046,7 +1046,7 @@ module Effective
         when 'm', 'mc', 'master', 'mastercard' then 'MasterCard'
         when 'a', 'ax', 'american', 'americanexpress' then 'American Express'
         when 'd', 'discover' then 'Discover'
-        when 'ach' then 'ACH Payment'
+        when 'ach' then 'ACH'
         else payment_card.to_s
       end
 
