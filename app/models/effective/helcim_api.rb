@@ -26,8 +26,12 @@ module Effective
       get('/connection-test')
     end
 
-    def get_transaction(id)
+    def get_card_transaction(id)
       get("/card-transactions/#{id}")
+    end
+
+    def get_ach_transaction(id)
+      get("/ach/transactions/#{id}").try(:dig, 'transaction')
     end
 
     # Make the Preload Request
@@ -110,6 +114,7 @@ module Effective
     end
 
     # Decode the base64 encoded JSON object that was given from the form into a Hash
+    # For a card transaction
     # {"transactionId"=>"38142732",
     # "dateCreated"=>"2025-08-15 10:10:32",
     # "cardBatchId"=>"4656307",
@@ -126,9 +131,24 @@ module Effective
     # "customerCode"=>"CST1022",
     # "invoiceNumber"=>"#30",
     # "warning"=>""}
+    #
+    # For an ACH transaction
+    # {"transactionId"=>"12345",
+    # "batchId"=>"168333,
+    # "dateCreated"=>"2025-10-10 11:48:47",
+    # "statusAuth"=>"APPROVED",
+    # "statusClearing"=>"OPENED",
+    # "type"=>"WITHDRAWAL",
+    # "amount"=>"1.05",
+    # "currency"=>"CAD",
+    # "approvalCode"=>"1232435435",
+    # "bankAccountNumber"=>"4333434",
+    # "bankToken"=>"3748uzocio7348",
+    # "invoiceNumber"=>"#26-1760118464",
+    # "customerCode"=>"CST0000"}
+
     def decode_payment_payload(payload)
       return if payload.blank?
-
       raise('expected a string') unless payload.kind_of?(String)
 
       payment = (JSON.parse(Base64.decode64(payload)) rescue nil)
@@ -145,7 +165,7 @@ module Effective
       raise('expected a payment Hash') unless payment.kind_of?(Hash)
 
       return true if (payment['status'] == 'APPROVED' && payment['type'] == 'purchase') # CC
-      return true if (payment['bankToken'].present? && payment['type'] == 'WITHDRAWAL') # ACH
+      return true if (payment['bankAccountId'].present? && payment['responseMessage'].to_s.downcase == 'approved') # ACH
 
       false
     end
@@ -157,11 +177,15 @@ module Effective
       transaction_id = payment_payload['transactionId']
       raise('expected a payment_payload with a transactionId') unless transaction_id.present?
 
-      payment = get_transaction(transaction_id)
-      raise('expected an existing card-transaction payment') unless payment.kind_of?(Hash)
+      payment = if payment_payload['cardBatchId'].present? && payment_payload['type'].to_s.downcase == 'purchase'
+        get_card_transaction(transaction_id)
+      elsif payment_payload['batchId'].present? && payment_payload['type'].to_s.downcase == 'withdrawal'
+        get_ach_transaction(transaction_id)
+      end
 
-      # Compare the payment (trusted truth) and the payment_payload (untrusted)
-      if payment['transactionId'].to_s != payment_payload['transactionId'].to_s
+      raise("expected an existing card-transaction or ach-transaction payment with params #{payment_payload}") unless payment.kind_of?(Hash)
+
+      unless (payment['transactionId'].to_s == payment_payload['transactionId'].to_s) || (payment['id'].to_s == payment_payload['transactionId'].to_s)
         raise('expected the payment and payment_payload to have the same transactionId')
       end
 
@@ -190,7 +214,7 @@ module Effective
 
     def verify_payment!(order, payment)
       # Validate order ids
-      unless payment['invoiceNumber'].to_s.start_with?('#' + order.to_param)
+      if payment['invoiceNumber'].present? && !payment['invoiceNumber'].start_with?('#' + order.to_param)
         raise("expected card-transaction invoiceNumber to be the same as the order to_param")
       end
 
@@ -205,12 +229,12 @@ module Effective
     # Takes a payment_intent and returns the card info we can store
     def card_info(payment)
       # Return the authorization params merged with the card info
-      last4 = payment['cardNumber'].to_s.last(4)
+      last4 = (payment['cardNumber'] || payment['bankAccountL4L4']).to_s.last(4)
+
       card = payment['cardType'].to_s.downcase
+      card = 'ACH' if card.blank? && payment['bankAccountId'].present?
 
-      card = 'ACH' if card.blank? && payment['bankToken'].present?
-
-      active_card = "**** **** **** #{last4} #{card}" if last4.present?
+      active_card = "**** **** **** #{last4} #{card}".strip if last4.present?
 
       { 'active_card' => active_card, 'card' => card }.compact
     end
