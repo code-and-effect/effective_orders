@@ -14,8 +14,6 @@
               Your #{order.delayed_payment_method} will automatically be charged on #{order.delayed_payment_date.strftime("%A, %B %e, %Y")}.
 
             - else
-              Waiting for payment by #{order.payment_provider}.
-
               - if order.payment_provider == "etransfer" && (EffectiveOrders.etransfer[:success] rescue false).present?
                 = EffectiveOrders.etransfer[:success].html_safe
 
