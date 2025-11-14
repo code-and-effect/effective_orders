@@ -52,24 +52,11 @@ module Effective
         customStyling: {
           brandColor: (brand_color || '815AF0')
         },
-        invoiceRequest: {
-          invoiceNumber: '#' + order.transaction_id(short: true)
-        },
         customerRequest: {
           contactName: order.billing_name,
           businessName: order.organization.to_s.presence,
-        }.compact,
+        }.compact
       }.compact
-
-      params[:invoiceRequest][:lineItems] = order.order_items.map do |item|
-        {
-          description: scrub(item.name),
-          quantity: item.quantity,
-          price: ('%.2f' % item.price_to_f),
-          total: ('%.2f' % item.subtotal_to_f),
-          taxAmount: ('%.2f' % item.tax_to_f),
-        }
-      end
 
       address = order.billing_address
       country = helcim_country(address&.country_code)
@@ -214,7 +201,7 @@ module Effective
 
     def verify_payment!(order, payment)
       # Validate order ids
-      if payment['invoiceNumber'].present? && !payment['invoiceNumber'].start_with?('#' + order.to_param)
+      if payment['invoiceNumber'].to_s.start_with?('#') && !payment['invoiceNumber'].start_with?('#' + order.to_param)
         raise("expected card-transaction invoiceNumber to be the same as the order to_param")
       end
 
