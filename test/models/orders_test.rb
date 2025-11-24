@@ -64,4 +64,26 @@ class OrdersTest < ActiveSupport::TestCase
     assert_equal user, order.purchased_by
   end
 
+  test 'payment restrictions' do
+    order = create_effective_order!()
+    assert_equal 3_23, order.total
+
+    assert EffectiveOrders.payment_restriction(:cheque, order).blank?
+
+    with_payment_restrictions do
+      assert EffectiveOrders.payment_restriction(:cheque, order).present?
+    end
+  end
+
+  def with_payment_restrictions
+    value = EffectiveOrders.cheque
+
+    begin
+      EffectiveOrders.cheque = { max_price: 1_00 }
+      yield
+    ensure
+      EffectiveOrders.cheque = value
+    end
+  end
+
 end

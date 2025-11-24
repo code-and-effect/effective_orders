@@ -19,4 +19,7 @@
           %br
           Use credit card number 5555 5555 5555 4444 with any future expiry and any CVC.
 
-      = render('effective/orders/deluxe/element')
+      - if (restriction = EffectiveOrders.payment_restriction(:deluxe, order))
+        .alert.alert-warning #{order_checkout_label(:deluxe)} #{restriction}
+      - else
+        = render('effective/orders/deluxe/element')

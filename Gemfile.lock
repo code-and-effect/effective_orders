@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_orders (6.27.2)
+    effective_orders (6.29.3)
       coffee-rails
       effective_addresses
       effective_bootstrap
@@ -92,6 +92,7 @@ GEM
     coffee-script-source (1.12.2)
     concurrent-ruby (1.1.8)
     crass (1.0.6)
+    csv (3.3.5)
     date (3.3.4)
     devise (4.8.0)
       bcrypt (~> 3.0)
@@ -104,7 +105,7 @@ GEM
       coffee-rails
       effective_resources
       rails
-    effective_bootstrap (1.20.2)
+    effective_bootstrap (1.21.9)
       bootstrap (< 5)
       coffee-rails
       effective_resources
@@ -114,13 +115,14 @@ GEM
       rails (>= 4.0.0)
       sassc
       sprockets-rails
-    effective_datatables (4.33.1)
+    effective_datatables (4.35.3)
       coffee-rails
+      csv
       effective_bootstrap
       effective_resources
       rails (>= 3.2.0)
       sassc
-    effective_resources (2.31.1)
+    effective_resources (2.32.0)
       rails
       sprockets-rails
     erubi (1.10.0)

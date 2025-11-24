@@ -18,14 +18,17 @@
       -# This is set by the stripe.js javascript
       = f.hidden_field :payment_intent_id, required: true
 
-      - if stripe[:token_required]
-        %p Please enter your credit card information.
-        = render('effective/orders/stripe/element')
+      - if (restriction = EffectiveOrders.payment_restriction(:stripe, order))
+        .alert.alert-warning #{order_checkout_label(:stripe)} #{restriction}
       - else
-        %p Your existing card <strong>#{stripe[:active_card]}</strong> will be charged.
-
-        = collapse('Use this card instead...', class: 'update-stripe-payment-method') do
+        - if stripe[:token_required]
+          %p Please enter your credit card information.
           = render('effective/orders/stripe/element')
+        - else
+          %p Your existing card <strong>#{stripe[:active_card]}</strong> will be charged.
 
-      .mt-4.stripe-submit-button{style: 'display: none;'}
-        = f.submit order_checkout_label(:stripe), center: true, border: false
+          = collapse('Use this card instead...', class: 'update-stripe-payment-method') do
+            = render('effective/orders/stripe/element')
+
+        .mt-4.stripe-submit-button{style: 'display: none;'}
+          = f.submit order_checkout_label(:stripe), center: true, border: false
