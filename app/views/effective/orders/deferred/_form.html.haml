@@ -12,5 +12,8 @@
     - provider_locals = { order: order, deferred_url: deferred_url, declined_url: declined_url }
 
     .d-flex.justify-content-around
-      - EffectiveOrders.deferred_providers.each do |provider|
-        = render partial: "/effective/orders/#{provider}/form", locals: provider_locals
+      - EffectiveOrders.deferred_providers.map(&:to_sym).each do |provider|
+        - if (restriction = EffectiveOrders.payment_restriction(provider, order))
+          .alert.alert-warning.mx-2 #{order_checkout_label(provider)} #{restriction}
+        - else
+          = render partial: "/effective/orders/#{provider}/form", locals: provider_locals

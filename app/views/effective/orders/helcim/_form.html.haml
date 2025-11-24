@@ -19,4 +19,7 @@
           %br
           Use credit card number 4242 4242 4242 4242 with any future Expiry date and CVV 123
 
-      = render('effective/orders/helcim/element')
+      - if (restriction = EffectiveOrders.payment_restriction(:helcim, order))
+        .alert.alert-warning #{order_checkout_label(:helcim)} #{restriction}
+      - else
+        = render('effective/orders/helcim/element')

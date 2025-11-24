@@ -44,4 +44,7 @@
     = hidden_field_tag(:ship_postal_code, address.postal_code)
     = hidden_field_tag(:ship_country, address.country)
 
-  = f.submit order_checkout_label(:moneris), border: false
+  - if (restriction = EffectiveOrders.payment_restriction(:moneris, order))
+    .alert.alert-warning #{order_checkout_label(:moneris)} #{restriction}
+  - else
+    = f.submit order_checkout_label(:moneris), border: false

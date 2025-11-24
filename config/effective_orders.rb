@@ -128,6 +128,8 @@ EffectiveOrders.setup do |config|
   ## Payment Provider specific options ##
   #######################################
 
+  # You can add min_price and max_price to any payment provider configuration
+
   # Cheque
   # This is an deferred payment
   config.cheque = false
@@ -175,7 +177,9 @@ EffectiveOrders.setup do |config|
   #   partner_token: '',
   #   currency: 'CAD',
   #   brand_color: '815AF0',  # 6-digit hex color without any # sign
-  #   fee_saver: false
+  #   fee_saver: false,
+  #   min_price: nil,
+  #   max_price: nil
   # }
 
   # Moneris

@@ -259,6 +259,22 @@ module EffectiveOrders
     true
   end
 
+  def self.payment_restriction(payment_provider, order)
+    provider = try(payment_provider)
+    raise("Unexpected payment provider: #{payment_provider || 'nil'}") unless provider.kind_of?(Hash)
+
+    if (price = provider[:min_price]).present? && order.total < provider[:min_price]
+      return "is only available for invoices over $#{'%0.2f' % (price / 100.00)}"
+    end
+
+    if (price = provider[:max_price]).present? && order.total > provider[:max_price]
+      return "is only available for invoices up to $#{'%0.2f' % (price / 100.00)}"
+    end
+
+    # No restrictions
+    nil
+  end
+
   def self.with_stripe(&block)
     raise('expected stripe to be enabled') unless stripe?
 

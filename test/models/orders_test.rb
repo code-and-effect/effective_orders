@@ -63,5 +63,4 @@ class OrdersTest < ActiveSupport::TestCase
 
     assert_equal user, order.purchased_by
   end
-
 end

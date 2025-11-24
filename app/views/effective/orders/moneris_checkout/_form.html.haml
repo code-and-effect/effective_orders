@@ -11,7 +11,10 @@
       -# This is set by the moneris_checkout.js javascript
       = f.hidden_field :ticket
 
-      = render('effective/orders/moneris_checkout/element')
+      - if (restriction = EffectiveOrders.payment_restriction(:moneris_checkout, order))
+        .alert.alert-warning #{order_checkout_label(:moneris_checkout)} #{restriction}
+      - else
+        = render('effective/orders/moneris_checkout/element')
 
     .mt-3.text-center
       %em
