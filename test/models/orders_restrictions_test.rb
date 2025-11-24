@@ -8,11 +8,11 @@ class OrdersRestrictionsTest < ActiveSupport::TestCase
     assert EffectiveOrders.payment_restriction(:cheque, order).blank?
 
     with_max_price_payment_restrictions do
-      assert EffectiveOrders.payment_restriction(:cheque, order).include?('up to $3.00')
+      assert EffectiveOrders.payment_restriction(:cheque, order).to_s.include?('up to $3.00')
     end
 
     with_min_price_payment_restrictions do
-      assert EffectiveOrders.payment_restriction(:cheque, order).include?('over $4.00')
+      assert EffectiveOrders.payment_restriction(:cheque, order).to_s.include?('over $4.00')
     end
   end
 
