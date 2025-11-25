@@ -2,7 +2,7 @@
   = form.save 'Save', class: 'btn btn-primary'
   = form.save 'Duplicate', class: 'btn btn-primary'
 
-  - unless form.object.purchased?
+  - if EffectiveResources.authorized?(self, :checkout, form.object)
     = form.save 'Checkout', class: 'btn btn-success'
 
   = form.save 'Continue', class: 'btn btn-secondary'
