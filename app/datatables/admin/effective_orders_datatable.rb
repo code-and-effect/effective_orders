@@ -90,12 +90,10 @@ module Admin
         collection.where(id: Effective::OrderItem.where('name ILIKE ?', "%#{term}%").select('order_id'))
       end
 
-      if EffectiveOrders.quickbooks?
-        col(:qb_item_names) do |order|
-          order.order_items.map do |order_item|
-            content_tag(:div, order_item.qb_item_name, class: "col-resource_item")
-          end.join(' ').html_safe
-        end
+      col(:qb_item_names, visible: false) do |order|
+        order.order_items.map do |order_item|
+          content_tag(:div, order_item.try(:qb_item_name).to_s, class: "col-resource_item")
+        end.join(' ').html_safe
       end
 
       col :payment_method
