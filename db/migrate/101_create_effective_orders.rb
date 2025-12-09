@@ -23,6 +23,8 @@ class CreateEffectiveOrders < ActiveRecord::Migration[6.0]
       t.text      :note_internal
 
       t.string    :billing_name
+      t.string    :billing_first_name
+      t.string    :billing_last_name
       t.string    :email
       t.string    :cc
 

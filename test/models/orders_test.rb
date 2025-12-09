@@ -63,4 +63,21 @@ class OrdersTest < ActiveSupport::TestCase
 
     assert_equal user, order.purchased_by
   end
+
+  test 'qb_online_customer_display_name' do
+    order = create_effective_order!()
+
+    first_name = order.user.first_name
+    last_name = order.user.last_name
+
+    assert_equal order.user.to_s, order.billing_name
+
+    with_qb_online_customer_display_name_format(:first_last) do
+      assert_equal "#{first_name} #{last_name}", order.qb_online_customer_display_name
+    end
+
+    with_qb_online_customer_display_name_format(:last_first) do
+      assert_equal "#{last_name}, #{first_name}", order.qb_online_customer_display_name
+    end
+  end
 end
