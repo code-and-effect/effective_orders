@@ -42,7 +42,10 @@ module EffectiveOrders
       :send_subscription_trialing, :send_subscription_trial_expired,
       :send_refund_notification_to_admin,
 
-      # Quickbooks Online Sync Errors
+      # Quickbooks Online
+      :qb_online_sync_free_orders, :qb_online_customer_display_name_format,
+
+      # Quickbooks Online Error Emails
       :send_qb_online_sync_error, :qb_online_sync_error_recipients,
 
       # Features
@@ -221,6 +224,10 @@ module EffectiveOrders
 
   def self.qb_online?
     use_effective_qb_online && defined?(EffectiveQbOnline)
+  end
+
+  def self.qb_online_sync_free_orders?
+    qb_online_sync_free_orders != false
   end
 
   def self.use_item_names?

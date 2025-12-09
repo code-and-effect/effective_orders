@@ -77,7 +77,9 @@ module Effective
       note_to_buyer     :text   # From admin to buyer
       note_internal     :text   # Internal admin only
 
-      billing_name      :string   # name of buyer
+      billing_name       :string   # name of buyer
+      billing_first_name :string
+      billing_last_name  :string
       email             :string   # same as user.email
       cc                :string   # can be set by admin
 
@@ -429,6 +431,19 @@ module Effective
       [to_s, billing_name.presence, email.presence, total_to_s].compact.join(' - ')
     end
 
+    def qb_online_customer_display_name
+      return billing_name if billing_first_name.blank? || billing_last_name.blank?
+
+      case EffectiveOrders.qb_online_customer_display_name_format
+      when :first_last
+        "#{billing_first_name} #{billing_last_name}"
+      when :last_first
+        "#{billing_last_name}, #{billing_first_name}"
+      else
+        raise("invalid qb_online_customer_display_name_format: #{EffectiveOrders.qb_online_customer_display_name_format}")
+      end
+    end
+
     def label
       if refund? && purchased?
         'Refund'
@@ -470,14 +485,6 @@ module Effective
       else
         [to_param, billing_name.to_s.parameterize.first(20).presence, Time.zone.now.to_i, rand(1000..9999)].compact.join('-')
       end
-    end
-
-    def billing_first_name
-      billing_name.to_s.split(' ').first
-    end
-
-    def billing_last_name
-      Array(billing_name.to_s.split(' ')[1..-1]).join(' ')
     end
 
     def in_progress?
@@ -752,6 +759,7 @@ module Effective
     # We support two different Quickbooks synchronization gems: effective_qb_sync and effective_qb_online
     def sync_quickbooks!(skip:)
       if EffectiveOrders.qb_online?
+        skip ||= (EffectiveOrders.qb_online_sync_free_orders? if free?)
         skip ? EffectiveQbOnline.skip_order!(self) : EffectiveQbOnline.sync_order!(self)
       end
 
@@ -1084,7 +1092,13 @@ module Effective
 
     # Organization first
     def assign_billing_name
-      self.billing_name = billing_address.try(:full_name).presence || organization.to_s.presence || user.to_s.presence
+      owner = (organization || user)
+
+      assign_attributes(
+        billing_name: owner.to_s.presence,
+        billing_first_name: owner.try(:first_name).presence, 
+        billing_last_name: owner.try(:last_name).presence
+      )
     end
 
     # User first

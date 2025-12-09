@@ -102,6 +102,14 @@ ActiveRecord::Schema.define(version: 101) do
     t.index ["user_id"], name: "index_customers_on_user_id"
   end
 
+  create_table "item_names", force: :cascade do |t|
+    t.string "name"
+    t.boolean "archived", default: false
+    t.datetime "updated_at"
+    t.datetime "created_at"
+    t.index ["name", "archived"], name: "index_item_names_on_name_and_archived"
+  end
+
   create_table "order_items", force: :cascade do |t|
     t.integer "order_id"
     t.string "purchasable_type"
@@ -133,6 +141,8 @@ ActiveRecord::Schema.define(version: 101) do
     t.text "note_to_buyer"
     t.text "note_internal"
     t.string "billing_name"
+    t.string "billing_first_name"
+    t.string "billing_last_name"
     t.string "email"
     t.string "cc"
     t.text "payment"

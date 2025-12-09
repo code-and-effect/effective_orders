@@ -57,4 +57,15 @@ module EffectiveOrdersTestHelper
     assert false, message || "(assert_email) Expected email with #{expected} to have been delivered"
   end
 
+  def with_qb_online_customer_display_name_format(format, &block)
+    before = EffectiveOrders.qb_online_customer_display_name_format
+
+    begin
+      EffectiveOrders.qb_online_customer_display_name_format = format
+      yield
+    ensure
+      EffectiveOrders.qb_online_customer_display_name_format = before
+    end
+  end
+
 end

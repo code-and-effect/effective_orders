@@ -19,9 +19,12 @@ EffectiveOrders.setup do |config|
   # config.organization_enabled = false
   # config.organization_class_name = 'Example::Organization'
 
-  # Synchronize with Quickbooks
+  # Effective Quickbooks Synchronization
   config.use_effective_qb_sync = false
   config.use_effective_qb_online = false
+
+  config.qb_online_sync_free_orders = true
+  config.qb_online_customer_display_name_format = :first_last
 
   # Display the item name field on the orders#new screen
   config.use_item_names = true
@@ -56,7 +59,7 @@ EffectiveOrders.setup do |config|
   # Will be applied to all orders based off the after-tax total.
   # Use 2.4 for 2.4% or nil for none
   config.credit_card_surcharge_percent = nil
-  config.credit_card_surcharge_qb_item_name = 'Credit Card Surcharge'
+  config.credit_card_surcharge_qb_item_name = nil # 'Credit Card Surcharge'
 
   # Minimum Charge
   # Prevent orders less than this value from being purchased
