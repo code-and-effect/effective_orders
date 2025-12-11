@@ -935,6 +935,8 @@ module Effective
       if refund?
         EffectiveOrders.send_email(:refund_notification_to_admin, self) if EffectiveOrders.send_refund_notification_to_admin
       end
+
+      true
     end
 
     def send_payment_request?
@@ -947,6 +949,7 @@ module Effective
 
       EffectiveOrders.send_email(:order_email, self, payment_request: true)
       EffectiveOrders.send_email(:order_email_to_admin, self, payment_request: true) if EffectiveOrders.send_payment_request_to_admin
+      true
     end
 
     # Admin datatable action
@@ -955,6 +958,7 @@ module Effective
 
       EffectiveOrders.send_email(:order_email, self)
       EffectiveOrders.send_email(:order_email_to_admin, self) if EffectiveOrders.send_order_receipt_to_admin
+      true
     end
 
     def send_event_registrants_cancelled_email!
