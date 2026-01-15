@@ -760,7 +760,7 @@ module Effective
     def sync_quickbooks!(skip:)
       if EffectiveOrders.qb_online?
         skip = true if free? && !EffectiveOrders.qb_online_sync_free_orders?
-        skip ? EffectiveQbOnline.skip_order!(self) : EffectiveQbOnline.sync_order!(self, perform_now: perform_now)
+        skip ? EffectiveQbOnline.skip_order!(self) : EffectiveQbOnline.sync_order!(self)
       end
 
       if EffectiveOrders.qb_sync?
