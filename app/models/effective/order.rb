@@ -759,8 +759,8 @@ module Effective
     # We support two different Quickbooks synchronization gems: effective_qb_sync and effective_qb_online
     def sync_quickbooks!(skip:)
       if EffectiveOrders.qb_online?
-        skip ||= (EffectiveOrders.qb_online_sync_free_orders? if free?)
-        skip ? EffectiveQbOnline.skip_order!(self) : EffectiveQbOnline.sync_order!(self)
+        skip = true if free? && !EffectiveOrders.qb_online_sync_free_orders?
+        skip ? EffectiveQbOnline.skip_order!(self) : EffectiveQbOnline.sync_order!(self, perform_now: perform_now)
       end
 
       if EffectiveOrders.qb_sync?
