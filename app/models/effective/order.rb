@@ -969,6 +969,23 @@ module Effective
       "#{value.to_s.first(8)}...#{value.to_s.last(4)}" if attribute == :delayed_payment_intent && value.present?
     end
 
+    # Organization first
+    def assign_billing_name
+      owner = (organization || user)
+
+      assign_attributes(
+        billing_name: owner.to_s.presence,
+        billing_first_name: owner.try(:first_name).presence, 
+        billing_last_name: owner.try(:last_name).presence
+      )
+    end
+
+    # User first
+    def assign_billing_email
+      email = emails.first
+      assign_attributes(email: email) if email.present?
+    end
+
     protected
 
     def get_subtotal
@@ -1092,23 +1109,6 @@ module Effective
 
     def present_order_items
       order_items.reject { |oi| oi.marked_for_destruction? }
-    end
-
-    # Organization first
-    def assign_billing_name
-      owner = (organization || user)
-
-      assign_attributes(
-        billing_name: owner.to_s.presence,
-        billing_first_name: owner.try(:first_name).presence, 
-        billing_last_name: owner.try(:last_name).presence
-      )
-    end
-
-    # User first
-    def assign_billing_email
-      email = emails.first
-      assign_attributes(email: email) if email.present?
     end
 
     def assign_organization_address
