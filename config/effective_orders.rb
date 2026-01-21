@@ -56,9 +56,13 @@ EffectiveOrders.setup do |config|
   config.tax_label = "Tax"
 
   # Credit Card Surcharge
-  # Will be applied to all orders based off the after-tax total.
-  # Use 2.4 for 2.4% or nil for none
+  # Effective Orders will add a credit card surcharge to the order based off the after-tax total and charge the increased amount.
+  # Use 2.4 for 2.4% or nil for none.
+  # Cannot be used with Helcim EffectiveOrders.fee_saver? where the payment processor adds a convenience fee instead
   config.credit_card_surcharge_percent = nil
+
+  # This is the item name for Quickbooks Online
+  # Used for EffectiveOrders.surcharge? (there is a credit_card_surcharge_percentage above) and when EffectiveOrders.fee_saver? (there is a helcim fee saver order)
   config.credit_card_surcharge_qb_item_name = nil # 'Credit Card Surcharge'
 
   # Minimum Charge
