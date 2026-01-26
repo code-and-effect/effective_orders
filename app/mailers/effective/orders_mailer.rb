@@ -17,8 +17,13 @@ module Effective
 
       subject = subject_for(__method__, @order_email.subject, @order, opts)
       headers = headers_for(@order, opts)
+      cc = @order_email.cc
 
-      mail(to: @order_email.to, cc: @order_email.cc, subject: subject, **headers)
+      if @order_email.event_registrants_cancelled?
+        cc = (Array(mailer_admin) + Array(cc)).map(&:presence).compact
+      end
+
+      mail(to: @order_email.to, cc: cc, subject: subject, **headers)
     end
 
     # Same as above but sent to admin
