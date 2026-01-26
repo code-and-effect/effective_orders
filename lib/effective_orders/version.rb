@@ -1,3 +1,3 @@
 module EffectiveOrders
-  VERSION = '6.30.5'.freeze
+  VERSION = '6.30.6'.freeze
 end
