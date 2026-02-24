@@ -26,7 +26,6 @@ module Effective
 
     before_action :authenticate_user!, except: [:free, :paypal_postback, :moneris_postback, :pretend]
     before_action :set_page_title, except: [:show, :edit]
-    before_action :verify_recaptcha_step1!, only: [:create, :update]
 
     # If you want to use the Add to Cart -> Checkout flow
     # Add one or more items however you do.
@@ -54,7 +53,6 @@ module Effective
       @order.assign_attributes(checkout_params)
 
       if (@order.confirm! rescue false)
-        session[:recaptcha_verified_order_id] = @order.id if EffectiveOrders.recaptcha?
         redirect_to(effective_orders.order_path(@order))
       else
         flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
@@ -90,7 +88,6 @@ module Effective
       @order.assign_attributes(checkout_params)
 
       if (@order.confirm! rescue false)
-        session[:recaptcha_verified_order_id] = @order.id if EffectiveOrders.recaptcha?
         redirect_to(effective_orders.order_path(@order))
       else
         flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
@@ -147,23 +144,6 @@ module Effective
     end
 
     private
-
-    def verify_recaptcha_step1!
-      return unless EffectiveOrders.recaptcha?
-      return if EffectiveResources.authorized?(self, :admin, :effective_orders)
-
-      unless verify_recaptcha(secret_key: EffectiveOrders.recaptcha_secret_key)
-        flash.now[:danger] = 'Verification failed. Please try again.'
-
-        @order = if params[:id].present?
-          Effective::Order.deep.was_not_purchased.find(params[:id])
-        else
-          Effective::Order.deep.new(view_context.current_cart)
-        end
-
-        render(params[:id].present? ? :edit : :new) and return
-      end
-    end
 
     # StrongParameters
     def checkout_params
