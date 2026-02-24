@@ -4,6 +4,7 @@
 - if recaptcha_enabled && !recaptcha_verified
   .effective-order-recaptcha-gate.text-center.py-4
     = form_tag(effective_orders.verify_recaptcha_order_path(order), method: :post) do
+      = hidden_field_tag :redirect_url, request.path
       = invisible_recaptcha_tags(ui: :button, text: 'Proceed to Payment', class: 'btn btn-primary btn-lg', site_key: EffectiveOrders.recaptcha_site_key)
 - else
   - # Show this if I'm on the effective orders checkout screen. But not on a rendered order.
