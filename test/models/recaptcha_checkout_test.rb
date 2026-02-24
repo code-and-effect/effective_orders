@@ -34,7 +34,7 @@ class RecaptchaCheckoutTest < ActionDispatch::IntegrationTest
   test 'pretend purchase blocked without recaptcha session when not admin' do
     order = create_confirmed_order!
 
-    enable_recaptcha_with_non_admin do
+    enable_recaptcha do
       post effective_orders.pretend_order_path(order), params: { pretend: { purchased_url: '', declined_url: '' } }
       assert_response :redirect
       assert_match /orders\/#{order.to_param}/, response.location
@@ -45,7 +45,7 @@ class RecaptchaCheckoutTest < ActionDispatch::IntegrationTest
   test 'pretend purchase allowed with recaptcha session when not admin' do
     order = create_confirmed_order!
 
-    enable_recaptcha_with_non_admin do
+    enable_recaptcha do
       set_recaptcha_session(order)
 
       post effective_orders.pretend_order_path(order), params: { pretend: { purchased_url: '', declined_url: '' } }
@@ -54,24 +54,10 @@ class RecaptchaCheckoutTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'pretend purchase allowed for admin even without recaptcha session' do
-    order = create_confirmed_order!
-
-    # Admin bypass: EffectiveResources.authorized?(self, :admin, :effective_orders) returns true
-    # This is the default in the dummy app since authorize! always returns true
-    with_recaptcha({ site_key: 'sk', secret_key: 'sec' }) do
-      ensure_recaptcha_defined do
-        post effective_orders.pretend_order_path(order), params: { pretend: { purchased_url: '', declined_url: '' } }
-        assert_response :redirect
-        assert_match /purchased/, response.location
-      end
-    end
-  end
-
   test 'session cleared after purchase' do
     order = create_confirmed_order!
 
-    enable_recaptcha_with_non_admin do
+    enable_recaptcha do
       set_recaptcha_session(order)
 
       post effective_orders.pretend_order_path(order), params: { pretend: { purchased_url: '', declined_url: '' } }
@@ -85,7 +71,7 @@ class RecaptchaCheckoutTest < ActionDispatch::IntegrationTest
   test 'verify_recaptcha_action sets session on success' do
     order = create_confirmed_order!
 
-    enable_recaptcha_with_non_admin do
+    enable_recaptcha do
       stub_verify_recaptcha(true) do
         post effective_orders.verify_recaptcha_order_path(order)
         assert_response :redirect
@@ -98,7 +84,7 @@ class RecaptchaCheckoutTest < ActionDispatch::IntegrationTest
   test 'verify_recaptcha_action redirects with error on failure' do
     order = create_confirmed_order!
 
-    enable_recaptcha_with_non_admin do
+    enable_recaptcha do
       stub_verify_recaptcha(false) do
         post effective_orders.verify_recaptcha_order_path(order)
         assert_response :redirect
@@ -126,21 +112,10 @@ class RecaptchaCheckoutTest < ActionDispatch::IntegrationTest
     Object.send(:remove_const, :Recaptcha) if !was_defined && defined?(::Recaptcha) && ::Recaptcha == RecaptchaCheckoutStub
   end
 
-  def enable_recaptcha_with_non_admin(&block)
+  def enable_recaptcha(&block)
     with_recaptcha({ site_key: 'test_site_key', secret_key: 'test_secret_key' }) do
       ensure_recaptcha_defined do
-        # Override EffectiveResources.authorized? to return false for :admin check
-        # so verify_recaptcha_checkout! doesn't skip via admin bypass
-        original_method = EffectiveResources.method(:authorized?)
-
-        EffectiveResources.define_singleton_method(:authorized?) do |controller, action, resource|
-          return false if action == :admin && resource == :effective_orders
-          original_method.call(controller, action, resource)
-        end
-
         yield
-      ensure
-        EffectiveResources.define_singleton_method(:authorized?, original_method)
       end
     end
   end

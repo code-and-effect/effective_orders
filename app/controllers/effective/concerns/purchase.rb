@@ -108,7 +108,6 @@ module Effective
 
       def verify_recaptcha_checkout!
         return unless EffectiveOrders.recaptcha?
-        return if EffectiveResources.authorized?(self, :admin, :effective_orders)
 
         unless session[:recaptcha_verified_order_id].to_s == params[:id].to_s
           flash[:danger] = 'Please complete the verification to proceed with payment.'
