@@ -17,6 +17,7 @@ module Effective
     include Providers::Phone
     include Providers::Pretend
     include Providers::Refund
+    include Providers::Recaptcha
     include Providers::Stripe
 
     if (config = EffectiveOrders.layout)

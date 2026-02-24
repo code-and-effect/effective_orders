@@ -89,3 +89,4 @@ this.StripeForm ||= class StripeForm
 $ -> (new StripeForm()).initialize()
 $(document).on 'turbolinks:load', -> (new StripeForm()).initialize()
 $(document).on 'turbolinks:before-cache', -> (new StripeForm()).destroy()
+

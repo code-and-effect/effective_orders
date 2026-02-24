@@ -1,63 +1,71 @@
-- # Show this if I'm on the effective orders checkout screen. But not on a rendered order.
-- if order.persisted? && order.user == current_user && request.path.to_s.start_with?(effective_orders.order_path(order))
-  .effective-order-change-items
-    = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow
+- recaptcha_enabled = EffectiveOrders.recaptcha? && order.user == current_user
+- recaptcha_verified = session[:recaptcha_verified_order_id].to_s == order.id.to_s
 
-- unless local_assigns[:skip_order]
-  = render('/effective/orders/order', order: order)
+- if recaptcha_enabled && !recaptcha_verified
+  .effective-order-recaptcha-gate.text-center.py-4
+    = form_tag(effective_orders.verify_recaptcha_order_path(order), method: :post) do
+      = invisible_recaptcha_tags(ui: :button, text: 'Proceed to Payment', class: 'btn btn-primary btn-lg', site_key: EffectiveOrders.recaptcha_site_key)
+- else
+  - # Show this if I'm on the effective orders checkout screen. But not on a rendered order.
+  - if order.persisted? && order.user == current_user && request.path.to_s.start_with?(effective_orders.order_path(order))
+    .effective-order-change-items
+      = link_to 'Change Addresses', effective_orders.edit_order_path(order), rel: :nofollow
 
-.effective-order-purchase-actions
-  - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url }
+  .effective-order-purchase-actions
+    - provider_locals = { order: order, purchased_url: purchased_url, declined_url: declined_url, deferred_url: deferred_url }
 
-  - if EffectiveOrders.delayed? && order.delayed_payment_date_upcoming?
-    = render partial: '/effective/orders/delayed/form', locals: provider_locals
+    - if EffectiveOrders.delayed? && order.delayed_payment_date_upcoming?
+      = render partial: '/effective/orders/delayed/form', locals: provider_locals
 
-    - if EffectiveOrders.deferred? && !controller_path.include?('admin/') && !local_assigns[:skip_deferred]
-      %p.my-4.text-center - or -
-      = render partial: '/effective/orders/deferred/form', locals: provider_locals
+      - if EffectiveOrders.deferred? && !controller_path.include?('admin/') && !local_assigns[:skip_deferred]
+        %p.my-4.text-center - or -
+        = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
-  - elsif EffectiveOrders.free? && order.free?
-    = render partial: '/effective/orders/free/form', locals: provider_locals
+    - elsif EffectiveOrders.free? && order.free?
+      = render partial: '/effective/orders/free/form', locals: provider_locals
 
-  - elsif EffectiveOrders.refund? && order.refund?
-    = render partial: '/effective/orders/refund/form', locals: provider_locals
+    - elsif EffectiveOrders.refund? && order.refund?
+      = render partial: '/effective/orders/refund/form', locals: provider_locals
 
-  - else
-    - if EffectiveOrders.fee_saver?
-      .alert.alert-info.mb-4
-        All credit card transations are subject to a surcharge.
-        To avoid this fee you can pay by #{['ACH', ('cheque' if EffectiveOrders.cheque?), ('e-transfer' if EffectiveOrders.etransfer?)].compact.to_sentence(last_word_connector: ' or ')}.
+    - else
+      - if EffectiveOrders.fee_saver?
+        .alert.alert-info.mb-4
+          All credit card transations are subject to a surcharge.
+          To avoid this fee you can pay by #{['ACH', ('cheque' if EffectiveOrders.cheque?), ('e-transfer' if EffectiveOrders.etransfer?)].compact.to_sentence(last_word_connector: ' or ')}.
 
-    - if EffectiveOrders.pretend?
-      = render partial: '/effective/orders/pretend/form', locals: provider_locals
+      - if EffectiveOrders.pretend?
+        = render partial: '/effective/orders/pretend/form', locals: provider_locals
 
-    - if EffectiveOrders.deluxe?
-      = render partial: '/effective/orders/deluxe/form', locals: provider_locals
+      - if EffectiveOrders.deluxe?
+        = render partial: '/effective/orders/deluxe/form', locals: provider_locals
 
-    - if EffectiveOrders.helcim?
-      = render partial: '/effective/orders/helcim/form', locals: provider_locals
+      - if EffectiveOrders.helcim?
+        = render partial: '/effective/orders/helcim/form', locals: provider_locals
 
-    - if EffectiveOrders.moneris?
-      = render partial: '/effective/orders/moneris/form', locals: provider_locals
+      - if EffectiveOrders.moneris?
+        = render partial: '/effective/orders/moneris/form', locals: provider_locals
 
-    - if EffectiveOrders.moneris_checkout?
-      = render partial: '/effective/orders/moneris_checkout/form', locals: provider_locals
+      - if EffectiveOrders.moneris_checkout?
+        = render partial: '/effective/orders/moneris_checkout/form', locals: provider_locals
 
-    - if EffectiveOrders.paypal?
-      = render partial: '/effective/orders/paypal/form', locals: provider_locals
+      - if EffectiveOrders.paypal?
+        = render partial: '/effective/orders/paypal/form', locals: provider_locals
 
-    - if EffectiveOrders.stripe?
-      = render partial: '/effective/orders/stripe/form', locals: provider_locals
+      - if EffectiveOrders.stripe?
+        = render partial: '/effective/orders/stripe/form', locals: provider_locals
 
-    - if EffectiveOrders.deferred? && !controller_path.include?('admin/') && !local_assigns[:skip_deferred]
-      %p.my-4.text-center - or -
-      = render partial: '/effective/orders/deferred/form', locals: provider_locals
+      - if EffectiveOrders.deferred? && !controller_path.include?('admin/') && !local_assigns[:skip_deferred]
+        %p.my-4.text-center - or -
+        = render partial: '/effective/orders/deferred/form', locals: provider_locals
 
-  - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && controller_path.include?('admin/')
-    - if EffectiveOrders.delayed? && order.delayed? && order.deferred? && order.delayed_payment_provider?
-      .effective-order-admin-purchase-actions
-        = render partial: '/effective/orders/delayed/form_purchase', locals: provider_locals
+    - if EffectiveResources.authorized?(controller, :admin, :effective_orders) && controller_path.include?('admin/')
+      - if EffectiveOrders.delayed? && order.delayed? && order.deferred? && order.delayed_payment_provider?
+        .effective-order-admin-purchase-actions
+          = render partial: '/effective/orders/delayed/form_purchase', locals: provider_locals
 
-    - if EffectiveOrders.mark_as_paid?
-      .effective-order-admin-purchase-actions
-        = render partial: '/effective/orders/mark_as_paid/form', locals: provider_locals
+      - if EffectiveOrders.mark_as_paid?
+        .effective-order-admin-purchase-actions
+          = render partial: '/effective/orders/mark_as_paid/form', locals: provider_locals
+
+  - unless local_assigns[:skip_order]
+    = render('/effective/orders/order', order: order)

@@ -23,6 +23,8 @@ EffectiveOrders::Engine.routes.draw do
         post :pretend
         post :refund
         post :stripe
+
+        post :verify_recaptcha, action: :verify_recaptcha_action
       end
 
       collection do

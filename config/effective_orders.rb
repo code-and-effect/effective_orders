@@ -323,6 +323,12 @@ EffectiveOrders.setup do |config|
   #   ignore_livemode: false        # Use this to run test mode in production. careful.
   # }
 
+  # reCAPTCHA v2 Invisible — gate checkout with verification
+  # Requires the recaptcha gem and Google reCAPTCHA v2 Invisible keys
+  config.recaptcha = false
+  # config.recaptcha = true                                    # Use global Recaptcha.configure keys
+  # config.recaptcha = { site_key: '', secret_key: '' }        # Use separate invisible keys
+
   # Trial
   config.trial = false
 
