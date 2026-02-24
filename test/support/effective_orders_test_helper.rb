@@ -68,4 +68,15 @@ module EffectiveOrdersTestHelper
     end
   end
 
+  def with_recaptcha(value, &block)
+    before = EffectiveOrders.recaptcha
+
+    begin
+      EffectiveOrders.recaptcha = value
+      yield
+    ensure
+      EffectiveOrders.recaptcha = before
+    end
+  end
+
 end
