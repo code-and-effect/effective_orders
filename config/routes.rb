@@ -7,6 +7,7 @@ EffectiveOrders::Engine.routes.draw do
         get :purchased
         get :deferred
         get :declined
+        post :recaptcha
         post :send_order_email
 
         post :cheque
@@ -24,7 +25,6 @@ EffectiveOrders::Engine.routes.draw do
         post :refund
         post :stripe
 
-        post :verify_recaptcha, action: :verify_recaptcha_action
       end
 
       collection do

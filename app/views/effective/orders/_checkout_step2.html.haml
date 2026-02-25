@@ -2,19 +2,14 @@
 - recaptcha_verified = session[:recaptcha_verified_order_id].to_s == order.id.to_s
 
 - if recaptcha_enabled && !recaptcha_verified
-
   .card
     .card-body
       %h2 Checkout
       .effective-order-recaptcha-gate.text-center
-        = form_tag(effective_orders.verify_recaptcha_order_path(order), method: :post, id: 'recaptcha-gate-form') do
+        = form_tag(effective_orders.recaptcha_order_path(order), method: :post, id: 'recaptcha-gate-form') do
           = hidden_field_tag :redirect_url, request.path
           .d-flex.justify-content-center
-            = recaptcha_tags(site_key: EffectiveOrders.recaptcha_site_key, callback: 'onRecaptchaVerified')
-        :javascript
-          function onRecaptchaVerified() {
-            document.getElementById('recaptcha-gate-form').submit();
-          }
+            = recaptcha_tags(site_key: EffectiveOrders.recaptcha_site_key, callback: 'onEffectiveOrdersRecaptchaVerified')
 
 - else
   - # Show this if I'm on the effective orders checkout screen. But not on a rendered order.

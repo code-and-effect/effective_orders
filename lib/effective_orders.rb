@@ -48,14 +48,14 @@ module EffectiveOrders
       # Quickbooks Online Error Emails
       :send_qb_online_sync_error, :qb_online_sync_error_recipients,
 
+      # reCAPTCHA. Hash|true|false
+      :recaptcha,
+
       # Features
       :free_enabled, :mark_as_paid_enabled, :pretend_enabled, :pretend_message, :buyer_purchases_refund,
 
       # Payment processors. false or Hash
-      :cheque, :deluxe, :deluxe_delayed, :etransfer, :helcim, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial,
-
-      # reCAPTCHA
-      :recaptcha
+      :cheque, :deluxe, :deluxe_delayed, :etransfer, :helcim, :moneris, :moneris_checkout, :paypal, :phone, :refund, :stripe, :subscriptions, :trial
     ]
   end
 
@@ -258,15 +258,23 @@ module EffectiveOrders
   end
 
   def self.recaptcha?
-    !!recaptcha && defined?(::Recaptcha)
+    recaptcha != false && defined?(::Recaptcha)
   end
 
   def self.recaptcha_site_key
-    recaptcha.kind_of?(Hash) ? recaptcha[:site_key] : ::Recaptcha.configuration.site_key!
+    if recaptcha.kind_of?(Hash)
+      recaptcha[:site_key]
+    elsif recaptcha == true
+      ::Recaptcha.configuration.site_key!
+    end
   end
 
   def self.recaptcha_secret_key
-    recaptcha.kind_of?(Hash) ? recaptcha[:secret_key] : ::Recaptcha.configuration.secret_key!
+    if recaptcha.kind_of?(Hash)
+      recaptcha[:secret_key]
+    elsif recaptcha == true
+      ::Recaptcha.configuration.secret_key!
+    end
   end
 
   def self.mailer_class

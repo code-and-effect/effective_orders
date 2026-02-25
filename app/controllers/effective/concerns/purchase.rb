@@ -3,14 +3,6 @@ module Effective
     module Purchase
       extend ActiveSupport::Concern
 
-      included do
-        before_action :verify_recaptcha_checkout!, only: [
-          :cheque, :deluxe, :deluxe_delayed, :etransfer, :free,
-          :helcim, :mark_as_paid, :moneris_checkout, :phone,
-          :pretend, :refund, :stripe
-        ]
-      end
-
       protected
 
       def admin_checkout?(payment_params)
@@ -102,17 +94,6 @@ module Effective
 
         declined_url = effective_orders.declined_order_path(':id') if declined_url.blank?
         redirect_to declined_url.gsub(':id', @order.to_param.to_s)
-      end
-
-      private
-
-      def verify_recaptcha_checkout!
-        return unless EffectiveOrders.recaptcha?
-
-        unless session[:recaptcha_verified_order_id].to_s == params[:id].to_s
-          flash[:danger] = 'Please complete the verification to proceed with payment.'
-          redirect_to effective_orders.order_path(params[:id])
-        end
       end
 
     end
