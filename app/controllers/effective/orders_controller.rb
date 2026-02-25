@@ -149,6 +149,7 @@ module Effective
 
     def recaptcha
       raise('recaptcha is not enabled') unless EffectiveOrders.recaptcha?
+      raise('recaptcha secret key is not set') unless EffectiveOrders.recaptcha_secret_key.present?
 
       @order = Effective::Order.not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :update, @order)

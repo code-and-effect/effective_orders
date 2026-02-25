@@ -24,7 +24,6 @@ EffectiveOrders::Engine.routes.draw do
         post :pretend
         post :refund
         post :stripe
-
       end
 
       collection do

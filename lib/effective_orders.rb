@@ -258,7 +258,7 @@ module EffectiveOrders
   end
 
   def self.recaptcha?
-    recaptcha != false && defined?(::Recaptcha)
+    (recaptcha.kind_of?(Hash) || recaptcha == true) && defined?(::Recaptcha)
   end
 
   def self.recaptcha_site_key
