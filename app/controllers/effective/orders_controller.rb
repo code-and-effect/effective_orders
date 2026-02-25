@@ -186,7 +186,7 @@ module Effective
 
       unless session[:recaptcha_verified_order_id].to_s == params[:id].to_s
         flash[:danger] = 'Please complete the verification to proceed with payment.'
-        redirect_to effective_orders.order_path(params[:id])
+        redirect_back(fallback_location: effective_orders.order_path(params[:id]))
       end
     end
 
