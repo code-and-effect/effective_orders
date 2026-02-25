@@ -90,6 +90,12 @@ EffectiveOrders.setup do |config|
   config.pretend_enabled = !Rails.env.production?
   config.pretend_message = '* payment information is not required to process this order at this time.'
 
+  # reCAPTCHA v2 Checkbox — gate checkout with verification
+  # Requires the recaptcha gem and Google reCAPTCHA v2 Checkbox keys
+  config.recaptcha = false
+  # config.recaptcha = true                                    # Use global Recaptcha.configure keys
+  # config.recaptcha = { site_key: '', secret_key: '' }        # Use separate invisible keys
+
   # Mailer Settings
   # Please see config/initializers/effective_resources.rb for default effective_* gem mailer settings
   #

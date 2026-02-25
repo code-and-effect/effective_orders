@@ -73,3 +73,4 @@ this.MonerisCheckoutForm ||= class MonerisCheckoutForm
 
 $ -> (new MonerisCheckoutForm()).initialize()
 $(document).on 'turbolinks:load', -> (new MonerisCheckoutForm()).initialize()
+

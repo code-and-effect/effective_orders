@@ -7,6 +7,7 @@ EffectiveOrders::Engine.routes.draw do
         get :purchased
         get :deferred
         get :declined
+        post :recaptcha
         post :send_order_email
 
         post :cheque

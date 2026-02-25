@@ -30,3 +30,4 @@ function initializeDeluxe() {
 
 $(document).ready(function() { initializeDeluxe() });
 $(document).on('turbolinks:load', function() { initializeDeluxe() });
+

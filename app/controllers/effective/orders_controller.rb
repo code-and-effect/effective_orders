@@ -3,6 +3,7 @@ module Effective
     include Effective::CrudController
     include Concerns::Purchase
 
+    # Update the verify_recaptcha_checkout! method if we add another payment provider here
     include Providers::Cheque
     include Providers::Deluxe
     include Providers::DeluxeDelayed
@@ -25,6 +26,10 @@ module Effective
 
     before_action :authenticate_user!, except: [:free, :paypal_postback, :moneris_postback, :pretend]
     before_action :set_page_title, except: [:show, :edit]
+
+    before_action :verify_recaptcha_checkout!, only: [
+      :cheque, :deluxe, :deluxe_delayed, :etransfer, :free, :helcim, :mark_as_paid, :moneris_checkout, :phone, :pretend, :refund, :stripe
+    ]
 
     # If you want to use the Add to Cart -> Checkout flow
     # Add one or more items however you do.
@@ -142,6 +147,24 @@ module Effective
       end
     end
 
+    def recaptcha
+      raise('recaptcha is not enabled') unless EffectiveOrders.recaptcha?
+      raise('recaptcha secret key is not set') unless EffectiveOrders.recaptcha_secret_key.present?
+
+      @order = Effective::Order.not_purchased.find(params[:id])
+      EffectiveResources.authorize!(self, :update, @order)
+
+      redirect_url = params[:redirect_url].presence || effective_orders.order_path(@order)
+
+      if verify_recaptcha(secret_key: EffectiveOrders.recaptcha_secret_key)
+        session[:recaptcha_verified_order_id] = @order.id
+        redirect_to redirect_url
+      else
+        flash[:danger] = 'Verification failed. Please try again.'
+        redirect_to redirect_url
+      end
+    end
+
     private
 
     # StrongParameters
@@ -156,6 +179,15 @@ module Effective
         when 'declined'     ; 'Payment Declined'
         when 'deferred'     ; 'Thank You'
         else 'Checkout'
+      end
+    end
+
+    def verify_recaptcha_checkout!
+      return unless EffectiveOrders.recaptcha?
+
+      unless session[:recaptcha_verified_order_id].to_s == params[:id].to_s
+        flash[:danger] = 'Please complete the verification to proceed with payment.'
+        redirect_back(fallback_location: effective_orders.order_path(params[:id]))
       end
     end
 
