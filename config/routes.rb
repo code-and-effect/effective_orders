@@ -4,6 +4,7 @@ EffectiveOrders::Engine.routes.draw do
   scope module: 'effective' do
     resources :orders, except: [:destroy] do
       member do
+        get :checkout
         get :purchased
         get :deferred
         get :declined

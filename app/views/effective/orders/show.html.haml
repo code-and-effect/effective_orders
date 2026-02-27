@@ -1,10 +1,10 @@
 = render 'layout' do
   %h1.effective-heading= @page_title
+  = render(@order)
 
   - if EffectiveResources.authorized?(self, :checkout, @order)
-    = render_checkout(@order)
+    %p.text-center
+      = link_to 'Checkout', effective_orders.checkout_order_path(@order), class: 'btn btn-primary'
   - else
-    = render(@order)
-
     %p.text-center
       = link_to 'Continue', effective_orders.orders_path, class: 'btn btn-primary'

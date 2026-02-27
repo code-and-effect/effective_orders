@@ -24,8 +24,10 @@ module Effective
       layout(config.kind_of?(Hash) ? (config[:orders] || config[:application]) : config)
     end
 
+    rate_limit to: 5, within: 1.hour, by: -> { current_user&.id }, only: :checkout
+
     before_action :authenticate_user!, except: [:free, :paypal_postback, :moneris_postback, :pretend]
-    before_action :set_page_title, except: [:show, :edit]
+    before_action :set_page_title, except: [:show, :edit, :checkout]
 
     before_action :verify_recaptcha_checkout!, only: [
       :cheque, :deluxe, :deluxe_delayed, :etransfer, :free, :helcim, :mark_as_paid, :moneris_checkout, :phone, :pretend, :refund, :stripe
@@ -57,23 +59,28 @@ module Effective
       @order.assign_attributes(checkout_params)
 
       if (@order.confirm! rescue false)
-        redirect_to(effective_orders.order_path(@order))
+        redirect_to(effective_orders.checkout_order_path(@order))
       else
         flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
         render :new
       end
     end
 
-    # If you want to use the order = Effective::Order.new(@thing); order.save! flow
-    # Add one or more items to the order.
-    # redirect_to effective_orders.order_path(order), which is here
-    # This is the entry point for an existing order.
-    # Might render step1 or step2
+    # Displays the order summary.
+    # For unpurchased orders, shows a Checkout button.
+    # For purchased orders, shows a Continue button.
     def show
       @order ||= Effective::Order.deep.find(params[:id])
-      @page_title ||= view_context.order_page_title(@order)
+      @page_title ||= @order.to_s
 
       EffectiveResources.authorize!(self, :show, @order)
+    end
+
+    def checkout
+      @order ||= Effective::Order.deep.was_not_purchased.find(params[:id])
+      @page_title ||= 'Checkout'
+
+      EffectiveResources.authorize!(self, :checkout, @order)
     end
 
     # Always step1
@@ -92,7 +99,7 @@ module Effective
       @order.assign_attributes(checkout_params)
 
       if (@order.confirm! rescue false)
-        redirect_to(effective_orders.order_path(@order))
+        redirect_to(effective_orders.checkout_order_path(@order))
       else
         flash.now[:danger] = "Unable to proceed: #{flash_errors(@order)}. Please try again."
         render :edit
@@ -154,7 +161,7 @@ module Effective
       @order = Effective::Order.not_purchased.find(params[:id])
       EffectiveResources.authorize!(self, :update, @order)
 
-      redirect_url = params[:redirect_url].presence || effective_orders.order_path(@order)
+      redirect_url = params[:redirect_url].presence || effective_orders.checkout_order_path(@order)
 
       if verify_recaptcha(secret_key: EffectiveOrders.recaptcha_secret_key)
         session[:recaptcha_verified_order_id] = @order.id
@@ -187,7 +194,7 @@ module Effective
 
       unless session[:recaptcha_verified_order_id].to_s == params[:id].to_s
         flash[:danger] = 'Please complete the verification to proceed with payment.'
-        redirect_back(fallback_location: effective_orders.order_path(params[:id]))
+        redirect_back(fallback_location: effective_orders.checkout_order_path(params[:id]))
       end
     end
 
