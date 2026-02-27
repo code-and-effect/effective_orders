@@ -134,12 +134,16 @@ module Effective
     end
 
     # Search for an existing Payment
-    def search_payment(order)
+    def search_payment(order, retried: false)
       date = (order.delayed_payment_purchase_ran_at || order.purchased_at || order.created_at || Time.zone.now)
       response = post('/payments/search', params: { orderId: order.to_param, startDate: date.strftime('%m/%d/%Y'), endDate: (date + 1.day).strftime('%m/%d/%Y') })
 
       # Sanity check response
-      raise('expected valid search') unless response.kind_of?(Hash) && response['isSuccess'] == true
+      unless response.kind_of?(Hash) && response['isSuccess'] == true
+        raise("expected valid search response but got: #{response.inspect}") if retried
+        sleep(2)
+        return search_payment(order, retried: true)
+      end
 
       # Find the payment for this order
       payment = Array(response.dig('data', 'payments')).find { |payment| payment.dig('payment', 'orderId') == order.to_param }
@@ -250,7 +254,7 @@ module Effective
           order.update_columns(delayed_payment_purchase_ran_at: Time.zone.now, delayed_payment_purchase_result: "error: #{e.message}")
 
           EffectiveLogger.error(e.message, associated: order) if defined?(EffectiveLogger)
-          ExceptionNotifier.notify_exception(e, data: { order_id: order.id }) if defined?(ExceptionNotifier)
+          EffectiveResources.send_error(e, order_id: order.id)
 
           puts "Error retry purchasing #{order.id}: #{e.message}"
 
