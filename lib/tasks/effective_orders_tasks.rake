@@ -61,7 +61,7 @@ namespace :effective_orders do
       puts 'send_trial_emails completed'
       EffectiveLogger.success('scheduled task send_trial_emails completed') if defined?(EffectiveLogger)
     rescue => e
-      ExceptionNotifier.notify_exception(e) if defined?(ExceptionNotifier)
+      EffectiveResources.send_error(e)
       raise e
     end
   end
