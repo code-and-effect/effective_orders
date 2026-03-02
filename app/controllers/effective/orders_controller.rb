@@ -86,7 +86,7 @@ module Effective
     # Always step1
     def edit
       @order ||= Effective::Order.deep.was_not_purchased.find(params[:id])
-      @page_title ||= view_context.order_page_title(@order)
+      @page_title ||= 'Order Review'
 
       EffectiveResources.authorize!(self, :edit, @order)
     end
