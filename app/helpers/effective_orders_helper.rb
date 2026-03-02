@@ -83,16 +83,6 @@ module EffectiveOrdersHelper
     render(partial: 'effective/orders/order', locals: { order: order })
   end
 
-  def order_page_title(order)
-    raise 'expected an order' unless order.kind_of?(Effective::Order)
-
-    if controller.action_name == 'edit'
-      'Order Review'
-    else
-      order.to_s
-    end
-  end
-
   def render_checkout(order, namespace: nil, purchased_url: nil, declined_url: nil, deferred_url: nil)
     raise 'expected an order' unless order.kind_of?(Effective::Order)
     raise 'unable to checkout an order without a user or organization' if order && (order.user.blank? && order.organization.blank?)

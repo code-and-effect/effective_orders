@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.files = Dir['{app,config,db,lib}/**/*'] + ['MIT-LICENSE', 'README.md']
 
-  s.add_dependency 'rails', '>= 7.2.0'
+  s.add_dependency 'rails', '>= 4.0.0'
   s.add_dependency 'coffee-rails'
   s.add_dependency 'sassc'
   s.add_dependency 'effective_addresses'
