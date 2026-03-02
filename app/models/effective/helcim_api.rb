@@ -143,7 +143,7 @@ module Effective
       return if payload.blank?
       raise('expected a string') unless payload.kind_of?(String)
 
-      decoded = Base64.decode64(payload)
+      decoded = (Base64.decode64(payload) rescue nil)
       payment = (JSON.parse(decoded) rescue nil)
 
       if payment.blank? && decoded.to_s.downcase.include?('declined')
