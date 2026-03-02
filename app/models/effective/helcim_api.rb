@@ -1,5 +1,7 @@
 # https://devdocs.helcim.com/docs/overview-of-helcimpayjs
 # Effective::HelcimApi.new.health_check
+# use card 4242, expiry 01/28, CVV 209 for a general decline
+
 module Effective
   class HelcimApi
     # All required
@@ -134,12 +136,22 @@ module Effective
     # "invoiceNumber"=>"#26-1760118464",
     # "customerCode"=>"CST0000"}
 
+    # When the payment is aborted, the decoded payload is a string with the error
+    # "HelcimPay.js transaction aborted - \"Transaction declined. DECLINED - Do Not Honor\"
+
     def decode_payment_payload(payload)
       return if payload.blank?
       raise('expected a string') unless payload.kind_of?(String)
 
-      payment = (JSON.parse(Base64.decode64(payload)) rescue nil)
-      raise('expected payment to be a Hash') unless payment.kind_of?(Hash)
+      decoded = (Base64.decode64(payload) rescue nil)
+      payment = (JSON.parse(decoded) rescue nil)
+
+      if payment.blank? && decoded.to_s.downcase.include?('declined')
+        return :declined 
+      end
+
+      raise('expected payment to be a Hash') unless payment.kind_of?(Hash) || payment.blank?
+      return payment if payment.blank?
 
       payment = payment.dig('data', 'data')
       raise('expected payment data') unless payment.kind_of?(Hash)

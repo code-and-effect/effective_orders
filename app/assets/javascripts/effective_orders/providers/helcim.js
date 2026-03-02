@@ -32,13 +32,21 @@ function helcimPayIframeEvent(event) {
       window.removeEventListener('message', helcimPayIframeEvent, false);
 
       let payment = btoa(event.data.eventMessage);
-  
+
       let $form = $('form[data-helcim-checkout]').first();
       $form.find('input[name="helcim[payment]"]').val(payment);
       $form.submit();
-  
+
       $('#helcimCheckout').fadeOut('slow');
       $('#helcim-checkout-loading').text('Thank you! Processing payment information. Please wait...');
+    }
+
+    if(event.data.eventStatus == 'ABORTED') {
+      let payment = btoa(event.data.eventMessage);
+
+      let $form = $('form[data-helcim-checkout]').first();
+      $form.find('input[name="helcim[payment]"]').val(payment);
+      $form.submit();
     }
   }
 };

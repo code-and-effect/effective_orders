@@ -17,6 +17,12 @@ module Effective
         # Decode the payment payload
         payment_payload = api.decode_payment_payload(helcim_params[:payment])
 
+        # Check for a declined payment payload
+        if payment_payload == :declined
+          return order_declined(payment: {}, provider: 'helcim', card: nil, declined_url: helcim_params[:declined_url])
+        end
+
+        # Check for an unexpected payment payload
         if payment_payload.blank?
           flash[:danger] = 'Unable to process helcim order without payment. please try again.'
           return order_not_processed(declined_url: helcim_params[:declined_url])
