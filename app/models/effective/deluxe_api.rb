@@ -139,7 +139,7 @@ module Effective
       response = post('/payments/search', params: { orderId: order.to_param, startDate: date.strftime('%m/%d/%Y'), endDate: (date + 1.day).strftime('%m/%d/%Y') })
 
       # Sanity check response
-      unless response.kind_of?(Hash) && response['isSuccess'] == true
+      unless response.kind_of?(Hash) && (response['isSuccess'] == true || response.dig('data', 'isSuccess') == true)
         raise("expected valid search response but got: #{response.inspect}") if retried
         sleep(2)
         return search_payment(order, retried: true)
