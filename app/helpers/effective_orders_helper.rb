@@ -86,15 +86,7 @@ module EffectiveOrdersHelper
   def order_page_title(order)
     raise 'expected an order' unless order.kind_of?(Effective::Order)
 
-    authorized = EffectiveResources.authorized?(self, :update, order)
-
-    if order.purchased? || order.declined?
-      order.to_s
-    elsif authorized && (controller.action_name == 'edit')
-      'Order Review'
-    elsif authorized && (order.confirmed? || order.deferred?) && order.errors.blank?
-      'Checkout'
-    elsif authorized && order.pending?
+    if controller.action_name == 'edit'
       'Order Review'
     else
       order.to_s
