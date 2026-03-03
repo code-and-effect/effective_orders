@@ -24,7 +24,7 @@ module Effective
       layout(config.kind_of?(Hash) ? (config[:orders] || config[:application]) : config)
     end
 
-    rate_limit to: 5, within: 1.hour, by: -> { current_user&.id }, only: :checkout
+    rate_limit to: 10, within: 1.hour, by: -> { current_user&.id }, only: :checkout
 
     before_action :authenticate_user!, except: [:free, :paypal_postback, :moneris_postback, :pretend]
     before_action :set_page_title, except: [:show, :edit, :checkout]
