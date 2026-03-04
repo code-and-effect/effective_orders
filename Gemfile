@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
-ruby '3.1.2'
+source 'https://rubygems.org'
+ruby '3.3.1'
 
 gemspec

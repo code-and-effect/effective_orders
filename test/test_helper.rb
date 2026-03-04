@@ -33,3 +33,7 @@ end
 
 # Load the seeds
 load "#{__dir__}/dummy/db/seeds.rb"
+
+# Load the email templates
+require 'effective_email_templates/importer'
+EffectiveEmailTemplates::Importer.overwrite(quiet: true)
