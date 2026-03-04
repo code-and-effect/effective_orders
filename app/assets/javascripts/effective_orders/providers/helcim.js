@@ -9,13 +9,26 @@ function initializeHelcim() {
   let $helcim = $('form[data-helcim-checkout]');
   if($helcim.length == 0) return;
 
-  let token = $helcim.data('helcim-checkout');
+  let tokenUrl = $helcim.data('helcim-token-url');
 
-  // From HelcimPay.js
-  appendHelcimPayIframe(token)
+  $.ajax({
+    url: tokenUrl,
+    type: 'POST',
+    dataType: 'json',
+    headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+    success: function(data) {
+      // From HelcimPay.js
+      appendHelcimPayIframe(data.token);
 
-  // Add our event listener
-  window.addEventListener('message', helcimPayIframeEvent, false);
+      // Add our event listener
+      window.addEventListener('message', helcimPayIframeEvent, false);
+    },
+    error: function() {
+      let button = $('.effective-helcim-checkout').find('#helcim-checkout-button').get(0);
+      Rails.enableElement(button);
+      alert('Unable to initialize payment. Please try again.');
+    }
+  });
 };
 
 function helcimPayIframeEvent(event) {
