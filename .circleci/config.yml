@@ -2,15 +2,19 @@ version: 2.1 # use CircleCI 2.1
 
 # Orbs and containers control the docker image each job is run in.
 orbs:
-  ruby: circleci/ruby@2.0.1
-  browser-tools: circleci/browser-tools@1.4.3
+  ruby: circleci/ruby@2.5.3 # versions: https://circleci.com/developer/orbs/orb/circleci/ruby
+  browser-tools: circleci/browser-tools@1.4.8 # versions: https://circleci.com/developer/orbs/orb/circleci/browser-tools
+
 
 container: &container
   docker:
-    - image: cimg/ruby:3.1.2-browsers # images: https://hub.docker.com/r/circleci/ruby/tags
+    - image: cimg/ruby:3.3.1-browsers # images: https://hub.docker.com/r/circleci/ruby/tags
       environment:
         RAILS_ENV: test
+        SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+        SSL_CERT_DIR: /etc/ssl/certs
     - image: cimg/postgres:15.1
+      command: postgres -c max_connections=300
 
 workflows:
   version: 2
