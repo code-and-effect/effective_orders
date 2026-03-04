@@ -9,6 +9,7 @@ Bundler.require(*Rails.groups)
 
 require 'haml'
 require 'effective_addresses'
+require 'effective_datatables'
 require 'effective_email_templates'
 
 module Dummy
