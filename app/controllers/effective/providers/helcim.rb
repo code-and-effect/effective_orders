@@ -3,6 +3,18 @@ module Effective
     module Helcim
       extend ActiveSupport::Concern
 
+      def helcim_token
+        raise('helcim provider is not available') unless EffectiveOrders.helcim?
+
+        @order = Effective::Order.deep.find(params[:id])
+        @order.current_user = current_user unless admin_checkout?(params)
+
+        EffectiveResources.authorize!(self, :update, @order)
+
+        token = Effective::HelcimApi.new.initialize_request(@order)
+        render json: { token: token }
+      end
+
       def helcim
         raise('helcim provider is not available') unless EffectiveOrders.helcim?
 

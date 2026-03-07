@@ -1,12 +1,10 @@
-- token = helcim_initialize_request(order)
-
 .card
   .card-body
     %h2 Checkout
 
     .mt-4
 
-    = effective_form_with(scope: :helcim, url: effective_orders.helcim_order_path(order), data: { 'helcim-checkout': token }) do |f|
+    = effective_form_with(scope: :helcim, url: effective_orders.helcim_order_path(order), data: { 'helcim-checkout': true, 'helcim-token-url': effective_orders.helcim_token_order_path(order) }) do |f|
       = f.hidden_field :purchased_url, value: purchased_url
       = f.hidden_field :declined_url, value: declined_url
 
